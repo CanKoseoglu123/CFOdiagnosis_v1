@@ -9,7 +9,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:vs5": "npx ts-node src/tests/vs5-qa.test.ts",
     "test:vs6": "npx ts-node src/tests/vs6-qa.test.ts",
-    "test:all": "npm run test:vs5 && npm run test:vs6"
+    "test:vs7": "npx ts-node src/tests/vs7-qa.test.ts",
+    "test:vs8": "npx ts-node src/tests/vs8-qa.test.ts",
+    "test:vs9": "npx ts-node src/tests/vs9-qa.test.ts",
+    "test:vs11": "npx ts-node src/tests/vs11-qa.test.ts",
+    "test:all": "npm run test:vs5 && npm run test:vs6 && npm run test:vs7 && npm run test:vs8 && npm run test:vs9 && npm run test:vs11"
   },
   "repository": {
     "type": "git",
@@ -24,7 +28,8 @@
   "homepage": "https://github.com/CanKoseoglu123/CFOdiagnosis_v1#readme",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "lucide-react": "^0.561.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

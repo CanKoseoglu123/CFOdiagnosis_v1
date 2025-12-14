@@ -54,6 +54,14 @@ export async function validateRun(
         }
         break;
 
+      case "boolean":
+        if (typeof value !== "boolean") {
+          errors.push(
+            `Invalid type for ${question.id}: expected boolean, got ${typeof value}`
+          );
+        }
+        break;
+
       default:
         errors.push(`Unsupported question type for ${question.id}`);
     }

@@ -356,14 +356,16 @@ console.log("\n--- toAggregateSpec Adapter ---");
   const fullSpec: FullSpec = {
     version: "v2.6.4",
     questions: [
-      { id: "annual_revenue", pillar: "liquidity", weight: 1 },
-      { id: "cash_reserves", pillar: "liquidity", weight: 2 },
-      { id: "forecast_accuracy", pillar: "fpa", weight: 1 },
+      { id: "annual_revenue", pillar: "liquidity", weight: 1, text: "Annual revenue?", is_critical: false },
+      { id: "cash_reserves", pillar: "liquidity", weight: 2, text: "Cash reserves?", is_critical: false },
+      { id: "forecast_accuracy", pillar: "fpa", weight: 1, text: "Forecast accuracy?", is_critical: false },
     ],
     pillars: [
-      { id: "liquidity", weight: 1 },
-      { id: "fpa", weight: 1 },
+      { id: "liquidity", name: "Liquidity", weight: 1 },
+      { id: "fpa", name: "FP&A", weight: 1 },
     ],
+    maturityGates: [],
+    actions: [],
   };
 
   const aggregateSpec = toAggregateSpec(fullSpec);

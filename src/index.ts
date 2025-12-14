@@ -8,7 +8,7 @@ import { scoreRun } from "./scoring/scoreRun";
 import { SpecRegistry } from "./specs/registry";
 import { aggregateResults } from "./results/aggregate";
 import { toAggregateSpec } from "./specs/toAggregateSpec";
-import { buildReport } from "./report/buildReport";
+import { buildReport } from "./reports";
 
 const app = express();
 app.use(cors());

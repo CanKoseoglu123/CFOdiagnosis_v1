@@ -7,12 +7,13 @@
  * - Maturity placeholder populated
  * - Pillar breakdown correct
  * - Score passthrough from VS5
+ * - Strict typing (no mixed types)
  */
 
-import { buildReport, BuildReportInput } from "../report/buildReport";
+import { buildReport, BuildReportInput } from "../reports";
 import { Spec } from "../specs/types";
 import { AggregateResult } from "../results/aggregate";
-import { FinanceReportDTO } from "../types/report";
+import { FinanceReportDTO } from "../reports";
 
 // ============================================================
 // Test Utilities
@@ -84,6 +85,7 @@ const TEST_SPEC: Spec = {
     { level: 1, label: "Emerging", required_evidence_ids: ["q1_critical"] },
     { level: 2, label: "Defined", required_evidence_ids: ["q1_critical", "q2_normal"] },
   ],
+  actions: [],
 };
 
 const TEST_AGGREGATE_RESULT: AggregateResult = {
@@ -126,9 +128,9 @@ console.log("--- DTO Shape ---");
 }
 
 // ----------------------------------------------------------
-// 2. Maturity Placeholder
+// 2. Maturity Calculation
 // ----------------------------------------------------------
-console.log("\n--- Maturity Placeholder ---");
+console.log("\n--- Maturity Calculation ---");
 
 {
   const input: BuildReportInput = {
@@ -140,15 +142,16 @@ console.log("\n--- Maturity Placeholder ---");
 
   const report = buildReport(input);
 
+  // With no inputs, should be at Level 0 (Ad-hoc)
   assertEqual(
     report.maturity.achieved_level,
-    "NOT_CALCULATED",
-    "achieved_level is NOT_CALCULATED"
+    0,
+    "achieved_level is 0 (baseline)"
   );
   assertEqual(
-    report.maturity.blocking_evidence_ids.length,
-    0,
-    "blocking_evidence_ids is empty"
+    report.maturity.achieved_label,
+    "Ad-hoc",
+    "achieved_label is Ad-hoc"
   );
   assertEqual(report.maturity.gates.length, 3, "3 maturity gates present");
   assertEqual(report.maturity.gates[0].label, "Ad-hoc", "Gate 0 label correct");
@@ -344,6 +347,63 @@ console.log("\n--- Deterministic Output ---");
     JSON.stringify(compare2),
     "Deterministic (excluding timestamp)"
   );
+}
+
+// ----------------------------------------------------------
+// 10. Overall Maturity — Weakest Link Rollup
+// ----------------------------------------------------------
+console.log("\n--- Weakest Link Rollup ---");
+
+{
+  // Create a spec with different gates per pillar
+  const multiPillarSpec: Spec = {
+    version: "test",
+    questions: [
+      { id: "liq_e1", pillar: "liquidity", weight: 1, text: "Liq Q1", is_critical: false },
+      { id: "fpa_e1", pillar: "fpa", weight: 1, text: "FPA Q1", is_critical: false },
+    ],
+    pillars: [
+      { id: "liquidity", name: "Liquidity", weight: 1 },
+      { id: "fpa", name: "FP&A", weight: 1 },
+    ],
+    maturityGates: [
+      { level: 0, label: "Ad-hoc", required_evidence_ids: [] },
+      { level: 1, label: "Emerging", required_evidence_ids: ["liq_e1", "fpa_e1"] },
+    ],
+    actions: [],
+  };
+
+  // Liquidity has evidence, FPA does not
+  // Liquidity pillar should be Level 1, FPA should be Level 0
+  // Overall should be min(1, 0) = 0
+  const input: BuildReportInput = {
+    run_id: "test",
+    spec: multiPillarSpec,
+    aggregateResult: {
+      overall_score: 0.5,
+      pillars: [
+        { pillar_id: "liquidity", score: 1.0, weight_sum: 1, scored_questions: 1 },
+        { pillar_id: "fpa", score: 0.0, weight_sum: 1, scored_questions: 1 },
+      ],
+    },
+    inputs: [
+      { question_id: "liq_e1", value: true },  // Liquidity satisfied
+      // fpa_e1 not provided → FPA stuck at Level 0
+    ],
+  };
+
+  const report = buildReport(input);
+
+  // Check pillar levels
+  const liqPillar = report.pillars.find(p => p.pillar_id === "liquidity");
+  const fpaPillar = report.pillars.find(p => p.pillar_id === "fpa");
+
+  assertEqual(liqPillar?.maturity.achieved_level, 1, "Liquidity at Level 1");
+  assertEqual(fpaPillar?.maturity.achieved_level, 0, "FPA at Level 0");
+
+  // Overall should be weakest link
+  assertEqual(report.maturity.achieved_level, 0, "Overall = min(1, 0) = 0");
+  assertEqual(report.maturity.achieved_label, "Ad-hoc", "Overall label = Ad-hoc");
 }
 
 // ============================================================
