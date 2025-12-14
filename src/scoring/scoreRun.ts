@@ -1,5 +1,8 @@
+// src/scoring/scoreRun.ts
+// FIXED: Spec-driven scoring (not hardcoded rules)
+
 import { SupabaseClient } from "@supabase/supabase-js";
-import { scoringRules } from "./rules";
+import { SpecRegistry } from "../specs/registry";
 import { assertNormalizedScore } from "./guard";
 
 export type ScoreRow = {
@@ -7,6 +10,13 @@ export type ScoreRow = {
   score: number; // normalized 0..1
 };
 
+/**
+ * Scores a completed diagnostic run.
+ * 
+ * FIXED: Now iterates over Spec questions (single source of truth),
+ * not a hardcoded rules array. This prevents "split brain" where
+ * new questions in the Spec are ignored by scoring.
+ */
 export async function scoreRun(
   supabase: SupabaseClient,
   runId: string
@@ -26,7 +36,10 @@ export async function scoreRun(
     throw new Error("Run is not completed");
   }
 
-  // 2) Load inputs
+  // 2) Get the Spec (single source of truth for questions)
+  const spec = SpecRegistry.get(run.spec_version);
+
+  // 3) Load inputs
   const { data: inputs, error: inputsError } = await supabase
     .from("diagnostic_inputs")
     .select("question_id, value")
@@ -40,20 +53,57 @@ export async function scoreRun(
     (inputs ?? []).map((i) => [i.question_id, i.value])
   );
 
-  // 3) Apply rules
+  // 4) Score ALL questions from the Spec
   const scores: ScoreRow[] = [];
 
-  for (const rule of scoringRules) {
-    const value = inputMap.get(rule.question_id);
+  for (const question of spec.questions) {
+    const value = inputMap.get(question.id);
 
-    // Missing input => no score row (N/A handling)
-    if (value === undefined) continue;
+    // FIXED: Missing input = score 0 (conservative scoring)
+    // Previously we skipped, which caused "grade inflation"
+    let rawScore: number;
 
-    const rawScore = rule.score(value as any);
-    assertNormalizedScore(rule.question_id, rawScore);
+    if (value === undefined || value === null) {
+      // Missing answer = 0 (not skipped)
+      rawScore = 0;
+    } else {
+      // Apply scoring based on value type
+      // Currently all questions are boolean (yes/no)
+      // Future: could switch on question.type for different scoring
+      rawScore = scoreValue(value);
+    }
 
-    scores.push({ question_id: rule.question_id, score: rawScore });
+    assertNormalizedScore(question.id, rawScore);
+    scores.push({ question_id: question.id, score: rawScore });
   }
 
   return scores;
+}
+
+/**
+ * Scores a single value.
+ * Handles both boolean and string representations of boolean.
+ * 
+ * TRUE values: true, "true", "yes", 1, "1"
+ * FALSE values: false, "false", "no", 0, "0", null, undefined
+ */
+function scoreValue(value: unknown): number {
+  // Strict boolean
+  if (value === true) return 1.0;
+  if (value === false) return 0.0;
+
+  // String representations (handles JSON storage variations)
+  if (typeof value === "string") {
+    const lower = value.toLowerCase().trim();
+    if (lower === "true" || lower === "yes" || lower === "1") return 1.0;
+    if (lower === "false" || lower === "no" || lower === "0") return 0.0;
+  }
+
+  // Numeric representations
+  if (value === 1) return 1.0;
+  if (value === 0) return 0.0;
+
+  // Unknown value type - treat as false (conservative)
+  console.warn(`Unknown value type for scoring: ${typeof value} = ${value}`);
+  return 0.0;
 }
