@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:vs5": "ts-node src/tests/vs5-qa.test.ts"
+    "test:vs5": "npx ts-node src/tests/vs5-qa.test.ts",
+    "test:vs6": "npx ts-node src/tests/vs6-qa.test.ts",
+    "test:all": "npm run test:vs5 && npm run test:vs6"
   },
   "repository": {
     "type": "git",

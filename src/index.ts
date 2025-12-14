@@ -8,6 +8,7 @@ import { scoreRun } from "./scoring/scoreRun";
 import { SpecRegistry } from "./specs/registry";
 import { aggregateResults } from "./results/aggregate";
 import { toAggregateSpec } from "./specs/toAggregateSpec";
+import { buildReport } from "./report/buildReport";
 
 const app = express();
 app.use(cors());
@@ -283,6 +284,83 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
 
   // 6) Return
   res.json(results);
+});
+
+// ------------------------------------------------------------------
+// VS6 — Finance Report (full DTO for frontend)
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/report", async (req, res) => {
+  const runId = req.params.id;
+
+  // 1) Load run
+  const { data: run, error: runError } = await supabase
+    .from("diagnostic_runs")
+    .select("id, status, spec_version")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // 2) Must be completed
+  if (run.status !== "completed") {
+    return res.status(409).json({
+      error: "Run must be completed before report can be generated",
+    });
+  }
+
+  // 3) Resolve SPEC (hard fail if missing)
+  let spec;
+  try {
+    spec = SpecRegistry.get(run.spec_version);
+  } catch (err) {
+    return res.status(500).json({ error: String(err) });
+  }
+
+  // 4) Load scores
+  const { data: scores, error: scoresError } = await supabase
+    .from("diagnostic_scores")
+    .select("question_id, score")
+    .eq("run_id", runId);
+
+  if (scoresError) {
+    return res.status(500).json({ error: scoresError.message });
+  }
+
+  if (!scores || scores.length === 0) {
+    return res.status(409).json({
+      error: "No scores exist for this run. Call POST /diagnostic-runs/:id/score first.",
+    });
+  }
+
+  // 5) Load inputs (for critical risk derivation)
+  const { data: inputs, error: inputsError } = await supabase
+    .from("diagnostic_inputs")
+    .select("question_id, value")
+    .eq("run_id", runId);
+
+  if (inputsError) {
+    return res.status(500).json({ error: inputsError.message });
+  }
+
+  // 6) Aggregate scores (VS5)
+  const aggregateSpec = toAggregateSpec(spec);
+  const aggregateResult = aggregateResults(aggregateSpec, scores);
+
+  // 7) Build report DTO (VS6)
+  const report = buildReport({
+    run_id: runId,
+    spec,
+    aggregateResult,
+    inputs: (inputs ?? []).map((i) => ({
+      question_id: i.question_id,
+      value: i.value,
+    })),
+  });
+
+  // 8) Return
+  res.json(report);
 });
 
 // ------------------------------------------------------------------
