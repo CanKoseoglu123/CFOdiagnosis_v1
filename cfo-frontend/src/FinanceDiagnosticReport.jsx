@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AlertTriangle, CheckCircle, ChevronRight, Target, TrendingUp, Shield, Zap, ArrowRight, Info, Home } from "lucide-react";
+import { supabase } from './lib/supabase';
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -120,18 +121,38 @@ export default function FinanceDiagnosticReport() {
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
 
-  useEffect(() => {
-    if (!runId) {
-      setError("No run ID provided");
+useEffect(() => {
+  if (!runId) {
+    setError("No run ID provided");
+    setLoading(false);
+    return;
+  }
+
+  const fetchReport = async () => {
+    try {
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/report`, {
+        headers: {
+          ...(token && { "Authorization": `Bearer ${token}` }),
+        },
+      });
+      
+      if (!response.ok) throw new Error("Failed to load");
+      const data = await response.json();
+      setReport(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-      return;
     }
-    fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/report`)
-      .then(res => { if (!res.ok) throw new Error("Failed to load"); return res.json(); })
-      .then(data => setReport(data))
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [runId]);
+  };
+  
+  fetchReport();
+}, [runId]);
+
 
   if (loading) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F8FAFC", fontFamily: "system-ui" }}>
