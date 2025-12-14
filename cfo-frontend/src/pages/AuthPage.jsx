@@ -1,13 +1,13 @@
 // src/pages/AuthPage.jsx
-// Login and Signup page with toggle between modes
+// Fixed with forced navigation after auth success
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function AuthPage() {
-  const [mode, setMode] = useState('login') // 'login' or 'signup'
+  const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -15,12 +15,18 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
 
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Where to redirect after login
   const from = location.state?.from?.pathname || '/'
+
+  // Safety Redirect: If user is already logged in, redirect them
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true })
+    }
+  }, [user, navigate, from])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -31,11 +37,11 @@ export default function AuthPage() {
     try {
       if (mode === 'login') {
         await signIn(email, password)
+        // FORCE NAVIGATION immediately after success
         navigate(from, { replace: true })
       } else {
         const data = await signUp(email, password, fullName)
         
-        // Check if email confirmation is required
         if (data.user && !data.session) {
           setMessage('Check your email for a confirmation link!')
           setMode('login')
@@ -44,6 +50,7 @@ export default function AuthPage() {
         }
       }
     } catch (err) {
+      console.error('Auth error:', err)
       setError(err.message)
     } finally {
       setLoading(false)

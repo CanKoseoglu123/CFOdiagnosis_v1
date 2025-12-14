@@ -1,9 +1,10 @@
 // src/DiagnosticInput.jsx
-// Updated to pass auth token and set owner_id on run creation
+// Layer 3: Sends auth token with API requests
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { supabase } from "./lib/supabase";
 import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle } from "lucide-react";
 
 const API_BASE_URL = "http://localhost:3000";
@@ -67,7 +68,7 @@ const QuestionCard = ({ question, answer, onAnswer, index, showHelp, onToggleHel
 
 export default function DiagnosticInput() {
   const navigate = useNavigate();
-  const { getAccessToken, user } = useAuth();
+  const { user } = useAuth();
   const [runId, setRunId] = useState(null);
   const [answers, setAnswers] = useState({});
   const [helpVisible, setHelpVisible] = useState({});
@@ -78,8 +79,11 @@ export default function DiagnosticInput() {
   const totalQuestions = QUESTIONS.length;
   const allAnswered = answeredCount === totalQuestions;
 
+  // Get auth token from Supabase session
   const getAuthHeaders = async () => {
-    const token = await getAccessToken();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    
     return {
       "Content-Type": "application/json",
       ...(token && { "Authorization": `Bearer ${token}` }),
@@ -95,7 +99,6 @@ export default function DiagnosticInput() {
       const response = await fetch(`${API_BASE_URL}/diagnostic-runs`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ owner_id: user?.id }),
       });
       
       if (!response.ok) throw new Error("Failed to create diagnostic run");

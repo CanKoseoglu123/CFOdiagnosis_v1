@@ -1,7 +1,7 @@
 import "dotenv/config";
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 import { validateRun } from "./validateRun";
 import { scoreRun } from "./scoring/scoreRun";
@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // ------------------------------------------------------------------
-// Supabase client
+// Supabase config
 // ------------------------------------------------------------------
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -24,17 +24,66 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Global anon client - ONLY for unauthenticated routes (health checks)
+const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey);
 
 // ------------------------------------------------------------------
-// Health
+// Layer 3: Auth middleware - creates authenticated client
+// ------------------------------------------------------------------
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+      supabase: SupabaseClient;  // Each request gets its own client
+    }
+  }
+}
+
+// Middleware that creates a Supabase client for each request
+// If token present: creates authenticated client (RLS will work)
+// If no token: creates anon client (RLS will apply anon rules)
+async function createSupabaseMiddleware(req: Request, _res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    
+    // Create client WITH the user's token - RLS will see auth.uid()
+    req.supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    
+    // AWAIT the user check - do not proceed until we know who this is
+    try {
+      const { data: { user } } = await req.supabase.auth.getUser(token);
+      if (user) {
+        req.userId = user.id;
+      }
+    } catch (err) {
+      console.error("Auth check failed", err);
+      // Downgrade to Anon if the token was invalid/expired
+      req.supabase = supabaseAnon;
+    }
+  } else {
+    // No token - use anon client
+    req.supabase = supabaseAnon;
+  }
+  
+  next();
+}
+
+// Apply to all routes
+app.use(createSupabaseMiddleware);
+
+// ------------------------------------------------------------------
+// Health (uses anon client directly - no auth needed)
 // ------------------------------------------------------------------
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
 app.get("/supabase-health", async (_req, res) => {
-  const { error } = await supabase
+  const { error } = await supabaseAnon
     .from("diagnostic_runs")
     .select("id")
     .limit(1);
@@ -50,13 +99,15 @@ app.get("/supabase-health", async (_req, res) => {
 
 // ------------------------------------------------------------------
 // VS1 — Create diagnostic run
+// Now uses req.supabase (authenticated if token provided)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs", async (_req, res) => {
-  const { data, error } = await supabase
+app.post("/diagnostic-runs", async (req, res) => {
+  const { data, error } = await req.supabase
     .from("diagnostic_runs")
     .insert({
       status: "created",
       spec_version: "v2.6.4",
+      owner_id: req.userId || null,
     })
     .select()
     .single();
@@ -69,7 +120,7 @@ app.post("/diagnostic-runs", async (_req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS2 — Persist diagnostic input (draft, upsert allowed)
+// VS2 — Persist diagnostic input
 // ------------------------------------------------------------------
 app.post("/diagnostic-inputs", async (req, res) => {
   const { run_id, question_id, value } = req.body;
@@ -80,7 +131,7 @@ app.post("/diagnostic-inputs", async (req, res) => {
     });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await req.supabase
     .from("diagnostic_inputs")
     .upsert(
       { run_id, question_id, value },
@@ -97,20 +148,20 @@ app.post("/diagnostic-inputs", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS3 — Debug validation endpoint (no state change)
+// VS3 — Debug validation endpoint
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id/validate", async (req, res) => {
-  const result = await validateRun(supabase, req.params.id);
+  const result = await validateRun(req.supabase, req.params.id);
   res.json(result);
 });
 
 // ------------------------------------------------------------------
-// VS3 — Complete / commit run (validate + lock)
+// VS3 — Complete / commit run
 // ------------------------------------------------------------------
 app.post("/diagnostic-runs/:id/complete", async (req, res) => {
   const runId = req.params.id;
 
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
     .select("id, status")
     .eq("id", runId)
@@ -124,7 +175,7 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
     return res.status(409).json({ error: "Run already completed" });
   }
 
-  const result = await validateRun(supabase, runId);
+  const result = await validateRun(req.supabase, runId);
 
   if (!result.valid) {
     return res.status(400).json({
@@ -133,7 +184,7 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
     });
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await req.supabase
     .from("diagnostic_runs")
     .update({ status: "completed" })
     .eq("id", runId);
@@ -146,15 +197,13 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS4 — Score run (persist per-question normalized scores)
-// POST /diagnostic-runs/:id/score?overwrite=true
+// VS4 — Score run
 // ------------------------------------------------------------------
 app.post("/diagnostic-runs/:id/score", async (req, res) => {
   const runId = req.params.id;
   const overwrite = String(req.query.overwrite) === "true";
 
-  // 1) Run must exist and be completed
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
     .select("id, status")
     .eq("id", runId)
@@ -168,8 +217,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     return res.status(409).json({ error: "Run is not completed" });
   }
 
-  // 2) Check existing scores
-  const { data: existingScores, error: existingError } = await supabase
+  const { data: existingScores, error: existingError } = await req.supabase
     .from("diagnostic_scores")
     .select("id")
     .eq("run_id", runId)
@@ -185,9 +233,8 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     return res.status(409).json({ error: "Scores already exist for this run" });
   }
 
-  // 3) Overwrite path
   if (hasScores && overwrite) {
-    const { error: delError } = await supabase
+    const { error: delError } = await req.supabase
       .from("diagnostic_scores")
       .delete()
       .eq("run_id", runId);
@@ -197,10 +244,9 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     }
   }
 
-  // 4) Calculate scores (pure engine)
   let scores;
   try {
-    scores = await scoreRun(supabase, runId);
+    scores = await scoreRun(req.supabase, runId);
   } catch (e) {
     return res.status(500).json({ error: String(e) });
   }
@@ -209,8 +255,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     return res.status(200).json([]);
   }
 
-  // 5) Persist scores
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await req.supabase
     .from("diagnostic_scores")
     .insert(
       scores.map((s) => ({
@@ -229,13 +274,12 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS5 — Results (read-only aggregation)
+// VS5 — Results
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id/results", async (req, res) => {
   const runId = req.params.id;
 
-  // 1) Load run
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
     .select("id, status, spec_version")
     .eq("id", runId)
@@ -245,14 +289,12 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  // 2) Must be completed
   if (run.status !== "completed") {
     return res.status(409).json({
       error: "Run must be completed before results can be computed",
     });
   }
 
-  // 3) Resolve SPEC (hard fail if missing)
   let spec;
   try {
     spec = SpecRegistry.get(run.spec_version);
@@ -260,8 +302,7 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
     return res.status(500).json({ error: String(err) });
   }
 
-  // 4) Load scores
-  const { data: scores, error: scoresError } = await supabase
+  const { data: scores, error: scoresError } = await req.supabase
     .from("diagnostic_scores")
     .select("question_id, score")
     .eq("run_id", runId);
@@ -276,24 +317,19 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
     });
   }
 
-  // 5) Aggregate (pure)
-   const aggregateSpec = toAggregateSpec(spec);
-   const results = aggregateResults(aggregateSpec, scores);
-    
+  const aggregateSpec = toAggregateSpec(spec);
+  const results = aggregateResults(aggregateSpec, scores);
 
-
-  // 6) Return
   res.json(results);
 });
 
 // ------------------------------------------------------------------
-// VS6 — Finance Report (full DTO for frontend)
+// VS6 — Finance Report
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id/report", async (req, res) => {
   const runId = req.params.id;
 
-  // 1) Load run
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
     .select("id, status, spec_version")
     .eq("id", runId)
@@ -303,14 +339,12 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  // 2) Must be completed
   if (run.status !== "completed") {
     return res.status(409).json({
       error: "Run must be completed before report can be generated",
     });
   }
 
-  // 3) Resolve SPEC (hard fail if missing)
   let spec;
   try {
     spec = SpecRegistry.get(run.spec_version);
@@ -318,8 +352,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     return res.status(500).json({ error: String(err) });
   }
 
-  // 4) Load scores
-  const { data: scores, error: scoresError } = await supabase
+  const { data: scores, error: scoresError } = await req.supabase
     .from("diagnostic_scores")
     .select("question_id, score")
     .eq("run_id", runId);
@@ -334,8 +367,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     });
   }
 
-  // 5) Load inputs (for critical risk derivation)
-  const { data: inputs, error: inputsError } = await supabase
+  const { data: inputs, error: inputsError } = await req.supabase
     .from("diagnostic_inputs")
     .select("question_id, value")
     .eq("run_id", runId);
@@ -344,11 +376,9 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     return res.status(500).json({ error: inputsError.message });
   }
 
-  // 6) Aggregate scores (VS5)
   const aggregateSpec = toAggregateSpec(spec);
   const aggregateResult = aggregateResults(aggregateSpec, scores);
 
-  // 7) Build report DTO (VS6)
   const report = buildReport({
     run_id: runId,
     spec,
@@ -359,7 +389,6 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     })),
   });
 
-  // 8) Return
   res.json(report);
 });
 
