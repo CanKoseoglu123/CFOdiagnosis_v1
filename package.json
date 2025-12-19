@@ -15,7 +15,7 @@
     "test:vs8": "npx ts-node src/tests/vs8-qa.test.ts",
     "test:vs9": "npx ts-node src/tests/vs9-qa.test.ts",
     "test:all": "npm run test:vs5 && npm run test:vs6 && npm run test:vs7 && npm run test:vs8 && npm run test:vs9 && npm run test:vs11"
-  }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CanKoseoglu123/CFOdiagnosis_v1.git"
