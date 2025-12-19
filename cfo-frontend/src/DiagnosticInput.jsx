@@ -7,7 +7,7 @@ import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const QUESTIONS = [
   { id: "fpa_annual_budget", pillar: "fpa", level: 1, levelLabel: "Emerging", text: "Do you have a documented annual budget that is formally approved by leadership?", is_critical: true, help: "This means a written budget document that covers all revenue and expenses, reviewed and signed off by executives before the fiscal year starts." },

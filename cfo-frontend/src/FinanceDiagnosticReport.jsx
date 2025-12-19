@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { AlertTriangle, CheckCircle, ChevronRight, Target, TrendingUp, Shield, Zap, ArrowRight, Info, Home } from "lucide-react";
 import { supabase } from './lib/supabase';
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const formatScore = (score) => score === null || score === undefined ? "—" : `${Math.round(score * 100)}%`;
 const formatDate = (iso) => new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
