@@ -5,6 +5,9 @@ export interface SpecQuestion {
   text: string;                    // Human-readable question
   is_critical?: boolean;           // If true + answer FALSE → critical risk
   trigger_action_id?: string;      // Action to trigger if this evidence fails
+  level?: number;                  // Maturity level (1-4)
+  levelLabel?: string;             // "Emerging", "Defined", etc.
+  help?: string;                   // Help text for frontend
 }
 
 export interface SpecPillar {

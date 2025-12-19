@@ -85,6 +85,17 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// ------------------------------------------------------------------
+// Spec endpoints (public - no auth needed)
+// ------------------------------------------------------------------
+app.get("/spec/questions", (_req, res) => {
+  const spec = SpecRegistry.get("v2.6.4");
+  res.json({
+    version: spec.version,
+    questions: spec.questions,
+  });
+});
+
 app.get("/supabase-health", async (_req, res) => {
   const { error } = await supabaseAnon
     .from("diagnostic_runs")

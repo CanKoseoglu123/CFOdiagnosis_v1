@@ -29,6 +29,9 @@ export const SPEC: Spec = {
       text: "Do you have a documented annual budget that is formally approved by leadership?",
       is_critical: true,
       trigger_action_id: "act_create_budget",
+      level: 1,
+      levelLabel: "Emerging",
+      help: "This means a written budget document that covers all revenue and expenses, reviewed and signed off by executives before the fiscal year starts.",
     },
     {
       id: "fpa_budget_owner",
@@ -37,6 +40,9 @@ export const SPEC: Spec = {
       text: "Is there a single person accountable for owning and maintaining the budget process?",
       is_critical: true,
       trigger_action_id: "act_assign_budget_owner",
+      level: 1,
+      levelLabel: "Emerging",
+      help: "One named individual (not a committee) who is responsible for the budget timeline, templates, consolidation, and coordination.",
     },
 
     // --- Level 2: Defined ---
@@ -47,6 +53,9 @@ export const SPEC: Spec = {
       text: "Do you perform monthly variance analysis comparing actuals to budget?",
       is_critical: false,
       trigger_action_id: "act_implement_variance",
+      level: 2,
+      levelLabel: "Defined",
+      help: "A regular monthly process that compares what actually happened to what was budgeted, with explanations for significant differences.",
     },
     {
       id: "fpa_rolling_forecast",
@@ -55,6 +64,9 @@ export const SPEC: Spec = {
       text: "Do you maintain a rolling forecast that is updated at least quarterly?",
       is_critical: false,
       trigger_action_id: "act_implement_forecast",
+      level: 2,
+      levelLabel: "Defined",
+      help: "A forecast that always looks 4-6 quarters ahead and is refreshed at least every quarter with the latest information.",
     },
 
     // --- Level 3: Managed ---
@@ -65,6 +77,9 @@ export const SPEC: Spec = {
       text: "Is your financial forecast driver-based, linked to operational metrics (e.g., headcount, pipeline, units)?",
       is_critical: false,
       trigger_action_id: "act_implement_drivers",
+      level: 3,
+      levelLabel: "Managed",
+      help: "Your forecast is built from operational assumptions (like number of customers, average deal size) rather than just trending historical numbers.",
     },
     {
       id: "fpa_scenario_modeling",
@@ -73,6 +88,9 @@ export const SPEC: Spec = {
       text: "Do you routinely model multiple scenarios (base case, upside, downside) for planning?",
       is_critical: false,
       trigger_action_id: "act_implement_scenarios",
+      level: 3,
+      levelLabel: "Managed",
+      help: "You regularly create best-case, worst-case, and expected-case versions of your forecast to prepare for different outcomes.",
     },
 
     // --- Level 4: Optimized ---
@@ -83,6 +101,9 @@ export const SPEC: Spec = {
       text: "Is financial planning formally integrated with operational planning (sales, HR, operations)?",
       is_critical: false,
       trigger_action_id: "act_integrate_planning",
+      level: 4,
+      levelLabel: "Optimized",
+      help: "Finance and operational teams use shared assumptions, aligned timelines, and connected systems — not separate spreadsheets.",
     },
     {
       id: "fpa_predictive",
@@ -91,6 +112,9 @@ export const SPEC: Spec = {
       text: "Do you use predictive analytics or machine learning to improve forecast accuracy?",
       is_critical: false,
       trigger_action_id: "act_implement_predictive",
+      level: 4,
+      levelLabel: "Optimized",
+      help: "You use statistical models or ML algorithms to predict outcomes like demand, churn, or cash flow — beyond simple trending.",
     },
   ],
 
