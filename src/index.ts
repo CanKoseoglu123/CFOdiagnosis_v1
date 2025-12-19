@@ -11,7 +11,10 @@ import { toAggregateSpec } from "./specs/toAggregateSpec";
 import { buildReport } from "./reports";
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "https://cfodiagnosisv1.vercel.app",
+  credentials: true,
+}));
 app.use(express.json());
 
 // ------------------------------------------------------------------
