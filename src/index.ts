@@ -383,7 +383,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     run_id: runId,
     spec,
     aggregateResult,
-    inputs: (inputs ?? []).map((i) => ({
+    inputs: (inputs ?? []).map((i: { question_id: string; value: unknown }) => ({
       question_id: i.question_id,
       value: i.value,
     })),

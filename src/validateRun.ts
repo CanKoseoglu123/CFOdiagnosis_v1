@@ -25,7 +25,7 @@ export async function validateRun(
 
   const errors: string[] = [];
   const inputMap = new Map<string, unknown>(
-    inputs.map((i) => [i.question_id, i.value])
+    inputs.map((i: { question_id: string; value: unknown }) => [i.question_id, i.value])
   );
 
   // 2. Validate against SPEC

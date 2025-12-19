@@ -70,6 +70,7 @@ export default function DiagnosticInput() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [runId, setRunId] = useState(null);
+
   const [answers, setAnswers] = useState({});
   const [helpVisible, setHelpVisible] = useState({});
   const [status, setStatus] = useState("idle");

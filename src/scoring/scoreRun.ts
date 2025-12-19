@@ -50,7 +50,7 @@ export async function scoreRun(
   }
 
   const inputMap = new Map<string, unknown>(
-    (inputs ?? []).map((i) => [i.question_id, i.value])
+    (inputs ?? []).map((i: { question_id: string; value: unknown }) => [i.question_id, i.value])
   );
 
   // 4) Score ALL questions from the Spec
