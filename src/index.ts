@@ -98,12 +98,15 @@ app.get("/spec/questions", (_req, res) => {
 
 // Full spec endpoint - Single Source of Truth for frontend
 app.get("/api/spec", (_req, res) => {
-  const spec = SpecRegistry.get("v2.6.4");
+  const spec = SpecRegistry.getWithThemes();
   res.json({
     version: spec.version,
     pillars: spec.pillars,
     questions: spec.questions,
     maturityGates: spec.maturityGates,
+    objectives: spec.objectives || [],
+    actions: spec.actions || [],
+    themes: (spec as any).themes || [],
   });
 });
 

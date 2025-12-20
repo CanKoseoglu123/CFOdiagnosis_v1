@@ -1,14 +1,20 @@
 // src/DiagnosticInput.jsx
 // VS14: Content Hydration - Questions fetched from /api/spec (Single Source of Truth)
-// Renders hierarchy: Pillar -> Level -> Question
+// v2.7.0: Renders hierarchy: Theme -> Objective -> Question (grouped by theme_order)
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle, Loader, ChevronDown, ChevronRight } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+const THEME_COLORS = {
+  foundation: { bg: "#FEF3C7", text: "#92400E", accent: "#F59E0B", icon: "🏛️" },
+  future: { bg: "#DBEAFE", text: "#1E40AF", accent: "#3B82F6", icon: "🔮" },
+  intelligence: { bg: "#E0E7FF", text: "#4338CA", accent: "#6366F1", icon: "🧠" },
+};
 
 const LEVEL_COLORS = {
   1: { bg: "#FEF3C7", text: "#92400E", accent: "#F59E0B" },
@@ -31,8 +37,9 @@ const QuestionCard = ({ question, answer, onAnswer, showHelp, onToggleHelp }) =>
   return (
     <div style={{ background: "#FFF", border: answer !== null ? "2px solid #4F46E5" : "1px solid #E5E7EB", borderRadius: 12, padding: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {question.is_critical && <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>CRITICAL</span>}
+          <span style={{ background: lc.bg, color: lc.text, padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>L{question.level}</span>
         </div>
         {question.help && (
           <button onClick={onToggleHelp} style={{ background: showHelp ? "#EEF2FF" : "transparent", border: "none", borderRadius: 8, padding: 6, cursor: "pointer", color: showHelp ? "#4F46E5" : "#9CA3AF" }}>
@@ -54,14 +61,14 @@ const QuestionCard = ({ question, answer, onAnswer, showHelp, onToggleHelp }) =>
   );
 };
 
-const LevelSection = ({ level, label, questions, answers, onAnswer, helpVisible, onToggleHelp }) => {
+const ObjectiveSection = ({ objective, questions, answers, onAnswer, helpVisible, onToggleHelp }) => {
   const [expanded, setExpanded] = useState(true);
-  const lc = LEVEL_COLORS[level] || LEVEL_COLORS[1];
-  const answeredInLevel = questions.filter(q => answers[q.id] !== undefined).length;
-  const allAnswered = answeredInLevel === questions.length;
+  const lc = LEVEL_COLORS[objective.level] || LEVEL_COLORS[1];
+  const answeredInObjective = questions.filter(q => answers[q.id] !== undefined).length;
+  const allAnswered = answeredInObjective === questions.length;
 
   return (
-    <div style={{ marginBottom: 24 }}>
+    <div style={{ marginBottom: 16 }}>
       <button
         onClick={() => setExpanded(!expanded)}
         style={{
@@ -70,23 +77,28 @@ const LevelSection = ({ level, label, questions, answers, onAnswer, helpVisible,
           alignItems: "center",
           justifyContent: "space-between",
           padding: "12px 16px",
-          background: lc.bg,
-          border: `2px solid ${lc.accent}`,
+          background: "#FFF",
+          border: `1px solid ${lc.accent}`,
           borderRadius: 10,
           cursor: "pointer",
           marginBottom: expanded ? 12 : 0,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {expanded ? <ChevronDown size={20} color={lc.text} /> : <ChevronRight size={20} color={lc.text} />}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 700, fontSize: 14, color: lc.text }}>Level {level}: {label}</span>
-            <span style={{ fontSize: 12, color: lc.text, opacity: 0.8 }}>({questions.length} questions)</span>
+          {expanded ? <ChevronDown size={18} color={lc.text} /> : <ChevronRight size={18} color={lc.text} />}
+          <div style={{ textAlign: "left" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontWeight: 600, fontSize: 14, color: "#111827" }}>{objective.name}</span>
+              <span style={{ background: lc.bg, color: lc.text, padding: "2px 6px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>L{objective.level}</span>
+            </div>
+            {objective.purpose && (
+              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{objective.purpose}</div>
+            )}
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {allAnswered && <CheckCircle size={18} color="#22C55E" />}
-          <span style={{ fontSize: 13, fontWeight: 600, color: lc.text }}>{answeredInLevel}/{questions.length}</span>
+          {allAnswered && <CheckCircle size={16} color="#22C55E" />}
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#6B7280" }}>{answeredInObjective}/{questions.length}</span>
         </div>
       </button>
       {expanded && (
@@ -107,50 +119,68 @@ const LevelSection = ({ level, label, questions, answers, onAnswer, helpVisible,
   );
 };
 
-const PillarSection = ({ pillar, questions, maturityGates, answers, onAnswer, helpVisible, onToggleHelp }) => {
-  const pillarQuestions = questions.filter(q => q.pillar === pillar.id);
-  const answeredInPillar = pillarQuestions.filter(q => answers[q.id] !== undefined).length;
+const ThemeSection = ({ theme, objectives, questions, answers, onAnswer, helpVisible, onToggleHelp }) => {
+  const [expanded, setExpanded] = useState(true);
+  const tc = THEME_COLORS[theme.code] || THEME_COLORS.foundation;
 
-  // Group questions by level
-  const questionsByLevel = {};
-  pillarQuestions.forEach(q => {
-    const level = q.level || 1;
-    if (!questionsByLevel[level]) questionsByLevel[level] = [];
-    questionsByLevel[level].push(q);
-  });
-
-  // Get level labels from maturityGates
-  const levelLabels = {};
-  maturityGates.forEach(gate => {
-    levelLabels[gate.level] = gate.label;
-  });
-
-  const levels = Object.keys(questionsByLevel).map(Number).sort((a, b) => a - b);
+  // Get questions for all objectives in this theme
+  const themeQuestionIds = new Set(
+    objectives.flatMap(obj =>
+      questions.filter(q => q.objective_id === obj.id).map(q => q.id)
+    )
+  );
+  const themeQuestions = questions.filter(q => themeQuestionIds.has(q.id));
+  const answeredInTheme = themeQuestions.filter(q => answers[q.id] !== undefined).length;
+  const allAnswered = answeredInTheme === themeQuestions.length;
 
   return (
     <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, padding: "16px 20px", background: "#0F172A", borderRadius: 12 }}>
-        <div>
-          <div style={{ fontSize: 11, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 4 }}>PILLAR</div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#FFF", margin: 0 }}>{pillar.name}</h2>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "16px 20px",
+          background: tc.bg,
+          border: `2px solid ${tc.accent}`,
+          borderRadius: 12,
+          cursor: "pointer",
+          marginBottom: expanded ? 16 : 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {expanded ? <ChevronDown size={20} color={tc.text} /> : <ChevronRight size={20} color={tc.text} />}
+          <span style={{ fontSize: 24 }}>{tc.icon}</span>
+          <div style={{ textAlign: "left" }}>
+            <div style={{ fontWeight: 700, fontSize: 16, color: tc.text }}>{theme.name}</div>
+            <div style={{ fontSize: 12, color: tc.text, opacity: 0.8 }}>{theme.displayName}</div>
+          </div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 11, color: "#94A3B8" }}>Progress</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#FFF" }}>{answeredInPillar}/{pillarQuestions.length}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {allAnswered && <CheckCircle size={20} color="#22C55E" />}
+          <span style={{ fontSize: 14, fontWeight: 600, color: tc.text }}>{answeredInTheme}/{themeQuestions.length}</span>
         </div>
-      </div>
-      {levels.map(level => (
-        <LevelSection
-          key={level}
-          level={level}
-          label={levelLabels[level] || `Level ${level}`}
-          questions={questionsByLevel[level]}
-          answers={answers}
-          onAnswer={onAnswer}
-          helpVisible={helpVisible}
-          onToggleHelp={onToggleHelp}
-        />
-      ))}
+      </button>
+      {expanded && (
+        <div style={{ paddingLeft: 8 }}>
+          {objectives.map(objective => {
+            const objQuestions = questions.filter(q => q.objective_id === objective.id);
+            return (
+              <ObjectiveSection
+                key={objective.id}
+                objective={objective}
+                questions={objQuestions}
+                answers={answers}
+                onAnswer={onAnswer}
+                helpVisible={helpVisible}
+                onToggleHelp={onToggleHelp}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
@@ -245,7 +275,27 @@ export default function DiagnosticInput() {
 
   const questions = spec?.questions || [];
   const pillars = spec?.pillars || [];
+  const objectives = spec?.objectives || [];
   const maturityGates = spec?.maturityGates || [];
+  const themes = spec?.themes || [];
+
+  // v2.7.0: Sort objectives by theme_order for deterministic UI rendering
+  const sortedObjectives = useMemo(() => {
+    return [...objectives].sort((a, b) => (a.theme_order || 0) - (b.theme_order || 0));
+  }, [objectives]);
+
+  // v2.7.0: Group objectives by theme
+  const groupedByTheme = useMemo(() => {
+    if (themes.length === 0) {
+      // Fallback to single group if no themes (v2.6.4 compatibility)
+      return null;
+    }
+
+    return themes.map(theme => ({
+      ...theme,
+      objectives: sortedObjectives.filter(obj => obj.theme === theme.code)
+    })).filter(group => group.objectives.length > 0);
+  }, [themes, sortedObjectives]);
 
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = questions.length;
@@ -320,6 +370,78 @@ export default function DiagnosticInput() {
     );
   }
 
+  // Fallback rendering for v2.6.4 (no themes)
+  const renderLegacyView = () => (
+    <>
+      {pillars.map(pillar => {
+        const pillarQuestions = questions.filter(q => q.pillar === pillar.id);
+        const questionsByLevel = {};
+        pillarQuestions.forEach(q => {
+          const level = q.level || 1;
+          if (!questionsByLevel[level]) questionsByLevel[level] = [];
+          questionsByLevel[level].push(q);
+        });
+        const levelLabels = {};
+        maturityGates.forEach(gate => { levelLabels[gate.level] = gate.label; });
+        const levels = Object.keys(questionsByLevel).map(Number).sort((a, b) => a - b);
+
+        return (
+          <div key={pillar.id} style={{ marginBottom: 32 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, padding: "16px 20px", background: "#0F172A", borderRadius: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 4 }}>PILLAR</div>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: "#FFF", margin: 0 }}>{pillar.name}</h2>
+              </div>
+            </div>
+            {levels.map(level => {
+              const levelQuestions = questionsByLevel[level];
+              const answeredInLevel = levelQuestions.filter(q => answers[q.id] !== undefined).length;
+              const lc = LEVEL_COLORS[level] || LEVEL_COLORS[1];
+              return (
+                <div key={level} style={{ marginBottom: 24 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "8px 12px", background: lc.bg, borderRadius: 8 }}>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: lc.text }}>Level {level}: {levelLabels[level]}</span>
+                    <span style={{ fontSize: 12, color: lc.text }}>({answeredInLevel}/{levelQuestions.length})</span>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {levelQuestions.map(q => (
+                      <QuestionCard
+                        key={q.id}
+                        question={q}
+                        answer={answers[q.id] ?? null}
+                        onAnswer={saveAnswer}
+                        showHelp={helpVisible[q.id] || false}
+                        onToggleHelp={() => toggleHelp(q.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </>
+  );
+
+  // v2.7.0 theme-based rendering
+  const renderThemeView = () => (
+    <>
+      {groupedByTheme.map(themeGroup => (
+        <ThemeSection
+          key={themeGroup.code}
+          theme={themeGroup}
+          objectives={themeGroup.objectives}
+          questions={questions}
+          answers={answers}
+          onAnswer={saveAnswer}
+          helpVisible={helpVisible}
+          onToggleHelp={toggleHelp}
+        />
+      ))}
+    </>
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
       <header style={{ background: "#0F172A", color: "#FFF", padding: "24px 0" }}>
@@ -345,18 +467,32 @@ export default function DiagnosticInput() {
             </div>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>Finance Maturity Diagnostic</h2>
             <p style={{ color: "#6B7280", fontSize: 15, lineHeight: 1.6, marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
-              Answer {totalQuestions} questions across {pillars.length} pillar{pillars.length !== 1 ? "s" : ""} to receive a personalized maturity assessment with actionable recommendations.
+              Answer {totalQuestions} questions across {themes.length > 0 ? `${themes.length} themes` : `${pillars.length} pillar${pillars.length !== 1 ? "s" : ""}`} to receive a personalized maturity assessment with actionable recommendations.
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
-              {maturityGates.filter(g => g.level > 0).map(gate => {
-                const lc = LEVEL_COLORS[gate.level] || LEVEL_COLORS[1];
-                return (
-                  <div key={gate.level} style={{ background: lc.bg, color: lc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
-                    L{gate.level}: {gate.label}
-                  </div>
-                );
-              })}
-            </div>
+            {themes.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
+                {themes.map(theme => {
+                  const tc = THEME_COLORS[theme.code] || THEME_COLORS.foundation;
+                  return (
+                    <div key={theme.code} style={{ background: tc.bg, color: tc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>{tc.icon}</span> {theme.name}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {themes.length === 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
+                {maturityGates.filter(g => g.level > 0).map(gate => {
+                  const lc = LEVEL_COLORS[gate.level] || LEVEL_COLORS[1];
+                  return (
+                    <div key={gate.level} style={{ background: lc.bg, color: lc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+                      L{gate.level}: {gate.label}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             <button onClick={createRun} style={{ background: "#4F46E5", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10 }}>
               <Play size={20} /> Start Assessment
             </button>
@@ -381,18 +517,7 @@ export default function DiagnosticInput() {
               <ProgressBar current={answeredCount} total={totalQuestions} />
             </div>
 
-            {pillars.map(pillar => (
-              <PillarSection
-                key={pillar.id}
-                pillar={pillar}
-                questions={questions}
-                maturityGates={maturityGates}
-                answers={answers}
-                onAnswer={saveAnswer}
-                helpVisible={helpVisible}
-                onToggleHelp={toggleHelp}
-              />
-            ))}
+            {groupedByTheme ? renderThemeView() : renderLegacyView()}
 
             <div style={{ marginTop: 32, textAlign: "center" }}>
               <button onClick={submitDiagnostic} disabled={!allAnswered} style={{ background: allAnswered ? "#4F46E5" : "#D1D5DB", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: allAnswered ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 10 }}>
