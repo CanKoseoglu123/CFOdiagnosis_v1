@@ -194,6 +194,12 @@ useEffect(() => {
           <div>
             <div style={{ fontSize: 10, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 6 }}>FINANCE DIAGNOSTIC</div>
             <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Maturity Assessment Report</h1>
+            {report.context?.company_name && (
+              <div style={{ fontSize: 14, color: "#E2E8F0", marginTop: 6 }}>
+                {report.context.company_name}
+                {report.context.industry && <span style={{ color: "#94A3B8" }}> • {report.context.industry}</span>}
+              </div>
+            )}
             <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 4 }}>Generated {formatDate(report.generated_at)} • {report.spec_version}</div>
           </div>
           <div className="no-print" style={{ display: "flex", gap: 12 }}>

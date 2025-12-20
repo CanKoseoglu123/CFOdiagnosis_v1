@@ -3,7 +3,7 @@
 // Renders hierarchy: Pillar -> Level -> Question
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle, Loader, ChevronDown, ChevronRight } from "lucide-react";
@@ -157,17 +157,74 @@ const PillarSection = ({ pillar, questions, maturityGates, answers, onAnswer, he
 
 export default function DiagnosticInput() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const [runId, setRunId] = useState(null);
+
+  // VS18: Check for runId in URL (from setup redirect)
+  const urlRunId = searchParams.get("runId");
+  const [runId, setRunId] = useState(urlRunId);
+  const [runContext, setRunContext] = useState(null);
 
   // Spec data from backend (Single Source of Truth)
   const [spec, setSpec] = useState(null);
   const [loadingSpec, setLoadingSpec] = useState(true);
+  const [verifyingRun, setVerifyingRun] = useState(!!urlRunId);
 
   const [answers, setAnswers] = useState({});
   const [helpVisible, setHelpVisible] = useState({});
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState(urlRunId ? "answering" : "idle");
   const [error, setError] = useState(null);
+
+  // Get auth token from Supabase session
+  const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    return {
+      "Content-Type": "application/json",
+      ...(token && { "Authorization": `Bearer ${token}` }),
+    };
+  };
+
+  // VS18: Verify run has completed setup if runId provided
+  useEffect(() => {
+    if (!urlRunId) {
+      setVerifyingRun(false);
+      return;
+    }
+
+    const verifyRun = async () => {
+      try {
+        const headers = await getAuthHeaders();
+        const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${urlRunId}`, { headers });
+
+        if (!response.ok) {
+          setError("Diagnostic run not found");
+          setStatus("idle");
+          setRunId(null);
+          return;
+        }
+
+        const run = await response.json();
+
+        // Gate: If setup not completed, redirect to setup
+        if (!run.setup_completed_at) {
+          navigate(`/run/${urlRunId}/setup`);
+          return;
+        }
+
+        // Setup completed, allow assessment
+        setRunContext(run.context);
+        setStatus("answering");
+      } catch (err) {
+        setError(`Failed to verify run: ${err.message}`);
+        setStatus("idle");
+      } finally {
+        setVerifyingRun(false);
+      }
+    };
+
+    verifyRun();
+  }, [urlRunId, navigate]);
 
   // Fetch full spec from backend on mount
   useEffect(() => {
@@ -194,16 +251,7 @@ export default function DiagnosticInput() {
   const totalQuestions = questions.length;
   const allAnswered = answeredCount === totalQuestions && totalQuestions > 0;
 
-  // Get auth token from Supabase session
-  const getAuthHeaders = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    return {
-      "Content-Type": "application/json",
-      ...(token && { "Authorization": `Bearer ${token}` }),
-    };
-  };
-
+  // VS18: Create run and redirect to setup page
   const createRun = async () => {
     try {
       setStatus("creating");
@@ -215,9 +263,8 @@ export default function DiagnosticInput() {
       });
       if (!response.ok) throw new Error("Failed to create diagnostic run");
       const data = await response.json();
-      setRunId(data.id);
-      setAnswers({});
-      setStatus("answering");
+      // Redirect to setup page instead of directly starting questions
+      navigate(`/run/${data.id}/setup`);
     } catch (err) {
       setError(err.message);
       setStatus("idle");
@@ -260,8 +307,8 @@ export default function DiagnosticInput() {
 
   const toggleHelp = (qid) => setHelpVisible((prev) => ({ ...prev, [qid]: !prev[qid] }));
 
-  // Loading state
-  if (loadingSpec) {
+  // Loading state (spec loading or verifying run)
+  if (loadingSpec || verifyingRun) {
     return (
       <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>

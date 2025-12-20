@@ -145,6 +145,68 @@ app.post("/diagnostic-runs", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// VS18 — Get diagnostic run details
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data: run, error } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, spec_version, context, setup_completed_at, created_at")
+    .eq("id", runId)
+    .single();
+
+  if (error || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  res.json(run);
+});
+
+// ------------------------------------------------------------------
+// VS18 — Complete setup (save context, mark setup complete)
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/setup", async (req, res) => {
+  const runId = req.params.id;
+  const { company_name, industry } = req.body;
+
+  if (!company_name || !industry) {
+    return res.status(400).json({
+      error: "company_name and industry are required",
+    });
+  }
+
+  // Verify run exists
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, setup_completed_at")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Update context and mark setup complete
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .update({
+      context: { company_name, industry },
+      setup_completed_at: new Date().toISOString(),
+      status: "in_progress",
+    })
+    .eq("id", runId)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
+// ------------------------------------------------------------------
 // VS2 — Persist diagnostic input
 // ------------------------------------------------------------------
 app.post("/diagnostic-inputs", async (req, res) => {
@@ -356,7 +418,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version")
+    .select("id, status, spec_version, context")
     .eq("id", runId)
     .single();
 
@@ -414,7 +476,11 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     })),
   });
 
-  res.json(report);
+  // VS18: Include context in report response
+  res.json({
+    ...report,
+    context: run.context || {},
+  });
 });
 
 // ------------------------------------------------------------------
