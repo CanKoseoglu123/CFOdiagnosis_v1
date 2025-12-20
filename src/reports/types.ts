@@ -2,7 +2,7 @@
 // VS6/VS8 — Finance Report DTO Contract
 // Strict typing: levels are numbers, never null (always at least 0).
 
-import { ActionPlanItem } from "../actions/types";
+import { ActionPlanItem, DerivedAction } from "../actions/types";
 
 // === Maturity Status ===
 
@@ -69,6 +69,9 @@ export interface FinanceReportDTO {
   // Per-pillar breakdown
   pillars: PillarReportDTO[];
 
-  // VS8: Prioritized action plan
+  // VS8: Prioritized action plan (legacy, question-based)
   actions: ActionPlanItem[];
+
+  // VS20: Objective-based derived actions (priority computed, not hardcoded)
+  derived_actions?: DerivedAction[];
 }

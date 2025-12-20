@@ -2,4 +2,5 @@
 // Public API for the actions module
 
 export { deriveActions } from "./derive";
-export type { ActionPlanItem } from "./types";
+export { deriveActionsFromObjectives } from "./deriveFromObjectives";  // VS20
+export type { ActionPlanItem, DerivedAction } from "./types";

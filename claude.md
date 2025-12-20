@@ -316,6 +316,7 @@ npm run build        # Vite build to dist/
 | VS14: Content Hydration | ✅ Complete |
 | VS18: Context Intake | ✅ Complete |
 | VS19: Critical Risk Engine | ✅ Complete |
+| VS20: Dynamic Action Engine | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
 
 ---
@@ -427,6 +428,40 @@ npm run build        # Vite build to dist/
 - Displays severity and pillar name
 
 **Tests:** `npm run test:vs19` (15 test cases)
+
+---
+
+## Dynamic Action Engine (VS20)
+
+**Problem solved:** Actions were hardcoded per question, priority was static
+
+**Solution:** Actions attach to Objectives (L3) with priority derived dynamically
+
+**Key concepts:**
+- Objective layer groups related questions (e.g., "Budget Foundation" = annual budget + budget owner)
+- Priority is computed at runtime:
+  - HIGH: Objective has critical risk OR blocks maturity advancement
+  - MEDIUM: Objective incomplete but not critical/blocking
+- Satisfied objectives do not generate actions
+
+**New types:**
+- `SpecObjective`: Groups questions, links to action
+- `DerivedAction`: Runtime-computed action with derived_priority
+
+**New module:** `src/actions/deriveFromObjectives.ts`
+- `deriveActionsFromObjectives(spec, inputs, criticalRisks, maturity)` - pure function
+- Returns sorted, deduplicated actions
+
+**Report changes:**
+- `derived_actions?: DerivedAction[]` added to FinanceReportDTO
+- Both legacy `actions` and new `derived_actions` returned for backward compat
+
+**Frontend changes:**
+- `DerivedActionCard` component displays objective-based actions
+- Shows objective name, maturity level, trigger reason
+- Falls back to legacy actions if derived_actions empty
+
+**Tests:** `npm run test:vs20` (29 test cases)
 
 ---
 

@@ -1,5 +1,6 @@
 // src/specs/v2.6.4.ts
 // Finance Diagnostic Spec — FP&A Pillar (MVP)
+// VS20: Introduced Objective layer per Spec Section 1
 
 import { Spec } from "./types";
 
@@ -18,7 +19,46 @@ export const SPEC: Spec = {
   ],
 
   // ============================================================
+  // VS20: OBJECTIVES (Group related questions, attach actions here)
+  // ============================================================
+  objectives: [
+    {
+      id: "obj_budget_foundation",
+      pillar_id: "fpa",
+      level: 1,
+      name: "Budget Foundation",
+      description: "Establish formal budgeting processes with clear ownership and leadership approval.",
+      action_id: "act_create_budget",  // Primary action for this objective
+    },
+    {
+      id: "obj_performance_monitoring",
+      pillar_id: "fpa",
+      level: 2,
+      name: "Performance Monitoring",
+      description: "Implement variance tracking and forward-looking forecasts to monitor financial performance.",
+      action_id: "act_implement_variance",
+    },
+    {
+      id: "obj_advanced_forecasting",
+      pillar_id: "fpa",
+      level: 3,
+      name: "Advanced Forecasting",
+      description: "Use driver-based models and scenario analysis for sophisticated financial planning.",
+      action_id: "act_implement_drivers",
+    },
+    {
+      id: "obj_integrated_intelligence",
+      pillar_id: "fpa",
+      level: 4,
+      name: "Integrated Intelligence",
+      description: "Achieve cross-functional planning integration and leverage predictive analytics.",
+      action_id: "act_integrate_planning",
+    },
+  ],
+
+  // ============================================================
   // QUESTIONS (Evidence Items)
+  // VS20: Questions now link to objectives via objective_id
   // ============================================================
   questions: [
     // --- Level 1: Emerging ---
@@ -29,6 +69,7 @@ export const SPEC: Spec = {
       text: "Do you have a documented annual budget that is formally approved by leadership?",
       is_critical: true,
       trigger_action_id: "act_create_budget",
+      objective_id: "obj_budget_foundation",  // VS20
       level: 1,
       levelLabel: "Emerging",
       help: "This means a written budget document that covers all revenue and expenses, reviewed and signed off by executives before the fiscal year starts.",
@@ -40,6 +81,7 @@ export const SPEC: Spec = {
       text: "Is there a single person accountable for owning and maintaining the budget process?",
       is_critical: true,
       trigger_action_id: "act_assign_budget_owner",
+      objective_id: "obj_budget_foundation",  // VS20
       level: 1,
       levelLabel: "Emerging",
       help: "One named individual (not a committee) who is responsible for the budget timeline, templates, consolidation, and coordination.",
@@ -53,6 +95,7 @@ export const SPEC: Spec = {
       text: "Do you perform monthly variance analysis comparing actuals to budget?",
       is_critical: false,
       trigger_action_id: "act_implement_variance",
+      objective_id: "obj_performance_monitoring",  // VS20
       level: 2,
       levelLabel: "Defined",
       help: "A regular monthly process that compares what actually happened to what was budgeted, with explanations for significant differences.",
@@ -64,6 +107,7 @@ export const SPEC: Spec = {
       text: "Do you maintain a rolling forecast that is updated at least quarterly?",
       is_critical: false,
       trigger_action_id: "act_implement_forecast",
+      objective_id: "obj_performance_monitoring",  // VS20
       level: 2,
       levelLabel: "Defined",
       help: "A forecast that always looks 4-6 quarters ahead and is refreshed at least every quarter with the latest information.",
@@ -77,6 +121,7 @@ export const SPEC: Spec = {
       text: "Is your financial forecast driver-based, linked to operational metrics (e.g., headcount, pipeline, units)?",
       is_critical: false,
       trigger_action_id: "act_implement_drivers",
+      objective_id: "obj_advanced_forecasting",  // VS20
       level: 3,
       levelLabel: "Managed",
       help: "Your forecast is built from operational assumptions (like number of customers, average deal size) rather than just trending historical numbers.",
@@ -88,6 +133,7 @@ export const SPEC: Spec = {
       text: "Do you routinely model multiple scenarios (base case, upside, downside) for planning?",
       is_critical: false,
       trigger_action_id: "act_implement_scenarios",
+      objective_id: "obj_advanced_forecasting",  // VS20
       level: 3,
       levelLabel: "Managed",
       help: "You regularly create best-case, worst-case, and expected-case versions of your forecast to prepare for different outcomes.",
@@ -101,6 +147,7 @@ export const SPEC: Spec = {
       text: "Is financial planning formally integrated with operational planning (sales, HR, operations)?",
       is_critical: false,
       trigger_action_id: "act_integrate_planning",
+      objective_id: "obj_integrated_intelligence",  // VS20
       level: 4,
       levelLabel: "Optimized",
       help: "Finance and operational teams use shared assumptions, aligned timelines, and connected systems — not separate spreadsheets.",
@@ -112,6 +159,7 @@ export const SPEC: Spec = {
       text: "Do you use predictive analytics or machine learning to improve forecast accuracy?",
       is_critical: false,
       trigger_action_id: "act_implement_predictive",
+      objective_id: "obj_integrated_intelligence",  // VS20
       level: 4,
       levelLabel: "Optimized",
       help: "You use statistical models or ML algorithms to predict outcomes like demand, churn, or cash flow — beyond simple trending.",

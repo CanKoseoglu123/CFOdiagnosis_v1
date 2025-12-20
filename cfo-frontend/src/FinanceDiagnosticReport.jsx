@@ -108,6 +108,53 @@ const ActionCard = ({ action, index }) => {
   );
 };
 
+// VS20: DerivedActionCard - displays objective-based actions with computed priority
+const DerivedActionCard = ({ action, index }) => {
+  const [open, setOpen] = useState(false);
+  const priorityColors = {
+    HIGH: { bg: "#FEE2E2", text: "#991B1B", border: "#FECACA" },
+    MEDIUM: { bg: "#DBEAFE", text: "#1E40AF", border: "#BFDBFE" },
+  };
+  const c = priorityColors[action.derived_priority] || priorityColors.MEDIUM;
+  const triggerLabel = {
+    critical_risk: "Critical Risk",
+    maturity_blocker: "Blocks Maturity",
+    objective_incomplete: "Objective Gap",
+  };
+  return (
+    <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
+      <div onClick={() => setOpen(!open)} style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", color: c.text, fontWeight: 700, fontSize: 13 }}>{index + 1}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 600, color: "#111827", fontSize: 14 }}>{action.title}</div>
+          <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
+            <span style={{ background: c.bg, color: c.text, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{action.derived_priority}</span>
+            <span style={{ background: "#F3F4F6", color: "#6B7280", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 500 }}>L{action.level}</span>
+            <span style={{ background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 500 }}>{action.objective_name}</span>
+          </div>
+        </div>
+        <ChevronRight size={18} color="#9CA3AF" style={{ transform: open ? "rotate(90deg)" : "rotate(0)" }} />
+      </div>
+      {open && (
+        <div style={{ padding: "14px 16px", background: "#F9FAFB", borderTop: "1px solid #E5E7EB" }}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>TRIGGERED BY</div>
+            <div style={{ color: "#374151", fontSize: 13 }}>{triggerLabel[action.trigger_reason] || action.trigger_reason}</div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>WHAT TO DO</div>
+            <div style={{ color: "#374151", fontSize: 13 }}>{action.description}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>WHY IT MATTERS</div>
+            <div style={{ color: "#374151", fontSize: 13 }}>{action.rationale}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const PillarCard = ({ pillar }) => {
   const c = colors.maturity[pillar.maturity.achieved_level] || colors.maturity[0];
   return (
@@ -245,7 +292,7 @@ useEffect(() => {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 60, height: 60, borderRadius: 10, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}><Zap size={22} color="#4F46E5" /></div>
-            <div><div style={{ fontSize: 10, color: "#6B7280" }}>ACTIONS</div><div style={{ fontSize: 20, fontWeight: 700 }}>{report.actions.length}</div></div>
+            <div><div style={{ fontSize: 10, color: "#6B7280" }}>ACTIONS</div><div style={{ fontSize: 20, fontWeight: 700 }}>{(report.derived_actions?.length || report.actions.length)}</div></div>
           </div>
         </div>
       </div>
@@ -270,7 +317,12 @@ useEffect(() => {
               )}
               <div>
                 <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><Zap size={18} color="#4F46E5" /> Priority Actions</h2>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{report.actions.slice(0, 3).map((a, i) => <ActionCard key={a.id} action={a} index={i} />)}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {report.derived_actions?.length > 0
+                    ? report.derived_actions.slice(0, 3).map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} />)
+                    : report.actions.slice(0, 3).map((a, i) => <ActionCard key={a.id} action={a} index={i} />)
+                  }
+                </div>
               </div>
             </div>
             <div>
@@ -292,7 +344,12 @@ useEffect(() => {
         {tab === "actions" && (
           <div style={{ maxWidth: 700 }}>
             <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Action Plan</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} />)}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {report.derived_actions?.length > 0
+                ? report.derived_actions.map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} />)
+                : report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} />)
+              }
+            </div>
           </div>
         )}
         {tab === "pillars" && (

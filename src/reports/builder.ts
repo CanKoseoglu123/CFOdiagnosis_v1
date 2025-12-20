@@ -12,7 +12,7 @@ import {
 } from "./types";
 import { AggregateResult } from "../results/aggregate";
 import { evaluateMaturity } from "../maturity";
-import { deriveActions } from "../actions";
+import { deriveActions, deriveActionsFromObjectives } from "../actions";
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 
 // ------------------------------------------------------------------
@@ -93,12 +93,21 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     actions: [], // Placeholder, will be replaced
   };
 
-  // VS8: Derive actions from critical risks and maturity blockers
+  // VS8: Derive actions from critical risks and maturity blockers (legacy)
   const actions = deriveActions(reportWithoutActions, spec);
+
+  // VS20: Derive objective-based actions with computed priority
+  const derivedActions = deriveActionsFromObjectives(
+    spec,
+    inputs,
+    allCriticalRisks,
+    overallMaturity
+  );
 
   return {
     ...reportWithoutActions,
     actions,
+    derived_actions: derivedActions,
   };
 }
 
