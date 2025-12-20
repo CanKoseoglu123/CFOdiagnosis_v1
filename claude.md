@@ -292,8 +292,29 @@ npm run build        # Vite build to dist/
 |---------|--------|
 | VS1-VS12: Core diagnostic flow | ✅ Complete |
 | VS16: Production deployment | ✅ Complete |
-| VS13: PDF Export | ❌ Pending |
+| VS13: PDF Export | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
+
+---
+
+## PDF Export (VS13)
+
+**Implementation:** Browser-native print using `react-to-print`
+
+**How it works:**
+1. User clicks "Download PDF" button on report page
+2. Browser print dialog opens
+3. User selects "Save as PDF" destination
+4. PDF preserves colors, hides interactive elements
+
+**Key files:**
+- `cfo-frontend/src/FinanceDiagnosticReport.jsx` - Print button + ref
+- `cfo-frontend/src/index.css` - `@media print` styles
+
+**CSS utilities:**
+- `.no-print` - Hides elements in print (buttons, tabs)
+- `[data-print-card]` - Prevents page breaks inside cards
+- `-webkit-print-color-adjust: exact` - Preserves background colors
 
 ---
 
