@@ -293,6 +293,7 @@ npm run build        # Vite build to dist/
 | VS1-VS12: Core diagnostic flow | ✅ Complete |
 | VS16: Production deployment | ✅ Complete |
 | VS13: PDF Export | ✅ Complete |
+| VS14: Content Hydration | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
 
 ---
@@ -318,17 +319,45 @@ npm run build        # Vite build to dist/
 
 ---
 
+## Content Hydration (VS14)
+
+**Problem solved:** Questions were hardcoded in frontend (DRY violation)
+
+**Solution:** Single Source of Truth - frontend fetches spec from backend
+
+**New endpoint:** `GET /api/spec`
+```json
+{
+  "version": "v2.6.4",
+  "pillars": [...],
+  "questions": [...],
+  "maturityGates": [...]
+}
+```
+
+**Frontend hierarchy:**
+- Pillar (dark header with name + progress)
+  - Level 1: Emerging (collapsible, color-coded)
+    - Question cards
+  - Level 2: Defined
+    - Question cards
+  - ...
+
+**Key files:**
+- `src/index.ts` - `/api/spec` endpoint
+- `cfo-frontend/src/DiagnosticInput.jsx` - Fetches and renders hierarchy
+
+---
+
 ## Known Issues & Notes
 
 1. **node_modules committed**: Some node_modules were accidentally committed. Consider cleaning with `git rm -r --cached node_modules` and updating `.gitignore`
 
 2. **CFOdiagnosis_v2**: Separate repo exists but is just a placeholder. The real frontend is in `CFOdiagnosis_v1/cfo-frontend/`
 
-3. **Questions are hardcoded**: Current questions are in `DiagnosticInput.jsx` (frontend) and should match spec
+3. **TypeScript strict mode**: Backend uses strict TypeScript. Map callbacks need explicit type annotations.
 
-4. **TypeScript strict mode**: Backend uses strict TypeScript. Map callbacks need explicit type annotations.
-
-5. **erasableSyntaxOnly**: Frontend tsconfig has this enabled - cannot use `enum`, use `const` objects instead
+4. **erasableSyntaxOnly**: Frontend tsconfig has this enabled - cannot use `enum`, use `const` objects instead
 
 ---
 
