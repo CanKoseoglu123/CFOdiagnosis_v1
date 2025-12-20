@@ -26,12 +26,15 @@ export interface SpecPillar {
   id: string;
   name: string;                    // Human-readable name
   weight: number;
+  description?: string;            // Optional description of the pillar
 }
 
 export interface MaturityGateSpec {
   level: number;
   label: string;                    // "Ad-hoc", "Emerging", etc.
   required_evidence_ids: string[];  // Questions that must be TRUE
+  description?: string;             // Optional description of this maturity level
+  threshold?: number;               // Optional pass threshold (default 1.0 = all required)
 }
 
 export interface ActionDefinition {
