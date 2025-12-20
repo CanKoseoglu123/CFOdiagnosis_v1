@@ -78,6 +78,7 @@ CFOdiagnosis_v1/
 │   ├── src/
 │   │   ├── main.jsx              # App entry point
 │   │   ├── App.jsx               # Routes, auth, navigation
+│   │   ├── SetupPage.jsx         # Context intake form (VS18)
 │   │   ├── DiagnosticInput.jsx   # Assessment questionnaire UI
 │   │   ├── FinanceDiagnosticReport.jsx  # Results display
 │   │   ├── context/
@@ -88,6 +89,10 @@ CFOdiagnosis_v1/
 │   │       └── supabase.js       # Supabase client
 │   ├── package.json
 │   └── vite.config.js
+│
+├── supabase/
+│   └── migrations/               # Database migrations
+│       └── 20241220_vs18_context_intake.sql
 │
 ├── spec/
 │   └── SPEC_v2.6.4.md            # Frozen specification document
@@ -105,12 +110,15 @@ CFOdiagnosis_v1/
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
 | GET | `/health` | Health check | No |
+| GET | `/api/spec` | Get full spec (pillars, questions, gates) | No |
 | POST | `/diagnostic-runs` | Create new diagnostic run | Yes |
+| GET | `/diagnostic-runs/:id` | Get run details (status, context) | Yes |
+| POST | `/diagnostic-runs/:id/setup` | Save context (company, industry) | Yes |
 | POST | `/diagnostic-inputs` | Save question answer | Yes |
 | POST | `/diagnostic-runs/:id/complete` | Mark run as complete | Yes |
 | POST | `/diagnostic-runs/:id/score` | Calculate scores for run | Yes |
 | GET | `/diagnostic-runs/:id/results` | Get aggregated results | Yes |
-| GET | `/diagnostic-runs/:id/report` | Get full report with recommendations | Yes |
+| GET | `/diagnostic-runs/:id/report` | Get full report (includes context) | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -128,6 +136,8 @@ CFOdiagnosis_v1/
 - `user_id` (uuid, FK to auth.users)
 - `status` (text): NOT_STARTED | IN_PROGRESS | COMPLETED | LOCKED
 - `spec_version` (text): e.g., "2.6.4"
+- `context` (jsonb): `{company_name, industry}` - VS18
+- `setup_completed_at` (timestamptz): When context intake was completed - VS18
 - `created_at`, `updated_at`
 
 **diagnostic_inputs**
@@ -191,19 +201,24 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 |------|-----------|------|
 | `/` | Home | No |
 | `/login` | LoginPage | No |
+| `/run/:runId/setup` | SetupPage | Yes |
 | `/assess` | DiagnosticInput | Yes |
 | `/report/:runId` | FinanceDiagnosticReport | Yes |
 
 ### Assessment Flow
 1. User clicks "Start Assessment"
 2. POST `/diagnostic-runs` creates new run
-3. User answers Yes/No to each question
-4. Each answer → POST `/diagnostic-inputs`
-5. User clicks "Submit"
-6. POST `/diagnostic-runs/:id/complete`
-7. POST `/diagnostic-runs/:id/score`
-8. Redirect to `/report/:runId`
-9. GET `/diagnostic-runs/:id/report` displays results
+3. Redirect to `/run/:id/setup` (context intake)
+4. User enters company name and industry
+5. POST `/diagnostic-runs/:id/setup` saves context
+6. Redirect to `/assess?runId=:id`
+7. User answers Yes/No to each question
+8. Each answer → POST `/diagnostic-inputs`
+9. User clicks "Submit"
+10. POST `/diagnostic-runs/:id/complete`
+11. POST `/diagnostic-runs/:id/score`
+12. Redirect to `/report/:runId`
+13. GET `/diagnostic-runs/:id/report` displays results (includes context)
 
 ### Current Questions (8 FP&A questions)
 - Level 1 (Emerging): Annual budget, Budget owner
@@ -294,6 +309,7 @@ npm run build        # Vite build to dist/
 | VS16: Production deployment | ✅ Complete |
 | VS13: PDF Export | ✅ Complete |
 | VS14: Content Hydration | ✅ Complete |
+| VS18: Context Intake | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
 
 ---
@@ -346,6 +362,36 @@ npm run build        # Vite build to dist/
 **Key files:**
 - `src/index.ts` - `/api/spec` endpoint
 - `cfo-frontend/src/DiagnosticInput.jsx` - Fetches and renders hierarchy
+
+---
+
+## Context Intake (VS18)
+
+**Problem solved:** No company context captured before assessment
+
+**Solution:** Minimal setup page collects company_name and industry before questions
+
+**New database columns:**
+- `context` (JSONB): Stores `{company_name, industry}`
+- `setup_completed_at` (TIMESTAMPTZ): Gating timestamp
+
+**New endpoints:**
+- `GET /diagnostic-runs/:id` - Returns run details including context
+- `POST /diagnostic-runs/:id/setup` - Saves context, sets setup_completed_at
+
+**Flow:**
+1. User clicks "Start Assessment"
+2. Run created, redirected to `/run/:id/setup`
+3. User enters company name and industry
+4. Context saved, redirected to `/assess?runId=:id`
+5. Report header displays context (graceful fallback for legacy runs)
+
+**Key files:**
+- `src/index.ts` - Setup endpoints
+- `cfo-frontend/src/SetupPage.jsx` - Setup form UI
+- `cfo-frontend/src/DiagnosticInput.jsx` - Routing guard
+- `cfo-frontend/src/FinanceDiagnosticReport.jsx` - Context in header
+- `supabase/migrations/20241220_vs18_context_intake.sql` - Schema migration
 
 ---
 
