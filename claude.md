@@ -66,13 +66,18 @@ CFOdiagnosis_v1/
 │   │   ├── types.ts              # Action types
 │   │   └── index.ts              # Exports
 │   │
+│   ├── risks/                    # VS19: Critical Risk Engine
+│   │   ├── types.ts              # CriticalRisk interface
+│   │   ├── engine.ts             # deriveCriticalRisks (pure function)
+│   │   └── index.ts              # Exports
+│   │
 │   └── tests/                    # QA test suites
 │       ├── vs5-qa.test.ts        # Aggregation tests
 │       ├── vs6-qa.test.ts        # Report generation tests
 │       ├── vs7-qa.test.ts        # Maturity evaluation tests
 │       ├── vs8-qa.test.ts        # Action derivation tests
 │       ├── vs9-qa.test.ts        # Validation tests
-│       └── vs11-qa.test.ts       # Integration tests
+│       └── vs19-qa.test.ts       # Critical risk tests
 │
 ├── cfo-frontend/                 # Frontend application
 │   ├── src/
@@ -310,6 +315,7 @@ npm run build        # Vite build to dist/
 | VS13: PDF Export | ✅ Complete |
 | VS14: Content Hydration | ✅ Complete |
 | VS18: Context Intake | ✅ Complete |
+| VS19: Critical Risk Engine | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
 
 ---
@@ -392,6 +398,35 @@ npm run build        # Vite build to dist/
 - `cfo-frontend/src/DiagnosticInput.jsx` - Routing guard
 - `cfo-frontend/src/FinanceDiagnosticReport.jsx` - Context in header
 - `supabase/migrations/20241220_vs18_context_intake.sql` - Schema migration
+
+---
+
+## Critical Risk Engine (VS19)
+
+**Problem solved:** Missing or unanswered critical questions were not flagged as risks
+
+**Solution:** "Silence is a Risk" philosophy - any critical question without `true` answer generates a risk
+
+**Key Logic:**
+- Risk generated if: `is_critical === true` AND `answer !== true`
+- Only safe if: answer is strictly boolean `true`
+- False, null, undefined, strings, numbers → all generate risks
+
+**New module:** `src/risks/`
+- `types.ts` - CriticalRisk interface with severity and pillar_name
+- `engine.ts` - deriveCriticalRisks pure function
+- `index.ts` - exports
+
+**Report changes:**
+- CriticalRisk now includes `pillar_name` and `severity: "CRITICAL"`
+- Report shows risks even for unanswered critical questions
+
+**Frontend changes:**
+- RiskCard updated with white background for print legibility
+- High-contrast dark red border (#DC2626)
+- Displays severity and pillar name
+
+**Tests:** `npm run test:vs19` (15 test cases)
 
 ---
 
