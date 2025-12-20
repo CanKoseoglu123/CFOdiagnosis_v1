@@ -1,5 +1,5 @@
 /**
- * CFO Diagnostic Platform - Specification v2.7.0
+ * CFO Diagnostic Platform - Specification v2.7.0 (Behavioral Edition)
  *
  * CHANGELOG from v2.6.4:
  * - Added Theme layer for UX grouping (foundation, future, intelligence)
@@ -7,8 +7,17 @@
  * - Added theme_order for deterministic UI rendering
  * - Moved Budget to "Foundation" theme
  * - Calibrated criticality: 16 → 10 critical questions
+ * - BEHAVIORAL REWRITE: 23 questions in Future/Intelligence themes
+ *   rewritten from "process existence" to "organizational behavior"
  *
  * Content: FP&A Pillar (40 questions, 8 objectives, 8 actions, 3 themes)
+ * Question Types:
+ * - Theme 1 (Foundation): 15 PROCESS questions (8 critical)
+ * - Theme 2 (Future): 2 PROCESS (critical) + 13 BEHAVIORAL
+ * - Theme 3 (Intelligence): 10 BEHAVIORAL
+ * - TOTAL: 17 Process + 23 Behavioral = 40 questions
+ * - CRITICAL: 10 questions (all in Foundation + Forecasting)
+ *
  * Last Updated: 2024-12-20
  */
 
@@ -140,12 +149,16 @@ export const SPEC: Spec = {
 
   // =============================================================================
   // QUESTIONS - 40 total (ordered by theme_order)
-  // Critical: L1=6, L2=4, L3=0, L4=0 → Total=10
+  //
+  // THEME 1 (FOUNDATION): 15 PROCESS questions (8 critical)
+  // THEME 2 (FUTURE): 2 PROCESS (critical) + 13 BEHAVIORAL
+  // THEME 3 (INTELLIGENCE): 10 BEHAVIORAL
   // =============================================================================
   questions: [
-    // ─────────────────────────────────────────────────────────────────────────────
-    // THEME 1: THE FOUNDATION
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // THEME 1: THE FOUNDATION - PROCESS QUESTIONS
+    // "Do you have a plan? Do you control it? Do you track against it?"
+    // ═══════════════════════════════════════════════════════════════════════════
 
     // BUDGETING (theme_order: 1, Level 1, 5 questions, 3 critical)
     {
@@ -318,11 +331,14 @@ export const SPEC: Spec = {
       is_critical: false
     },
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // THEME 2: THE FUTURE
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // THEME 2: THE FUTURE - BEHAVIORAL QUESTIONS
+    // "Where are you going? What drives it? Is it connected?"
+    // ═══════════════════════════════════════════════════════════════════════════
 
     // FORECASTING (theme_order: 4, Level 2, 5 questions, 2 critical)
+    // Note: q06 and q07 are CRITICAL process questions (preserved)
+    //       q08-q10 are BEHAVIORAL questions (rewritten)
     {
       id: "fpa_l2_q06",
       pillar: "fpa",
@@ -332,7 +348,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is a financial forecast updated at least quarterly (re-forecast)?",
       help: "Regular forecast updates incorporate new information and provide a more accurate view of expected year-end results than a static annual budget.",
-      is_critical: true
+      is_critical: true  // PRESERVED: Core forecasting capability
     },
     {
       id: "fpa_l2_q07",
@@ -343,7 +359,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Does the forecast project cash flow and liquidity, not just P&L?",
       help: "Cash flow forecasting is essential for managing working capital, timing of expenditures, and ensuring the company can meet its obligations.",
-      is_critical: true
+      is_critical: true  // PRESERVED: Liquidity is always critical
     },
     {
       id: "fpa_l2_q08",
@@ -352,9 +368,9 @@ export const SPEC: Spec = {
       level: 2,
       levelLabel: "Defined",
       weight: 1,
-      text: "Are forecast assumptions explicitly documented (e.g., \"assuming 5% churn\")?",
-      help: "Documenting assumptions makes the forecast transparent, enables sensitivity analysis, and helps identify what drove forecast errors.",
-      is_critical: false
+      text: "When the forecast is wrong, does Finance lead a blameless post-mortem to improve future accuracy?",
+      help: "Learning organizations treat forecast errors as data, not failures. If misses trigger blame rather than analysis, forecasters learn to sandbag, not improve.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l2_q09",
@@ -363,9 +379,9 @@ export const SPEC: Spec = {
       level: 2,
       levelLabel: "Defined",
       weight: 1,
-      text: "Is historical forecast accuracy tracked to improve future predictions?",
-      help: "Tracking forecast vs. actual over time reveals systematic biases and helps improve forecasting methodology.",
-      is_critical: false
+      text: "Does FP&A's forecast carry more weight than Sales' gut feeling in executive decisions?",
+      help: "In mature organizations, Finance's forecast is the authoritative number. If Sales or Ops can override it based on 'feeling,' the forecast is theater.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l2_q10",
@@ -374,12 +390,13 @@ export const SPEC: Spec = {
       level: 2,
       levelLabel: "Defined",
       weight: 1,
-      text: "Does the forecast extend at least 12 months into the future (rolling)?",
-      help: "A rolling 12-month forecast provides consistent forward visibility regardless of where you are in the fiscal year.",
-      is_critical: false
+      text: "Can Finance present a pessimistic forecast without being labeled 'not a team player'?",
+      help: "Healthy cultures allow Finance to deliver bad news. If pessimistic scenarios are politically dangerous, forecasts become optimistic fiction.",
+      is_critical: false  // BEHAVIORAL
     },
 
     // DRIVER-BASED PLANNING (theme_order: 5, Level 3, 5 questions, 0 critical)
+    // ALL BEHAVIORAL - measuring Finance influence and organizational alignment
     {
       id: "fpa_l3_q01",
       pillar: "fpa",
@@ -387,9 +404,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Is the financial model linked to operational drivers (e.g., leads, conversion, headcount)?",
-      help: "Driver-based models connect financial outcomes to operational inputs, enabling \"what-if\" analysis and more accurate planning.",
-      is_critical: false
+      text: "When Finance says 'the model shows we can't afford this hire,' does leadership accept it or demand the model be 'fixed'?",
+      help: "Models are only useful if leadership trusts their output. If 'fixing the model' means overriding inconvenient math, the model is decoration.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q02",
@@ -398,9 +415,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Can you update a single driver (e.g., price increase) and see the P&L impact instantly?",
-      help: "A well-structured model allows instant recalculation when key drivers change, enabling rapid scenario analysis.",
-      is_critical: false
+      text: "Do business unit leaders understand how their operational decisions (pricing, headcount, churn) flow through to P&L?",
+      help: "Driver-based planning fails if operators don't understand the financial consequences of their decisions. Finance must educate, not just report.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q03",
@@ -409,9 +426,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Are Unit Economics (CAC, LTV, Gross Margin per unit) calculated monthly?",
-      help: "Unit economics metrics help understand the fundamental profitability of the business model at a granular level.",
-      is_critical: false
+      text: "Has Finance ever killed or delayed a project because unit economics didn't work, and leadership accepted the decision?",
+      help: "The true test of FP&A influence is whether they can stop a bad decision, not just document it.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q04",
@@ -420,9 +437,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Is cohort analysis used to understand revenue retention/churn behavior?",
-      help: "Cohort analysis tracks customer groups over time to understand retention patterns, LTV, and revenue quality.",
-      is_critical: false
+      text: "When a customer segment is unprofitable, does Finance have standing to recommend exiting it?",
+      help: "Strategic Finance means having a voice in portfolio decisions. If Finance only reports on customers but can't influence strategy, they're scorekeepers.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q05",
@@ -431,12 +448,13 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Are non-financial KPIs reported alongside financial metrics in the same dashboard?",
-      help: "Integrating operational and financial KPIs provides a holistic view of business performance and leading indicators.",
-      is_critical: false
+      text: "Do executives ask Finance 'what should we do?' rather than just 'make the numbers work'?",
+      help: "'Make the numbers work' is a symptom of leadership treating Finance as a service function. 'What should we do?' signals Finance as a strategic partner.",
+      is_critical: false  // BEHAVIORAL
     },
 
     // INTEGRATED PLANNING (theme_order: 6, Level 4, 5 questions, 0 critical)
+    // ALL BEHAVIORAL - measuring trust, alignment, and single source of truth
     {
       id: "fpa_l4_q01",
       pillar: "fpa",
@@ -444,9 +462,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Is the planning tool directly integrated with the ERP (no manual data export/import)?",
-      help: "Direct ERP integration eliminates manual data transfer, reduces errors, and enables real-time financial visibility.",
-      is_critical: false
+      text: "When Finance and Sales forecasts differ, is there a defined process to resolve the gap (not just average them)?",
+      help: "Averaging conflicting forecasts is lazy consensus. Mature organizations have escalation paths to resolve disagreements with data, not politics.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q02",
@@ -455,9 +473,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Is the planning tool integrated with the CRM/HRIS for live operational data?",
-      help: "Integration with CRM and HRIS provides real-time pipeline and headcount data for more accurate forecasting.",
-      is_critical: false
+      text: "Do functional leaders (Sales, HR, Ops) trust Finance's data more than their own spreadsheets?",
+      help: "If Sales keeps their 'real' forecast in a personal spreadsheet, integration is cosmetic. Trust is the true measure of integration.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q03",
@@ -466,9 +484,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Do different functions (Sales, Ops, Finance) plan in a single connected environment?",
-      help: "Unified planning ensures alignment across functions and eliminates version control issues from separate spreadsheets.",
-      is_critical: false
+      text: "Is there a single version of the truth that the CEO uses, or do different executives quote different numbers?",
+      help: "Executive misalignment on basic numbers is a symptom of planning fragmentation. One truth, one source.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q04",
@@ -477,9 +495,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Is the \"close-to-report\" cycle (books closed to dashboard updated) under 3 days?",
-      help: "A fast close-to-report cycle enables timely decision-making based on current financial data.",
-      is_critical: false
+      text: "When the CFO presents to the board, do they ever get surprised by numbers another executive cites?",
+      help: "Board meeting surprises indicate either data silos or political sandbagging. Neither is healthy.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q05",
@@ -488,16 +506,18 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Are strategic long-range plans (3-5 years) mathematically linked to the annual budget?",
-      help: "Linking long-range plans to annual budgets ensures strategic goals translate into operational targets.",
-      is_critical: false
+      text: "Does the 3-year strategic plan actually constrain annual budget decisions, or is it an ignored PowerPoint?",
+      help: "Strategy without budget linkage is aspiration. Budget without strategy linkage is incrementalism. They must connect.",
+      is_critical: false  // BEHAVIORAL
     },
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // THEME 3: THE INTELLIGENCE
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // THEME 3: THE INTELLIGENCE - BEHAVIORAL QUESTIONS
+    // "What could happen? What will the machine tell us?"
+    // ═══════════════════════════════════════════════════════════════════════════
 
     // SCENARIO PLANNING (theme_order: 7, Level 3, 5 questions, 0 critical)
+    // ALL BEHAVIORAL - measuring leadership engagement with uncertainty
     {
       id: "fpa_l3_q06",
       pillar: "fpa",
@@ -505,9 +525,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Can the model run multiple scenarios (Base, Bull, Bear) simultaneously?",
-      help: "Multi-scenario modeling allows leadership to understand the range of possible outcomes and plan accordingly.",
-      is_critical: false
+      text: "When Finance presents a downside scenario, does leadership engage with it seriously or dismiss it as 'too negative'?",
+      help: "Scenario planning is useless if leadership only wants to see the good case. Mature organizations demand to see the Bear case.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q07",
@@ -516,9 +536,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Are \"trigger points\" defined that would activate specific contingency plans?",
-      help: "Predefined triggers (e.g., revenue drops 20%) that activate specific response plans enable faster crisis response.",
-      is_critical: false
+      text: "Has the company ever actually activated a contingency plan based on hitting a predefined trigger?",
+      help: "Contingency plans that have never been activated are untested theories. Real preparedness means real activation when triggers hit.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q08",
@@ -527,9 +547,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Is sensitivity analysis performed on key assumptions (e.g., sensitivity to interest rates)?",
-      help: "Sensitivity analysis identifies which assumptions have the biggest impact on financial outcomes.",
-      is_critical: false
+      text: "Do executives know which 2-3 assumptions would break the business if wrong, without Finance having to remind them?",
+      help: "If only Finance knows the critical assumptions, the organization is flying blind. Executive fluency in key sensitivities is a maturity marker.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q09",
@@ -538,9 +558,9 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Is capital allocation (CAPEX/Hiring) dynamically adjusted based on scenario triggers?",
-      help: "Dynamic capital allocation allows the organization to scale investment up or down based on actual performance.",
-      is_critical: false
+      text: "In the last 12 months, has a budget been reallocated mid-year based on scenario analysis (not just executive whim)?",
+      help: "Dynamic allocation means actually moving money based on data, not just talking about flexibility.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l3_q10",
@@ -549,12 +569,13 @@ export const SPEC: Spec = {
       level: 3,
       levelLabel: "Managed",
       weight: 1,
-      text: "Are scenarios stress-tested against potential external shocks (e.g., supply chain break)?",
-      help: "Stress testing evaluates how the business would perform under extreme but plausible adverse conditions.",
-      is_critical: false
+      text: "Has Finance modeled 'what happens if our top customer leaves' or 'what happens if the market drops 30%'?",
+      help: "Existential scenarios should be modeled before they happen. If you haven't stress-tested catastrophic events, you're hoping, not planning.",
+      is_critical: false  // BEHAVIORAL
     },
 
     // PREDICTIVE ANALYTICS (theme_order: 8, Level 4, 5 questions, 0 critical)
+    // ALL BEHAVIORAL - measuring analytical curiosity and operational discipline
     {
       id: "fpa_l4_q06",
       pillar: "fpa",
@@ -562,9 +583,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Are machine learning algorithms used to generate a baseline forecast?",
-      help: "ML-based forecasting can identify patterns in historical data that humans might miss, improving forecast accuracy.",
-      is_critical: false
+      text: "Does Finance use any automated/algorithmic forecasting, even simple regression or time-series models?",
+      help: "Predictive doesn't require PhD-level ML. Even basic statistical forecasting beats pure gut feeling. The bar is 'better than spreadsheet extrapolation.'",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q07",
@@ -573,9 +594,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Does the system automatically flag anomalies in real-time (not month-end)?",
-      help: "Real-time anomaly detection enables immediate investigation of unusual transactions or trends.",
-      is_critical: false
+      text: "When an anomaly is detected (unusual spend, revenue spike), does Finance investigate within 48 hours?",
+      help: "Anomaly detection is worthless without fast follow-up. The 48-hour rule separates monitoring from actual control.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q08",
@@ -584,9 +605,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Is customer lifetime value (CLTV) predicted at an individual customer level?",
-      help: "Individual-level CLTV prediction enables targeted retention efforts and more accurate revenue forecasting.",
-      is_critical: false
+      text: "Can Finance answer 'which customers should we fire?' with data, not just opinion?",
+      help: "'Fire your worst customers' is controversial but mathematically valid. Finance should be able to model customer profitability at the account level.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q09",
@@ -595,9 +616,9 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Are external datasets (market trends, macro indicators) automatically ingested?",
-      help: "Automatic ingestion of external data enables forecasts that account for market conditions and economic factors.",
-      is_critical: false
+      text: "Does Finance proactively monitor external signals (market trends, competitor moves) that could impact the forecast?",
+      help: "Internal-only forecasting ignores half the picture. External signal monitoring (even manual) shows planning sophistication.",
+      is_critical: false  // BEHAVIORAL
     },
     {
       id: "fpa_l4_q10",
@@ -606,14 +627,15 @@ export const SPEC: Spec = {
       level: 4,
       levelLabel: "Optimized",
       weight: 1,
-      text: "Is the variance between ML prediction and human forecast tracked and analyzed?",
-      help: "Comparing ML vs. human forecasts helps identify where each approach adds value and improves overall accuracy.",
-      is_critical: false
+      text: "Is Finance actively experimenting with new analytical methods, or using the same model as 3 years ago?",
+      help: "Continuous improvement means experimenting with methods. If your model hasn't evolved, your thinking hasn't either.",
+      is_critical: false  // BEHAVIORAL
     }
   ],
 
   // =============================================================================
   // MATURITY GATES (Sequential, 80% threshold)
+  // Note: Gates evaluate by LEVEL, not by Theme
   // =============================================================================
   maturityGates: [
     {
@@ -645,7 +667,7 @@ export const SPEC: Spec = {
     {
       level: 3,
       label: "Managed",
-      description: "Driver-based models and scenario planning capabilities deployed",
+      description: "Finance is a strategic partner with organizational influence",
       required_evidence_ids: [
         "fpa_l3_q01", "fpa_l3_q02", "fpa_l3_q03", "fpa_l3_q04", "fpa_l3_q05",
         "fpa_l3_q06", "fpa_l3_q07", "fpa_l3_q08", "fpa_l3_q09", "fpa_l3_q10"
@@ -655,7 +677,7 @@ export const SPEC: Spec = {
     {
       level: 4,
       label: "Optimized",
-      description: "Fully integrated planning with predictive analytics",
+      description: "Fully integrated planning with analytical sophistication and organizational trust",
       required_evidence_ids: [
         "fpa_l4_q01", "fpa_l4_q02", "fpa_l4_q03", "fpa_l4_q04", "fpa_l4_q05",
         "fpa_l4_q06", "fpa_l4_q07", "fpa_l4_q08", "fpa_l4_q09", "fpa_l4_q10"
@@ -666,6 +688,7 @@ export const SPEC: Spec = {
 
   // =============================================================================
   // ACTIONS (8 total - 1 per objective)
+  // Updated with behavioral-aligned descriptions
   // =============================================================================
   actions: [
     // Foundation Actions
@@ -690,41 +713,41 @@ export const SPEC: Spec = {
       rationale: "Variance analysis creates accountability and enables course correction.",
       priority: "high"
     },
-    // Future Actions
+    // Future Actions (updated for behavioral focus)
     {
       id: "act_fpa_l2_forecast",
-      title: "Implement Rolling Forecast Process",
-      description: "Update forecasts at least quarterly, include cash flow projections, document assumptions explicitly, track forecast accuracy, and extend the forecast horizon to 12+ months.",
-      rationale: "Rolling forecasts provide forward visibility and reduce budget obsolescence.",
+      title: "Build Forecast Credibility",
+      description: "Update forecasts quarterly with cash flow projections, conduct blameless post-mortems on misses, and establish Finance as the authoritative voice on forward-looking numbers.",
+      rationale: "A forecast no one trusts is worse than no forecast. Credibility is the currency of FP&A.",
       priority: "high"
     },
     {
       id: "act_fpa_l3_driver",
-      title: "Build Driver-Based Financial Model",
-      description: "Link the financial model to operational drivers, enable instant scenario impact analysis, calculate unit economics monthly, implement cohort analysis, and integrate non-financial KPIs.",
-      rationale: "Driver-based models enable faster, more accurate planning tied to business reality.",
+      title: "Establish Finance as Strategic Partner",
+      description: "Link models to operational drivers, ensure leadership accepts model outputs, and give Finance standing to kill bad projects based on economics.",
+      rationale: "Driver-based models are useless if Finance cannot influence decisions. The goal is strategic partnership, not scorekeeping.",
       priority: "medium"
     },
     {
       id: "act_fpa_l4_integrate",
-      title: "Achieve Planning Integration",
-      description: "Integrate planning tools with ERP, CRM, and HRIS for live data feeds. Enable cross-functional planning in a single environment, reduce close-to-report cycle to under 3 days, and link long-range plans to annual budgets.",
-      rationale: "Integration eliminates manual reconciliation and enables real-time decision making.",
+      title: "Create Single Source of Truth",
+      description: "Resolve forecast conflicts with defined processes, build trust so functional leaders abandon shadow spreadsheets, and ensure the CEO never gets surprised by conflicting numbers.",
+      rationale: "Integration is about trust and alignment, not just technology. One truth, one source.",
       priority: "medium"
     },
-    // Intelligence Actions
+    // Intelligence Actions (updated for behavioral focus)
     {
       id: "act_fpa_l3_scenario",
-      title: "Develop Scenario Planning Capability",
-      description: "Build Base/Bull/Bear scenarios, define trigger points for contingency activation, perform sensitivity analysis on key assumptions, enable dynamic capital allocation, and stress-test against external shocks.",
-      rationale: "Scenario planning builds organizational resilience and decision readiness.",
+      title: "Build Organizational Resilience",
+      description: "Present downside scenarios leadership will engage with, activate contingency plans when triggers hit, and ensure executives understand the assumptions that could break the business.",
+      rationale: "Scenario planning is useless if leadership only wants to see the good case. Resilience requires confronting uncomfortable possibilities.",
       priority: "medium"
     },
     {
       id: "act_fpa_l4_predict",
-      title: "Deploy Predictive Analytics",
-      description: "Implement ML-based baseline forecasting, enable real-time anomaly detection, predict individual customer LTV, ingest external market data automatically, and track ML vs. human forecast accuracy.",
-      rationale: "Predictive analytics transforms FP&A from reactive reporting to proactive insight generation.",
+      title: "Evolve Analytical Capabilities",
+      description: "Implement basic algorithmic forecasting, investigate anomalies within 48 hours, monitor external signals, and continuously experiment with new methods.",
+      rationale: "Predictive analytics starts with curiosity and discipline, not PhD-level ML. The bar is continuous improvement.",
       priority: "medium"
     }
   ]

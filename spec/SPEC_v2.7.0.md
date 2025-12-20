@@ -4,7 +4,7 @@
 **Status:** FINAL / FROZEN  
 **Supersedes:** v2.6.4  
 **Audience:** Product, Engineering, Design, Content  
-**Change Type:** Feature Addition (Theme Layer) + Content Calibration
+**Change Type:** Feature Addition (Theme Layer) + Content Calibration + Behavioral Rewrite
 
 ---
 
@@ -17,6 +17,25 @@
 | **Theme Order** | Added `theme_order` field for deterministic UI rendering |
 | **Budget Reclassification** | Moved Budget from "Planning" to "Foundation" theme |
 | **Criticality Calibration** | Reduced critical questions from 16 to 10 |
+| **Behavioral Rewrite** | 23 questions in Future/Intelligence themes rewritten from "process existence" to "organizational behavior" |
+
+### Question Type Distribution
+
+| Type | Count | Location |
+|------|-------|----------|
+| Process Questions | 17 | Foundation (15) + Forecasting critical (2) |
+| Behavioral Questions | 23 | Future (13) + Intelligence (10) |
+| **Total** | **40** | |
+
+### Behavioral vs Process Philosophy
+
+**Process Questions** (Foundation theme): "Does this process exist?"
+- Example: "Does the company produce an approved annual budget?"
+- Measures: Process presence, controls, documentation
+
+**Behavioral Questions** (Future/Intelligence themes): "How does the organization actually behave?"
+- Example: "When Finance says 'the model shows we can't afford this hire,' does leadership accept it or demand the model be 'fixed'?"
+- Measures: Trust, influence, cultural maturity, organizational health
 
 ---
 
