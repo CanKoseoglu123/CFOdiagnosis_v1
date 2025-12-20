@@ -223,9 +223,9 @@ console.log("\n--- Critical Risks (With Risks) ---");
 }
 
 // ----------------------------------------------------------
-// 5. Critical Risk — Non-Boolean Not Flagged
+// 5. Critical Risk — Non-Boolean Values Are Risks (VS19 "Silence is a Risk")
 // ----------------------------------------------------------
-console.log("\n--- Critical Risks (Non-Boolean Ignored) ---");
+console.log("\n--- Critical Risks (Non-Boolean = Risk per VS19) ---");
 
 {
   const input: BuildReportInput = {
@@ -233,17 +233,18 @@ console.log("\n--- Critical Risks (Non-Boolean Ignored) ---");
     spec: TEST_SPEC,
     aggregateResult: TEST_AGGREGATE_RESULT,
     inputs: [
-      { question_id: "q1_critical", value: "no" },   // String, not boolean FALSE
-      { question_id: "q3_critical", value: null },   // Null, not boolean FALSE
+      { question_id: "q1_critical", value: "no" },   // String, not boolean TRUE = RISK
+      { question_id: "q3_critical", value: null },   // Null, not boolean TRUE = RISK
     ],
   };
 
   const report = buildReport(input);
 
+  // VS19: Non-boolean values ARE risks (only boolean TRUE is safe)
   assertEqual(
     report.critical_risks.length,
-    0,
-    "Non-boolean values don't trigger risks"
+    2,
+    "Non-boolean values trigger risks (VS19 Silence Rule)"
   );
 }
 
@@ -304,9 +305,9 @@ console.log("\n--- Pillar-Level Critical Risks ---");
 }
 
 // ----------------------------------------------------------
-// 8. Empty Inputs Handled
+// 8. Empty Inputs = All Critical Questions Are Risks (VS19)
 // ----------------------------------------------------------
-console.log("\n--- Empty Inputs ---");
+console.log("\n--- Empty Inputs (VS19 Silence Rule) ---");
 
 {
   const input: BuildReportInput = {
@@ -318,7 +319,9 @@ console.log("\n--- Empty Inputs ---");
 
   const report = buildReport(input);
 
-  assertEqual(report.critical_risks.length, 0, "No risks with empty inputs");
+  // VS19: Empty inputs = silence on critical controls = RISK for each critical question
+  // TEST_SPEC has 2 critical questions: q1_critical and q3_critical
+  assertEqual(report.critical_risks.length, 2, "2 risks for 2 unanswered critical questions");
   assertTrue(report.pillars.length > 0, "Pillars still generated");
 }
 

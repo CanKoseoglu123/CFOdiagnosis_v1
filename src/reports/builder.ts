@@ -1,8 +1,8 @@
 // src/reports/builder.ts
-// VS6/VS7/VS8 — Assembles Finance Report DTO from VS5 scores + spec
-// Includes maturity calculation (VS7) and actions derivation (VS8)
+// VS6/VS7/VS8/VS19 — Assembles Finance Report DTO from VS5 scores + spec
+// Includes maturity calculation (VS7), actions derivation (VS8), and critical risks (VS19)
 
-import { Spec, SpecQuestion } from "../specs/types";
+import { Spec } from "../specs/types";
 import {
   FinanceReportDTO,
   PillarReportDTO,
@@ -13,6 +13,7 @@ import {
 import { AggregateResult } from "../results/aggregate";
 import { evaluateMaturity } from "../maturity";
 import { deriveActions } from "../actions";
+import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 
 // ------------------------------------------------------------------
 // Input Types
@@ -49,6 +50,20 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     required_evidence_ids: gate.required_evidence_ids,
   }));
 
+  // VS19: Derive all critical risks using the new engine
+  // Philosophy: "Silence on a critical control is a risk"
+  const engineRisks = deriveRisksFromEngine(inputs, spec);
+
+  // Map engine risks to report format (add user_answer for backward compat)
+  const allCriticalRisks: CriticalRisk[] = engineRisks.map((risk) => ({
+    evidence_id: risk.questionId,
+    question_text: risk.questionText,
+    pillar_id: risk.pillarId,
+    pillar_name: risk.pillarName,
+    severity: risk.severity,
+    user_answer: inputMap.get(risk.questionId) as boolean | null ?? null,
+  }));
+
   // Build pillar reports (each with its own maturity calculation)
   const pillarReports = spec.pillars.map((pillar) =>
     buildPillarReport(
@@ -57,12 +72,10 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
       spec,
       aggregateResult,
       inputMap,
-      gates
+      gates,
+      allCriticalRisks // VS19: Pass pre-computed risks
     )
   );
-
-  // Collect all critical risks across pillars
-  const allCriticalRisks = pillarReports.flatMap((p) => p.critical_risks);
 
   // Calculate overall maturity using WEAKEST LINK rollup (per Spec v2.6.4 Section 6)
   // finance_maturity = min(applicable pillar maturity)
@@ -99,7 +112,8 @@ function buildPillarReport(
   spec: Spec,
   aggregateResult: AggregateResult,
   inputMap: Map<string, unknown>,
-  gates: MaturityGate[]
+  gates: MaturityGate[],
+  allCriticalRisks: CriticalRisk[] // VS19: Pre-computed risks
 ): PillarReportDTO {
   // Get pillar questions from spec
   const pillarQuestions = spec.questions.filter((q) => q.pillar === pillarId);
@@ -109,8 +123,10 @@ function buildPillarReport(
     (p) => p.pillar_id === pillarId
   );
 
-  // Derive critical risks for this pillar
-  const criticalRisks = deriveCriticalRisks(pillarQuestions, inputMap, pillarId);
+  // VS19: Filter pre-computed risks to this pillar
+  const pillarCriticalRisks = allCriticalRisks.filter(
+    (r) => r.pillar_id === pillarId
+  );
 
   // Build pillar-specific input map (only this pillar's questions)
   const pillarInputMap = new Map<string, unknown>();
@@ -146,7 +162,7 @@ function buildPillarReport(
     scored_questions: pillarResult?.scored_questions ?? 0,
     total_questions: pillarQuestions.length,
     maturity,
-    critical_risks: criticalRisks,
+    critical_risks: pillarCriticalRisks,
   };
 }
 
@@ -200,39 +216,9 @@ function calculateOverallMaturity(
 }
 
 // ------------------------------------------------------------------
-// Critical Risk Derivation
+// VS19: Critical Risk Derivation
 // ------------------------------------------------------------------
-
-/**
- * Derives critical risks from spec definitions and user inputs.
- * A critical risk occurs when:
- *   1. Question has is_critical === true in spec
- *   2. User answered === false (strict boolean check)
- */
-function deriveCriticalRisks(
-  questions: SpecQuestion[],
-  inputMap: Map<string, unknown>,
-  pillarId: string
-): CriticalRisk[] {
-  const risks: CriticalRisk[] = [];
-
-  for (const question of questions) {
-    // Skip non-critical questions
-    if (!question.is_critical) continue;
-
-    const userAnswer = inputMap.get(question.id);
-
-    // Only flag as risk if strictly === false
-    // (null/undefined/"no"/0 = not a risk, only boolean false)
-    if (userAnswer === false) {
-      risks.push({
-        evidence_id: question.id,
-        question_text: question.text,
-        pillar_id: pillarId,
-        user_answer: false,
-      });
-    }
-  }
-
-  return risks;
-}
+// Moved to src/risks/engine.ts
+// Now uses the "Silence is a risk" philosophy:
+// - Risk if answer === false OR answer is missing/null/undefined
+// - Only safe if answer === true (strict boolean check)

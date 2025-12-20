@@ -96,6 +96,8 @@ const VALID_RISK: CriticalRisk = {
   evidence_id: "fpa_budget_owner",
   question_text: "Is there a single person accountable for the budget?",
   pillar_id: "fpa",
+  pillar_name: "Financial Planning & Analysis", // VS19
+  severity: "CRITICAL", // VS19
   user_answer: false,
 };
 

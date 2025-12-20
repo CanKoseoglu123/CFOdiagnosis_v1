@@ -21,12 +21,15 @@ export interface MaturityStatus {
 }
 
 // === Critical Risk ===
+// VS19: Updated to include severity and pillar_name
 
 export interface CriticalRisk {
   evidence_id: string;
   question_text: string;
   pillar_id: string;
-  user_answer: boolean | null; // The actual answer that triggered the risk
+  pillar_name: string;              // VS19: Added for display
+  severity: "CRITICAL";             // VS19: Always CRITICAL for now
+  user_answer: boolean | null;      // The actual answer that triggered the risk
 }
 
 // === Pillar Report DTO ===

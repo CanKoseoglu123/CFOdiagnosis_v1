@@ -57,12 +57,23 @@ const MaturityLadder = ({ maturity }) => (
 );
 
 const RiskCard = ({ risk }) => (
-  <div data-print-card style={{ padding: 14, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, borderLeft: "4px solid #EF4444" }}>
+  <div data-print-card style={{
+    padding: 14,
+    background: "#FFF",  // VS19: White background for print legibility
+    border: "2px solid #DC2626",  // VS19: High-contrast dark red border
+    borderRadius: 10,
+    borderLeft: "6px solid #991B1B"  // VS19: Thicker, darker left accent
+  }}>
     <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
       <AlertTriangle size={18} color="#DC2626" />
       <div>
-        <div style={{ fontWeight: 600, color: "#991B1B", fontSize: 12, marginBottom: 2 }}>Critical Risk</div>
-        <div style={{ color: "#7F1D1D", fontSize: 13 }}>{risk.question_text}</div>
+        <div style={{ fontWeight: 700, color: "#991B1B", fontSize: 12, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          {risk.severity || "CRITICAL"} Risk
+        </div>
+        <div style={{ color: "#7F1D1D", fontSize: 13, fontWeight: 500 }}>{risk.question_text}</div>
+        {risk.pillar_name && (
+          <div style={{ color: "#9CA3AF", fontSize: 11, marginTop: 4 }}>{risk.pillar_name}</div>
+        )}
       </div>
     </div>
   </div>
