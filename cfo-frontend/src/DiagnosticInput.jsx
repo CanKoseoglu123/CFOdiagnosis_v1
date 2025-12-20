@@ -1,20 +1,20 @@
 // src/DiagnosticInput.jsx
-// Layer 3: Sends auth token with API requests
-// Questions are now fetched from the backend spec (single source of truth)
+// VS14: Content Hydration - Questions fetched from /api/spec (Single Source of Truth)
+// Renders hierarchy: Pillar -> Level -> Question
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
-import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle, Loader } from "lucide-react";
+import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle, Loader, ChevronDown, ChevronRight } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const LEVEL_COLORS = {
-  1: { bg: "#FEF3C7", text: "#92400E" },
-  2: { bg: "#FEF9C3", text: "#854D0E" },
-  3: { bg: "#DCFCE7", text: "#166534" },
-  4: { bg: "#DBEAFE", text: "#1E40AF" },
+  1: { bg: "#FEF3C7", text: "#92400E", accent: "#F59E0B" },
+  2: { bg: "#FEF9C3", text: "#854D0E", accent: "#EAB308" },
+  3: { bg: "#DCFCE7", text: "#166534", accent: "#22C55E" },
+  4: { bg: "#DBEAFE", text: "#1E40AF", accent: "#3B82F6" },
 };
 
 const ProgressBar = ({ current, total }) => {
@@ -26,34 +26,131 @@ const ProgressBar = ({ current, total }) => {
   );
 };
 
-const QuestionCard = ({ question, answer, onAnswer, index, showHelp, onToggleHelp }) => {
+const QuestionCard = ({ question, answer, onAnswer, showHelp, onToggleHelp }) => {
   const lc = LEVEL_COLORS[question.level] || LEVEL_COLORS[1];
   return (
-    <div style={{ background: "#FFF", border: answer !== null ? "2px solid #4F46E5" : "1px solid #E5E7EB", borderRadius: 16, padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: lc.bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, color: lc.text }}>{index + 1}</div>
-          <div>
-            <span style={{ background: lc.bg, color: lc.text, padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>LEVEL {question.level}: {(question.levelLabel || "").toUpperCase()}</span>
-            {question.is_critical && <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, marginLeft: 8 }}>CRITICAL</span>}
-          </div>
+    <div style={{ background: "#FFF", border: answer !== null ? "2px solid #4F46E5" : "1px solid #E5E7EB", borderRadius: 12, padding: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div>
+          {question.is_critical && <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>CRITICAL</span>}
         </div>
         {question.help && (
-          <button onClick={onToggleHelp} style={{ background: showHelp ? "#EEF2FF" : "transparent", border: "none", borderRadius: 8, padding: 8, cursor: "pointer", color: showHelp ? "#4F46E5" : "#9CA3AF" }}>
-            <HelpCircle size={18} />
+          <button onClick={onToggleHelp} style={{ background: showHelp ? "#EEF2FF" : "transparent", border: "none", borderRadius: 8, padding: 6, cursor: "pointer", color: showHelp ? "#4F46E5" : "#9CA3AF" }}>
+            <HelpCircle size={16} />
           </button>
         )}
       </div>
-      <div style={{ fontSize: 16, fontWeight: 500, color: "#111827", lineHeight: 1.5, marginBottom: 16 }}>{question.text}</div>
-      {showHelp && question.help && <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 13, color: "#64748B" }}>{question.help}</div>}
+      <div style={{ fontSize: 15, fontWeight: 500, color: "#111827", lineHeight: 1.5, marginBottom: 12 }}>{question.text}</div>
+      {showHelp && question.help && <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#64748B" }}>{question.help}</div>}
       <div style={{ display: "flex", gap: 12 }}>
-        <button onClick={() => onAnswer(question.id, true)} style={{ flex: 1, padding: "14px 20px", borderRadius: 10, border: answer === true ? "2px solid #22C55E" : "1px solid #E5E7EB", background: answer === true ? "#DCFCE7" : "#FFF", color: answer === true ? "#166534" : "#374151", fontWeight: 600, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {answer === true && <CheckCircle size={18} />} Yes
+        <button onClick={() => onAnswer(question.id, true)} style={{ flex: 1, padding: "12px 16px", borderRadius: 8, border: answer === true ? "2px solid #22C55E" : "1px solid #E5E7EB", background: answer === true ? "#DCFCE7" : "#FFF", color: answer === true ? "#166534" : "#374151", fontWeight: 600, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          {answer === true && <CheckCircle size={16} />} Yes
         </button>
-        <button onClick={() => onAnswer(question.id, false)} style={{ flex: 1, padding: "14px 20px", borderRadius: 10, border: answer === false ? "2px solid #EF4444" : "1px solid #E5E7EB", background: answer === false ? "#FEE2E2" : "#FFF", color: answer === false ? "#991B1B" : "#374151", fontWeight: 600, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {answer === false && <AlertTriangle size={18} />} No
+        <button onClick={() => onAnswer(question.id, false)} style={{ flex: 1, padding: "12px 16px", borderRadius: 8, border: answer === false ? "2px solid #EF4444" : "1px solid #E5E7EB", background: answer === false ? "#FEE2E2" : "#FFF", color: answer === false ? "#991B1B" : "#374151", fontWeight: 600, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          {answer === false && <AlertTriangle size={16} />} No
         </button>
       </div>
+    </div>
+  );
+};
+
+const LevelSection = ({ level, label, questions, answers, onAnswer, helpVisible, onToggleHelp }) => {
+  const [expanded, setExpanded] = useState(true);
+  const lc = LEVEL_COLORS[level] || LEVEL_COLORS[1];
+  const answeredInLevel = questions.filter(q => answers[q.id] !== undefined).length;
+  const allAnswered = answeredInLevel === questions.length;
+
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          background: lc.bg,
+          border: `2px solid ${lc.accent}`,
+          borderRadius: 10,
+          cursor: "pointer",
+          marginBottom: expanded ? 12 : 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {expanded ? <ChevronDown size={20} color={lc.text} /> : <ChevronRight size={20} color={lc.text} />}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: lc.text }}>Level {level}: {label}</span>
+            <span style={{ fontSize: 12, color: lc.text, opacity: 0.8 }}>({questions.length} questions)</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {allAnswered && <CheckCircle size={18} color="#22C55E" />}
+          <span style={{ fontSize: 13, fontWeight: 600, color: lc.text }}>{answeredInLevel}/{questions.length}</span>
+        </div>
+      </button>
+      {expanded && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingLeft: 16, borderLeft: `3px solid ${lc.accent}` }}>
+          {questions.map((q) => (
+            <QuestionCard
+              key={q.id}
+              question={q}
+              answer={answers[q.id] ?? null}
+              onAnswer={onAnswer}
+              showHelp={helpVisible[q.id] || false}
+              onToggleHelp={() => onToggleHelp(q.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PillarSection = ({ pillar, questions, maturityGates, answers, onAnswer, helpVisible, onToggleHelp }) => {
+  const pillarQuestions = questions.filter(q => q.pillar === pillar.id);
+  const answeredInPillar = pillarQuestions.filter(q => answers[q.id] !== undefined).length;
+
+  // Group questions by level
+  const questionsByLevel = {};
+  pillarQuestions.forEach(q => {
+    const level = q.level || 1;
+    if (!questionsByLevel[level]) questionsByLevel[level] = [];
+    questionsByLevel[level].push(q);
+  });
+
+  // Get level labels from maturityGates
+  const levelLabels = {};
+  maturityGates.forEach(gate => {
+    levelLabels[gate.level] = gate.label;
+  });
+
+  const levels = Object.keys(questionsByLevel).map(Number).sort((a, b) => a - b);
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, padding: "16px 20px", background: "#0F172A", borderRadius: 12 }}>
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 4 }}>PILLAR</div>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#FFF", margin: 0 }}>{pillar.name}</h2>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 11, color: "#94A3B8" }}>Progress</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#FFF" }}>{answeredInPillar}/{pillarQuestions.length}</div>
+        </div>
+      </div>
+      {levels.map(level => (
+        <LevelSection
+          key={level}
+          level={level}
+          label={levelLabels[level] || `Level ${level}`}
+          questions={questionsByLevel[level]}
+          answers={answers}
+          onAnswer={onAnswer}
+          helpVisible={helpVisible}
+          onToggleHelp={onToggleHelp}
+        />
+      ))}
     </div>
   );
 };
@@ -63,33 +160,35 @@ export default function DiagnosticInput() {
   const { user } = useAuth();
   const [runId, setRunId] = useState(null);
 
-  // Questions fetched from backend spec
-  const [questions, setQuestions] = useState([]);
-  const [specVersion, setSpecVersion] = useState(null);
-  const [loadingQuestions, setLoadingQuestions] = useState(true);
+  // Spec data from backend (Single Source of Truth)
+  const [spec, setSpec] = useState(null);
+  const [loadingSpec, setLoadingSpec] = useState(true);
 
   const [answers, setAnswers] = useState({});
   const [helpVisible, setHelpVisible] = useState({});
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
 
-  // Fetch questions from backend on mount
+  // Fetch full spec from backend on mount
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchSpec = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/spec/questions`);
-        if (!response.ok) throw new Error("Failed to fetch questions");
+        const response = await fetch(`${API_BASE_URL}/api/spec`);
+        if (!response.ok) throw new Error("Failed to fetch spec");
         const data = await response.json();
-        setQuestions(data.questions);
-        setSpecVersion(data.version);
+        setSpec(data);
       } catch (err) {
-        setError(`Failed to load questions: ${err.message}`);
+        setError(`Failed to load assessment: ${err.message}`);
       } finally {
-        setLoadingQuestions(false);
+        setLoadingSpec(false);
       }
     };
-    fetchQuestions();
+    fetchSpec();
   }, []);
+
+  const questions = spec?.questions || [];
+  const pillars = spec?.pillars || [];
+  const maturityGates = spec?.maturityGates || [];
 
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = questions.length;
@@ -99,7 +198,6 @@ export default function DiagnosticInput() {
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
-
     return {
       "Content-Type": "application/json",
       ...(token && { "Authorization": `Bearer ${token}` }),
@@ -110,15 +208,12 @@ export default function DiagnosticInput() {
     try {
       setStatus("creating");
       setError(null);
-
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/diagnostic-runs`, {
         method: "POST",
         headers,
       });
-
       if (!response.ok) throw new Error("Failed to create diagnostic run");
-
       const data = await response.json();
       setRunId(data.id);
       setAnswers({});
@@ -132,7 +227,6 @@ export default function DiagnosticInput() {
   const saveAnswer = async (questionId, value) => {
     if (!runId) return;
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
-
     try {
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/diagnostic-inputs`, {
@@ -152,15 +246,11 @@ export default function DiagnosticInput() {
     try {
       setStatus("submitting");
       setError(null);
-
       const headers = await getAuthHeaders();
-
       const completeRes = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/complete`, { method: "POST", headers });
       if (!completeRes.ok) throw new Error("Failed to complete run");
-
       const scoreRes = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/score`, { method: "POST", headers });
       if (!scoreRes.ok) throw new Error("Failed to score run");
-
       navigate(`/report/${runId}`);
     } catch (err) {
       setError(err.message);
@@ -170,8 +260,8 @@ export default function DiagnosticInput() {
 
   const toggleHelp = (qid) => setHelpVisible((prev) => ({ ...prev, [qid]: !prev[qid] }));
 
-  // Loading state for questions
-  if (loadingQuestions) {
+  // Loading state
+  if (loadingSpec) {
     return (
       <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
@@ -186,18 +276,18 @@ export default function DiagnosticInput() {
   return (
     <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
       <header style={{ background: "#0F172A", color: "#FFF", padding: "24px 0" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 20px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
           <div style={{ fontSize: 10, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 6 }}>FINANCE DIAGNOSTIC</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Maturity Assessment</h1>
         </div>
       </header>
 
-      <main style={{ maxWidth: 800, margin: "0 auto", padding: "32px 20px" }}>
+      <main style={{ maxWidth: 900, margin: "0 auto", padding: "32px 20px" }}>
         {error && (
           <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
             <AlertTriangle size={20} color="#DC2626" />
             <div style={{ color: "#991B1B", fontSize: 14 }}>{error}</div>
-            <button onClick={() => setError(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#991B1B", cursor: "pointer", fontSize: 18 }}>x</button>
+            <button onClick={() => setError(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#991B1B", cursor: "pointer", fontSize: 18 }}>×</button>
           </div>
         )}
 
@@ -207,9 +297,19 @@ export default function DiagnosticInput() {
               <FileText size={36} color="#4F46E5" />
             </div>
             <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>Finance Maturity Diagnostic</h2>
-            <p style={{ color: "#6B7280", fontSize: 15, lineHeight: 1.6, marginBottom: 32, maxWidth: 500, margin: "0 auto 32px" }}>
-              Answer {totalQuestions} questions about your financial planning capabilities. You'll receive a personalized maturity assessment with actionable recommendations.
+            <p style={{ color: "#6B7280", fontSize: 15, lineHeight: 1.6, marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
+              Answer {totalQuestions} questions across {pillars.length} pillar{pillars.length !== 1 ? "s" : ""} to receive a personalized maturity assessment with actionable recommendations.
             </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
+              {maturityGates.filter(g => g.level > 0).map(gate => {
+                const lc = LEVEL_COLORS[gate.level] || LEVEL_COLORS[1];
+                return (
+                  <div key={gate.level} style={{ background: lc.bg, color: lc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+                    L{gate.level}: {gate.label}
+                  </div>
+                );
+              })}
+            </div>
             <button onClick={createRun} style={{ background: "#4F46E5", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10 }}>
               <Play size={20} /> Start Assessment
             </button>
@@ -226,18 +326,27 @@ export default function DiagnosticInput() {
 
         {status === "answering" && (
           <>
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: 32, background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 20 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Progress: {answeredCount} of {totalQuestions}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Overall Progress: {answeredCount} of {totalQuestions}</span>
                 <span style={{ fontSize: 13, color: "#6B7280" }}>{Math.round((answeredCount / totalQuestions) * 100)}%</span>
               </div>
               <ProgressBar current={answeredCount} total={totalQuestions} />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {questions.map((q, i) => (
-                <QuestionCard key={q.id} question={q} answer={answers[q.id] ?? null} onAnswer={saveAnswer} index={i} showHelp={helpVisible[q.id] || false} onToggleHelp={() => toggleHelp(q.id)} />
-              ))}
-            </div>
+
+            {pillars.map(pillar => (
+              <PillarSection
+                key={pillar.id}
+                pillar={pillar}
+                questions={questions}
+                maturityGates={maturityGates}
+                answers={answers}
+                onAnswer={saveAnswer}
+                helpVisible={helpVisible}
+                onToggleHelp={toggleHelp}
+              />
+            ))}
+
             <div style={{ marginTop: 32, textAlign: "center" }}>
               <button onClick={submitDiagnostic} disabled={!allAnswered} style={{ background: allAnswered ? "#4F46E5" : "#D1D5DB", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: allAnswered ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 10 }}>
                 <Send size={20} /> {allAnswered ? "Submit & View Results" : `Answer ${totalQuestions - answeredCount} more`}
@@ -256,8 +365,8 @@ export default function DiagnosticInput() {
       </main>
 
       <footer style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 20px", textAlign: "center", fontSize: 12, color: "#6B7280" }}>
-          Finance Diagnostic Platform {specVersion ? `• Spec ${specVersion}` : ""}
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px", textAlign: "center", fontSize: 12, color: "#6B7280" }}>
+          Finance Diagnostic Platform {spec?.version ? `• Spec ${spec.version}` : ""}
         </div>
       </footer>
     </div>

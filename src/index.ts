@@ -96,6 +96,17 @@ app.get("/spec/questions", (_req, res) => {
   });
 });
 
+// Full spec endpoint - Single Source of Truth for frontend
+app.get("/api/spec", (_req, res) => {
+  const spec = SpecRegistry.get("v2.6.4");
+  res.json({
+    version: spec.version,
+    pillars: spec.pillars,
+    questions: spec.questions,
+    maturityGates: spec.maturityGates,
+  });
+});
+
 app.get("/supabase-health", async (_req, res) => {
   const { error } = await supabaseAnon
     .from("diagnostic_runs")
