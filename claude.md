@@ -36,10 +36,11 @@ CFOdiagnosis_v1/
 │   ├── validateRun.ts            # Input validation logic
 │   ├── spec.ts                   # Spec export
 │   │
-│   ├── specs/                    # Specification layer (FROZEN v2.6.4)
-│   │   ├── types.ts              # Spec interface definitions
-│   │   ├── v2.6.4.ts             # Actual spec (questions, pillars, gates)
-│   │   ├── registry.ts           # Spec version registry
+│   ├── specs/                    # Specification layer
+│   │   ├── types.ts              # Spec interface definitions (with theme types)
+│   │   ├── v2.6.4.ts             # Legacy spec (40 process questions)
+│   │   ├── v2.7.0.ts             # Current spec (behavioral edition)
+│   │   ├── registry.ts           # Spec version registry (default: v2.7.0)
 │   │   └── toAggregateSpec.ts    # Spec transformation
 │   │
 │   ├── scoring/                  # Scoring engine
@@ -101,7 +102,8 @@ CFOdiagnosis_v1/
 │       └── 20241220_vs18_context_intake.sql
 │
 ├── spec/
-│   └── SPEC_v2.6.4.md            # Frozen specification document
+│   ├── SPEC_v2.6.4.md            # Legacy specification document
+│   └── SPEC_v2.7.0.md            # Current specification (behavioral edition)
 │
 ├── dist/                         # Compiled TypeScript output
 ├── package.json
@@ -192,7 +194,7 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 | 4 | Optimized | Level 3 + Level 4 gates |
 
 ### Key Principles (DO NOT VIOLATE)
-1. **Spec v2.6.4 is FROZEN** — No modifications without version bump
+1. **Current spec is v2.7.0** — Behavioral edition with theme layer
 2. **Scoring is pure functions** — No side effects, deterministic
 3. **Missing answers = 0 score** — Conservative scoring
 4. **Gates are sequential** — Must pass all previous levels
@@ -327,6 +329,8 @@ npm run build        # Vite build to dist/
 | Content Sprint (40 questions) | ✅ Complete |
 | Criticality Patch ("Fair but Firm") | ✅ Complete |
 | QA Test Suite (3 scenarios) | ✅ Complete |
+| v2.7.0 Theme Layer | ✅ Complete |
+| v2.7.0 Behavioral Edition | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
 
 ---
@@ -538,9 +542,58 @@ Access via: https://app.supabase.com (login required)
 
 ---
 
+## v2.7.0 Behavioral Edition
+
+**Problem solved:** The diagnostic was assessing "process existence" (Junior Auditor) instead of "organizational health" (Senior Partner)
+
+**Solution:** Rewrote 23 questions from process-checking to behavioral assessment
+
+**Question Distribution:**
+
+| Type | Count | Location |
+|------|-------|----------|
+| Process Questions | 17 | Foundation (15) + Forecasting critical (2) |
+| Behavioral Questions | 23 | Future (13) + Intelligence (10) |
+| **Total** | **40** | |
+
+**Theme Layer:**
+
+| Theme | Icon | Objectives | Questions |
+|-------|------|------------|-----------|
+| The Foundation 🏛️ | Process | Budget, Control, Variance | 15 (8 critical) |
+| The Future 🔮 | Behavioral | Forecast, Driver, Integrate | 15 (2 critical) |
+| The Intelligence 🧠 | Behavioral | Scenario, Predict | 10 (0 critical) |
+
+**Example Transformation:**
+
+| Before (Process) | After (Behavioral) |
+|-----------------|-------------------|
+| "Are assumptions documented?" | "When the forecast is wrong, does Finance lead a blameless post-mortem?" |
+| "Is model linked to drivers?" | "When Finance says 'we can't afford this hire,' does leadership accept it or demand the model be 'fixed'?" |
+
+**Key files:**
+- `src/specs/v2.7.0.ts` - Behavioral questions and theme assignments
+- `src/specs/types.ts` - ThemeCode, ThemeMetadata types
+- `spec/SPEC_v2.7.0.md` - Full specification document
+- `cfo-frontend/src/DiagnosticInput.jsx` - Theme-based UI grouping
+
+---
+
+## NEXT STEPS (Pre-V1.0 Finalization)
+
+| Task | Priority | Status |
+|------|----------|--------|
+| Review every single question | HIGH | ⏳ Pending |
+| Review maturity logic | HIGH | ⏳ Pending |
+| Review the report output | HIGH | ⏳ Pending |
+| Final QA testing | HIGH | ⏳ Pending |
+| V1.0 Release | - | Blocked on above |
+
+---
+
 ## Contact & Resources
 
 - **GitHub**: https://github.com/CanKoseoglu123/CFOdiagnosis_v1
-- **Spec Document**: `spec/SPEC_v2.6.4.md`
+- **Spec Document**: `spec/SPEC_v2.7.0.md`
 - **Railway Dashboard**: https://railway.app
 - **Vercel Dashboard**: https://vercel.com
