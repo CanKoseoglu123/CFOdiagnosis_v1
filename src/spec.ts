@@ -1,3 +1,9 @@
+// src/spec.ts
+// Re-exports the main spec for validateRun.ts compatibility
+// All questions are boolean type for validation purposes
+
+import { SPEC as SPEC_V264 } from "./specs/v2.6.4";
+
 export type QuestionType = "string" | "number" | "boolean";
 
 export interface QuestionSpec {
@@ -11,55 +17,13 @@ export interface Spec {
   questions: readonly QuestionSpec[];
 }
 
+// Convert the full spec questions to validation format
+// All our diagnostic questions are boolean yes/no
 export const SPEC: Spec = {
-  version: "v2.6.4",
-  questions: [
-    // --- Level 1: Emerging ---
-    {
-      id: "fpa_annual_budget",
-      type: "boolean",
-      required: true,
-    },
-    {
-      id: "fpa_budget_owner",
-      type: "boolean",
-      required: true,
-    },
-
-    // --- Level 2: Defined ---
-    {
-      id: "fpa_variance_analysis",
-      type: "boolean",
-      required: true,
-    },
-    {
-      id: "fpa_rolling_forecast",
-      type: "boolean",
-      required: true,
-    },
-
-    // --- Level 3: Managed ---
-    {
-      id: "fpa_driver_based",
-      type: "boolean",
-      required: true,
-    },
-    {
-      id: "fpa_scenario_modeling",
-      type: "boolean",
-      required: true,
-    },
-
-    // --- Level 4: Optimized ---
-    {
-      id: "fpa_integrated_planning",
-      type: "boolean",
-      required: true,
-    },
-    {
-      id: "fpa_predictive",
-      type: "boolean",
-      required: true,
-    },
-  ],
+  version: SPEC_V264.version,
+  questions: SPEC_V264.questions.map((q) => ({
+    id: q.id,
+    type: "boolean" as QuestionType,
+    required: true,
+  })),
 };
