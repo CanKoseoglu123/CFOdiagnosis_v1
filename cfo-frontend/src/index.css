@@ -66,3 +66,41 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Print Styles */
+@media print {
+  /* Hide interactive elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure background colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset page styles */
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: auto;
+    background: white !important;
+  }
+
+  /* Prevent cards from breaking across pages */
+  [data-print-card] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Remove shadows for cleaner print */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Ensure full width printing */
+  html, body, #root {
+    width: 100% !important;
+  }
+}

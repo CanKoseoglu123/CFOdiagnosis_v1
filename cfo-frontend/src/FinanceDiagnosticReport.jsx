@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { AlertTriangle, CheckCircle, ChevronRight, Target, TrendingUp, Shield, Zap, ArrowRight, Info, Home } from "lucide-react";
+import { AlertTriangle, CheckCircle, ChevronRight, Target, TrendingUp, Shield, Zap, ArrowRight, Info, Home, Printer } from "lucide-react";
+import { useReactToPrint } from "react-to-print";
 import { supabase } from './lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -56,7 +57,7 @@ const MaturityLadder = ({ maturity }) => (
 );
 
 const RiskCard = ({ risk }) => (
-  <div style={{ padding: 14, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, borderLeft: "4px solid #EF4444" }}>
+  <div data-print-card style={{ padding: 14, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, borderLeft: "4px solid #EF4444" }}>
     <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
       <AlertTriangle size={18} color="#DC2626" />
       <div>
@@ -71,7 +72,7 @@ const ActionCard = ({ action, index }) => {
   const [open, setOpen] = useState(false);
   const c = colors.priority[action.priority] || colors.priority.medium;
   return (
-    <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
+    <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
       <div onClick={() => setOpen(!open)} style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", color: c.text, fontWeight: 700, fontSize: 13 }}>{index + 1}</div>
         <div style={{ flex: 1 }}>
@@ -99,7 +100,7 @@ const ActionCard = ({ action, index }) => {
 const PillarCard = ({ pillar }) => {
   const c = colors.maturity[pillar.maturity.achieved_level] || colors.maturity[0];
   return (
-    <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
+    <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: "#111827", margin: 0 }}>{pillar.pillar_name}</h3>
@@ -120,6 +121,12 @@ export default function FinanceDiagnosticReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
+  const contentRef = useRef(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: `Diagnostic-Report-${runId}`,
+  });
 
 useEffect(() => {
   if (!runId) {
@@ -181,7 +188,7 @@ useEffect(() => {
   const mc = colors.maturity[report.maturity.achieved_level] || colors.maturity[0];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
+    <div ref={contentRef} style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
       <header style={{ background: "#0F172A", color: "#FFF", padding: "24px 0" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -189,7 +196,10 @@ useEffect(() => {
             <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Maturity Assessment Report</h1>
             <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 4 }}>Generated {formatDate(report.generated_at)} • {report.spec_version}</div>
           </div>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div className="no-print" style={{ display: "flex", gap: 12 }}>
+            <button onClick={handlePrint} style={{ display: "flex", alignItems: "center", gap: 6, background: "#16A34A", color: "#FFF", padding: "8px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+              <Printer size={16} /> Download PDF
+            </button>
             <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, background: "#1E293B", color: "#94A3B8", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: 13 }}>
               <Home size={16} /> Home
             </Link>
@@ -223,7 +233,7 @@ useEffect(() => {
         </div>
       </div>
 
-      <div style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB" }}>
+      <div className="no-print" style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex" }}>
           {["overview", "maturity", "actions", "pillars"].map((t) => (
             <button key={t} onClick={() => setTab(t)} style={{ padding: "14px 18px", fontSize: 13, fontWeight: 500, color: tab === t ? "#4F46E5" : "#6B7280", background: "transparent", border: "none", borderBottom: `2px solid ${tab === t ? "#4F46E5" : "transparent"}`, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
@@ -248,7 +258,7 @@ useEffect(() => {
             </div>
             <div>
               <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><TrendingUp size={18} color="#4F46E5" /> Maturity Progress</h2>
-              <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
+              <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
                 <MaturityLadder maturity={report.maturity} />
               </div>
             </div>
@@ -257,7 +267,7 @@ useEffect(() => {
         {tab === "maturity" && (
           <div style={{ maxWidth: 500 }}>
             <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Maturity Assessment</h2>
-            <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
+            <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
               <MaturityLadder maturity={report.maturity} />
             </div>
           </div>
