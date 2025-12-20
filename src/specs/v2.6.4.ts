@@ -1,9 +1,15 @@
 /**
- * CFO Diagnostic Platform - Specification v2.6.4
+ * CFO Diagnostic Platform - Specification v2.6.4 (PATCHED)
  *
  * FROZEN SPECIFICATION - Do not modify without version bump
  *
  * Content: FP&A Pillar (40 questions, 8 objectives, 8 actions)
+ *
+ * PATCH APPLIED: "Fair but Firm" Calibration
+ * - L1 Critical: 10 → 6 (removed: q04, q05, q08, q09)
+ * - L2 Critical: 6 → 4 (removed: q03, q04)
+ * - Total Critical: 16 → 10
+ *
  * Last Updated: 2024-12-20
  */
 
@@ -99,11 +105,13 @@ export const SPEC: Spec = {
   ],
 
   // =============================================================================
-  // QUESTIONS - ALL 40 (10 per level)
+  // QUESTIONS - 40 total (10 per level)
+  // Critical: L1=6, L2=4, L3=0, L4=0 → Total=10
   // =============================================================================
   questions: [
     // -------------------------------------------------------------------------
-    // LEVEL 1: EMERGING (10 questions, ALL critical)
+    // LEVEL 1: EMERGING (10 questions, 6 CRITICAL)
+    // PATCHED: q04, q05, q08, q09 changed to non-critical
     // -------------------------------------------------------------------------
 
     // Budget Foundation (obj_fpa_l1_budget) - 5 questions
@@ -116,7 +124,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Does the company produce an approved annual budget before the fiscal year begins?",
       help: "An approved annual budget should be formally signed off by leadership before the fiscal year starts. This provides a clear financial baseline for the organization.",
-      is_critical: true
+      is_critical: true // CRITICAL: No budget = chaos
     },
     {
       id: "fpa_l1_q02",
@@ -127,7 +135,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is there a single, clearly assigned owner responsible for the budget process?",
       help: "A designated budget owner (typically FP&A Director or CFO) should have explicit accountability for the end-to-end budget process, timeline, and quality.",
-      is_critical: true
+      is_critical: true // CRITICAL: No owner = no accountability
     },
     {
       id: "fpa_l1_q03",
@@ -138,7 +146,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Does the budget include a full P&L down to Net Income (not just Revenue/Opex)?",
       help: "A complete budget should cover all P&L lines: Revenue, COGS, Gross Margin, Operating Expenses, EBITDA, Interest, Taxes, and Net Income.",
-      is_critical: true
+      is_critical: true // CRITICAL: Partial budget = sales target, not budget
     },
     {
       id: "fpa_l1_q04",
@@ -149,7 +157,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Is the budget granular enough to track expenses by department or cost center?",
       help: "Budget granularity at the department/cost center level enables accountability and meaningful variance analysis.",
-      is_critical: false
+      is_critical: false // PATCHED: Important but not fatal
     },
     {
       id: "fpa_l1_q05",
@@ -160,7 +168,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Are budget targets formally communicated to department heads in writing?",
       help: "Department heads should receive written documentation of their budget targets, including revenue goals, expense limits, and headcount allocations.",
-      is_critical: false
+      is_critical: false // PATCHED: Verbal communication is okay for L1
     },
 
     // Financial Controls (obj_fpa_l1_control) - 5 questions
@@ -173,7 +181,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is there a formal chart of accounts that is consistent across the organization?",
       help: "A standardized chart of accounts ensures consistent financial reporting and enables meaningful comparisons across departments and time periods.",
-      is_critical: true
+      is_critical: true // CRITICAL: Inconsistent CoA = unreliable data
     },
     {
       id: "fpa_l1_q07",
@@ -184,7 +192,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Are non-standard journal entries reviewed and approved by a second person?",
       help: "Manual or adjusting journal entries should require review and approval by someone other than the preparer to prevent errors and fraud.",
-      is_critical: true
+      is_critical: true // CRITICAL: No review = fraud/error risk
     },
     {
       id: "fpa_l1_q08",
@@ -195,7 +203,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is there a documented delegation of authority (DOA) matrix for spending approvals?",
       help: "A DOA matrix defines who can approve expenditures at different dollar thresholds, ensuring appropriate oversight for financial commitments.",
-      is_critical: false
+      is_critical: false // PATCHED: Good practice, not fatal for L1
     },
     {
       id: "fpa_l1_q09",
@@ -206,7 +214,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Are bank reconciliations performed and reviewed within 10 days of month-end?",
       help: "Timely bank reconciliations ensure cash balances are accurate and help identify discrepancies, fraud, or errors quickly.",
-      is_critical: false
+      is_critical: false // PATCHED: 15 days is late, not fatal
     },
     {
       id: "fpa_l1_q10",
@@ -217,11 +225,12 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is access to the accounting system restricted based on roles (segregation of duties)?",
       help: "Role-based access controls ensure that no single person can both initiate and approve transactions, reducing fraud risk.",
-      is_critical: true
+      is_critical: true // CRITICAL: No SoD = audit failure
     },
 
     // -------------------------------------------------------------------------
-    // LEVEL 2: DEFINED (10 questions, 6 critical)
+    // LEVEL 2: DEFINED (10 questions, 4 CRITICAL)
+    // PATCHED: q03, q04 changed to non-critical
     // -------------------------------------------------------------------------
 
     // Variance Management (obj_fpa_l2_variance) - 5 questions
@@ -234,7 +243,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is a Budget vs. Actuals (BvA) report generated every month?",
       help: "Monthly BvA reports compare actual financial results against budget, providing visibility into performance and enabling timely intervention.",
-      is_critical: true
+      is_critical: true // CRITICAL: Core L2 capability
     },
     {
       id: "fpa_l2_q02",
@@ -245,7 +254,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Are variances exceeding a defined threshold (e.g., 10%) formally investigated?",
       help: "Material variances should trigger a formal investigation process to understand root causes and determine if corrective action is needed.",
-      is_critical: true
+      is_critical: true // CRITICAL: Core L2 capability
     },
     {
       id: "fpa_l2_q03",
@@ -256,7 +265,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Do department heads meet with Finance monthly to review their BvA performance?",
       help: "Regular BvA review meetings create accountability and ensure department heads understand and own their financial performance.",
-      is_critical: false
+      is_critical: false // PATCHED: Quarterly acceptable for L2
     },
     {
       id: "fpa_l2_q04",
@@ -267,7 +276,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Are variance explanations documented in the monthly management reporting package?",
       help: "Written variance explanations in management reports create an audit trail and help leadership understand financial performance.",
-      is_critical: false
+      is_critical: false // PATCHED: Good practice, not fatal
     },
     {
       id: "fpa_l2_q05",
@@ -291,7 +300,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is a financial forecast updated at least quarterly (re-forecast)?",
       help: "Regular forecast updates incorporate new information and provide a more accurate view of expected year-end results than a static annual budget.",
-      is_critical: true
+      is_critical: true // CRITICAL: Core L2 capability
     },
     {
       id: "fpa_l2_q07",
@@ -302,7 +311,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Does the forecast project cash flow and liquidity, not just P&L?",
       help: "Cash flow forecasting is essential for managing working capital, timing of expenditures, and ensuring the company can meet its obligations.",
-      is_critical: true
+      is_critical: true // CRITICAL: Liquidity is always critical
     },
     {
       id: "fpa_l2_q08",
@@ -339,7 +348,7 @@ export const SPEC: Spec = {
     },
 
     // -------------------------------------------------------------------------
-    // LEVEL 3: MANAGED (10 questions, none critical)
+    // LEVEL 3: MANAGED (10 questions, 0 CRITICAL)
     // -------------------------------------------------------------------------
 
     // Driver-Based Planning (obj_fpa_l3_driver) - 5 questions
@@ -457,7 +466,7 @@ export const SPEC: Spec = {
     },
 
     // -------------------------------------------------------------------------
-    // LEVEL 4: OPTIMIZED (10 questions, none critical)
+    // LEVEL 4: OPTIMIZED (10 questions, 0 CRITICAL)
     // -------------------------------------------------------------------------
 
     // Integrated Planning (obj_fpa_l4_integrate) - 5 questions
@@ -576,15 +585,14 @@ export const SPEC: Spec = {
   ],
 
   // =============================================================================
-  // MATURITY GATES (Sequential, 80% threshold)
+  // MATURITY GATES (Sequential, evidence-based)
   // =============================================================================
   maturityGates: [
     {
       level: 0,
       label: "Ad-hoc",
-      description: "No formal financial processes in place",
-      required_evidence_ids: [],
-      threshold: 1.0
+      description: "No formal financial planning processes",
+      required_evidence_ids: []
     },
     {
       level: 1,
@@ -593,8 +601,7 @@ export const SPEC: Spec = {
       required_evidence_ids: [
         "fpa_l1_q01", "fpa_l1_q02", "fpa_l1_q03", "fpa_l1_q04", "fpa_l1_q05",
         "fpa_l1_q06", "fpa_l1_q07", "fpa_l1_q08", "fpa_l1_q09", "fpa_l1_q10"
-      ],
-      threshold: 0.8
+      ]
     },
     {
       level: 2,
@@ -603,8 +610,7 @@ export const SPEC: Spec = {
       required_evidence_ids: [
         "fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q03", "fpa_l2_q04", "fpa_l2_q05",
         "fpa_l2_q06", "fpa_l2_q07", "fpa_l2_q08", "fpa_l2_q09", "fpa_l2_q10"
-      ],
-      threshold: 0.8
+      ]
     },
     {
       level: 3,
@@ -613,8 +619,7 @@ export const SPEC: Spec = {
       required_evidence_ids: [
         "fpa_l3_q01", "fpa_l3_q02", "fpa_l3_q03", "fpa_l3_q04", "fpa_l3_q05",
         "fpa_l3_q06", "fpa_l3_q07", "fpa_l3_q08", "fpa_l3_q09", "fpa_l3_q10"
-      ],
-      threshold: 0.8
+      ]
     },
     {
       level: 4,
@@ -623,8 +628,7 @@ export const SPEC: Spec = {
       required_evidence_ids: [
         "fpa_l4_q01", "fpa_l4_q02", "fpa_l4_q03", "fpa_l4_q04", "fpa_l4_q05",
         "fpa_l4_q06", "fpa_l4_q07", "fpa_l4_q08", "fpa_l4_q09", "fpa_l4_q10"
-      ],
-      threshold: 0.8
+      ]
     }
   ],
 
