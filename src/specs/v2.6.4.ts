@@ -149,7 +149,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Is the budget granular enough to track expenses by department or cost center?",
       help: "Budget granularity at the department/cost center level enables accountability and meaningful variance analysis.",
-      is_critical: true
+      is_critical: false
     },
     {
       id: "fpa_l1_q05",
@@ -160,7 +160,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Are budget targets formally communicated to department heads in writing?",
       help: "Department heads should receive written documentation of their budget targets, including revenue goals, expense limits, and headcount allocations.",
-      is_critical: true
+      is_critical: false
     },
 
     // Financial Controls (obj_fpa_l1_control) - 5 questions
@@ -195,7 +195,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Is there a documented delegation of authority (DOA) matrix for spending approvals?",
       help: "A DOA matrix defines who can approve expenditures at different dollar thresholds, ensuring appropriate oversight for financial commitments.",
-      is_critical: true
+      is_critical: false
     },
     {
       id: "fpa_l1_q09",
@@ -206,7 +206,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Are bank reconciliations performed and reviewed within 10 days of month-end?",
       help: "Timely bank reconciliations ensure cash balances are accurate and help identify discrepancies, fraud, or errors quickly.",
-      is_critical: true
+      is_critical: false
     },
     {
       id: "fpa_l1_q10",
@@ -256,7 +256,7 @@ export const SPEC: Spec = {
       weight: 2,
       text: "Do department heads meet with Finance monthly to review their BvA performance?",
       help: "Regular BvA review meetings create accountability and ensure department heads understand and own their financial performance.",
-      is_critical: true
+      is_critical: false
     },
     {
       id: "fpa_l2_q04",
@@ -267,7 +267,7 @@ export const SPEC: Spec = {
       weight: 1,
       text: "Are variance explanations documented in the monthly management reporting package?",
       help: "Written variance explanations in management reports create an audit trail and help leadership understand financial performance.",
-      is_critical: true
+      is_critical: false
     },
     {
       id: "fpa_l2_q05",

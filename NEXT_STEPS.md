@@ -1,6 +1,6 @@
 # CFO Diagnostic Platform - Next Steps
 
-## Current Status (As of VS20 Completion)
+## Current Status (As of Content Sprint + QA Completion)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -9,8 +9,10 @@
 | Context Intake (VS18) | ✅ Complete | Company name, industry captured |
 | Critical Risks (VS19) | ✅ Complete | "Silence is a Risk" philosophy |
 | Action Engine (VS20) | ✅ Complete | Objective-based, derived priority |
-| Real Content | ❌ Placeholder | 8 demo questions only |
-| Polish/QA | ❌ Not started | PDF edge cases, mobile |
+| Content Sprint | ✅ Complete | 40 FP&A questions, 8 objectives, 8 actions |
+| Criticality Patch | ✅ Complete | "Fair but Firm" - 10 critical questions |
+| QA Test Suite | ✅ Complete | All 3 scenarios pass (Chaos/Mature/Partial) |
+| Polish/QA | ⏳ In Progress | PDF edge cases, mobile |
 
 ---
 
@@ -30,100 +32,75 @@
 
 ---
 
-## Phase 2: CONTENT SPRINT (Non-Coding) - NEXT
+## Phase 2: CONTENT SPRINT ✅ COMPLETE
 
 **Goal:** The Fuel for the Engine.
 
-**Activity:** Replace the 8 placeholder questions with ~40 real questions covering one full Pillar (e.g., FP&A).
+**What was delivered:**
+- 40 FP&A questions (10 per maturity level)
+- 8 objectives (2 per level)
+- 8 actions (1 per objective)
+- All questions linked to objectives via `objective_id`
+- All objectives linked to actions via `action_id`
 
-**Method:**
-1. Draft in Excel first (faster iteration)
-2. Transcribe to JSON in `src/specs/v2.6.4.ts`
-3. Ensure every Objective has an `action_id` linking to an action definition
-4. Ensure every Level 1/2 Question has `is_critical: true` where appropriate
+**Criticality Configuration ("Fair but Firm"):**
 
-**Content Structure Required:**
+| Level | Total Questions | Critical | Non-Critical |
+|-------|-----------------|----------|--------------|
+| L1 (Emerging) | 10 | 6 | 4 |
+| L2 (Defined) | 10 | 4 | 6 |
+| L3 (Managed) | 10 | 0 | 10 |
+| L4 (Optimized) | 10 | 0 | 10 |
+| **Total** | **40** | **10** | **30** |
 
-```typescript
-// For each new Objective:
-{
-  id: "obj_xxx",
-  pillar_id: "fpa",
-  level: 1-4,
-  name: "Human Readable Name",
-  description: "What this objective represents",
-  action_id: "act_xxx"  // Links to actions array
-}
+**Critical Questions (Level 1 - Fatal):**
+- fpa_l1_q01: Annual budget exists
+- fpa_l1_q02: Budget owner assigned
+- fpa_l1_q03: Full P&L budget
+- fpa_l1_q06: Consistent chart of accounts
+- fpa_l1_q07: JE review/approval
+- fpa_l1_q10: Role-based access (SoD)
 
-// For each new Question:
-{
-  id: "fpa_xxx",
-  pillar: "fpa",
-  weight: 1-2,
-  text: "The question text?",
-  is_critical: true/false,
-  trigger_action_id: "act_xxx",  // Legacy, optional
-  objective_id: "obj_xxx",       // VS20: Required for new questions
-  level: 1-4,
-  levelLabel: "Emerging/Defined/Managed/Optimized",
-  help: "Explanation for the user"
-}
+**Critical Questions (Level 2 - Fatal):**
+- fpa_l2_q01: Monthly BvA report
+- fpa_l2_q02: Variance investigation
+- fpa_l2_q06: Quarterly forecast
+- fpa_l2_q07: Cash flow forecast
 
-// For each new Action:
-{
-  id: "act_xxx",
-  title: "Action Title",
-  description: "Detailed description of what to do",
-  rationale: "Why this matters",
-  priority: "critical" | "high" | "medium"  // Legacy, ignored by VS20
-}
-```
-
-**Suggested FP&A Question Categories (40 questions):**
-
-| Level | Category | Example Questions |
-|-------|----------|-------------------|
-| 1 | Budget Basics | Annual budget exists, Budget owner assigned, Budget calendar defined |
-| 1 | Financial Controls | Approval workflows, Segregation of duties, Audit trail |
-| 2 | Variance Analysis | Monthly reviews, Threshold definitions, Root cause process |
-| 2 | Forecasting | Rolling forecast, Quarterly updates, Accuracy tracking |
-| 3 | Driver-Based | Key driver identification, Model documentation, Sensitivity analysis |
-| 3 | Scenario Planning | Multiple scenarios, Trigger points, Contingency plans |
-| 4 | Integration | Cross-functional alignment, Shared assumptions, Connected systems |
-| 4 | Analytics | Predictive models, ML adoption, Forecast accuracy measurement |
-
-**Time Estimate:** 2-3 Days
+**Tests:** All 569 tests pass (`npm run test:all`)
 
 ---
 
-## Phase 3: INTEGRATION TEST ("CFO Walkthrough")
+## Phase 3: INTEGRATION TEST ("CFO Walkthrough") ✅ COMPLETE
 
 **Goal:** Validation.
 
-**Test Scenarios:**
+**QA Test Suite:** `qa-test-suite.js` (Puppeteer-based automation)
 
-### Scenario A: Chaos (Answer NO to everything)
-Expected Results:
-- Maturity Level: 0 (Ad-hoc) or 1 (Emerging)
-- Critical Risks: All Level 1 critical questions flagged
-- Actions: Multiple HIGH priority actions
-- derived_actions.length > 0
+**Test Results (All 3 Scenarios Pass):**
 
-### Scenario B: Mature (Answer YES to everything)
-Expected Results:
-- Maturity Level: 4 (Optimized)
-- Critical Risks: 0
-- Actions: 0 (all objectives satisfied)
-- derived_actions.length === 0
+### Scenario A: Chaos (Answer NO to everything) ✅
+| Check | Expected | Actual | Result |
+|-------|----------|--------|--------|
+| Maturity Level | 0-1 | 0 | ✅ |
+| Critical Risks | 10-20 | 10 | ✅ |
+| Actions Count | ≥1 | 8 | ✅ |
 
-### Scenario C: Partial Progress
-- Answer YES to Level 1 & 2, NO to Level 3 & 4
-Expected Results:
-- Maturity Level: 2 (Defined)
-- Critical Risks: 0 (Level 1 is satisfied)
-- Actions: MEDIUM priority for Level 3/4 gaps
+### Scenario B: Mature (Answer YES to everything) ✅
+| Check | Expected | Actual | Result |
+|-------|----------|--------|--------|
+| Maturity Level | 4 | 4 | ✅ |
+| Critical Risks | 0 | 0 | ✅ |
+| Actions Count | 0 | 0 | ✅ |
 
-**Time Estimate:** 0.5 Days
+### Scenario C: Partial (L1+L2 YES, L3+L4 NO) ✅
+| Check | Expected | Actual | Result |
+|-------|----------|--------|--------|
+| Maturity Level | 2 | 2 | ✅ |
+| Critical Risks | 0 | 0 | ✅ |
+| Actions Count | ≥1 | 4 | ✅ |
+
+**PDF Reports Generated:** 3 PDFs in QA_Results folder
 
 ---
 
@@ -164,17 +141,17 @@ Expected Results:
 ## Launch Checklist (V1.0)
 
 ### Definition of Done:
-- [ ] All 277+ tests pass
-- [ ] Content is real (for 1 pillar minimum)
+- [x] All 569 tests pass
+- [x] Content is real (40 FP&A questions)
 - [ ] PDF looks professional
-- [ ] CFO walkthrough scenarios pass
+- [x] CFO walkthrough scenarios pass (3/3)
 - [ ] No critical bugs in backlog
 
 ### Pre-Launch:
-- [ ] Run `npm run test:all` - all green
+- [x] Run `npm run test:all` - all green (569 passed)
 - [ ] Run `npm run build` - no errors
 - [ ] Deploy to staging
-- [ ] Complete CFO walkthrough
+- [x] Complete CFO walkthrough (QA test suite)
 - [ ] Review PDF output
 - [ ] Push to production
 

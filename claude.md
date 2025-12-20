@@ -71,13 +71,14 @@ CFOdiagnosis_v1/
 │   │   ├── engine.ts             # deriveCriticalRisks (pure function)
 │   │   └── index.ts              # Exports
 │   │
-│   └── tests/                    # QA test suites
+│   └── tests/                    # QA test suites (569 tests total)
 │       ├── vs5-qa.test.ts        # Aggregation tests
 │       ├── vs6-qa.test.ts        # Report generation tests
 │       ├── vs7-qa.test.ts        # Maturity evaluation tests
 │       ├── vs8-qa.test.ts        # Action derivation tests
-│       ├── vs9-qa.test.ts        # Validation tests
-│       └── vs19-qa.test.ts       # Critical risk tests
+│       ├── vs9-qa.test.ts        # Content validation tests
+│       ├── vs19-qa.test.ts       # Critical risk tests
+│       └── vs20-qa.test.ts       # Dynamic action tests
 │
 ├── cfo-frontend/                 # Frontend application
 │   ├── src/
@@ -225,11 +226,15 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 12. Redirect to `/report/:runId`
 13. GET `/diagnostic-runs/:id/report` displays results (includes context)
 
-### Current Questions (8 FP&A questions)
-- Level 1 (Emerging): Annual budget, Budget owner
-- Level 2 (Defined): Variance analysis, Rolling forecast
-- Level 3 (Managed): Driver-based forecasting, Scenario modeling
-- Level 4 (Optimized): Integrated planning, Predictive analytics
+### Current Questions (40 FP&A questions)
+
+| Level | Questions | Critical | Objectives |
+|-------|-----------|----------|------------|
+| Level 1 (Emerging) | 10 | 6 | Budget Foundation, Financial Controls |
+| Level 2 (Defined) | 10 | 4 | Variance Analysis, Forecasting |
+| Level 3 (Managed) | 10 | 0 | Driver-Based Planning, Scenario Modeling |
+| Level 4 (Optimized) | 10 | 0 | Integrated Planning, Predictive Analytics |
+| **Total** | **40** | **10** | **8** |
 
 ---
 
@@ -270,12 +275,14 @@ npm run dev          # Vite dev server with HMR
 
 ### Run Tests
 ```bash
-npm run test:vs5     # Aggregation tests
-npm run test:vs6     # Report tests
-npm run test:vs7     # Maturity tests
-npm run test:vs8     # Action tests
-npm run test:vs9     # Validation tests
-npm run test:all     # All tests
+npm run test:vs5     # Aggregation tests (22 tests)
+npm run test:vs6     # Report tests (35 tests)
+npm run test:vs7     # Maturity tests (34 tests)
+npm run test:vs8     # Action tests (23 tests)
+npm run test:vs9     # Content validation tests (411 tests)
+npm run test:vs19    # Critical risk tests (15 tests)
+npm run test:vs20    # Dynamic action tests (29 tests)
+npm run test:all     # All tests (569 total)
 ```
 
 ### Build for Production
@@ -317,6 +324,9 @@ npm run build        # Vite build to dist/
 | VS18: Context Intake | ✅ Complete |
 | VS19: Critical Risk Engine | ✅ Complete |
 | VS20: Dynamic Action Engine | ✅ Complete |
+| Content Sprint (40 questions) | ✅ Complete |
+| Criticality Patch ("Fair but Firm") | ✅ Complete |
+| QA Test Suite (3 scenarios) | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-MVP |
 
 ---
@@ -462,6 +472,38 @@ npm run build        # Vite build to dist/
 - Falls back to legacy actions if derived_actions empty
 
 **Tests:** `npm run test:vs20` (29 test cases)
+
+---
+
+## Criticality Configuration ("Fair but Firm")
+
+**Philosophy:** Not every unanswered question is fatal. Only foundational controls trigger critical risks.
+
+**Distribution:**
+
+| Level | Critical | Non-Critical | Rationale |
+|-------|----------|--------------|-----------|
+| L1 (Emerging) | 6 | 4 | Core budget/control fundamentals |
+| L2 (Defined) | 4 | 6 | Key variance/forecast processes |
+| L3 (Managed) | 0 | 10 | Advanced practices, not fatal |
+| L4 (Optimized) | 0 | 10 | Excellence indicators, not fatal |
+| **Total** | **10** | **30** | |
+
+**Critical Questions (L1):**
+- fpa_l1_q01: Annual budget exists
+- fpa_l1_q02: Budget owner assigned
+- fpa_l1_q03: Full P&L budget
+- fpa_l1_q06: Consistent chart of accounts
+- fpa_l1_q07: JE review/approval
+- fpa_l1_q10: Role-based access (SoD)
+
+**Critical Questions (L2):**
+- fpa_l2_q01: Monthly BvA report
+- fpa_l2_q02: Variance investigation
+- fpa_l2_q06: Quarterly forecast
+- fpa_l2_q07: Cash flow forecast
+
+**Tests:** `npm run test:vs9` validates critical question counts
 
 ---
 
