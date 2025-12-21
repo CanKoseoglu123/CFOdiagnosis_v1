@@ -18,8 +18,11 @@ const LEVEL_NAMES = {
   4: 'Optimized',
 };
 
-export default function ObjectiveTrafficLights({ objectives = [] }) {
+export default function ObjectiveTrafficLights({ objectives = [], questions = [] }) {
   const [expandedObjectives, setExpandedObjectives] = useState(new Set());
+
+  // Build question lookup map for displaying human-readable text
+  const questionMap = new Map(questions.map(q => [q.id, q]));
 
   if (!objectives || objectives.length === 0) return null;
 
@@ -93,6 +96,7 @@ export default function ObjectiveTrafficLights({ objectives = [] }) {
                     objective={obj}
                     expanded={expandedObjectives.has(obj.objective_id)}
                     onToggle={() => toggleExpand(obj.objective_id)}
+                    questionMap={questionMap}
                   />
                 ))}
               </div>
@@ -104,7 +108,7 @@ export default function ObjectiveTrafficLights({ objectives = [] }) {
   );
 }
 
-function ObjectiveCard({ objective, expanded, onToggle }) {
+function ObjectiveCard({ objective, expanded, onToggle, questionMap = new Map() }) {
   const {
     objective_id,
     objective_name,
@@ -116,6 +120,12 @@ function ObjectiveCard({ objective, expanded, onToggle }) {
     overridden,
     override_reason,
   } = objective;
+
+  // Helper to get human-readable question text
+  const getQuestionText = (qId) => {
+    const q = questionMap.get(qId);
+    return q?.text || qId;  // Fallback to ID if not found
+  };
 
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.yellow;
   const hasFailedCriticals = failed_criticals.length > 0;
@@ -232,11 +242,11 @@ function ObjectiveCard({ objective, expanded, onToggle }) {
                     background: '#FEE2E2',
                     borderRadius: 6,
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     gap: 6
                   }}>
-                    <span style={{ fontWeight: 600 }}>✗</span>
-                    <span>{qId}</span>
+                    <span style={{ fontWeight: 600, flexShrink: 0 }}>✗</span>
+                    <span>{getQuestionText(qId)}</span>
                   </div>
                 ))}
               </div>

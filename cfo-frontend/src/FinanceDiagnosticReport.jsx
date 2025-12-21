@@ -185,6 +185,7 @@ export default function FinanceDiagnosticReport() {
   const { runId } = useParams();
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
+  const [spec, setSpec] = useState(null);  // Spec data for question lookups
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("overview");
@@ -206,29 +207,38 @@ useEffect(() => {
     return;
   }
 
-  const fetchReport = async () => {
+  const fetchData = async () => {
     try {
       // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      
-      const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/report`, {
-        headers: {
-          ...(token && { "Authorization": `Bearer ${token}` }),
-        },
-      });
-      
-      if (!response.ok) throw new Error("Failed to load");
-      const data = await response.json();
-      setReport(data);
+
+      // Fetch report and spec in parallel
+      const [reportResponse, specResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/report`, {
+          headers: {
+            ...(token && { "Authorization": `Bearer ${token}` }),
+          },
+        }),
+        fetch(`${API_BASE_URL}/api/spec`),
+      ]);
+
+      if (!reportResponse.ok) throw new Error("Failed to load report");
+      const reportData = await reportResponse.json();
+      setReport(reportData);
+
+      if (specResponse.ok) {
+        const specData = await specResponse.json();
+        setSpec(specData);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-  
-  fetchReport();
+
+  fetchData();
 }, [runId]);
 
 
@@ -264,10 +274,14 @@ useEffect(() => {
   const objectives = report.objectives || [];
   const prioritizedActions = report.prioritized_actions || [];
 
-  // Build questions lookup for V2 components (from objectives)
-  const questions = objectives.flatMap(obj =>
-    (obj.questions || []).map(qId => ({ id: qId, text: qId, level: obj.level }))
-  );
+  // Build questions lookup for V2 components (from spec)
+  // Use spec.questions for actual question text, fall back to ID if not found
+  const specQuestions = spec?.questions || [];
+  const questions = specQuestions.map(q => ({
+    id: q.id,
+    text: q.expert_action?.title || q.text,  // Prefer expert_action.title over raw text
+    level: q.level || 1,
+  }));
 
   // Sidebar content for report
   const sidebarContent = (
@@ -375,7 +389,7 @@ useEffect(() => {
 
             {/* V2 Objective Traffic Lights */}
             {hasV2 && objectives.length > 0 && (
-              <ObjectiveTrafficLights objectives={objectives} />
+              <ObjectiveTrafficLights objectives={objectives} questions={questions} />
             )}
 
             {/* V2 Prioritized Actions */}
@@ -462,7 +476,7 @@ useEffect(() => {
         )}
         {tab === "objectives" && hasV2 && (
           <div style={{ maxWidth: 800 }}>
-            <ObjectiveTrafficLights objectives={objectives} />
+            <ObjectiveTrafficLights objectives={objectives} questions={questions} />
           </div>
         )}
         {tab === "pillars" && (
