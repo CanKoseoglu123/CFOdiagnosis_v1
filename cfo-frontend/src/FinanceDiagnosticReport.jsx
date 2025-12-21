@@ -79,21 +79,22 @@ const RiskCard = ({ risk }) => (
   </div>
 );
 
-const ActionCard = ({ action, index }) => {
+const ActionCard = ({ action, index, forPrint = false }) => {
   const [open, setOpen] = useState(false);
   const c = colors.priority[action.priority] || colors.priority.medium;
+  const isExpanded = open || forPrint;
   return (
     <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
-      <div onClick={() => setOpen(!open)} style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+      <div onClick={() => !forPrint && setOpen(!open)} style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: forPrint ? "default" : "pointer" }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", color: c.text, fontWeight: 700, fontSize: 13 }}>{index + 1}</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, color: "#111827", fontSize: 14 }}>{action.title}</div>
-          <span style={{ background: c.bg, color: c.text, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{action.priority.toUpperCase()}</span>
+          <span className="print-badge" style={{ background: c.bg, color: c.text, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{action.priority.toUpperCase()}</span>
         </div>
-        <ChevronRight size={18} color="#9CA3AF" style={{ transform: open ? "rotate(90deg)" : "rotate(0)" }} />
+        {!forPrint && <ChevronRight size={18} color="#9CA3AF" className="print-hide-chevron" style={{ transform: open ? "rotate(90deg)" : "rotate(0)" }} />}
       </div>
-      {open && (
-        <div style={{ padding: "14px 16px", background: "#F9FAFB", borderTop: "1px solid #E5E7EB" }}>
+      {isExpanded && (
+        <div className="print-expand" style={{ padding: "14px 16px", background: "#F9FAFB", borderTop: "1px solid #E5E7EB" }}>
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>WHAT TO DO</div>
             <div style={{ color: "#374151", fontSize: 13 }}>{action.description}</div>
@@ -109,7 +110,7 @@ const ActionCard = ({ action, index }) => {
 };
 
 // VS20: DerivedActionCard - displays objective-based actions with computed priority
-const DerivedActionCard = ({ action, index }) => {
+const DerivedActionCard = ({ action, index, forPrint = false }) => {
   const [open, setOpen] = useState(false);
   const priorityColors = {
     HIGH: { bg: "#FEE2E2", text: "#991B1B", border: "#FECACA" },
@@ -121,22 +122,23 @@ const DerivedActionCard = ({ action, index }) => {
     maturity_blocker: "Blocks Maturity",
     objective_incomplete: "Objective Gap",
   };
+  const isExpanded = open || forPrint;
   return (
     <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, overflow: "hidden" }}>
-      <div onClick={() => setOpen(!open)} style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}>
+      <div onClick={() => !forPrint && setOpen(!open)} style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, cursor: forPrint ? "default" : "pointer" }}>
         <div style={{ width: 28, height: 28, borderRadius: 8, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", color: c.text, fontWeight: 700, fontSize: 13 }}>{index + 1}</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, color: "#111827", fontSize: 14 }}>{action.title}</div>
           <div style={{ display: "flex", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
-            <span style={{ background: c.bg, color: c.text, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{action.derived_priority}</span>
-            <span style={{ background: "#F3F4F6", color: "#6B7280", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 500 }}>L{action.level}</span>
-            <span style={{ background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 500 }}>{action.objective_name}</span>
+            <span className="print-badge" style={{ background: c.bg, color: c.text, padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{action.derived_priority}</span>
+            <span className="print-badge" style={{ background: "#F3F4F6", color: "#6B7280", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 500 }}>L{action.level}</span>
+            <span className="print-badge" style={{ background: "#EEF2FF", color: "#4F46E5", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 500 }}>{action.objective_name}</span>
           </div>
         </div>
-        <ChevronRight size={18} color="#9CA3AF" style={{ transform: open ? "rotate(90deg)" : "rotate(0)" }} />
+        {!forPrint && <ChevronRight size={18} color="#9CA3AF" className="print-hide-chevron" style={{ transform: open ? "rotate(90deg)" : "rotate(0)" }} />}
       </div>
-      {open && (
-        <div style={{ padding: "14px 16px", background: "#F9FAFB", borderTop: "1px solid #E5E7EB" }}>
+      {isExpanded && (
+        <div className="print-expand" style={{ padding: "14px 16px", background: "#F9FAFB", borderTop: "1px solid #E5E7EB" }}>
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 10, fontWeight: 600, color: "#6B7280", marginBottom: 4 }}>TRIGGERED BY</div>
             <div style={{ color: "#374151", fontSize: 13 }}>{triggerLabel[action.trigger_reason] || action.trigger_reason}</div>
@@ -305,7 +307,8 @@ useEffect(() => {
         </div>
       </div>
 
-      <main style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
+      {/* Screen view - tab-based navigation */}
+      <main className="no-print" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
         {tab === "overview" && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
             <div>
@@ -360,7 +363,57 @@ useEffect(() => {
         )}
       </main>
 
-      <footer style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
+      {/* Print view - shows ALL sections with expanded content */}
+      <main className="print-only" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
+        {/* Critical Risks Section */}
+        {report.critical_risks.length > 0 && (
+          <div className="print-section" style={{ marginBottom: 32 }}>
+            <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+              <AlertTriangle size={18} color="#DC2626" /> Critical Risks ({report.critical_risks.length})
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {report.critical_risks.map((r, i) => <RiskCard key={i} risk={r} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Maturity Section */}
+        <div className="print-section" style={{ marginBottom: 32 }}>
+          <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+            <TrendingUp size={18} color="#4F46E5" /> Maturity Progress
+          </h2>
+          <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20, maxWidth: 500 }}>
+            <MaturityLadder maturity={report.maturity} />
+          </div>
+        </div>
+
+        {/* Full Action Plan Section */}
+        {(report.derived_actions?.length > 0 || report.actions.length > 0) && (
+          <div className="print-section" style={{ marginBottom: 32 }}>
+            <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+              <Zap size={18} color="#4F46E5" /> Action Plan ({report.derived_actions?.length || report.actions.length} actions)
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {report.derived_actions?.length > 0
+                ? report.derived_actions.map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} forPrint={true} />)
+                : report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} forPrint={true} />)
+              }
+            </div>
+          </div>
+        )}
+
+        {/* Pillar Breakdown Section */}
+        <div className="print-section">
+          <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+            <Target size={18} color="#4F46E5" /> Pillar Breakdown
+          </h2>
+          <div className="print-single-column" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+            {report.pillars.map((p) => <PillarCard key={p.pillar_id} pillar={p} />)}
+          </div>
+        </div>
+      </main>
+
+      <footer className="print-footer" style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6B7280" }}>
           <span>Finance Diagnostic Platform • {report.spec_version}</span>
           <span>{formatDate(report.generated_at)}</span>

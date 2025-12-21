@@ -69,9 +69,20 @@ button:focus-visible {
 
 /* Print Styles */
 @media print {
+  /* Page margins */
+  @page {
+    margin: 0.6in;
+    size: letter;
+  }
+
   /* Hide interactive elements */
   .no-print {
     display: none !important;
+  }
+
+  /* Show print-only elements */
+  .print-only {
+    display: block !important;
   }
 
   /* Ensure background colors print */
@@ -86,12 +97,41 @@ button:focus-visible {
     padding: 0;
     min-height: auto;
     background: white !important;
+    display: block;
+    place-items: unset;
   }
 
   /* Prevent cards from breaking across pages */
   [data-print-card] {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /* Prevent section headings from being orphaned */
+  .print-section-header {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Force single-column layout for print */
+  .print-single-column {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Force action cards to show expanded content */
+  .print-expand {
+    display: block !important;
+  }
+
+  /* Hide collapsed chevron indicators in print */
+  .print-hide-chevron {
+    display: none !important;
+  }
+
+  /* Increase badge font size for legibility */
+  .print-badge {
+    font-size: 11px !important;
+    padding: 3px 10px !important;
   }
 
   /* Remove shadows for cleaner print */
@@ -103,4 +143,22 @@ button:focus-visible {
   html, body, #root {
     width: 100% !important;
   }
+
+  /* Add spacing between print sections */
+  .print-section {
+    margin-bottom: 24px;
+    break-inside: avoid;
+  }
+
+  /* Ensure footer stays at bottom and doesn't break */
+  .print-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-top: 32px;
+  }
+}
+
+/* Hide print-only elements on screen */
+.print-only {
+  display: none;
 }
