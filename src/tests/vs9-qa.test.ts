@@ -10,7 +10,7 @@
  * - All questions link to valid objectives (VS20)
  */
 
-import { SPEC } from "../specs/v2.6.4";
+import { SPEC } from "../specs/v2.7.0";
 
 // ============================================================
 // Test Utilities
@@ -57,7 +57,7 @@ console.log("========================================\n");
 // ----------------------------------------------------------
 console.log("--- Spec Structure ---");
 
-assertTrue(SPEC.version === "v2.6.4", "Version is v2.6.4");
+assertTrue(SPEC.version === "v2.7.0", "Version is v2.7.0");
 assertTrue(SPEC.pillars.length > 0, "At least 1 pillar defined");
 assertTrue(SPEC.questions.length > 0, "At least 1 question defined");
 assertTrue(SPEC.maturityGates.length === 5, "5 maturity levels (0-4)");
@@ -193,7 +193,7 @@ for (const a of SPEC.actions) {
 }
 
 // ----------------------------------------------------------
-// 11. FP&A Content Summary (40-question spec)
+// 11. FP&A Content Summary (44-question spec)
 // ----------------------------------------------------------
 console.log("\n--- Content Summary ---");
 
@@ -209,9 +209,9 @@ console.log(`   Critical Questions: ${criticalQuestions.length}`);
 console.log(`   Actions: ${SPEC.actions.length}`);
 console.log(`   Maturity Levels: ${SPEC.maturityGates.length}`);
 
-// 40-question FP&A spec assertions
-assertTrue(fpaQuestions.length === 40, "FP&A has 40 questions");
-assertTrue(criticalQuestions.length === 10, "10 critical questions (L1: 6, L2: 4)");
+// 48-question FP&A spec assertions
+assertTrue(fpaQuestions.length === 48, "FP&A has 48 questions");
+assertTrue(criticalQuestions.length === 8, "8 critical questions (L1: 4, L2: 4)");
 assertTrue(SPEC.actions.length === 8, "8 actions defined (1 per objective)");
 assertTrue(objectives.length === 8, "8 objectives defined (2 per level)");
 
@@ -225,8 +225,8 @@ const level2Critical = SPEC.questions.filter((q) => q.level === 2 && q.is_critic
 const level3Critical = SPEC.questions.filter((q) => q.level === 3 && q.is_critical).length;
 const level4Critical = SPEC.questions.filter((q) => q.level === 4 && q.is_critical).length;
 
-assertEqual(level1Critical, 6, "Level 1 has 6 critical questions (60%)");
-assertEqual(level2Critical, 4, "Level 2 has 4 critical questions (40%)");
+assertEqual(level1Critical, 4, "Level 1 has 4 critical questions (44%)");
+assertEqual(level2Critical, 4, "Level 2 has 4 critical questions (29%)");
 assertEqual(level3Critical, 0, "Level 3 has 0 critical questions");
 assertEqual(level4Critical, 0, "Level 4 has 0 critical questions");
 
@@ -240,9 +240,9 @@ const level2Questions = SPEC.questions.filter((q) => q.level === 2).length;
 const level3Questions = SPEC.questions.filter((q) => q.level === 3).length;
 const level4Questions = SPEC.questions.filter((q) => q.level === 4).length;
 
-assertEqual(level1Questions, 10, "Level 1 (Emerging) has 10 questions");
-assertEqual(level2Questions, 10, "Level 2 (Defined) has 10 questions");
-assertEqual(level3Questions, 10, "Level 3 (Managed) has 10 questions");
+assertEqual(level1Questions, 9, "Level 1 (Emerging) has 9 questions");
+assertEqual(level2Questions, 14, "Level 2 (Defined) has 14 questions");
+assertEqual(level3Questions, 15, "Level 3 (Managed) has 15 questions");
 assertEqual(level4Questions, 10, "Level 4 (Optimized) has 10 questions");
 
 // ----------------------------------------------------------

@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import DiagnosticInput from './DiagnosticInput'
 import FinanceDiagnosticReport from './FinanceDiagnosticReport'
 import SetupPage from './SetupPage'
+import IntroPage from './IntroPage'
 import { LogOut } from 'lucide-react'
 import { useState } from 'react'
 
@@ -128,6 +129,11 @@ export default function App() {
           <Route path="/run/:runId/setup" element={
             <ProtectedRoute>
               <SetupPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/run/:runId/intro" element={
+            <ProtectedRoute>
+              <IntroPage />
             </ProtectedRoute>
           } />
           <Route path="/assess" element={

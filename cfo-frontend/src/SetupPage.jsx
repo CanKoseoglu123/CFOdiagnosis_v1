@@ -42,9 +42,9 @@ export default function SetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed, redirect to assessment
+        // If setup already completed, redirect to intro page
         if (run.setup_completed_at) {
-          navigate(`/assess?runId=${runId}`);
+          navigate(`/run/${runId}/intro`);
           return;
         }
 
@@ -95,8 +95,8 @@ export default function SetupPage() {
         throw new Error(data.error || "Failed to save setup");
       }
 
-      // Navigate to assessment with the run ID
-      navigate(`/assess?runId=${runId}`);
+      // Navigate to intro page
+      navigate(`/run/${runId}/intro`);
     } catch (err) {
       setError(err.message);
     } finally {
