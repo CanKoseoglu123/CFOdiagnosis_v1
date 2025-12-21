@@ -85,13 +85,20 @@ CFOdiagnosis_v1/
 │   ├── src/
 │   │   ├── main.jsx              # App entry point
 │   │   ├── App.jsx               # Routes, auth, navigation
+│   │   ├── IntroPage.jsx         # Assessment methodology intro
 │   │   ├── SetupPage.jsx         # Context intake form (VS18)
 │   │   ├── DiagnosticInput.jsx   # Assessment questionnaire UI
 │   │   ├── FinanceDiagnosticReport.jsx  # Results display
 │   │   ├── context/
 │   │   │   └── AuthContext.jsx   # Supabase auth context
 │   │   ├── components/
-│   │   │   └── ProtectedRoute.jsx # Auth guard
+│   │   │   ├── ProtectedRoute.jsx    # Auth guard
+│   │   │   ├── AppShell.jsx          # Responsive layout wrapper
+│   │   │   ├── AppShell.css          # Layout styles
+│   │   │   ├── IntroSidebar.jsx      # Sidebar for intro page
+│   │   │   ├── SetupSidebar.jsx      # Sidebar for setup page
+│   │   │   ├── QuestionnaireSidebar.jsx  # Progress + themes
+│   │   │   └── ReportSidebar.jsx     # Navigation + actions
 │   │   └── lib/
 │   │       └── supabase.js       # Supabase client
 │   ├── package.json
@@ -210,6 +217,7 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 | `/` | Home | No |
 | `/login` | LoginPage | No |
 | `/run/:runId/setup` | SetupPage | Yes |
+| `/run/:runId/intro` | IntroPage | Yes |
 | `/assess` | DiagnosticInput | Yes |
 | `/report/:runId` | FinanceDiagnosticReport | Yes |
 
@@ -219,24 +227,26 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 3. Redirect to `/run/:id/setup` (context intake)
 4. User enters company name and industry
 5. POST `/diagnostic-runs/:id/setup` saves context
-6. Redirect to `/assess?runId=:id`
-7. User answers Yes/No to each question
-8. Each answer → POST `/diagnostic-inputs`
-9. User clicks "Submit"
-10. POST `/diagnostic-runs/:id/complete`
-11. POST `/diagnostic-runs/:id/score`
-12. Redirect to `/report/:runId`
-13. GET `/diagnostic-runs/:id/report` displays results (includes context)
+6. Redirect to `/run/:id/intro` (methodology explanation)
+7. User clicks "Begin Assessment"
+8. Redirect to `/assess?runId=:id`
+9. User answers Yes/No to each question
+10. Each answer → POST `/diagnostic-inputs`
+11. User clicks "Submit"
+12. POST `/diagnostic-runs/:id/complete`
+13. POST `/diagnostic-runs/:id/score`
+14. Redirect to `/report/:runId`
+15. GET `/diagnostic-runs/:id/report` displays results (includes context)
 
-### Current Questions (40 FP&A questions)
+### Current Questions (48 FP&A questions) - v2.7.1
 
 | Level | Questions | Critical | Objectives |
 |-------|-----------|----------|------------|
-| Level 1 (Emerging) | 10 | 6 | Budget Foundation, Financial Controls |
-| Level 2 (Defined) | 10 | 4 | Variance Analysis, Forecasting |
-| Level 3 (Managed) | 10 | 0 | Driver-Based Planning, Scenario Modeling |
+| Level 1 (Emerging) | 9 | 4 | Budget Foundation, Financial Controls |
+| Level 2 (Defined) | 14 | 4 | Variance Analysis, Forecasting |
+| Level 3 (Managed) | 15 | 0 | Driver-Based Planning, Scenario Modeling |
 | Level 4 (Optimized) | 10 | 0 | Integrated Planning, Predictive Analytics |
-| **Total** | **40** | **10** | **8** |
+| **Total** | **48** | **8** | **8** |
 
 ---
 
@@ -315,23 +325,24 @@ npm run build        # Vite build to dist/
 
 ---
 
-## MVP Status
+## V1.0 Status - LIVE
+
+**Release Date:** December 21, 2025
 
 | Feature | Status |
 |---------|--------|
 | VS1-VS12: Core diagnostic flow | ✅ Complete |
-| VS16: Production deployment | ✅ Complete |
 | VS13: PDF Export | ✅ Complete |
 | VS14: Content Hydration | ✅ Complete |
+| VS16: Production deployment | ✅ Complete |
 | VS18: Context Intake | ✅ Complete |
 | VS19: Critical Risk Engine | ✅ Complete |
 | VS20: Dynamic Action Engine | ✅ Complete |
-| Content Sprint (40 questions) | ✅ Complete |
-| Criticality Patch ("Fair but Firm") | ✅ Complete |
-| QA Test Suite (3 scenarios) | ✅ Complete |
-| v2.7.0 Theme Layer | ✅ Complete |
 | v2.7.0 Behavioral Edition | ✅ Complete |
-| VS15: Admin Dashboard | ❌ Post-MVP |
+| v2.7.1 Content Update (48 questions) | ✅ Complete |
+| AppShell Responsive Layout | ✅ Complete |
+| IntroPage (methodology) | ✅ Complete |
+| VS15: Admin Dashboard | ❌ Post-V1 |
 
 ---
 
@@ -579,21 +590,62 @@ Access via: https://app.supabase.com (login required)
 
 ---
 
-## NEXT STEPS (Pre-V1.0 Finalization)
+## AppShell Layout (V1.0)
 
-| Task | Priority | Status |
-|------|----------|--------|
-| Review every single question | HIGH | ⏳ Pending |
-| Review maturity logic | HIGH | ⏳ Pending |
-| Review the report output | HIGH | ⏳ Pending |
-| Final QA testing | HIGH | ⏳ Pending |
-| V1.0 Release | - | Blocked on above |
+**Problem solved:** Inconsistent layout across pages, no sidebar navigation
+
+**Solution:** Unified AppShell wrapper with responsive sidebar
+
+### Components Created
+```
+cfo-frontend/src/components/
+├── AppShell.jsx          # Main layout wrapper
+├── AppShell.css          # Responsive styles
+├── IntroSidebar.jsx      # What You'll Get preview
+├── SetupSidebar.jsx      # Setup progress steps
+├── QuestionnaireSidebar.jsx  # Progress + themes + submit
+└── ReportSidebar.jsx     # Company info + navigation + actions
+```
+
+### Layout Behavior
+| Viewport | Sidebar | Header |
+|----------|---------|--------|
+| Desktop (≥1024px) | Fixed 280px left, white bg | Hidden |
+| Mobile (<1024px) | Hidden (slide-in on hamburger) | Dark header with hamburger |
+
+### Usage Pattern
+```jsx
+<AppShell sidebarContent={<QuestionnaireSidebar ... />}>
+  {/* Page content */}
+</AppShell>
+```
+
+### Key Styles
+- Sidebar: `#FFFFFF` background, `#E5E7EB` border
+- Logo section: `#1F2937` text
+- Progress bar: `#4F46E5` fill
+- Print: Sidebar hidden via `@media print`
+
+---
+
+## Post-V1.0 Roadmap
+
+| Feature | Priority | Description |
+|---------|----------|-------------|
+| VS15: Admin Dashboard | Medium | View all runs, export analytics |
+| Multi-Pillar | High | Add Liquidity, Treasury, Tax |
+| Benchmarking | Medium | Compare against industry peers |
+| Trend Analysis | Low | Track maturity over time |
+| Email Reports | Low | Send PDF via email |
+| SSO Integration | Medium | Enterprise auth |
 
 ---
 
 ## Contact & Resources
 
 - **GitHub**: https://github.com/CanKoseoglu123/CFOdiagnosis_v1
+- **Production Frontend**: https://cfodiagnosisv1.vercel.app
+- **Production API**: https://cfodiagnosisv1-production.up.railway.app
 - **Spec Document**: `spec/SPEC_v2.7.0.md`
 - **Railway Dashboard**: https://railway.app
 - **Vercel Dashboard**: https://vercel.com

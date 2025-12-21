@@ -1,172 +1,173 @@
-# CFO Diagnostic Platform - Next Steps
+# CFO Diagnostic Platform - V1.0 Release Notes
 
-## Current Status (As of Content Sprint + QA Completion)
+## V1.0 IS LIVE
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Scoring Engine | ✅ Complete | Pure functions, 0-1 normalization |
-| Maturity Gates | ✅ Complete | Sequential gates, weakest-link rollup |
-| Context Intake (VS18) | ✅ Complete | Company name, industry captured |
-| Critical Risks (VS19) | ✅ Complete | "Silence is a Risk" philosophy |
-| Action Engine (VS20) | ✅ Complete | Objective-based, derived priority |
-| Content Sprint | ✅ Complete | 40 FP&A questions, 8 objectives, 8 actions |
-| Criticality Patch | ✅ Complete | "Fair but Firm" - 10 critical questions |
-| QA Test Suite | ✅ Complete | All 3 scenarios pass (Chaos/Mature/Partial) |
-| Polish/QA | ⏳ In Progress | PDF edge cases, mobile |
+**Release Date:** December 21, 2025
+
+**Production URLs:**
+- Frontend: https://cfodiagnosisv1.vercel.app
+- Backend API: https://cfodiagnosisv1-production.up.railway.app
 
 ---
 
-## Phase 1: ENGINEERING (VS20) ✅ COMPLETE
+## What's in V1.0
 
-**Goal:** The Engine works.
+### Core Features
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Scoring Engine | ✅ | Pure functions, 0-1 normalization |
+| Maturity Gates | ✅ | Sequential gates (L1-L4), 80% threshold |
+| Context Intake | ✅ | Company name, industry captured |
+| Critical Risks | ✅ | "Silence is a Risk" - unanswered critical = risk |
+| Action Engine | ✅ | Objective-based, derived priority (HIGH/MEDIUM) |
+| PDF Export | ✅ | Browser print with preserved colors |
+| AppShell Layout | ✅ | Responsive sidebar (desktop) + hamburger menu (mobile) |
 
-**What was delivered:**
-- Objective layer added to spec (4 objectives grouping 8 questions)
-- `deriveActionsFromObjectives()` pure function
-- `DerivedAction` type with computed priority (HIGH/MEDIUM)
-- 29 test cases passing
-- Frontend `DerivedActionCard` component
-- Backward compatibility with legacy `actions` array
+### Content (v2.7.1)
+| Metric | Value |
+|--------|-------|
+| Total Questions | 48 |
+| Critical Questions | 8 (L1: 4, L2: 4) |
+| Objectives | 8 (2 per level) |
+| Actions | 8 (1 per objective) |
+| Themes | 3 (Foundation, Future, Intelligence) |
 
-**Result:** The report now shows Score + Maturity + Risks + Actions.
+### Question Distribution
+| Level | Questions | Critical | Theme |
+|-------|-----------|----------|-------|
+| L1 (Emerging) | 9 | 4 | Foundation |
+| L2 (Defined) | 14 | 4 | Foundation + Future |
+| L3 (Managed) | 15 | 0 | Future + Intelligence |
+| L4 (Optimized) | 10 | 0 | Intelligence |
 
----
-
-## Phase 2: CONTENT SPRINT ✅ COMPLETE
-
-**Goal:** The Fuel for the Engine.
-
-**What was delivered:**
-- 40 FP&A questions (10 per maturity level)
-- 8 objectives (2 per level)
-- 8 actions (1 per objective)
-- All questions linked to objectives via `objective_id`
-- All objectives linked to actions via `action_id`
-
-**Criticality Configuration ("Fair but Firm"):**
-
-| Level | Total Questions | Critical | Non-Critical |
-|-------|-----------------|----------|--------------|
-| L1 (Emerging) | 10 | 6 | 4 |
-| L2 (Defined) | 10 | 4 | 6 |
-| L3 (Managed) | 10 | 0 | 10 |
-| L4 (Optimized) | 10 | 0 | 10 |
-| **Total** | **40** | **10** | **30** |
-
-**Critical Questions (Level 1 - Fatal):**
+### Critical Questions (8 Total)
+**Level 1 (Foundation):**
 - fpa_l1_q01: Annual budget exists
-- fpa_l1_q02: Budget owner assigned
 - fpa_l1_q03: Full P&L budget
 - fpa_l1_q06: Consistent chart of accounts
-- fpa_l1_q07: JE review/approval
-- fpa_l1_q10: Role-based access (SoD)
+- fpa_l1_q09: Monthly management reporting package
 
-**Critical Questions (Level 2 - Fatal):**
+**Level 2 (Defined):**
 - fpa_l2_q01: Monthly BvA report
 - fpa_l2_q02: Variance investigation
 - fpa_l2_q06: Quarterly forecast
 - fpa_l2_q07: Cash flow forecast
 
-**Tests:** All 569 tests pass (`npm run test:all`)
+---
+
+## User Flow
+
+```
+Login → Create Run → Setup (company info) → Intro → Questionnaire → Submit → Report
+```
+
+### Pages with AppShell Layout
+| Page | Sidebar Content |
+|------|----------------|
+| IntroPage | What You'll Get overview |
+| SetupPage | Setup progress steps |
+| DiagnosticInput | Progress bar, theme navigation, submit |
+| Report | Company info, section nav, print/new buttons |
+
+### Responsive Behavior
+| Viewport | Sidebar | Header |
+|----------|---------|--------|
+| Desktop (≥1024px) | Fixed 280px left | Hidden |
+| Mobile (<1024px) | Hidden (slide-in menu) | Hamburger menu |
 
 ---
 
-## Phase 3: INTEGRATION TEST ("CFO Walkthrough") ✅ COMPLETE
+## QA Results
 
-**Goal:** Validation.
+### Test Suite
+- **Total Tests:** 625 passing
+- **Test Command:** `npm run test:all`
 
-**QA Test Suite:** `qa-test-suite.js` (Puppeteer-based automation)
-
-**Test Results (All 3 Scenarios Pass):**
-
-### Scenario A: Chaos (Answer NO to everything) ✅
-| Check | Expected | Actual | Result |
-|-------|----------|--------|--------|
-| Maturity Level | 0-1 | 0 | ✅ |
-| Critical Risks | 10-20 | 10 | ✅ |
-| Actions Count | ≥1 | 8 | ✅ |
-
-### Scenario B: Mature (Answer YES to everything) ✅
-| Check | Expected | Actual | Result |
-|-------|----------|--------|--------|
-| Maturity Level | 4 | 4 | ✅ |
-| Critical Risks | 0 | 0 | ✅ |
-| Actions Count | 0 | 0 | ✅ |
-
-### Scenario C: Partial (L1+L2 YES, L3+L4 NO) ✅
-| Check | Expected | Actual | Result |
-|-------|----------|--------|--------|
-| Maturity Level | 2 | 2 | ✅ |
-| Critical Risks | 0 | 0 | ✅ |
-| Actions Count | ≥1 | 4 | ✅ |
-
-**PDF Reports Generated:** 3 PDFs in QA_Results folder
+### Scenario Testing
+| Scenario | Maturity | Risks | Actions | Status |
+|----------|----------|-------|---------|--------|
+| All NO | 0 | 8 | 8 | ✅ |
+| All YES | 4 | 0 | 0 | ✅ |
+| Partial (L1+L2 YES) | 2 | 0 | 4 | ✅ |
 
 ---
 
-## Phase 4: QA SPRINT (Polish)
+## Architecture Summary
 
-**Goal:** No embarrassment during demo.
-
-**Checklist:**
-
-### PDF Export
-- [ ] Page breaks don't cut text in half
-- [ ] "HIGH" priority badges print with correct contrast
-- [ ] Colors preserved (`-webkit-print-color-adjust: exact`)
-- [ ] Action cards don't break across pages (`data-print-card`)
-
-### Mobile Layout
-- [ ] Executive on iPad can read report
-- [ ] Cards stack properly on narrow screens
-- [ ] Touch targets are large enough
-- [ ] No horizontal scrolling
-
-### Edge Cases
-- [ ] Empty report (no questions answered)
-- [ ] All questions answered YES
-- [ ] All questions answered NO
-- [ ] Mixed responses
-- [ ] Legacy runs without context (graceful fallback)
-
-### Performance
-- [ ] Report loads in < 2 seconds
-- [ ] No console errors
-- [ ] No TypeScript warnings in build
-
-**Time Estimate:** 1 Day
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (Vercel)                        │
+│  React 19 + Vite + AppShell Layout                         │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │
+│  │  Intro  │ │  Setup  │ │ Questio │ │ Report  │          │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘          │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Backend (Railway)                         │
+│  Express.js + TypeScript                                    │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │
+│  │ Scoring │ │Maturity │ │  Risks  │ │ Actions │          │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘          │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   Database (Supabase)                       │
+│  PostgreSQL + RLS + Auth                                    │
+│  diagnostic_runs | diagnostic_inputs | diagnostic_scores   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Launch Checklist (V1.0)
+## Key Files Reference
 
-### Definition of Done:
-- [x] All 569 tests pass
-- [x] Content is real (40 FP&A questions)
-- [ ] PDF looks professional
-- [x] CFO walkthrough scenarios pass (3/3)
-- [ ] No critical bugs in backlog
+### Backend
+| File | Purpose |
+|------|---------|
+| `src/specs/v2.7.0.ts` | Questions, Objectives, Actions, Gates, Themes |
+| `src/spec.ts` | Spec export for validation |
+| `src/scoring/scoreRun.ts` | Question scoring logic |
+| `src/maturity/engine.ts` | Gate evaluation |
+| `src/risks/engine.ts` | Critical risk derivation |
+| `src/actions/deriveFromObjectives.ts` | Action plan generation |
 
-### Pre-Launch:
-- [x] Run `npm run test:all` - all green (569 passed)
-- [ ] Run `npm run build` - no errors
-- [ ] Deploy to staging
-- [x] Complete CFO walkthrough (QA test suite)
-- [ ] Review PDF output
-- [ ] Push to production
+### Frontend
+| File | Purpose |
+|------|---------|
+| `cfo-frontend/src/components/AppShell.jsx` | Main layout wrapper |
+| `cfo-frontend/src/components/AppShell.css` | Responsive styles |
+| `cfo-frontend/src/IntroPage.jsx` | Assessment intro |
+| `cfo-frontend/src/SetupPage.jsx` | Context intake |
+| `cfo-frontend/src/DiagnosticInput.jsx` | Questionnaire |
+| `cfo-frontend/src/FinanceDiagnosticReport.jsx` | Results |
+
+---
+
+## Deployment
+
+Both frontend and backend auto-deploy on push to `main`:
+- **Frontend:** Vercel (auto-deploy)
+- **Backend:** Railway (auto-deploy)
+
+```bash
+git push origin main  # Triggers both deployments
+```
 
 ---
 
 ## Future Enhancements (Post-V1.0)
 
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| VS15: Admin Dashboard | View all runs, export analytics | Medium |
-| Multi-Pillar | Add Liquidity, Treasury, Tax pillars | High |
-| Benchmarking | Compare against industry peers | Medium |
-| Trend Analysis | Track maturity over time | Low |
-| Email Reports | Send PDF via email | Low |
-| SSO Integration | Enterprise auth | Medium |
+| Feature | Priority | Description |
+|---------|----------|-------------|
+| VS15: Admin Dashboard | Medium | View all runs, export analytics |
+| Multi-Pillar | High | Add Liquidity, Treasury, Tax pillars |
+| Benchmarking | Medium | Compare against industry peers |
+| Trend Analysis | Low | Track maturity over time |
+| Email Reports | Low | Send PDF via email |
+| SSO Integration | Medium | Enterprise auth |
 
 ---
 
@@ -177,7 +178,8 @@
 npm run test:all
 
 # Run specific test suite
-npm run test:vs20
+npm run test:vs9   # Content validation
+npm run test:vs20  # Action derivation
 
 # Build backend
 npm run build
@@ -194,18 +196,20 @@ cd cfo-frontend && npm run build
 
 ---
 
-## Key Files for Content Updates
+## Changelog
 
-| File | Purpose |
-|------|---------|
-| `src/specs/v2.7.0.ts` | Questions, Objectives, Actions, Gates |
-| `src/specs/types.ts` | TypeScript interfaces |
-| `src/tests/vs9-qa.test.ts` | Content validation tests |
+### v2.7.1 (December 21, 2025) - V1.0 Release
+- Updated to 48 questions (was 44)
+- Reduced critical questions to 8 (was 10)
+- Added AppShell responsive layout
+- Added IntroPage between Setup and Questionnaire
+- Fixed validation to use v2.7.0 spec
 
----
+### v2.7.0 (December 2025) - Behavioral Edition
+- Rewrote 23 questions from process-checking to behavioral
+- Added Theme layer (Foundation, Future, Intelligence)
+- Grouped questions by theme in UI
 
-## Contact
-
-- **GitHub**: https://github.com/CanKoseoglu123/CFOdiagnosis_v1
-- **Production Frontend**: https://cfodiagnosisv1.vercel.app
-- **Production API**: https://cfodiagnosisv1-production.up.railway.app
+### v2.6.4 (Legacy)
+- 40 process-focused questions
+- No theme grouping
