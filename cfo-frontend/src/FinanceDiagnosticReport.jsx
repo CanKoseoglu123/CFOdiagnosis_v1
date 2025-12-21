@@ -315,7 +315,7 @@ useEffect(() => {
               {report.critical_risks.length > 0 && (
                 <div style={{ marginBottom: 28 }}>
                   <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><AlertTriangle size={18} color="#DC2626" /> Critical Risks</h2>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{report.critical_risks.map((r, i) => <RiskCard key={i} risk={r} />)}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{report.critical_risks.map((r) => <RiskCard key={r.evidence_id} risk={r} />)}</div>
                 </div>
               )}
               <div>
@@ -372,7 +372,7 @@ useEffect(() => {
               <AlertTriangle size={18} color="#DC2626" /> Critical Risks ({report.critical_risks.length})
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {report.critical_risks.map((r, i) => <RiskCard key={i} risk={r} />)}
+              {report.critical_risks.map((r) => <RiskCard key={r.evidence_id} risk={r} />)}
             </div>
           </div>
         )}
