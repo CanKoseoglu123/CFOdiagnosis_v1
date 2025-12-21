@@ -2,7 +2,7 @@
 // Re-exports the main spec for validateRun.ts compatibility
 // All questions are boolean type for validation purposes
 
-import { SPEC as SPEC_V264 } from "./specs/v2.6.4";
+import { SPEC as SPEC_V270 } from "./specs/v2.7.0";
 
 export type QuestionType = "string" | "number" | "boolean";
 
@@ -20,8 +20,8 @@ export interface Spec {
 // Convert the full spec questions to validation format
 // All our diagnostic questions are boolean yes/no
 export const SPEC: Spec = {
-  version: SPEC_V264.version,
-  questions: SPEC_V264.questions.map((q) => ({
+  version: SPEC_V270.version,
+  questions: SPEC_V270.questions.map((q) => ({
     id: q.id,
     type: "boolean" as QuestionType,
     required: true,
