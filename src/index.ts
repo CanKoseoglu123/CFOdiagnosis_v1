@@ -5,7 +5,7 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 import { validateRun } from "./validateRun";
 import { scoreRun } from "./scoring/scoreRun";
-import { SpecRegistry } from "./specs/registry";
+import { SpecRegistry, DEFAULT_SPEC_VERSION } from "./specs/registry";
 import { aggregateResults } from "./results/aggregate";
 import { toAggregateSpec } from "./specs/toAggregateSpec";
 import { buildReport } from "./reports";
@@ -89,7 +89,7 @@ app.get("/health", (_req, res) => {
 // Spec endpoints (public - no auth needed)
 // ------------------------------------------------------------------
 app.get("/spec/questions", (_req, res) => {
-  const spec = SpecRegistry.get("v2.6.4");
+  const spec = SpecRegistry.getDefault();
   res.json({
     version: spec.version,
     questions: spec.questions,
@@ -134,7 +134,7 @@ app.post("/diagnostic-runs", async (req, res) => {
     .from("diagnostic_runs")
     .insert({
       status: "created",
-      spec_version: "v2.6.4",
+      spec_version: DEFAULT_SPEC_VERSION,
       owner_id: req.userId || null,
     })
     .select()

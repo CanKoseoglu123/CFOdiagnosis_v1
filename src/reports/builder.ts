@@ -77,7 +77,7 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     )
   );
 
-  // Calculate overall maturity using WEAKEST LINK rollup (per Spec v2.6.4 Section 6)
+  // Calculate overall maturity using WEAKEST LINK rollup (per Spec Section 6)
   // finance_maturity = min(applicable pillar maturity)
   const overallMaturity = calculateOverallMaturity(pillarReports, gates);
 
@@ -181,7 +181,7 @@ function buildPillarReport(
 
 /**
  * Calculates overall finance maturity using weakest-link rollup.
- * Per Spec v2.6.4 Section 6: finance_maturity = min(applicable pillar maturity)
+ * Per Spec Section 6: finance_maturity = min(applicable pillar maturity)
  *
  * @param pillarReports - Array of pillar reports with calculated maturity
  * @param gates - All maturity gates (for label lookup)

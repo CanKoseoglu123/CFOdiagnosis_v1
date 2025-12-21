@@ -1,9 +1,9 @@
 # FP&A Diagnostic Questions Reference
 
-**Version:** v2.6.4
+**Version:** v2.7.0
 **Pillar:** FP&A (Financial Planning & Analysis)
 **Total Questions:** 40
-**Critical Questions:** 16
+**Critical Questions:** 10
 
 ---
 
@@ -11,8 +11,8 @@
 
 | Level | Label | Questions | Critical | Threshold |
 |-------|-------|-----------|----------|-----------|
-| 1 | Emerging | 10 | 10 (100%) | 80% |
-| 2 | Defined | 10 | 6 (60%) | 80% |
+| 1 | Emerging | 10 | 6 (60%) | 80% |
+| 2 | Defined | 10 | 4 (40%) | 80% |
 | 3 | Managed | 10 | 0 (0%) | 80% |
 | 4 | Optimized | 10 | 0 (0%) | 80% |
 
@@ -144,8 +144,8 @@ Any question marked as **Critical = YES** that receives:
 
 | Level | # Critical | Rationale |
 |-------|------------|-----------|
-| 1 | 10/10 | Foundation questions. Failure here = no financial control baseline |
-| 2 | 6/10 | Core process questions. Some are "nice to have" not "must have" |
+| 1 | 6/10 | Foundation questions. Failure here = no financial control baseline |
+| 2 | 4/10 | Core process questions. Some are "nice to have" not "must have" |
 | 3 | 0/10 | Optimization. Absence is a gap, not a risk |
 | 4 | 0/10 | Excellence. Absence is expected for most organizations |
 
@@ -171,11 +171,12 @@ Any question marked as **Critical = YES** that receives:
 | Date | Version | Change |
 |------|---------|--------|
 | 2024-12-20 | v2.6.4 | Initial 40-question FP&A content release |
+| 2024-12-21 | v2.7.0 | Behavioral Edition - Theme layer, criticality calibration (10 critical) |
 
 ---
 
 ## File Reference
 
-- **Spec Implementation:** `src/specs/v2.6.4.ts`
+- **Spec Implementation:** `src/specs/v2.7.0.ts`
 - **Types:** `src/specs/types.ts`
 - **Tests:** `src/tests/vs9-qa.test.ts`

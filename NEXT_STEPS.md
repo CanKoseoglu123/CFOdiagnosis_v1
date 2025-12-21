@@ -198,7 +198,7 @@ cd cfo-frontend && npm run build
 
 | File | Purpose |
 |------|---------|
-| `src/specs/v2.6.4.ts` | Questions, Objectives, Actions, Gates |
+| `src/specs/v2.7.0.ts` | Questions, Objectives, Actions, Gates |
 | `src/specs/types.ts` | TypeScript interfaces |
 | `src/tests/vs9-qa.test.ts` | Content validation tests |
 

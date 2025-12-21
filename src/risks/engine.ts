@@ -8,7 +8,7 @@ import { CriticalRisk, DiagnosticInput } from "./types";
 /**
  * deriveCriticalRisks - Pure function that identifies critical risks.
  *
- * Strict Logic Rule (per Spec v2.6.4 Section 5):
+ * Strict Logic Rule (per Spec Section 5):
  * A risk is generated if:
  *   1. The Question has is_critical === true, AND
  *   2. The Answer is false OR missing (undefined/null/non-boolean)
