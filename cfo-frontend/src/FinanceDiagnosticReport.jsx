@@ -250,7 +250,7 @@ useEffect(() => {
   return (
     <div ref={contentRef} style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
       <header style={{ background: "#0F172A", color: "#FFF", padding: "24px 0" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="header-content mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 6 }}>FINANCE DIAGNOSTIC</div>
             <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Maturity Assessment Report</h1>
@@ -262,14 +262,14 @@ useEffect(() => {
             )}
             <div style={{ fontSize: 12, color: "#94A3B8", marginTop: 4 }}>Generated {formatDate(report.generated_at)} • {report.spec_version}</div>
           </div>
-          <div className="no-print" style={{ display: "flex", gap: 12 }}>
-            <button onClick={handlePrint} style={{ display: "flex", alignItems: "center", gap: 6, background: "#16A34A", color: "#FFF", padding: "8px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+          <div className="no-print header-buttons">
+            <button onClick={handlePrint} className="touch-target" style={{ display: "flex", alignItems: "center", gap: 6, background: "#16A34A", color: "#FFF", padding: "8px 16px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
               <Printer size={16} /> Download PDF
             </button>
-            <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, background: "#1E293B", color: "#94A3B8", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: 13 }}>
+            <Link to="/" className="touch-target" style={{ display: "flex", alignItems: "center", gap: 6, background: "#1E293B", color: "#94A3B8", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: 13 }}>
               <Home size={16} /> Home
             </Link>
-            <Link to="/assess" style={{ background: "#4F46E5", color: "#FFF", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
+            <Link to="/assess" className="touch-target" style={{ background: "#4F46E5", color: "#FFF", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: 13, fontWeight: 500 }}>
               New Assessment
             </Link>
           </div>
@@ -277,7 +277,7 @@ useEffect(() => {
       </header>
 
       <div style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB", padding: "20px 0" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }}>
+        <div className="stats-grid mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <ScoreRing score={report.overall_score} size={60} />
             <div><div style={{ fontSize: 10, color: "#6B7280" }}>EXECUTION</div><div style={{ fontSize: 20, fontWeight: 700 }}>{formatScore(report.overall_score)}</div></div>
@@ -300,17 +300,17 @@ useEffect(() => {
       </div>
 
       <div className="no-print" style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex" }}>
+        <div className="tab-bar mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
           {["overview", "maturity", "actions", "pillars"].map((t) => (
-            <button key={t} onClick={() => setTab(t)} style={{ padding: "14px 18px", fontSize: 13, fontWeight: 500, color: tab === t ? "#4F46E5" : "#6B7280", background: "transparent", border: "none", borderBottom: `2px solid ${tab === t ? "#4F46E5" : "transparent"}`, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
+            <button key={t} onClick={() => setTab(t)} className="touch-target" style={{ padding: "14px 18px", fontSize: 13, fontWeight: 500, color: tab === t ? "#4F46E5" : "#6B7280", background: "transparent", border: "none", borderBottom: `2px solid ${tab === t ? "#4F46E5" : "transparent"}`, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
           ))}
         </div>
       </div>
 
       {/* Screen view - tab-based navigation */}
-      <main className="no-print" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
+      <main className="no-print mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
         {tab === "overview" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
+          <div className="overview-grid">
             <div>
               {report.critical_risks.length > 0 && (
                 <div style={{ marginBottom: 28 }}>
@@ -358,7 +358,7 @@ useEffect(() => {
         {tab === "pillars" && (
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Pillar Breakdown</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>{report.pillars.map((p) => <PillarCard key={p.pillar_id} pillar={p} />)}</div>
+            <div className="pillar-grid">{report.pillars.map((p) => <PillarCard key={p.pillar_id} pillar={p} />)}</div>
           </div>
         )}
       </main>
@@ -407,7 +407,7 @@ useEffect(() => {
           <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
             <Target size={18} color="#4F46E5" /> Pillar Breakdown
           </h2>
-          <div className="print-single-column" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+          <div className="pillar-grid print-single-column">
             {report.pillars.map((p) => <PillarCard key={p.pillar_id} pillar={p} />)}
           </div>
         </div>

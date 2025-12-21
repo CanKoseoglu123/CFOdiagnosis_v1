@@ -162,3 +162,129 @@ button:focus-visible {
 .print-only {
   display: none;
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Stats grid - 4 cols → 2 cols on tablet → 1 col on mobile */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 500px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Overview grid - 2 cols → 1 col on mobile */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+@media (max-width: 768px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Header layout - flex row → stack on mobile */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .header-buttons > * {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+/* Tab bar - horizontal scroll on mobile */
+.tab-bar {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tab-bar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 500px) {
+  .tab-bar button {
+    padding: 12px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+/* Pillar grid - responsive min-width */
+.pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 400px) {
+  .pillar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Touch-friendly targets */
+@media (max-width: 768px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent horizontal overflow */
+.container-responsive {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Mobile-friendly padding */
+@media (max-width: 500px) {
+  .mobile-padding {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
