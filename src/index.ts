@@ -107,6 +107,7 @@ app.get("/api/spec", (_req, res) => {
     objectives: spec.objectives || [],
     actions: spec.actions || [],
     themes: (spec as any).themes || [],
+    initiatives: spec.initiatives || [],  // V2.1 Initiative Engine
   });
 });
 
