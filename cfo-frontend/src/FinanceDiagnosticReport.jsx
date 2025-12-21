@@ -5,6 +5,10 @@ import { useReactToPrint } from "react-to-print";
 import { supabase } from './lib/supabase';
 import AppShell from './components/AppShell';
 import ReportSidebar from './components/ReportSidebar';
+// V2 Components
+import ExecutiveSummaryV2 from './components/ExecutiveSummaryV2';
+import ObjectiveTrafficLights from './components/ObjectiveTrafficLights';
+import PrioritizedActionsV2 from './components/PrioritizedActionsV2';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -254,6 +258,17 @@ useEffect(() => {
   if (!report) return null;
   const mc = colors.maturity[report.maturity.achieved_level] || colors.maturity[0];
 
+  // V2 data (may be undefined for legacy reports)
+  const hasV2 = !!report.maturity_v2;
+  const maturityV2 = report.maturity_v2;
+  const objectives = report.objectives || [];
+  const prioritizedActions = report.prioritized_actions || [];
+
+  // Build questions lookup for V2 components (from objectives)
+  const questions = objectives.flatMap(obj =>
+    (obj.questions || []).map(qId => ({ id: qId, text: qId, level: obj.level }))
+  );
+
   // Sidebar content for report
   const sidebarContent = (
     <ReportSidebar
@@ -299,12 +314,31 @@ useEffect(() => {
       <div style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB", padding: "20px 0" }}>
         <div className="stats-grid mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <ScoreRing score={report.overall_score} size={60} />
-            <div><div style={{ fontSize: 10, color: "#6B7280" }}>EXECUTION</div><div style={{ fontSize: 20, fontWeight: 700 }}>{formatScore(report.overall_score)}</div></div>
+            {hasV2 ? (
+              <>
+                <div style={{ width: 60, height: 60, borderRadius: 10, background: maturityV2.execution_score >= 80 ? "#DCFCE7" : maturityV2.execution_score >= 50 ? "#FEF3C7" : "#FEE2E2", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: maturityV2.execution_score >= 80 ? "#166534" : maturityV2.execution_score >= 50 ? "#92400E" : "#991B1B" }}>{maturityV2.execution_score}%</span>
+                </div>
+                <div><div style={{ fontSize: 10, color: "#6B7280" }}>EXECUTION</div><div style={{ fontSize: 20, fontWeight: 700 }}>{maturityV2.execution_score}%</div></div>
+              </>
+            ) : (
+              <>
+                <ScoreRing score={report.overall_score} size={60} />
+                <div><div style={{ fontSize: 10, color: "#6B7280" }}>EXECUTION</div><div style={{ fontSize: 20, fontWeight: 700 }}>{formatScore(report.overall_score)}</div></div>
+              </>
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 60, height: 60, borderRadius: 10, background: mc.bg, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 18, fontWeight: 700, color: mc.accent }}>L{report.maturity.achieved_level}</span></div>
-            <div><div style={{ fontSize: 10, color: "#6B7280" }}>MATURITY</div><div style={{ fontSize: 20, fontWeight: 700 }}>{report.maturity.achieved_label}</div></div>
+            <div style={{ width: 60, height: 60, borderRadius: 10, background: mc.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: mc.accent }}>L{hasV2 ? maturityV2.actual_level : report.maturity.achieved_level}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: "#6B7280" }}>MATURITY</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{report.maturity.achieved_label}</div>
+              {hasV2 && maturityV2.capped && (
+                <div style={{ fontSize: 10, color: "#92400E", fontWeight: 600 }}>CAPPED (Potential: L{maturityV2.potential_level})</div>
+              )}
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 60, height: 60, borderRadius: 10, background: report.critical_risks.length > 0 ? "#FEE2E2" : "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -314,14 +348,17 @@ useEffect(() => {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 60, height: 60, borderRadius: 10, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}><Zap size={22} color="#4F46E5" /></div>
-            <div><div style={{ fontSize: 10, color: "#6B7280" }}>ACTIONS</div><div style={{ fontSize: 20, fontWeight: 700 }}>{(report.derived_actions?.length || report.actions.length)}</div></div>
+            <div>
+              <div style={{ fontSize: 10, color: "#6B7280" }}>ACTIONS</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{hasV2 ? prioritizedActions.length : (report.derived_actions?.length || report.actions.length)}</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="no-print" style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB" }}>
         <div className="tab-bar mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
-          {["overview", "maturity", "actions", "pillars"].map((t) => (
+          {(hasV2 ? ["overview", "objectives", "maturity", "actions", "pillars"] : ["overview", "maturity", "actions", "pillars"]).map((t) => (
             <button key={t} onClick={() => setTab(t)} className="touch-target" style={{ padding: "14px 18px", fontSize: 13, fontWeight: 500, color: tab === t ? "#4F46E5" : "#6B7280", background: "transparent", border: "none", borderBottom: `2px solid ${tab === t ? "#4F46E5" : "transparent"}`, cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
           ))}
         </div>
@@ -330,49 +367,102 @@ useEffect(() => {
       {/* Screen view - tab-based navigation */}
       <main className="no-print mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
         {tab === "overview" && (
-          <div className="overview-grid">
-            <div>
-              {report.critical_risks.length > 0 && (
-                <div style={{ marginBottom: 28 }}>
-                  <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><AlertTriangle size={18} color="#DC2626" /> Critical Risks</h2>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{report.critical_risks.map((r) => <RiskCard key={r.evidence_id} risk={r} />)}</div>
+          <>
+            {/* V2 Executive Summary */}
+            {hasV2 && (
+              <ExecutiveSummaryV2 maturityV2={maturityV2} questions={questions} />
+            )}
+
+            {/* V2 Objective Traffic Lights */}
+            {hasV2 && objectives.length > 0 && (
+              <ObjectiveTrafficLights objectives={objectives} />
+            )}
+
+            {/* V2 Prioritized Actions */}
+            {hasV2 && prioritizedActions.length > 0 ? (
+              <PrioritizedActionsV2 actions={prioritizedActions} maturityV2={maturityV2} />
+            ) : (
+              /* Legacy layout for non-V2 reports */
+              <div className="overview-grid">
+                <div>
+                  {report.critical_risks.length > 0 && (
+                    <div style={{ marginBottom: 28 }}>
+                      <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><AlertTriangle size={18} color="#DC2626" /> Critical Risks</h2>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{report.critical_risks.map((r) => <RiskCard key={r.evidence_id} risk={r} />)}</div>
+                    </div>
+                  )}
+                  <div>
+                    <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><Zap size={18} color="#4F46E5" /> Priority Actions</h2>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {report.derived_actions?.length > 0
+                        ? report.derived_actions.slice(0, 3).map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} />)
+                        : report.actions.slice(0, 3).map((a, i) => <ActionCard key={a.id} action={a} index={i} />)
+                      }
+                    </div>
+                  </div>
                 </div>
-              )}
-              <div>
-                <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><Zap size={18} color="#4F46E5" /> Priority Actions</h2>
+                <div>
+                  <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><TrendingUp size={18} color="#4F46E5" /> Maturity Progress</h2>
+                  <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
+                    <MaturityLadder maturity={report.maturity} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Critical Risks section for V2 - show separately if there are risks */}
+            {hasV2 && report.critical_risks.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+                  <AlertTriangle size={18} color="#DC2626" /> Critical Risks ({report.critical_risks.length})
+                </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {report.derived_actions?.length > 0
-                    ? report.derived_actions.slice(0, 3).map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} />)
-                    : report.actions.slice(0, 3).map((a, i) => <ActionCard key={a.id} action={a} index={i} />)
-                  }
+                  {report.critical_risks.map((r) => <RiskCard key={r.evidence_id} risk={r} />)}
                 </div>
               </div>
-            </div>
-            <div>
-              <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><TrendingUp size={18} color="#4F46E5" /> Maturity Progress</h2>
-              <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
-                <MaturityLadder maturity={report.maturity} />
-              </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
         {tab === "maturity" && (
-          <div style={{ maxWidth: 500 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Maturity Assessment</h2>
-            <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
-              <MaturityLadder maturity={report.maturity} />
-            </div>
+          <div style={{ maxWidth: 700 }}>
+            {hasV2 ? (
+              <>
+                <ExecutiveSummaryV2 maturityV2={maturityV2} questions={questions} />
+                <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Maturity Ladder</h2>
+                <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
+                  <MaturityLadder maturity={report.maturity} />
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Maturity Assessment</h2>
+                <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
+                  <MaturityLadder maturity={report.maturity} />
+                </div>
+              </>
+            )}
           </div>
         )}
         {tab === "actions" && (
-          <div style={{ maxWidth: 700 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Action Plan</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {report.derived_actions?.length > 0
-                ? report.derived_actions.map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} />)
-                : report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} />)
-              }
-            </div>
+          <div style={{ maxWidth: 800 }}>
+            {hasV2 ? (
+              <PrioritizedActionsV2 actions={prioritizedActions} maturityV2={maturityV2} />
+            ) : (
+              <>
+                <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Action Plan</h2>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {report.derived_actions?.length > 0
+                    ? report.derived_actions.map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} />)
+                    : report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} />)
+                  }
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        {tab === "objectives" && hasV2 && (
+          <div style={{ maxWidth: 800 }}>
+            <ObjectiveTrafficLights objectives={objectives} />
           </div>
         )}
         {tab === "pillars" && (
@@ -385,6 +475,13 @@ useEffect(() => {
 
       {/* Print view - shows ALL sections with expanded content */}
       <main className="print-only" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 20px" }}>
+        {/* V2 Executive Summary for Print */}
+        {hasV2 && (
+          <div className="print-section" style={{ marginBottom: 32 }}>
+            <ExecutiveSummaryV2 maturityV2={maturityV2} questions={questions} />
+          </div>
+        )}
+
         {/* Critical Risks Section */}
         {report.critical_risks.length > 0 && (
           <div className="print-section" style={{ marginBottom: 32 }}>
@@ -393,6 +490,43 @@ useEffect(() => {
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {report.critical_risks.map((r) => <RiskCard key={r.evidence_id} risk={r} />)}
+            </div>
+          </div>
+        )}
+
+        {/* V2 Objectives for Print */}
+        {hasV2 && objectives.length > 0 && (
+          <div className="print-section" style={{ marginBottom: 32 }}>
+            <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+              <Target size={18} color="#4F46E5" /> Objective Health Check
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {objectives.map((obj) => {
+                const statusColors = {
+                  green: { bg: '#DCFCE7', text: '#166534' },
+                  yellow: { bg: '#FEF3C7', text: '#92400E' },
+                  red: { bg: '#FEE2E2', text: '#991B1B' },
+                };
+                const sc = statusColors[obj.status] || statusColors.yellow;
+                return (
+                  <div key={obj.objective_id} style={{
+                    padding: 12,
+                    background: sc.bg,
+                    borderRadius: 8,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#111827' }}>{obj.objective_name}</div>
+                      <div style={{ fontSize: 12, color: sc.text }}>Level {obj.level} • {obj.score}%</div>
+                    </div>
+                    {obj.overridden && (
+                      <span style={{ fontSize: 10, fontWeight: 600, color: '#92400E', background: '#FDE68A', padding: '2px 6px', borderRadius: 4 }}>CAPPED</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -407,19 +541,53 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Full Action Plan Section */}
-        {(report.derived_actions?.length > 0 || report.actions.length > 0) && (
+        {/* V2 Prioritized Actions for Print */}
+        {hasV2 && prioritizedActions.length > 0 ? (
           <div className="print-section" style={{ marginBottom: 32 }}>
             <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-              <Zap size={18} color="#4F46E5" /> Action Plan ({report.derived_actions?.length || report.actions.length} actions)
+              <Zap size={18} color="#4F46E5" /> Action Plan ({prioritizedActions.length} actions)
             </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {report.derived_actions?.length > 0
-                ? report.derived_actions.map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} forPrint={true} />)
-                : report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} forPrint={true} />)
-              }
-            </div>
+            {['P0', 'P1', 'P2'].map((priority) => {
+              const actions = prioritizedActions.filter(a => a.priority === priority);
+              if (actions.length === 0) return null;
+              const priorityConfig = {
+                P0: { label: 'Unlock', bg: '#FEE2E2', text: '#991B1B' },
+                P1: { label: 'Optimize', bg: '#FEF3C7', text: '#92400E' },
+                P2: { label: 'Future', bg: '#DBEAFE', text: '#1E40AF' },
+              };
+              const pc = priorityConfig[priority];
+              return (
+                <div key={priority} style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: pc.text, marginBottom: 8, background: pc.bg, padding: '4px 8px', borderRadius: 4, display: 'inline-block' }}>
+                    {priority}: {pc.label} ({actions.length})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {actions.map((a) => (
+                      <div key={a.question_id} style={{ padding: 10, background: '#FFF', border: '1px solid #E5E7EB', borderRadius: 6 }}>
+                        <div style={{ fontWeight: 500, color: '#111827', fontSize: 13 }}>{a.action_text}</div>
+                        <div style={{ fontSize: 11, color: '#6B7280', marginTop: 4 }}>L{a.level} • {a.impact}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        ) : (
+          /* Legacy Action Plan for non-V2 */
+          (report.derived_actions?.length > 0 || report.actions.length > 0) && (
+            <div className="print-section" style={{ marginBottom: 32 }}>
+              <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
+                <Zap size={18} color="#4F46E5" /> Action Plan ({report.derived_actions?.length || report.actions.length} actions)
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {report.derived_actions?.length > 0
+                  ? report.derived_actions.map((a, i) => <DerivedActionCard key={a.id} action={a} index={i} forPrint={true} />)
+                  : report.actions.map((a, i) => <ActionCard key={a.id} action={a} index={i} forPrint={true} />)
+                }
+              </div>
+            </div>
+          )
         )}
 
         {/* Pillar Breakdown Section */}
