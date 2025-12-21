@@ -15,6 +15,16 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const formatScore = (score) => score === null || score === undefined ? "—" : `${Math.round(score * 100)}%`;
 const formatDate = (iso) => new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
+// Maturity level names (1-4 only, NO Level 0)
+const LEVEL_NAMES = {
+  1: "Emerging",
+  2: "Defined",
+  3: "Managed",
+  4: "Optimized"
+};
+
+const getLevelName = (level) => LEVEL_NAMES[level] || "Unknown";
+
 const colors = {
   priority: { critical: { bg: "#FEE2E2", text: "#991B1B", border: "#FECACA" }, high: { bg: "#FEF3C7", text: "#92400E", border: "#FDE68A" }, medium: { bg: "#DBEAFE", text: "#1E40AF", border: "#BFDBFE" } },
   maturity: [
@@ -40,27 +50,36 @@ const ScoreRing = ({ score, size = 64 }) => {
   );
 };
 
-const MaturityLadder = ({ maturity }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-    {[...maturity.gates].reverse().map((gate) => {
-      const achieved = gate.level <= maturity.achieved_level, current = gate.level === maturity.achieved_level, next = gate.level === maturity.achieved_level + 1;
-      const c = colors.maturity[gate.level] || colors.maturity[0];
-      return (
-        <div key={gate.level} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, background: achieved ? c.bg : "#F9FAFB", border: `2px solid ${current ? c.accent : achieved ? c.bg : "#E5E7EB"}`, opacity: achieved ? 1 : 0.5 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: achieved ? c.accent : "#D1D5DB", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700, fontSize: 13 }}>
-            {achieved ? <CheckCircle size={18} /> : gate.level}
+const MaturityLadder = ({ maturity, actualLevel }) => {
+  // Filter out Level 0 - our model is 1-4 only
+  const validGates = maturity.gates.filter(g => g.level >= 1 && g.level <= 4);
+  // Use actualLevel if provided (V2), otherwise fall back to achieved_level
+  const currentLevel = actualLevel ?? maturity.achieved_level;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {[...validGates].reverse().map((gate) => {
+        const achieved = gate.level <= currentLevel;
+        const current = gate.level === currentLevel;
+        const next = gate.level === currentLevel + 1;
+        const c = colors.maturity[gate.level] || colors.maturity[1];
+        return (
+          <div key={gate.level} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, background: achieved ? c.bg : "#F9FAFB", border: `2px solid ${current ? c.accent : achieved ? c.bg : "#E5E7EB"}`, opacity: achieved ? 1 : 0.5 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: achieved ? c.accent : "#D1D5DB", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFF", fontWeight: 700, fontSize: 13 }}>
+              {achieved ? <CheckCircle size={18} /> : gate.level}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, color: achieved ? c.text : "#6B7280", fontSize: 14 }}>Level {gate.level}: {getLevelName(gate.level)}</div>
+              <div style={{ fontSize: 11, color: "#9CA3AF" }}>{gate.required_evidence_ids.length} requirements</div>
+            </div>
+            {current && <span style={{ background: c.accent, color: "#FFF", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>CURRENT</span>}
+            {next && <span style={{ background: "#E5E7EB", color: "#6B7280", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>NEXT</span>}
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, color: achieved ? c.text : "#6B7280", fontSize: 14 }}>Level {gate.level}: {gate.label}</div>
-            <div style={{ fontSize: 11, color: "#9CA3AF" }}>{gate.required_evidence_ids.length} requirements</div>
-          </div>
-          {current && <span style={{ background: c.accent, color: "#FFF", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>CURRENT</span>}
-          {next && <span style={{ background: "#E5E7EB", color: "#6B7280", padding: "3px 10px", borderRadius: 12, fontSize: 10, fontWeight: 700 }}>NEXT</span>}
-        </div>
-      );
-    })}
-  </div>
-);
+        );
+      })}
+    </div>
+  );
+};
 
 const RiskCard = ({ risk }) => (
   <div data-print-card style={{
@@ -175,7 +194,7 @@ const PillarCard = ({ pillar }) => {
         <ScoreRing score={pillar.score} size={60} />
       </div>
       <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", background: c.bg, borderRadius: 8 }}>
-        <span style={{ fontWeight: 600, color: c.text, fontSize: 13 }}>L{pillar.maturity.achieved_level}: {pillar.maturity.achieved_label}</span>
+        <span style={{ fontWeight: 600, color: c.text, fontSize: 13 }}>L{pillar.maturity.achieved_level}: {getLevelName(pillar.maturity.achieved_level)}</span>
       </div>
     </div>
   );
@@ -349,7 +368,7 @@ useEffect(() => {
             </div>
             <div>
               <div style={{ fontSize: 10, color: "#6B7280" }}>MATURITY</div>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{report.maturity.achieved_label}</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{getLevelName(hasV2 ? maturityV2.actual_level : report.maturity.achieved_level)}</div>
               {hasV2 && maturityV2.capped && (
                 <div style={{ fontSize: 10, color: "#92400E", fontWeight: 600 }}>CAPPED (Potential: L{maturityV2.potential_level})</div>
               )}
@@ -419,7 +438,7 @@ useEffect(() => {
                 <div>
                   <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}><TrendingUp size={18} color="#4F46E5" /> Maturity Progress</h2>
                   <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20 }}>
-                    <MaturityLadder maturity={report.maturity} />
+                    <MaturityLadder maturity={report.maturity} actualLevel={maturityV2?.actual_level} />
                   </div>
                 </div>
               </div>
@@ -445,14 +464,14 @@ useEffect(() => {
                 <ExecutiveSummaryV2 maturityV2={maturityV2} questions={questions} />
                 <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Maturity Ladder</h2>
                 <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
-                  <MaturityLadder maturity={report.maturity} />
+                  <MaturityLadder maturity={report.maturity} actualLevel={maturityV2?.actual_level} />
                 </div>
               </>
             ) : (
               <>
                 <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Maturity Assessment</h2>
                 <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 24 }}>
-                  <MaturityLadder maturity={report.maturity} />
+                  <MaturityLadder maturity={report.maturity} actualLevel={maturityV2?.actual_level} />
                 </div>
               </>
             )}
@@ -552,7 +571,7 @@ useEffect(() => {
             <TrendingUp size={18} color="#4F46E5" /> Maturity Progress
           </h2>
           <div data-print-card style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 14, padding: 20, maxWidth: 500 }}>
-            <MaturityLadder maturity={report.maturity} />
+            <MaturityLadder maturity={report.maturity} actualLevel={maturityV2?.actual_level} />
           </div>
         </div>
 
