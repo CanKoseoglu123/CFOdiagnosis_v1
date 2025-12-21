@@ -80,6 +80,26 @@ export interface SpecObjective {
 }
 
 // =============================================================================
+// INITIATIVE TYPES (V2.1)
+// =============================================================================
+
+export type ActionType = 'quick_win' | 'structural' | 'behavioral' | 'governance';
+
+export interface ExpertAction {
+  title: string;
+  recommendation: string;
+  type: ActionType;
+}
+
+export interface Initiative {
+  id: string;
+  title: string;
+  description: string;
+  theme_id: ThemeCode;
+  objective_id: string;
+}
+
+// =============================================================================
 // QUESTION TYPES
 // =============================================================================
 
@@ -94,6 +114,11 @@ export interface SpecQuestion {
   level?: number;
   levelLabel?: string;
   help?: string;
+  // V2.1 Initiative Engine fields
+  initiative_id?: string;
+  impact?: 1 | 2 | 3 | 4 | 5;
+  complexity?: 1 | 2 | 3 | 4 | 5;
+  expert_action?: ExpertAction;
 }
 
 // =============================================================================
@@ -154,6 +179,7 @@ export interface Spec {
   objectives?: SpecObjective[];
   maturityGates: MaturityGateSpec[];
   actions: ActionDefinition[];
+  initiatives?: Initiative[];  // V2.1 Initiative Engine
 }
 
 // v2.7.0 style

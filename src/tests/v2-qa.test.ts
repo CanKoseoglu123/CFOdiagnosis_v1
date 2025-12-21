@@ -264,11 +264,11 @@ console.log('\n--- High Performance Purgatory Fix ---');
 
   const prioritized = prioritizeActions(result, inputs, SPEC.questions);
 
-  const p0Actions = prioritized.filter(a => a.priority === 'P0');
   const p1Actions = prioritized.filter(a => a.priority === 'P1');
+  const p2Actions = prioritized.filter(a => a.priority === 'P2');
 
-  test('P0 contains the L1 critical', p0Actions.some(a => a.question_id === 'fpa_l1_q01'));
-  test('P1 is not empty (gaps visible)', p1Actions.length === 0); // Actually 0 because all other questions are YES
+  test('P1 contains the L1 critical', p1Actions.some(a => a.question_id === 'fpa_l1_q01'));
+  test('P2 is not empty (gaps visible)', p2Actions.length === 0); // Actually 0 because all other questions are YES
 }
 
 // Test with more failures to see P1 population
@@ -289,11 +289,11 @@ console.log('\n--- High Performance Purgatory Fix ---');
 
   const prioritized = prioritizeActions(result, inputs, SPEC.questions);
 
-  const p0Actions = prioritized.filter(a => a.priority === 'P0');
   const p1Actions = prioritized.filter(a => a.priority === 'P1');
+  const p2Actions = prioritized.filter(a => a.priority === 'P2');
 
-  test('P0 has L1 critical failure', p0Actions.length > 0);
-  test('P1 includes L2/L3 gaps (not hidden)', p1Actions.length > 0);
+  test('P1 has L1 critical failure', p1Actions.length > 0);
+  test('P2 includes L2/L3 gaps (not hidden)', p2Actions.length > 0);
 }
 
 // =============================================================================

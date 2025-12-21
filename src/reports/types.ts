@@ -2,8 +2,9 @@
 // VS6/VS8 — Finance Report DTO Contract
 // Strict typing: levels are numbers, never null (always at least 0).
 // V2: Added ObjectiveScore, execution_score, potential_level, actual_level
+// V2.1: Added PrioritizedInitiative, P1/P2/P3 grouping
 
-import { ActionPlanItem, DerivedAction, PrioritizedAction } from "../actions/types";
+import { ActionPlanItem, DerivedAction, PrioritizedAction, PrioritizedInitiative } from "../actions/types";
 
 // === Maturity Status ===
 
@@ -108,6 +109,9 @@ export interface FinanceReportDTO {
   // V2: Objective-level traffic lights
   objectives?: ObjectiveScore[];
 
-  // V2: P0/P1/P2 prioritized actions
+  // V2.1: P1/P2/P3 prioritized actions (flat list)
   prioritized_actions?: PrioritizedAction[];
+
+  // V2.1: Actions grouped by initiative
+  grouped_initiatives?: PrioritizedInitiative[];
 }

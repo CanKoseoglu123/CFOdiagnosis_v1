@@ -2,6 +2,7 @@
 // VS6/VS7/VS8/VS19 — Assembles Finance Report DTO from VS5 scores + spec
 // Includes maturity calculation (VS7), actions derivation (VS8), and critical risks (VS19)
 // V2: Added execution score, cap logic, objective scoring, P0/P1/P2 actions
+// V2.1: Added P1/P2/P3 labels, 2x critical multiplier, initiative grouping
 
 import { Spec } from "../specs/types";
 import {
@@ -15,7 +16,7 @@ import {
 } from "./types";
 import { AggregateResult } from "../results/aggregate";
 import { evaluateMaturity, calculateMaturityV2, Answer } from "../maturity";
-import { deriveActions, deriveActionsFromObjectives, prioritizeActions } from "../actions";
+import { deriveActions, deriveActionsFromObjectives, prioritizeActions, groupActionsByInitiative } from "../actions";
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 import { calculateObjectiveScores } from "../scoring/objectiveScoring";
 
@@ -117,12 +118,17 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
   // V2: Calculate objective scores with traffic lights
   const objectiveScores: ObjectiveScore[] = calculateObjectiveScores(spec, inputs);
 
-  // V2: Calculate prioritized actions (P0/P1/P2)
+  // V2.1: Calculate prioritized actions (P1/P2/P3) with score calculation
   const prioritizedActions = prioritizeActions(
     maturityV2Result,
     inputs,
     spec.questions
   );
+
+  // V2.1: Group actions by initiative
+  const groupedInitiatives = spec.initiatives
+    ? groupActionsByInitiative(prioritizedActions, spec.initiatives)
+    : undefined;
 
   // Build the report (without actions first, needed for deriveActions)
   const reportWithoutActions: FinanceReportDTO = {
@@ -154,7 +160,9 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     // V2 fields
     maturity_v2: maturityV2,
     objectives: objectiveScores,
+    // V2.1 fields
     prioritized_actions: prioritizedActions,
+    grouped_initiatives: groupedInitiatives,
   };
 }
 

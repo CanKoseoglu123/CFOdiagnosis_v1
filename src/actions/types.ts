@@ -1,7 +1,9 @@
 // src/actions/types.ts
 // VS8 — Action Plan Types
 // VS20 — Dynamic Action Engine (DerivedAction)
-// V2 — PrioritizedAction with P0/P1/P2
+// V2.1 — PrioritizedAction with P1/P2/P3 and Initiative grouping
+
+import type { ActionType } from "../specs/types";
 
 export interface ActionPlanItem {
   id: string;
@@ -28,13 +30,29 @@ export interface DerivedAction {
   trigger_reason: "critical_risk" | "maturity_blocker" | "objective_incomplete";
 }
 
-// V2: PrioritizedAction with P0/P1/P2 priorities
+// V2.1: PrioritizedAction with P1/P2/P3 priorities and score
 export interface PrioritizedAction {
-  priority: 'P0' | 'P1' | 'P2';      // P0=unlock, P1=optimize, P2=future
+  priority: 'P1' | 'P2' | 'P3';      // P1=unlock, P2=optimize, P3=future
   question_id: string;
   question_text: string;
   action_text: string;               // Generated action recommendation
+  action_title?: string;             // Expert action title
+  action_type?: ActionType;          // quick_win, structural, behavioral, governance
   impact: string;                    // Why this matters
   effort: 'low' | 'medium' | 'high';
   level: number;                     // Maturity level of the question
+  score: number;                     // Calculated score: (Impact² / Complexity) × 2 if Critical
+  is_critical: boolean;              // Whether this is a critical question
+  initiative_id?: string;            // Initiative this belongs to
+}
+
+// V2.1: Grouped actions by initiative
+export interface PrioritizedInitiative {
+  initiative_id: string;
+  initiative_title: string;
+  initiative_description: string;
+  theme_id: string;
+  priority: 'P1' | 'P2' | 'P3';      // Highest priority among contained actions
+  total_score: number;               // Sum of action scores
+  actions: PrioritizedAction[];      // Actions within this initiative
 }
