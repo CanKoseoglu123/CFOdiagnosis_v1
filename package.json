@@ -16,7 +16,8 @@
     "test:vs9": "npx ts-node src/tests/vs9-qa.test.ts",
     "test:vs19": "npx ts-node src/tests/vs19-qa.test.ts",
     "test:vs20": "npx ts-node src/tests/vs20-qa.test.ts",
-    "test:all": "npm run test:vs5 && npm run test:vs6 && npm run test:vs7 && npm run test:vs8 && npm run test:vs9 && npm run test:vs19 && npm run test:vs20"
+    "test:v2": "npx ts-node src/tests/v2-qa.test.ts",
+    "test:all": "npm run test:vs5 && npm run test:vs6 && npm run test:vs7 && npm run test:vs8 && npm run test:vs9 && npm run test:vs19 && npm run test:vs20 && npm run test:v2"
   },
   "repository": {
     "type": "git",

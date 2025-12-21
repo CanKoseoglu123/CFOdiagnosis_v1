@@ -172,6 +172,7 @@ Any question marked as **Critical = YES** that receives:
 |------|---------|--------|
 | 2024-12-20 | v2.6.4 | Initial 40-question FP&A content release |
 | 2024-12-21 | v2.7.0 | Behavioral Edition - Theme layer, criticality calibration (10 critical) |
+| 2024-12-21 | v2.7.1 | Content update - 44 questions (L2: +1, L3: +3), refined help text |
 
 ---
 
