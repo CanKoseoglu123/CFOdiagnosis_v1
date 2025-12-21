@@ -273,6 +273,7 @@ useEffect(() => {
   const maturityV2 = report.maturity_v2;
   const objectives = report.objectives || [];
   const prioritizedActions = report.prioritized_actions || [];
+  const groupedInitiatives = report.grouped_initiatives || [];
 
   // Build questions lookup for V2 components (from spec)
   // Use spec.questions for actual question text, fall back to ID if not found
@@ -392,9 +393,9 @@ useEffect(() => {
               <ObjectiveTrafficLights objectives={objectives} questions={questions} />
             )}
 
-            {/* V2 Prioritized Actions */}
-            {hasV2 && prioritizedActions.length > 0 ? (
-              <PrioritizedActionsV2 actions={prioritizedActions} maturityV2={maturityV2} />
+            {/* V2 Prioritized Actions - Grouped by Initiative */}
+            {hasV2 && groupedInitiatives.length > 0 ? (
+              <PrioritizedActionsV2 groupedInitiatives={groupedInitiatives} maturityV2={maturityV2} />
             ) : (
               /* Legacy layout for non-V2 reports */
               <div className="overview-grid">
@@ -459,8 +460,8 @@ useEffect(() => {
         )}
         {tab === "actions" && (
           <div style={{ maxWidth: 800 }}>
-            {hasV2 ? (
-              <PrioritizedActionsV2 actions={prioritizedActions} maturityV2={maturityV2} />
+            {hasV2 && groupedInitiatives.length > 0 ? (
+              <PrioritizedActionsV2 groupedInitiatives={groupedInitiatives} maturityV2={maturityV2} />
             ) : (
               <>
                 <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14 }}>Action Plan</h2>
@@ -555,31 +556,39 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* V2 Prioritized Actions for Print */}
-        {hasV2 && prioritizedActions.length > 0 ? (
+        {/* V2 Prioritized Initiatives for Print */}
+        {hasV2 && groupedInitiatives.length > 0 ? (
           <div className="print-section" style={{ marginBottom: 32 }}>
             <h2 className="print-section-header" style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-              <Zap size={18} color="#4F46E5" /> Action Plan ({prioritizedActions.length} actions)
+              <Zap size={18} color="#4F46E5" /> Action Plan ({groupedInitiatives.length} initiatives)
             </h2>
-            {['P0', 'P1', 'P2'].map((priority) => {
-              const actions = prioritizedActions.filter(a => a.priority === priority);
-              if (actions.length === 0) return null;
+            {['P1', 'P2', 'P3'].map((priority) => {
+              const initiatives = groupedInitiatives.filter(i => i.priority === priority);
+              if (initiatives.length === 0) return null;
               const priorityConfig = {
-                P0: { label: 'Unlock', bg: '#FEE2E2', text: '#991B1B' },
-                P1: { label: 'Optimize', bg: '#FEF3C7', text: '#92400E' },
-                P2: { label: 'Future', bg: '#DBEAFE', text: '#1E40AF' },
+                P1: { label: 'Unlock', bg: '#FEE2E2', text: '#991B1B' },
+                P2: { label: 'Optimize', bg: '#FEF3C7', text: '#92400E' },
+                P3: { label: 'Future', bg: '#DBEAFE', text: '#1E40AF' },
               };
               const pc = priorityConfig[priority];
               return (
                 <div key={priority} style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: pc.text, marginBottom: 8, background: pc.bg, padding: '4px 8px', borderRadius: 4, display: 'inline-block' }}>
-                    {priority}: {pc.label} ({actions.length})
+                    {priority}: {pc.label} ({initiatives.length} initiatives)
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {actions.map((a) => (
-                      <div key={a.question_id} style={{ padding: 10, background: '#FFF', border: '1px solid #E5E7EB', borderRadius: 6 }}>
-                        <div style={{ fontWeight: 500, color: '#111827', fontSize: 13 }}>{a.action_text}</div>
-                        <div style={{ fontSize: 11, color: '#6B7280', marginTop: 4 }}>L{a.level} • {a.impact}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {initiatives.map((init) => (
+                      <div key={init.initiative_id} style={{ padding: 12, background: '#FFF', border: '1px solid #E5E7EB', borderRadius: 8 }}>
+                        <div style={{ fontWeight: 600, color: '#111827', fontSize: 14, marginBottom: 4 }}>{init.initiative_title}</div>
+                        <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>{init.initiative_description}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 12, borderLeft: '2px solid #E5E7EB' }}>
+                          {(init.actions || []).map((a) => (
+                            <div key={a.question_id} style={{ fontSize: 12, color: '#374151' }}>
+                              <span style={{ fontWeight: 500 }}>{a.action_title || a.action_text}</span>
+                              <span style={{ color: '#9CA3AF', marginLeft: 6 }}>L{a.level}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>

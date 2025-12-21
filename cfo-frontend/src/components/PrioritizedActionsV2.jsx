@@ -1,9 +1,9 @@
 // src/components/PrioritizedActionsV2.jsx
-// V2.1: Prioritized Actions with P1/P2/P3 visual hierarchy and action type badges
-// P1 = Unlock (critical blockers), P2 = Optimize (current roadmap), P3 = Future
+// V2.2: Actions grouped by Initiative with P1/P2/P3 tabs
+// Structure: P1 Tab → Initiative Cards → Actions within each
 
 import React, { useState } from 'react';
-import { Unlock, TrendingUp, Lightbulb, ChevronDown, ChevronRight, Clock, Zap, Target, Wrench, Users, ClipboardCheck } from 'lucide-react';
+import { Unlock, TrendingUp, Lightbulb, ChevronDown, ChevronRight, Clock, Zap, Target, Wrench, Users, ClipboardCheck, Layers } from 'lucide-react';
 
 const PRIORITY_CONFIG = {
   P1: {
@@ -38,48 +38,32 @@ const PRIORITY_CONFIG = {
   },
 };
 
-// V2.1: Action type badges
+// Theme colors for initiative cards
+const THEME_CONFIG = {
+  foundation: { bg: '#F0FDF4', border: '#86EFAC', accent: '#166534' },
+  future: { bg: '#EEF2FF', border: '#A5B4FC', accent: '#4338CA' },
+  intelligence: { bg: '#FDF4FF', border: '#E879F9', accent: '#A21CAF' },
+  unknown: { bg: '#F9FAFB', border: '#E5E7EB', accent: '#6B7280' },
+};
+
+// Action type badges
 const ACTION_TYPE_CONFIG = {
-  quick_win: {
-    label: 'Quick Win',
-    icon: Zap,
-    bg: '#DCFCE7',
-    text: '#166534',
-    border: '#BBF7D0',
-  },
-  structural: {
-    label: 'Structural',
-    icon: Wrench,
-    bg: '#DBEAFE',
-    text: '#1E40AF',
-    border: '#BFDBFE',
-  },
-  behavioral: {
-    label: 'Behavioral',
-    icon: Users,
-    bg: '#FEF3C7',
-    text: '#92400E',
-    border: '#FDE68A',
-  },
-  governance: {
-    label: 'Governance',
-    icon: ClipboardCheck,
-    bg: '#F3E8FF',
-    text: '#6B21A8',
-    border: '#E9D5FF',
-  },
+  quick_win: { label: 'Quick Win', icon: Zap, bg: '#DCFCE7', text: '#166534' },
+  structural: { label: 'Structural', icon: Wrench, bg: '#DBEAFE', text: '#1E40AF' },
+  behavioral: { label: 'Behavioral', icon: Users, bg: '#FEF3C7', text: '#92400E' },
+  governance: { label: 'Governance', icon: ClipboardCheck, bg: '#F3E8FF', text: '#6B21A8' },
 };
 
 const EFFORT_ICONS = {
-  low: { icon: Zap, label: 'Quick Win', color: '#22C55E' },
+  low: { icon: Zap, label: 'Quick', color: '#22C55E' },
   medium: { icon: Clock, label: 'Moderate', color: '#F59E0B' },
   high: { icon: Target, label: 'Strategic', color: '#EF4444' },
 };
 
-export default function PrioritizedActionsV2({ actions = [], maturityV2 }) {
+export default function PrioritizedActionsV2({ groupedInitiatives = [], maturityV2 }) {
   const [expandedPriority, setExpandedPriority] = useState('P1');
 
-  if (!actions || actions.length === 0) {
+  if (!groupedInitiatives || groupedInitiatives.length === 0) {
     return (
       <div style={{
         background: '#DCFCE7',
@@ -100,10 +84,15 @@ export default function PrioritizedActionsV2({ actions = [], maturityV2 }) {
     );
   }
 
-  // Group by priority (V2.1: P1/P2/P3)
-  const p1Actions = actions.filter(a => a.priority === 'P1');
-  const p2Actions = actions.filter(a => a.priority === 'P2');
-  const p3Actions = actions.filter(a => a.priority === 'P3');
+  // Group initiatives by priority
+  const p1Initiatives = groupedInitiatives.filter(i => i.priority === 'P1');
+  const p2Initiatives = groupedInitiatives.filter(i => i.priority === 'P2');
+  const p3Initiatives = groupedInitiatives.filter(i => i.priority === 'P3');
+
+  // Count total actions per priority
+  const p1ActionCount = p1Initiatives.reduce((sum, i) => sum + (i.actions?.length || 0), 0);
+  const p2ActionCount = p2Initiatives.reduce((sum, i) => sum + (i.actions?.length || 0), 0);
+  const p3ActionCount = p3Initiatives.reduce((sum, i) => sum + (i.actions?.length || 0), 0);
 
   const togglePriority = (priority) => {
     setExpandedPriority(prev => prev === priority ? null : priority);
@@ -124,29 +113,29 @@ export default function PrioritizedActionsV2({ actions = [], maturityV2 }) {
         background: '#F9FAFB'
       }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#111827' }}>
-          Recommended Actions
+          Recommended Initiatives
         </h3>
         <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280' }}>
-          Prioritized improvements based on your assessment
+          Prioritized improvement initiatives based on your assessment
           {maturityV2?.capped && (
             <span style={{ color: '#DC2626', fontWeight: 600 }}>
-              {' '}Focus on P1 to unlock your potential
+              {' '}— Focus on P1 to unlock your potential
             </span>
           )}
         </p>
       </div>
 
-      {/* Summary Bar */}
+      {/* Priority Tabs */}
       <div style={{
         display: 'flex',
         borderBottom: '1px solid #E5E7EB',
         background: '#F9FAFB'
       }}>
         {[
-          { priority: 'P1', count: p1Actions.length },
-          { priority: 'P2', count: p2Actions.length },
-          { priority: 'P3', count: p3Actions.length },
-        ].map(({ priority, count }) => {
+          { priority: 'P1', initCount: p1Initiatives.length, actionCount: p1ActionCount },
+          { priority: 'P2', initCount: p2Initiatives.length, actionCount: p2ActionCount },
+          { priority: 'P3', initCount: p3Initiatives.length, actionCount: p3ActionCount },
+        ].map(({ priority, initCount, actionCount }) => {
           const config = PRIORITY_CONFIG[priority];
           const Icon = config.icon;
           const isActive = expandedPriority === priority;
@@ -174,40 +163,40 @@ export default function PrioritizedActionsV2({ actions = [], maturityV2 }) {
                 {config.label}
               </span>
               <span style={{
-                background: count > 0 ? config.accentBg : '#E5E7EB',
-                color: count > 0 ? config.accentText : '#6B7280',
+                background: initCount > 0 ? config.accentBg : '#E5E7EB',
+                color: initCount > 0 ? config.accentText : '#6B7280',
                 fontSize: 11,
                 fontWeight: 700,
                 padding: '2px 8px',
                 borderRadius: 10
               }}>
-                {count}
+                {initCount}
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* Action Lists */}
+      {/* Initiative Lists */}
       <div style={{ padding: 16 }}>
         {expandedPriority === 'P1' && (
-          <PrioritySection priority="P1" actions={p1Actions} />
+          <PrioritySection priority="P1" initiatives={p1Initiatives} />
         )}
         {expandedPriority === 'P2' && (
-          <PrioritySection priority="P2" actions={p2Actions} />
+          <PrioritySection priority="P2" initiatives={p2Initiatives} />
         )}
         {expandedPriority === 'P3' && (
-          <PrioritySection priority="P3" actions={p3Actions} />
+          <PrioritySection priority="P3" initiatives={p3Initiatives} />
         )}
       </div>
     </div>
   );
 }
 
-function PrioritySection({ priority, actions }) {
+function PrioritySection({ priority, initiatives }) {
   const config = PRIORITY_CONFIG[priority];
 
-  if (actions.length === 0) {
+  if (initiatives.length === 0) {
     return (
       <div style={{
         textAlign: 'center',
@@ -218,22 +207,15 @@ function PrioritySection({ priority, actions }) {
         {priority === 'P1'
           ? 'No critical blockers. Great job!'
           : priority === 'P2'
-          ? 'No optimization actions needed at this level.'
+          ? 'No optimization initiatives needed at this level.'
           : 'You\'re ready for the next level when you choose to advance.'}
       </div>
     );
   }
 
-  // Group actions by level for P2
-  const actionsByLevel = actions.reduce((acc, action) => {
-    const level = action.level || 1;
-    if (!acc[level]) acc[level] = [];
-    acc[level].push(action);
-    return acc;
-  }, {});
-
   return (
     <div>
+      {/* Priority Description */}
       <div style={{
         marginBottom: 16,
         padding: '10px 14px',
@@ -249,179 +231,237 @@ function PrioritySection({ priority, actions }) {
         </div>
       </div>
 
-      {/* Render by level for better organization */}
-      {[1, 2, 3, 4].map(level => {
-        const levelActions = actionsByLevel[level] || [];
-        if (levelActions.length === 0) return null;
-
-        return (
-          <div key={level} style={{ marginBottom: 16 }}>
-            <div style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: '#6B7280',
-              letterSpacing: '0.05em',
-              marginBottom: 8,
-              paddingLeft: 4
-            }}>
-              LEVEL {level}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {levelActions.map((action, idx) => (
-                <ActionCard key={action.question_id || idx} action={action} priority={priority} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      {/* Initiative Cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {initiatives.map((initiative) => (
+          <InitiativeCard
+            key={initiative.initiative_id}
+            initiative={initiative}
+            priority={priority}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-function ActionCard({ action, priority }) {
-  const [expanded, setExpanded] = useState(false);
-  const config = PRIORITY_CONFIG[priority];
-  const effortConfig = EFFORT_ICONS[action.effort] || EFFORT_ICONS.medium;
-  const EffortIcon = effortConfig.icon;
-
-  // V2.1: Get action type config
-  const typeConfig = action.action_type ? ACTION_TYPE_CONFIG[action.action_type] : null;
-  const TypeIcon = typeConfig?.icon;
+function InitiativeCard({ initiative, priority }) {
+  const [expanded, setExpanded] = useState(priority === 'P1'); // Auto-expand P1
+  const priorityConfig = PRIORITY_CONFIG[priority];
+  const themeConfig = THEME_CONFIG[initiative.theme_id] || THEME_CONFIG.unknown;
+  const actionCount = initiative.actions?.length || 0;
 
   return (
     <div style={{
-      border: '1px solid #E5E7EB',
-      borderRadius: 8,
+      border: `1px solid ${themeConfig.border}`,
+      borderRadius: 12,
       overflow: 'hidden',
       background: '#FFF'
     }}>
-      {/* Header */}
+      {/* Initiative Header */}
       <div
         onClick={() => setExpanded(!expanded)}
         style={{
           display: 'flex',
+          alignItems: 'center',
+          padding: '14px 16px',
+          cursor: 'pointer',
+          background: themeConfig.bg,
+          gap: 12
+        }}
+      >
+        {/* Initiative Icon */}
+        <div style={{
+          width: 36,
+          height: 36,
+          borderRadius: 8,
+          background: themeConfig.accent,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <Layers size={18} color="#FFF" />
+        </div>
+
+        {/* Initiative Info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, color: '#111827', fontSize: 15 }}>
+              {initiative.initiative_title}
+            </span>
+            <span style={{
+              background: priorityConfig.accentBg,
+              color: priorityConfig.accentText,
+              fontSize: 10,
+              fontWeight: 700,
+              padding: '2px 6px',
+              borderRadius: 4
+            }}>
+              {priority}
+            </span>
+          </div>
+          <div style={{
+            fontSize: 13,
+            color: '#6B7280',
+            marginTop: 4,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            {initiative.initiative_description}
+          </div>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            marginTop: 6,
+            fontSize: 12,
+            color: '#9CA3AF'
+          }}>
+            <span>{actionCount} action{actionCount !== 1 ? 's' : ''}</span>
+            <span>Score: {initiative.total_score}</span>
+          </div>
+        </div>
+
+        {/* Expand Icon */}
+        <div style={{ color: '#6B7280' }}>
+          {expanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+        </div>
+      </div>
+
+      {/* Expanded Actions */}
+      {expanded && initiative.actions && initiative.actions.length > 0 && (
+        <div style={{
+          padding: 16,
+          borderTop: `1px solid ${themeConfig.border}`,
+          background: '#FAFAFA'
+        }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: '#6B7280',
+            marginBottom: 10,
+            letterSpacing: '0.05em'
+          }}>
+            ACTIONS ({actionCount})
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {initiative.actions.map((action, idx) => (
+              <ActionItem key={action.question_id || idx} action={action} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActionItem({ action }) {
+  const [showDetails, setShowDetails] = useState(false);
+  const typeConfig = action.action_type ? ACTION_TYPE_CONFIG[action.action_type] : null;
+  const TypeIcon = typeConfig?.icon;
+  const effortConfig = EFFORT_ICONS[action.effort] || EFFORT_ICONS.medium;
+
+  return (
+    <div style={{
+      background: '#FFF',
+      border: '1px solid #E5E7EB',
+      borderRadius: 8,
+      overflow: 'hidden'
+    }}>
+      <div
+        onClick={() => setShowDetails(!showDetails)}
+        style={{
+          display: 'flex',
           alignItems: 'flex-start',
-          padding: '12px 14px',
+          padding: '10px 12px',
           cursor: 'pointer',
           gap: 10
         }}
       >
-        {/* Priority Badge */}
-        <div style={{
-          background: config.accentBg,
-          color: config.accentText,
-          fontSize: 10,
-          fontWeight: 700,
-          padding: '2px 6px',
-          borderRadius: 4,
-          flexShrink: 0,
-          marginTop: 2
-        }}>
-          {priority}
-        </div>
+        {/* Critical Indicator */}
+        {action.is_critical && (
+          <div style={{
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: '#EF4444',
+            flexShrink: 0,
+            marginTop: 6
+          }} />
+        )}
 
-        {/* Action Text */}
+        {/* Action Content */}
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#111827', lineHeight: 1.4 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: '#111827', lineHeight: 1.4 }}>
             {action.action_title || action.action_text}
           </div>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            marginTop: 6,
-            fontSize: 12,
-            color: '#6B7280',
+            marginTop: 4,
             flexWrap: 'wrap'
           }}>
-            {/* V2.1: Action Type Badge */}
+            {/* Action Type Badge */}
             {typeConfig && (
               <span style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 4,
+                gap: 3,
                 background: typeConfig.bg,
-                border: `1px solid ${typeConfig.border}`,
                 color: typeConfig.text,
-                padding: '2px 8px',
+                padding: '1px 6px',
                 borderRadius: 4,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: 500
               }}>
-                <TypeIcon size={10} />
+                <TypeIcon size={9} />
                 {typeConfig.label}
               </span>
             )}
-            {/* Score Badge */}
-            {action.score !== undefined && (
-              <span style={{
-                background: action.is_critical ? '#FEE2E2' : '#F3F4F6',
-                color: action.is_critical ? '#991B1B' : '#374151',
-                padding: '2px 8px',
-                borderRadius: 4,
-                fontSize: 11,
-                fontWeight: 600
-              }}>
-                Score: {action.score}
-                {action.is_critical && ' (Critical)'}
-              </span>
-            )}
-            {/* Effort */}
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <EffortIcon size={12} color={effortConfig.color} />
-              {effortConfig.label}
+            {/* Level Badge */}
+            <span style={{
+              background: '#F3F4F6',
+              color: '#6B7280',
+              padding: '1px 6px',
+              borderRadius: 4,
+              fontSize: 10,
+              fontWeight: 500
+            }}>
+              L{action.level}
+            </span>
+            {/* Score */}
+            <span style={{
+              color: '#9CA3AF',
+              fontSize: 10
+            }}>
+              Score: {action.score}
             </span>
           </div>
         </div>
 
-        {/* Expand */}
-        <div style={{ color: '#9CA3AF' }}>
-          {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        {/* Expand Icon */}
+        <div style={{ color: '#D1D5DB' }}>
+          {showDetails ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </div>
       </div>
 
-      {/* Expanded Details */}
-      {expanded && (
+      {/* Action Details */}
+      {showDetails && (
         <div style={{
-          padding: '12px 14px',
-          borderTop: '1px solid #E5E7EB',
-          background: '#F9FAFB',
-          fontSize: 13
+          padding: '10px 12px',
+          borderTop: '1px solid #F3F4F6',
+          background: '#FAFAFA',
+          fontSize: 12
         }}>
-          <div style={{ color: '#6B7280', marginBottom: 8 }}>
+          <div style={{ color: '#6B7280', marginBottom: 6 }}>
             <strong>Question:</strong> {action.question_text}
           </div>
-          {/* Impact Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            background: config.bg,
-            padding: '4px 10px',
-            borderRadius: 6,
-            color: config.text,
-            fontSize: 12,
-            fontWeight: 500,
-            marginBottom: 8
-          }}>
-            {React.createElement(config.icon, { size: 12 })}
-            {action.impact}
+          <div style={{ color: '#6B7280' }}>
+            <strong>Impact:</strong> {action.impact}
           </div>
-          {/* Show recommendation if available */}
-          {action.action_text && action.action_title && (
-            <div style={{
-              marginTop: 8,
-              padding: 10,
-              background: '#FFF',
-              border: '1px solid #E5E7EB',
-              borderRadius: 6,
-              fontSize: 13,
-              color: '#374151',
-              lineHeight: 1.5
-            }}>
-              <strong style={{ color: '#111827' }}>Recommendation:</strong> {action.action_text}
-            </div>
-          )}
         </div>
       )}
     </div>
