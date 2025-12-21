@@ -1,19 +1,23 @@
 // src/reports/builder.ts
 // VS6/VS7/VS8/VS19 — Assembles Finance Report DTO from VS5 scores + spec
 // Includes maturity calculation (VS7), actions derivation (VS8), and critical risks (VS19)
+// V2: Added execution score, cap logic, objective scoring, P0/P1/P2 actions
 
 import { Spec } from "../specs/types";
 import {
   FinanceReportDTO,
   PillarReportDTO,
   MaturityStatus,
+  MaturityStatusV2,
   MaturityGate,
   CriticalRisk,
+  ObjectiveScore,
 } from "./types";
 import { AggregateResult } from "../results/aggregate";
-import { evaluateMaturity } from "../maturity";
-import { deriveActions, deriveActionsFromObjectives } from "../actions";
+import { evaluateMaturity, calculateMaturityV2, Answer } from "../maturity";
+import { deriveActions, deriveActionsFromObjectives, prioritizeActions } from "../actions";
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
+import { calculateObjectiveScores } from "../scoring/objectiveScoring";
 
 // ------------------------------------------------------------------
 // Input Types
@@ -81,6 +85,45 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
   // finance_maturity = min(applicable pillar maturity)
   const overallMaturity = calculateOverallMaturity(pillarReports, gates);
 
+  // V2: Calculate maturity with execution score and cap logic
+  const answers: Answer[] = inputs.map((i) => ({
+    question_id: i.question_id,
+    value: i.value as boolean | 'N/A' | null | undefined,
+  }));
+  const questions = spec.questions.map((q) => ({
+    id: q.id,
+    text: q.text,
+    level: q.level ?? 1,  // Default to level 1 if undefined
+  }));
+  const maturityV2Result = calculateMaturityV2({ answers, questions });
+
+  // V2: Build extended maturity status
+  const maturityV2: MaturityStatusV2 = {
+    // Legacy fields
+    achieved_level: maturityV2Result.actual_level,
+    achieved_label: maturityV2Result.actual_label,
+    blocking_level: maturityV2Result.blocking_level,
+    blocking_evidence_ids: maturityV2Result.blocking_evidence_ids,
+    gates,
+    // V2 fields
+    execution_score: maturityV2Result.execution_score,
+    potential_level: maturityV2Result.potential_level,
+    actual_level: maturityV2Result.actual_level,
+    capped: maturityV2Result.capped,
+    capped_by: maturityV2Result.capped_by,
+    capped_reason: maturityV2Result.capped_reason,
+  };
+
+  // V2: Calculate objective scores with traffic lights
+  const objectiveScores: ObjectiveScore[] = calculateObjectiveScores(spec, inputs);
+
+  // V2: Calculate prioritized actions (P0/P1/P2)
+  const prioritizedActions = prioritizeActions(
+    maturityV2Result,
+    inputs,
+    spec.questions
+  );
+
   // Build the report (without actions first, needed for deriveActions)
   const reportWithoutActions: FinanceReportDTO = {
     run_id,
@@ -108,6 +151,10 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     ...reportWithoutActions,
     actions,
     derived_actions: derivedActions,
+    // V2 fields
+    maturity_v2: maturityV2,
+    objectives: objectiveScores,
+    prioritized_actions: prioritizedActions,
   };
 }
 

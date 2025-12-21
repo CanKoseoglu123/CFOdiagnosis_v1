@@ -3,4 +3,5 @@
 
 export { deriveActions } from "./derive";
 export { deriveActionsFromObjectives } from "./deriveFromObjectives";  // VS20
-export type { ActionPlanItem, DerivedAction } from "./types";
+export { prioritizeActions } from "./prioritizeActions";  // V2
+export type { ActionPlanItem, DerivedAction, PrioritizedAction } from "./types";

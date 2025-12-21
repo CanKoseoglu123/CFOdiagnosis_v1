@@ -1,8 +1,9 @@
 // src/reports/types.ts
 // VS6/VS8 — Finance Report DTO Contract
 // Strict typing: levels are numbers, never null (always at least 0).
+// V2: Added ObjectiveScore, execution_score, potential_level, actual_level
 
-import { ActionPlanItem, DerivedAction } from "../actions/types";
+import { ActionPlanItem, DerivedAction, PrioritizedAction } from "../actions/types";
 
 // === Maturity Status ===
 
@@ -12,12 +13,38 @@ export interface MaturityGate {
   required_evidence_ids: string[];
 }
 
+// Legacy MaturityStatus (for backward compatibility)
 export interface MaturityStatus {
   achieved_level: number;             // 0-4, always at least 0
   achieved_label: string;             // Human-readable label
   blocking_level: number | null;      // Next level that's blocked (null if at max)
   blocking_evidence_ids: string[];    // Evidence IDs preventing next level
   gates: MaturityGate[];              // All gate definitions from spec
+}
+
+// V2: Extended MaturityStatus with execution score and cap logic
+export interface MaturityStatusV2 extends MaturityStatus {
+  execution_score: number;            // 0-100, percentage of YES answers
+  potential_level: number;            // 1-4, based on score alone
+  actual_level: number;               // 1-4, after caps applied
+  capped: boolean;                    // True if critical failures caused a cap
+  capped_by: string[];                // Question IDs that caused the cap
+  capped_reason: string | null;       // Human-readable explanation
+}
+
+// === Objective Score (V2) ===
+
+export interface ObjectiveScore {
+  objective_id: string;
+  objective_name: string;
+  level: number;                      // Maturity level (1-4)
+  score: number;                      // 0-100
+  status: 'green' | 'yellow' | 'red'; // Traffic light
+  overridden: boolean;                // True if critical override applied
+  override_reason: string | null;     // Tooltip text if overridden
+  questions_total: number;
+  questions_passed: number;
+  failed_criticals: string[];         // IDs of failed criticals in this objective
 }
 
 // === Critical Risk ===
@@ -74,4 +101,13 @@ export interface FinanceReportDTO {
 
   // VS20: Objective-based derived actions (priority computed, not hardcoded)
   derived_actions?: DerivedAction[];
+
+  // V2: Extended maturity with execution score and cap logic
+  maturity_v2?: MaturityStatusV2;
+
+  // V2: Objective-level traffic lights
+  objectives?: ObjectiveScore[];
+
+  // V2: P0/P1/P2 prioritized actions
+  prioritized_actions?: PrioritizedAction[];
 }
