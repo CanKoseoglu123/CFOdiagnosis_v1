@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { AlertTriangle, CheckCircle, ChevronRight, Target, TrendingUp, Shield, Zap, ArrowRight, Info, Home, Printer } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { supabase } from './lib/supabase';
+import AppShell from './components/AppShell';
+import ReportSidebar from './components/ReportSidebar';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -177,6 +179,7 @@ const PillarCard = ({ pillar }) => {
 
 export default function FinanceDiagnosticReport() {
   const { runId } = useParams();
+  const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -187,6 +190,10 @@ export default function FinanceDiagnosticReport() {
     contentRef,
     documentTitle: `Diagnostic-Report-${runId}`,
   });
+
+  const handleNewAssessment = () => {
+    navigate('/assess');
+  };
 
 useEffect(() => {
   if (!runId) {
@@ -247,9 +254,22 @@ useEffect(() => {
   if (!report) return null;
   const mc = colors.maturity[report.maturity.achieved_level] || colors.maturity[0];
 
+  // Sidebar content for report
+  const sidebarContent = (
+    <ReportSidebar
+      companyName={report.context?.company_name || "Assessment"}
+      industry={report.context?.industry}
+      onSectionClick={(sectionId) => setTab(sectionId === 'executive' ? 'overview' : sectionId === 'score' ? 'overview' : sectionId === 'risks' ? 'overview' : sectionId)}
+      onPrint={handlePrint}
+      onNewAssessment={handleNewAssessment}
+    />
+  );
+
   return (
-    <div ref={contentRef} style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
-      <header style={{ background: "#0F172A", color: "#FFF", padding: "24px 0" }}>
+    <AppShell sidebarContent={sidebarContent}>
+      <div ref={contentRef} style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
+        {/* Page Header */}
+        <div style={{ background: "#0F172A", color: "#FFF", padding: "32px 0" }}>
         <div className="header-content mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
           <div>
             <div style={{ fontSize: 10, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 6 }}>FINANCE DIAGNOSTIC</div>
@@ -274,7 +294,7 @@ useEffect(() => {
             </Link>
           </div>
         </div>
-      </header>
+      </div>
 
       <div style={{ background: "#FFF", borderBottom: "1px solid #E5E7EB", padding: "20px 0" }}>
         <div className="stats-grid mobile-padding" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px" }}>
@@ -413,12 +433,13 @@ useEffect(() => {
         </div>
       </main>
 
-      <footer className="print-footer" style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6B7280" }}>
-          <span>Finance Diagnostic Platform • {report.spec_version}</span>
-          <span>{formatDate(report.generated_at)}</span>
-        </div>
-      </footer>
-    </div>
+        <footer className="print-footer" style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
+          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6B7280" }}>
+            <span>Finance Diagnostic Platform • {report.spec_version}</span>
+            <span>{formatDate(report.generated_at)}</span>
+          </div>
+        </footer>
+      </div>
+    </AppShell>
   );
 }

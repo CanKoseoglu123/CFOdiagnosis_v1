@@ -1,12 +1,15 @@
 // src/DiagnosticInput.jsx
 // VS14: Content Hydration - Questions fetched from /api/spec (Single Source of Truth)
 // v2.7.0: Renders hierarchy: Theme -> Objective -> Question (grouped by theme_order)
+// Wrapped with AppShell layout
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 import { AlertTriangle, CheckCircle, Play, Send, FileText, HelpCircle, Loader, ChevronDown, ChevronRight } from "lucide-react";
+import AppShell from "./components/AppShell";
+import QuestionnaireSidebar from "./components/QuestionnaireSidebar";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -287,10 +290,8 @@ export default function DiagnosticInput() {
   // v2.7.0: Group objectives by theme
   const groupedByTheme = useMemo(() => {
     if (themes.length === 0) {
-      // Fallback to single group if no themes (v2.6.4 compatibility)
       return null;
     }
-
     return themes.map(theme => ({
       ...theme,
       objectives: sortedObjectives.filter(obj => obj.theme === theme.code)
@@ -300,6 +301,40 @@ export default function DiagnosticInput() {
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = questions.length;
   const allAnswered = answeredCount === totalQuestions && totalQuestions > 0;
+
+  // Build sidebar themes data
+  const sidebarThemes = useMemo(() => {
+    if (!groupedByTheme) return [];
+    return groupedByTheme.map(theme => {
+      const themeObjectives = theme.objectives || [];
+      const themeQuestionIds = new Set(
+        themeObjectives.flatMap(obj =>
+          questions.filter(q => q.objective_id === obj.id).map(q => q.id)
+        )
+      );
+      const themeQuestions = questions.filter(q => themeQuestionIds.has(q.id));
+      const answeredInTheme = themeQuestions.filter(q => answers[q.id] !== undefined).length;
+
+      return {
+        code: theme.code,
+        name: theme.name,
+        answered: answeredInTheme,
+        total: themeQuestions.length,
+        completed: answeredInTheme === themeQuestions.length && themeQuestions.length > 0,
+        objectives: themeObjectives.map(obj => {
+          const objQuestions = questions.filter(q => q.objective_id === obj.id);
+          const objAnswered = objQuestions.filter(q => answers[q.id] !== undefined).length;
+          return {
+            id: obj.id,
+            name: obj.name,
+            answered: objAnswered,
+            total: objQuestions.length,
+            active: false,
+          };
+        }),
+      };
+    });
+  }, [groupedByTheme, questions, answers]);
 
   // VS18: Create run and redirect to setup page
   const createRun = async () => {
@@ -313,7 +348,6 @@ export default function DiagnosticInput() {
       });
       if (!response.ok) throw new Error("Failed to create diagnostic run");
       const data = await response.json();
-      // Redirect to setup page instead of directly starting questions
       navigate(`/run/${data.id}/setup`);
     } catch (err) {
       setError(err.message);
@@ -442,105 +476,144 @@ export default function DiagnosticInput() {
     </>
   );
 
+  // Mobile bottom nav for questionnaire
+  const mobileBottomNav = status === "answering" ? (
+    <>
+      <div style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>
+        {answeredCount} of {totalQuestions}
+      </div>
+      <button
+        className="mobile-nav-button primary"
+        onClick={submitDiagnostic}
+        disabled={!allAnswered}
+      >
+        <Send size={16} />
+        {allAnswered ? "Submit" : `${totalQuestions - answeredCount} left`}
+      </button>
+    </>
+  ) : null;
+
+  // Sidebar content for questionnaire
+  const sidebarContent = (
+    <QuestionnaireSidebar
+      progress={{
+        answered: answeredCount,
+        total: totalQuestions,
+        percentage: totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0,
+      }}
+      themes={sidebarThemes}
+      activeTheme={null}
+      onThemeClick={() => {}}
+      onSubmit={submitDiagnostic}
+      canSubmit={allAnswered}
+    />
+  );
+
   return (
-    <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
-      <header style={{ background: "#0F172A", color: "#FFF", padding: "24px 0" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
-          <div style={{ fontSize: 10, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 6 }}>FINANCE DIAGNOSTIC</div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Maturity Assessment</h1>
+    <AppShell sidebarContent={sidebarContent} mobileBottomNav={mobileBottomNav}>
+      <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "system-ui" }}>
+        {/* Page Header */}
+        <div style={{ background: "#0F172A", color: "#FFF", padding: "32px 0" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
+            <div style={{ fontSize: 10, letterSpacing: "0.1em", color: "#94A3B8", marginBottom: 6 }}>FINANCE DIAGNOSTIC</div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Maturity Assessment</h1>
+            {runContext?.company_name && (
+              <div style={{ fontSize: 14, color: "#94A3B8", marginTop: 6 }}>{runContext.company_name}</div>
+            )}
+          </div>
         </div>
-      </header>
 
-      <main style={{ maxWidth: 900, margin: "0 auto", padding: "32px 20px" }}>
-        {error && (
-          <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
-            <AlertTriangle size={20} color="#DC2626" />
-            <div style={{ color: "#991B1B", fontSize: 14 }}>{error}</div>
-            <button onClick={() => setError(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#991B1B", cursor: "pointer", fontSize: 18 }}>×</button>
-          </div>
-        )}
-
-        {status === "idle" && (
-          <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 16, padding: 48, textAlign: "center" }}>
-            <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-              <FileText size={36} color="#4F46E5" />
+        <main style={{ maxWidth: 900, margin: "0 auto", padding: "32px 20px" }}>
+          {error && (
+            <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
+              <AlertTriangle size={20} color="#DC2626" />
+              <div style={{ color: "#991B1B", fontSize: 14 }}>{error}</div>
+              <button onClick={() => setError(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#991B1B", cursor: "pointer", fontSize: 18 }}>×</button>
             </div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>Finance Maturity Diagnostic</h2>
-            <p style={{ color: "#6B7280", fontSize: 15, lineHeight: 1.6, marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
-              Answer {totalQuestions} questions across {themes.length > 0 ? `${themes.length} themes` : `${pillars.length} pillar${pillars.length !== 1 ? "s" : ""}`} to receive a personalized maturity assessment with actionable recommendations.
-            </p>
-            {themes.length > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
-                {themes.map(theme => {
-                  const tc = THEME_COLORS[theme.code] || THEME_COLORS.foundation;
-                  return (
-                    <div key={theme.code} style={{ background: tc.bg, color: tc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{tc.icon}</span> {theme.name}
-                    </div>
-                  );
-                })}
+          )}
+
+          {status === "idle" && (
+            <div style={{ background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 16, padding: 48, textAlign: "center" }}>
+              <div style={{ width: 80, height: 80, borderRadius: "50%", background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+                <FileText size={36} color="#4F46E5" />
               </div>
-            )}
-            {themes.length === 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
-                {maturityGates.filter(g => g.level > 0).map(gate => {
-                  const lc = LEVEL_COLORS[gate.level] || LEVEL_COLORS[1];
-                  return (
-                    <div key={gate.level} style={{ background: lc.bg, color: lc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
-                      L{gate.level}: {gate.label}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <button onClick={createRun} style={{ background: "#4F46E5", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10 }}>
-              <Play size={20} /> Start Assessment
-            </button>
-          </div>
-        )}
-
-        {status === "creating" && (
-          <div style={{ textAlign: "center", padding: 48 }}>
-            <div style={{ width: 48, height: 48, border: "3px solid #E5E7EB", borderTopColor: "#4F46E5", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
-            <div style={{ color: "#6B7280", fontSize: 14 }}>Creating your assessment...</div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </div>
-        )}
-
-        {status === "answering" && (
-          <>
-            <div style={{ marginBottom: 32, background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 20 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Overall Progress: {answeredCount} of {totalQuestions}</span>
-                <span style={{ fontSize: 13, color: "#6B7280" }}>{Math.round((answeredCount / totalQuestions) * 100)}%</span>
-              </div>
-              <ProgressBar current={answeredCount} total={totalQuestions} />
-            </div>
-
-            {groupedByTheme ? renderThemeView() : renderLegacyView()}
-
-            <div style={{ marginTop: 32, textAlign: "center" }}>
-              <button onClick={submitDiagnostic} disabled={!allAnswered} style={{ background: allAnswered ? "#4F46E5" : "#D1D5DB", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: allAnswered ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 10 }}>
-                <Send size={20} /> {allAnswered ? "Submit & View Results" : `Answer ${totalQuestions - answeredCount} more`}
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>Finance Maturity Diagnostic</h2>
+              <p style={{ color: "#6B7280", fontSize: 15, lineHeight: 1.6, marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
+                Answer {totalQuestions} questions across {themes.length > 0 ? `${themes.length} themes` : `${pillars.length} pillar${pillars.length !== 1 ? "s" : ""}`} to receive a personalized maturity assessment with actionable recommendations.
+              </p>
+              {themes.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
+                  {themes.map(theme => {
+                    const tc = THEME_COLORS[theme.code] || THEME_COLORS.foundation;
+                    return (
+                      <div key={theme.code} style={{ background: tc.bg, color: tc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>{tc.icon}</span> {theme.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {themes.length === 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 32 }}>
+                  {maturityGates.filter(g => g.level > 0).map(gate => {
+                    const lc = LEVEL_COLORS[gate.level] || LEVEL_COLORS[1];
+                    return (
+                      <div key={gate.level} style={{ background: lc.bg, color: lc.text, padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+                        L{gate.level}: {gate.label}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <button onClick={createRun} style={{ background: "#4F46E5", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10 }}>
+                <Play size={20} /> Start Assessment
               </button>
             </div>
-          </>
-        )}
+          )}
 
-        {status === "submitting" && (
-          <div style={{ textAlign: "center", padding: 48 }}>
-            <div style={{ width: 48, height: 48, border: "3px solid #E5E7EB", borderTopColor: "#22C55E", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
-            <div style={{ color: "#6B7280", fontSize: 14 }}>Calculating your results...</div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          {status === "creating" && (
+            <div style={{ textAlign: "center", padding: 48 }}>
+              <div style={{ width: 48, height: 48, border: "3px solid #E5E7EB", borderTopColor: "#4F46E5", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
+              <div style={{ color: "#6B7280", fontSize: 14 }}>Creating your assessment...</div>
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          )}
+
+          {status === "answering" && (
+            <>
+              <div style={{ marginBottom: 32, background: "#FFF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#374151" }}>Overall Progress: {answeredCount} of {totalQuestions}</span>
+                  <span style={{ fontSize: 13, color: "#6B7280" }}>{Math.round((answeredCount / totalQuestions) * 100)}%</span>
+                </div>
+                <ProgressBar current={answeredCount} total={totalQuestions} />
+              </div>
+
+              {groupedByTheme ? renderThemeView() : renderLegacyView()}
+
+              <div style={{ marginTop: 32, textAlign: "center" }}>
+                <button onClick={submitDiagnostic} disabled={!allAnswered} style={{ background: allAnswered ? "#4F46E5" : "#D1D5DB", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: allAnswered ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 10 }}>
+                  <Send size={20} /> {allAnswered ? "Submit & View Results" : `Answer ${totalQuestions - answeredCount} more`}
+                </button>
+              </div>
+            </>
+          )}
+
+          {status === "submitting" && (
+            <div style={{ textAlign: "center", padding: 48 }}>
+              <div style={{ width: 48, height: 48, border: "3px solid #E5E7EB", borderTopColor: "#22C55E", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
+              <div style={{ color: "#6B7280", fontSize: 14 }}>Calculating your results...</div>
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          )}
+        </main>
+
+        <footer style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px", textAlign: "center", fontSize: 12, color: "#6B7280" }}>
+            Finance Diagnostic Platform {spec?.version ? `• Spec ${spec.version}` : ""}
           </div>
-        )}
-      </main>
-
-      <footer style={{ borderTop: "1px solid #E5E7EB", padding: "20px 0", marginTop: 40, background: "#FFF" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px", textAlign: "center", fontSize: 12, color: "#6B7280" }}>
-          Finance Diagnostic Platform {spec?.version ? `• Spec ${spec.version}` : ""}
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </AppShell>
   );
 }
