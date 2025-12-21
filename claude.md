@@ -628,6 +628,69 @@ cfo-frontend/src/components/
 
 ---
 
+## Session Log
+
+### December 21, 2025 - V2.1 Initiative Engine + Bug Fixes
+
+**Completed Today:**
+
+1. **V2.1 Initiative Engine** (Backend + Frontend)
+   - Backend: `src/reports/builder.ts` now returns `grouped_initiatives` in report
+   - 9 initiatives across 3 themes (Foundation: 4, Future: 3, Intelligence: 2)
+   - Actions grouped under parent Initiative with P1/P2/P3 priority
+   - Frontend: `PrioritizedActionsV2.jsx` renders Initiative cards with nested actions
+
+2. **Human-Readable Question Text**
+   - Fixed ObjectiveTrafficLights showing raw question IDs
+   - Fetches spec data and builds questions lookup with `expert_action.title`
+   - Passes `questions` prop to V2 components
+
+3. **Maturity Level Display Bug Fix** (commit `b869858`)
+   - Added `LEVEL_NAMES` constant: `{1: "Emerging", 2: "Defined", 3: "Managed", 4: "Optimized"}`
+   - Filtered out Level 0 "Ad-hoc" from MaturityLadder (model is 1-4 only)
+   - Fixed header to use `getLevelName()` instead of API's `achieved_label`
+   - Fixed PillarCard to use `LEVEL_NAMES` mapping
+   - Passed `actualLevel` prop to all MaturityLadder calls
+
+**Key Commits:**
+- `ec5d81a` - Fix question IDs to show human-readable text
+- `8054a70` - Group actions by Initiative (P1/P2/P3 tabs)
+- `f8a85a3` - Add test utility files
+- `b869858` - Fix maturity level display
+
+**Files Modified Today:**
+- `cfo-frontend/src/FinanceDiagnosticReport.jsx` - LEVEL_NAMES, getLevelName, MaturityLadder fixes
+- `cfo-frontend/src/components/PrioritizedActionsV2.jsx` - Initiative grouping UI
+- `cfo-frontend/src/components/ObjectiveTrafficLights.jsx` - Question text lookup
+- `src/reports/builder.ts` - grouped_initiatives in report
+
+---
+
+### Where to Start Tomorrow
+
+**Immediate Next Steps:**
+1. **Manual QA Testing** - Open production report and verify:
+   - Header shows "L2 Defined" (not "L2 Ad-hoc")
+   - Maturity Ladder shows only Levels 1-4
+   - CURRENT marker is on correct level
+   - Initiative grouping displays correctly in P1/P2/P3 tabs
+
+2. **Review V2.1 Content** - Verify initiatives make sense:
+   - Foundation theme initiatives (Budget Foundation, Financial Controls, etc.)
+   - Future theme initiatives (Forecasting, Driver-Based Planning, etc.)
+   - Intelligence theme initiatives (Scenario Modeling, Predictive Analytics)
+
+3. **Known Issues to Address:**
+   - API still returns Level 0 "Ad-hoc" in `maturityGates` (frontend handles it, but backend should be cleaned up)
+   - Test utility files in repo root (can be moved to `scripts/` or `.gitignore`)
+
+**Post-V1 Feature Backlog:**
+- VS15: Admin Dashboard
+- Multi-Pillar expansion (Liquidity, Treasury, Tax)
+- Benchmarking against industry peers
+
+---
+
 ## Post-V1.0 Roadmap
 
 | Feature | Priority | Description |
