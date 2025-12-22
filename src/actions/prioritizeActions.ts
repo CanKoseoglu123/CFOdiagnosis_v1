@@ -164,6 +164,7 @@ export function prioritizeActions(
         action_text: generateActionText(q),
         action_title: q.expert_action?.title,
         action_type: q.expert_action?.type,
+        recommendation: q.expert_action?.recommendation,
         impact: 'Unlocks next maturity level',
         effort: estimateEffort(q),
         level: q.level ?? 1,
@@ -191,6 +192,7 @@ export function prioritizeActions(
         action_text: generateActionText(q),
         action_title: q.expert_action?.title,
         action_type: q.expert_action?.type,
+        recommendation: q.expert_action?.recommendation,
         impact:
           qLevel <= actual_level
             ? 'Strengthens current level'
@@ -219,6 +221,7 @@ export function prioritizeActions(
         action_text: generateActionText(q),
         action_title: q.expert_action?.title,
         action_type: q.expert_action?.type,
+        recommendation: q.expert_action?.recommendation,
         impact: 'Prepares for next level',
         effort: estimateEffort(q),
         level: q.level ?? 1,

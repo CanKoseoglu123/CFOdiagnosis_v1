@@ -456,6 +456,11 @@ function ActionItem({ action }) {
           background: '#FAFAFA',
           fontSize: 12
         }}>
+          {action.recommendation && (
+            <div style={{ color: '#374151', marginBottom: 8 }}>
+              <strong style={{ color: '#111827' }}>Recommendation:</strong> {action.recommendation}
+            </div>
+          )}
           <div style={{ color: '#6B7280', marginBottom: 6 }}>
             <strong>Question:</strong> {action.question_text}
           </div>

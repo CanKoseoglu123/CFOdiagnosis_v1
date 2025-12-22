@@ -38,6 +38,7 @@ export interface PrioritizedAction {
   action_text: string;               // Generated action recommendation
   action_title?: string;             // Expert action title
   action_type?: ActionType;          // quick_win, structural, behavioral, governance
+  recommendation?: string;           // Expert action recommendation (how to fix)
   impact: string;                    // Why this matters
   effort: 'low' | 'medium' | 'high';
   level: number;                     // Maturity level of the question

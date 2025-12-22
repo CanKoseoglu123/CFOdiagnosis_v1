@@ -176,7 +176,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Implement Annual Budget Cycle",
-        recommendation: "Establish a formal budget calendar working backwards from fiscal year start. Begin 3-4 months prior. Assign clear ownership for timeline management.",
+        recommendation: "Establish a formal budget calendar working backwards 3-4 months. Crucially, secure explicit leadership sponsorship to enforce deadlines. Assign clear ownership for timeline management.",
         type: "structural"
       }
     },
@@ -254,7 +254,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Standardize Chart of Accounts",
-        recommendation: "Document your canonical CoA. Identify and map local variations. Create governance for new account requests. This is painful but foundational—inconsistent coding makes consolidation and analysis unreliable.",
+        recommendation: "Document your canonical CoA. Identify and map local variations. Create governance for new account requests.",
         type: "structural"
       }
     },
@@ -273,7 +273,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Implement Reconciliation Process",
-        recommendation: "Create a monthly reconciliation checklist covering all sub-ledgers (AR, AP, Inventory, Fixed Assets). Document variances and resolution. This catches errors before they compound.",
+        recommendation: "Create a monthly reconciliation checklist covering all sub-ledgers. Document variances and resolution.",
         type: "structural"
       }
     },
@@ -292,7 +292,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Create Close Checklist",
-        recommendation: "Document every step of your close process with owners and deadlines. Start with what you do today, then optimize. A checklist enables delegation, vacation coverage, and continuous improvement.",
+        recommendation: "Document every step of your close process with owners and deadlines. Start with what you do today, then optimize.",
         type: "quick_win"
       }
     },
@@ -311,7 +311,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Implement Journal Entry Controls",
-        recommendation: "Require documentation and approval for all manual entries above a threshold. Segregate entry from approval. Review recurring entries for automation opportunities. This is audit 101.",
+        recommendation: "Require documentation and approval for all manual entries above a threshold. Segregate entry from approval.",
         type: "governance"
       }
     },
@@ -330,7 +330,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Create Standard Reporting Package",
-        recommendation: "Design a consistent monthly pack covering P&L, key metrics, and commentary. Same format every month. Distribute within 10 business days of close. Consistency builds trust; timeliness enables action.",
+        recommendation: "Design a consistent monthly pack covering P&L, key metrics, and commentary. Distribute within 3-5 business days of close.",
         type: "structural"
       }
     },
@@ -351,7 +351,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Implement Monthly BvA Reporting",
-        recommendation: "Create a BvA report as part of your standard close. Show budget, actual, variance, and variance %. Distribute to all budget owners. This is the foundation of financial accountability.",
+        recommendation: "Create a BvA report as part of your standard close. Show budget, actual, variance, and variance %. Distribute to all budget owners.",
         type: "structural"
       }
     },
@@ -370,7 +370,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Establish Variance Investigation Protocol",
-        recommendation: "Define materiality thresholds (e.g., >10% and >$10K). Require documented explanations for breaches. Review in monthly finance meeting. Variances without follow-up teach people that budgets don't matter.",
+        recommendation: "Define materiality thresholds (e.g., >10% and >$10K). Require documented explanations for breaches. Review in monthly finance meeting.",
         type: "governance"
       }
     },
@@ -389,7 +389,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Add Variance Commentary",
-        recommendation: "Require budget owners to explain variances in writing. Template: What happened? Is it timing or permanent? What action are you taking? Commentary transforms data into accountability.",
+        recommendation: "Require budget owners to explain variances in writing. Template: What happened? Is it timing or permanent? What action are you taking?",
         type: "behavioral"
       }
     },
@@ -408,7 +408,7 @@ export const SPEC: Spec = {
       complexity: 1,
       expert_action: {
         title: "Define Materiality Thresholds",
-        recommendation: "Document escalation thresholds (e.g., >$50K auto-escalates to CFO). Publish and enforce. This focuses attention on what matters and reduces noise.",
+        recommendation: "Document escalation thresholds (e.g., >$50K auto-escalates to CFO). Publish and enforce.",
         type: "governance"
       }
     },
@@ -427,7 +427,7 @@ export const SPEC: Spec = {
       complexity: 1,
       expert_action: {
         title: "Distribute BvA to Budget Owners",
-        recommendation: "Send each budget owner their specific BvA report monthly. Don't wait for them to ask. Proactive distribution signals that Finance is a partner, not a gatekeeper.",
+        recommendation: "Send each budget owner their specific BvA report monthly. Don't wait for them to ask.",
         type: "quick_win"
       }
     },
@@ -455,7 +455,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Migrate to Collaborative Planning",
-        recommendation: "Move forecast from desktop Excel to cloud-based solution. Options range from Google Sheets (free) to Adaptive/Pigment (enterprise). Key: multiple users can edit simultaneously without version chaos.",
+        recommendation: "Invest in dedicated FP&A software (e.g., DataRails, Planful). If not feasible, move to cloud sheets with strict version control. Stop single-user files.",
         type: "structural"
       }
     },
@@ -474,7 +474,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Add Cash Flow to Forecast",
-        recommendation: "Build a 13-week cash flow model alongside your P&L forecast. Start with direct method: receipts and payments. Connect to your P&L drivers. Cash visibility prevents nasty surprises.",
+        recommendation: "Build a 13-week cash flow model alongside your P&L forecast. Start with direct method: receipts and payments.",
         type: "structural"
       }
     },
@@ -493,7 +493,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Implement Monthly Forecast Refresh",
-        recommendation: "Update forecast within first week after close. Don't re-forecast everything—focus on material changes. A lightweight monthly process beats a heavy quarterly one.",
+        recommendation: "Update monthly focusing only on material changes. Perform a full 're-budget' or deep forecast quarterly.",
         type: "behavioral"
       }
     },
@@ -512,7 +512,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Create R&O Register",
-        recommendation: "Maintain a list of upside opportunities and downside risks not in the baseline forecast. Quantify probability and impact. Review monthly. This makes uncertainty visible and manageable.",
+        recommendation: "Maintain a list of upside opportunities and downside risks not in the baseline forecast. Quantify probability and impact. Review monthly.",
         type: "structural"
       }
     },
@@ -531,7 +531,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Build Scenario Capability",
-        recommendation: "Create a base forecast model with driver assumptions that can flex. Define standard scenarios (recession, growth, base). Being able to show 'what if' builds credibility with the board.",
+        recommendation: "Create a base forecast model with driver assumptions that can flex. Define standard scenarios (recession, growth, base).",
         type: "structural"
       }
     },
@@ -550,7 +550,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Track Forecast Accuracy",
-        recommendation: "Measure forecast vs. actual each month. Track bias (consistently high or low?) and absolute error. Share with leadership. Transparency about accuracy paradoxically builds credibility.",
+        recommendation: "Measure forecast vs. actual each month. Track bias (consistently high or low?) and absolute error. Share with leadership.",
         type: "behavioral"
       }
     },
@@ -569,7 +569,7 @@ export const SPEC: Spec = {
       complexity: 1,
       expert_action: {
         title: "Assign Budget Process Owner",
-        recommendation: "Name one person accountable for budget timeline, templates, and consolidation. Doesn't need to be senior—needs to be organized and empowered. Process ownership prevents annual chaos.",
+        recommendation: "Name one person accountable for budget timeline, templates, and consolidation. Doesn't need to be senior—needs to be organized and empowered.",
         type: "governance"
       }
     },
@@ -588,7 +588,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Implement Journal Entry Review",
-        recommendation: "Define threshold for mandatory review (e.g., >$10K). Implement maker-checker workflow. Document reviewer approval. This is basic internal control that auditors expect.",
+        recommendation: "Define threshold for mandatory review (e.g., >$10K). Implement maker-checker workflow. Document reviewer approval.",
         type: "governance"
       }
     },
@@ -607,7 +607,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Add Forward-Looking Commentary",
-        recommendation: "Include a 'Looking Ahead' section in your monthly pack. Cover: next month expectations, risks emerging, actions planned. Shift the conversation from 'what happened' to 'what we're doing about it.'",
+        recommendation: "Include a 'Looking Ahead' section in your monthly pack. Cover: next month expectations, risks emerging, actions planned.",
         type: "behavioral"
       }
     },
@@ -629,7 +629,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Build Constraint Credibility",
-        recommendation: "Start with constraints that are clearly justified (cash runway, covenant limits). Document leadership agreement. When constraints are respected once, it creates precedent. Credibility is earned incrementally.",
+        recommendation: "Start with clearly justified constraints. (Corporate: cash runway/covenants. BU: portfolio role/profit targets). Document agreement.",
         type: "behavioral"
       }
     },
@@ -648,7 +648,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Insert Finance into Approval Workflow",
-        recommendation: "Establish policy: spending above threshold requires Finance review before commitment. Frame it as 'helping you build the business case' not 'blocking you.' Position shifts from gatekeeper to partner.",
+        recommendation: "Implement policy: spending above threshold requires Finance review before commitment. Frame as 'helping you build the business case.'",
         type: "governance"
       }
     },
@@ -667,7 +667,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Establish Business Review Cadence",
-        recommendation: "Create monthly 1:1s between Finance and each BU leader. Agenda: their forecast, their concerns, their needs from Finance. Relationships built in these meetings create influence opportunities.",
+        recommendation: "Create monthly 1:1s between Finance and each BU leader. Agenda: their forecast, their concerns, their needs from Finance.",
         type: "behavioral"
       }
     },
@@ -686,7 +686,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Create Challenge Culture",
-        recommendation: "Get CEO to explicitly endorse Finance's role in challenging assumptions. Use 'help me understand' framing vs. 'you're wrong.' Start with smaller challenges, build track record of being right.",
+        recommendation: "Get CEO to explicitly endorse Finance's role in challenging assumptions. Use 'help me understand' framing vs. 'you're wrong.'",
         type: "behavioral"
       }
     },
@@ -705,7 +705,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Establish Update Protocol",
-        recommendation: "Define expectation: material changes communicated within 48 hours. Make it easy (Slack channel, simple form). Celebrate good updates publicly. The goal is information flowing toward Finance naturally.",
+        recommendation: "Define expectation: material changes communicated within 48 hours. Make it easy (phone call, email)—do not rely on complex forms.",
         type: "behavioral"
       }
     },
@@ -724,7 +724,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Track Strategic Initiative Performance",
-        recommendation: "Get the list of strategic initiatives from the CEO. Define financial KPIs for each. Report progress monthly. Connect initiative spend to results. This makes strategy tangible and Finance indispensable.",
+        recommendation: "Get the list of strategic initiatives and Value Creation Plans. Define financial KPIs for each. Report progress monthly.",
         type: "structural"
       }
     },
@@ -743,7 +743,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Insert Finance into Pricing",
-        recommendation: "Create pricing guardrails: minimum margins, discount approval levels. Provide Sales with a simple tool showing deal profitability. Frame as 'helping you price to win profitably' not 'blocking deals.'",
+        recommendation: "Create pricing guardrails: minimum margins, discount approval levels. Provide Sales with a simple tool showing deal profitability.",
         type: "governance"
       }
     },
@@ -762,7 +762,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Build Rapid Response Capability",
-        recommendation: "Create pre-built analysis templates for common questions. Maintain clean, accessible data. Protect analyst capacity from recurring work. Speed comes from preparation, not heroics.",
+        recommendation: "Create pre-built analysis templates for common questions. Maintain clean, accessible data. Protect analyst capacity from recurring work.",
         type: "structural"
       }
     },
@@ -781,7 +781,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Connect Budget to Strategy",
-        recommendation: "Build a 3-year model that rolls into the annual budget. Link strategic initiatives to financial targets. Budget becomes 'Year 1 of the plan' not a standalone exercise.",
+        recommendation: "Build a 3-year model that rolls into the annual budget. Place the Value Creation Model at the center.",
         type: "structural"
       }
     },
@@ -800,7 +800,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Implement Leading Indicators",
-        recommendation: "Identify 5-7 leading indicators for your business (pipeline, NPS, churn signals, etc.). Get data feeds established. Include in monthly pack. You'll see problems 2-3 months earlier.",
+        recommendation: "Identify 5-7 leading indicators for your business (pipeline, NPS, churn signals, etc.). Include in monthly pack.",
         type: "structural"
       }
     },
@@ -827,7 +827,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Normalize Realistic Forecasting",
-        recommendation: "Present ranges instead of points. Lead with 'most likely' but always show downside. Document assumptions clearly. When downside materializes, you've built credibility for next time.",
+        recommendation: "Present ranges instead of points. Lead with 'most likely' but always show downside. Document assumptions clearly.",
         type: "behavioral"
       }
     },
@@ -846,7 +846,7 @@ export const SPEC: Spec = {
       complexity: 5,
       expert_action: {
         title: "Exercise the No Muscle",
-        recommendation: "Identify one marginal project. Build an airtight business case showing negative NPV or unacceptable risk. Present to leadership with recommendation to kill or delay. Win this once and your influence multiplies.",
+        recommendation: "Establish a clear framework with Top Management for project viability to avoid power plays. Use this to objectively recommend killing marginal projects.",
         type: "behavioral"
       }
     },
@@ -865,7 +865,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Make Downside Scenarios Actionable",
-        recommendation: "Don't just present 'what if bad'—present 'what if bad, and here's what we'd do.' Pre-defined triggers and actions make scenarios useful, not scary. Leaders engage when they see an action plan.",
+        recommendation: "Don't just present 'what if bad.' Present 'what if bad, and here's the action plan.' Ensure action plans are owned multifunctionally, not just by Finance.",
         type: "behavioral"
       }
     },
@@ -884,7 +884,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Build Driver Literacy",
-        recommendation: "Identify the 3-5 drivers that explain 80% of financial performance. Create a simple 'driver dashboard.' Discuss in every leadership meeting. Repetition creates internalization.",
+        recommendation: "Identify the 3-5 drivers that explain 80% of financial performance. Create a simple 'driver dashboard.' Discuss in every leadership meeting.",
         type: "structural"
       }
     },
@@ -903,7 +903,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Implement Stress Testing",
-        recommendation: "Model 2-3 stress scenarios: revenue -20%, major customer loss, cost spike. Show impact on cash runway and covenants. Update quarterly. Boards love this—it shows you're thinking ahead.",
+        recommendation: "Model 2-3 stress scenarios (revenue -20%, cost spike). Show impact on key business metrics (and corporate cash/covenants where relevant). Ensure CEO/CFO awareness.",
         type: "structural"
       }
     },
@@ -925,7 +925,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Enable Self-Serve Analytics",
-        recommendation: "Deploy BI tool (Power BI, Looker, Tableau) with curated financial datasets. Train power users in each BU. Shift Finance from 'report producer' to 'insight partner.'",
+        recommendation: "Deploy BI tool (Power BI, Looker, Tableau) with curated financial datasets. Train power users in each BU.",
         type: "structural"
       }
     },
@@ -944,7 +944,7 @@ export const SPEC: Spec = {
       complexity: 5,
       expert_action: {
         title: "Build Single Source of Truth",
-        recommendation: "Create a canonical data layer (data warehouse) that feeds all reports. Eliminate shadow spreadsheets. This is a major project but eliminates 'my numbers don't match yours' forever.",
+        recommendation: "Create a canonical data layer (data warehouse) and leverage FP&A software to eliminate shadow spreadsheets.",
         type: "structural"
       }
     },
@@ -963,7 +963,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Automate Data Pipelines",
-        recommendation: "Map your critical data flows. Prioritize by volume and error frequency. Implement automated extraction (APIs, scheduled queries). Start with one flow, prove value, expand.",
+        recommendation: "Map your critical data flows. Prioritize by volume and error frequency. Implement automated extraction (APIs, scheduled queries).",
         type: "structural"
       }
     },
@@ -982,7 +982,7 @@ export const SPEC: Spec = {
       complexity: 5,
       expert_action: {
         title: "Explore Statistical Forecasting",
-        recommendation: "Start simple: time series analysis on revenue, seasonality detection. Tools like Prophet (free) can outperform manual forecasts. Don't replace judgment—augment it with data.",
+        recommendation: "Start simple: time series analysis on revenue. Use tools like Prophet if you have data science capabilities.",
         type: "structural"
       }
     },
@@ -1001,7 +1001,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Build Real-Time Dashboards",
-        recommendation: "Identify 3-5 metrics that benefit from real-time visibility (cash, bookings, pipeline). Connect directly to source systems. Reserve for metrics where daily/weekly action is possible.",
+        recommendation: "Identify 3-5 metrics that benefit from real-time visibility (cash, bookings, pipeline). Connect directly to source systems.",
         type: "structural"
       }
     },
@@ -1023,7 +1023,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Create Strategic Capacity",
-        recommendation: "Audit time spent on BAU vs. strategic. Target: 70/30 split. Automate or eliminate low-value BAU work. Protect 'strategic time' in calendars. Capacity is created by saying no to something.",
+        recommendation: "Audit time spent on BAU (Business As Usual) vs. strategic. Target: 70/30 split. Automate or eliminate low-value BAU work.",
         type: "behavioral"
       }
     },
@@ -1042,7 +1042,7 @@ export const SPEC: Spec = {
       complexity: 2,
       expert_action: {
         title: "Implement Finance Retrospectives",
-        recommendation: "Run a retrospective after each close and budget cycle. What worked? What didn't? Pick one improvement per cycle. Small continuous improvements compound dramatically.",
+        recommendation: "Run a retrospective after each close and budget cycle (Kaizen). What worked? What didn't? Pick one improvement per cycle.",
         type: "behavioral"
       }
     },
@@ -1061,7 +1061,7 @@ export const SPEC: Spec = {
       complexity: 4,
       expert_action: {
         title: "Join Cross-Functional Planning",
-        recommendation: "Insert Finance into S&OP or equivalent process. Bring financial lens to operational decisions. Translate operational plans into financial impact. Integration beats sequential hand-offs.",
+        recommendation: "Ensure planning is a cross-functional activity (e.g., S&OP or similar)—not an isolated finance exercise. Bring financial lens to operational decisions.",
         type: "governance"
       }
     },
@@ -1080,7 +1080,7 @@ export const SPEC: Spec = {
       complexity: 3,
       expert_action: {
         title: "Integrate External Data",
-        recommendation: "Identify 3-5 external indicators relevant to your business. Subscribe to data feeds or track manually. Include in planning assumptions and board materials. Outside-in planning beats navel-gazing.",
+        recommendation: "Identify 3-5 external indicators relevant to your business. Subscribe to data feeds or track manually. Include in planning assumptions.",
         type: "structural"
       }
     },
@@ -1099,7 +1099,7 @@ export const SPEC: Spec = {
       complexity: 5,
       expert_action: {
         title: "Explore Predictive Analytics",
-        recommendation: "Start with one use case: churn prediction, deal probability, cost anomaly detection. Partner with data science team or use simple tools. Prove value on one problem before expanding.",
+        recommendation: "Start with one use case: churn prediction, deal probability. Partner with data science team or use simple tools.",
         type: "structural"
       }
     }
