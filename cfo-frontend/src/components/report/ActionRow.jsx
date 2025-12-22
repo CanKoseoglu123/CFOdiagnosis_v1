@@ -53,9 +53,17 @@ export default function ActionRow({ action }) {
         `} />
       </button>
 
-      {/* Expanded recommendation */}
+      {/* Expanded details */}
       {showDetail && (
         <div className="px-3 pb-3 pt-0 border-t border-slate-100">
+          {/* Recommendation - primary content */}
+          {action.recommendation && (
+            <div className="p-3 bg-primary/5 border-l-2 border-primary rounded-sm text-sm text-navy mt-2">
+              <span className="font-semibold text-primary">Recommendation: </span>
+              {action.recommendation}
+            </div>
+          )}
+
           {/* Question text */}
           {action.question_text && (
             <div className="p-3 bg-slate-50 rounded-sm text-sm text-slate mt-2">
