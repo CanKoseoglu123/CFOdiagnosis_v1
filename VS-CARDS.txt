@@ -1,0 +1,87 @@
+VS CARDS - CFO Diagnostic Platform
+===================================
+
+Status Legend:
+  [x] Complete
+  [ ] Not Started
+  [~] In Progress
+
+CORE DIAGNOSTIC FLOW (VS1-VS12)
+-------------------------------
+[x] VS1  - Project Setup (Express + TypeScript + Supabase)
+[x] VS2  - Database Schema (diagnostic_runs, diagnostic_inputs, diagnostic_scores)
+[x] VS3  - Authentication (Supabase Auth + RLS)
+[x] VS4  - Spec Layer (v2.6.4 → v2.7.0 behavioral edition)
+[x] VS5  - Score Aggregation (pillar scores, overall score)
+[x] VS6  - Report Builder (assembles FinanceReportDTO)
+[x] VS7  - Maturity Engine (gate evaluation, level calculation)
+[x] VS8  - Action Derivation (legacy action engine)
+[x] VS9  - Content Validation (411 tests for spec integrity)
+[x] VS10 - Frontend Questionnaire (DiagnosticInput.jsx)
+[x] VS11 - Frontend Report (FinanceDiagnosticReport.jsx)
+[x] VS12 - End-to-End Flow (create → answer → complete → score → report)
+
+
+ENHANCEMENTS (VS13-VS20)
+------------------------
+[x] VS13 - PDF Export (react-to-print, browser-native)
+[x] VS14 - Content Hydration (frontend fetches spec from /api/spec)
+[ ] VS15 - Admin Dashboard (Post-V1)
+[x] VS16 - Production Deployment (Railway + Vercel)
+[x] VS17 - (Reserved)
+[x] VS18 - Context Intake (company_name, industry before assessment)
+[x] VS19 - Critical Risk Engine ("Silence is a Risk" philosophy)
+[x] VS20 - Dynamic Action Engine (P1/P2/P3 priority, initiative grouping)
+
+
+V2 FEATURES
+-----------
+[x] V2.1 - Initiative Engine (9 initiatives, grouped actions, priority tabs)
+[x] V2.7.0 - Behavioral Edition (23 behavioral questions, theme layer)
+[x] V2.7.1 - Content Update (48 questions, 8 critical)
+[x] V2.8.0 - Enterprise Report UI (PillarReport, Gartner styling, 15 components)
+
+
+UI/UX
+-----
+[x] AppShell - Responsive layout with sidebar
+[x] IntroPage - Assessment methodology explanation
+[x] SetupPage - Context intake form
+[x] QuestionnaireSidebar - Progress tracking + theme navigation
+[x] ReportSidebar - Navigation + download actions
+[x] PriorityTabs - P1 Unlock / P2 Optimize / P3 Future
+[x] Recommendations - Display in ActionRow (expandable)
+
+
+PRODUCTION URLs
+---------------
+Frontend: https://cfodiagnosisv1.vercel.app
+Backend:  https://cfodiagnosisv1-production.up.railway.app
+GitHub:   https://github.com/CanKoseoglu123/CFOdiagnosis_v1
+
+
+TEST COMMANDS
+-------------
+npm run test:vs5    # Aggregation (22 tests)
+npm run test:vs6    # Report (35 tests)
+npm run test:vs7    # Maturity (34 tests)
+npm run test:vs8    # Actions (23 tests)
+npm run test:vs9    # Content (411 tests)
+npm run test:vs19   # Critical Risks (15 tests)
+npm run test:vs20   # Dynamic Actions (29 tests)
+npm run test:all    # All tests (569 total)
+
+
+CURRENT SPEC: v2.7.0
+--------------------
+- 48 FP&A questions (9 L1, 14 L2, 15 L3, 10 L4)
+- 8 critical questions (4 L1 + 4 L2)
+- 8 objectives (2 per level)
+- 9 initiatives (4 Foundation, 3 Future, 2 Intelligence)
+- 3 themes: Foundation, Future, Intelligence
+
+
+NEXT SESSION
+------------
+- Decide on priority visualization (Options A-D)
+- Goal: Show recommendations without hiding them behind clicks

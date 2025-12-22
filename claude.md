@@ -242,8 +242,8 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 | `/run/:runId/setup` | SetupPage | Yes |
 | `/run/:runId/intro` | IntroPage | Yes |
 | `/assess` | DiagnosticInput | Yes |
-| `/report/:runId` | FinanceDiagnosticReport (V1) | Yes |
-| `/report-v2/:runId` | PillarReport (V2.8.0) | Yes |
+| `/report/:runId` | PillarReport (V2.8.0 - Main) | Yes |
+| `/report-legacy/:runId` | FinanceDiagnosticReport (V1) | Yes |
 
 ### Assessment Flow
 1. User clicks "Start Assessment"
@@ -701,18 +701,55 @@ getInitiative(id) → Initiative
 4. **Human-readable titles** - No question IDs shown to users
 
 ### URLs
-- **Production**: `https://cfodiagnosisv1.vercel.app/report-v2/:runId`
-- **Original report**: `https://cfodiagnosisv1.vercel.app/report/:runId` (still available)
+- **Main Report**: `https://cfodiagnosisv1.vercel.app/report/:runId` (V2.8.0 PillarReport)
+- **Legacy Report**: `https://cfodiagnosisv1.vercel.app/report-legacy/:runId` (V1)
 
-### Known Issues
-- Tailwind v4 custom colors not fully applying (design needs polish)
-- Consider switching to inline styles for more predictable results
+### Features
+- **Recommendations** display in ActionRow when expanded (blue left border, prominent styling)
+- **Initiative grouping** - Actions grouped under parent initiatives with P1/P2/P3 priority
+- **Priority tabs** - P1 (Unlock), P2 (Optimize), P3 (Future)
+
+### Pending Design Decision
+Alternative visualization approaches for P1/P2/P3 to show recommendations without hiding them:
+- **Option A**: Priority Lanes - Vertical zones with decreasing visual weight
+- **Option B**: Recommendation-First Cards - Flip structure, recommendation is hero, details collapse
+- **Option C**: Executive Summary + Deep Dive - Top summary cards + detailed sections below
+- **Option D**: Single Stream - Visual hierarchy through typography/spacing
 
 ---
 
 ## Session Log
 
-### December 22, 2025 - V2.8.0 Enterprise Report UI
+### December 22, 2025 (Evening) - Report Production Launch
+
+**Completed:**
+
+1. **PillarReport Now Main Report**
+   - `/report/:runId` → PillarReport (V2.8.0)
+   - `/report-legacy/:runId` → FinanceDiagnosticReport (V1 backup)
+
+2. **Recommendations Display**
+   - Added recommendation field to ActionRow component
+   - Blue left border, prominent styling when expanded
+   - Tested with new assessment - all 48 questions have recommendations
+
+3. **Production Verification**
+   - Created test run: `3a18ce26-9ddc-4e2b-92d3-925dea18acef`
+   - Verified 4 initiative groups with P1/P2 actions
+   - Recommendations confirmed in API response
+
+4. **Design Discussion**
+   - User feedback: "pretty good" but wants recommendations visible without hiding
+   - Proposed 4 alternative visualizations (A-D)
+   - Decision deferred to next session
+
+**Key Commits:**
+- `0a6e697` - Make PillarReport the main report at /report/:runId
+- `f2d737a` - Add recommendation display to ActionRow component
+
+---
+
+### December 22, 2025 (Morning) - V2.8.0 Enterprise Report UI
 
 **Completed Today:**
 
@@ -786,6 +823,10 @@ getInitiative(id) → Initiative
 3. **Test utilities** - Test files in repo root should be moved to `scripts/`
 
 ### Next Steps
+
+**Immediate (Next Session):**
+- Decide on priority visualization approach (Options A-D)
+- Implement chosen design to show recommendations without hiding
 
 **Design Polish (V2.8.0 Report):**
 - Fix Tailwind v4 color theming
