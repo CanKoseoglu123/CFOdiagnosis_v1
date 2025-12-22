@@ -88,7 +88,11 @@ CFOdiagnosis_v1/
 │   │   ├── IntroPage.jsx         # Assessment methodology intro
 │   │   ├── SetupPage.jsx         # Context intake form (VS18)
 │   │   ├── DiagnosticInput.jsx   # Assessment questionnaire UI
-│   │   ├── FinanceDiagnosticReport.jsx  # Results display
+│   │   ├── FinanceDiagnosticReport.jsx  # Original report (V1)
+│   │   ├── pages/
+│   │   │   └── PillarReport.jsx  # V2.8.0 Enterprise report
+│   │   ├── data/
+│   │   │   └── spec.js           # Question titles, initiatives, lookups
 │   │   ├── context/
 │   │   │   └── AuthContext.jsx   # Supabase auth context
 │   │   ├── components/
@@ -98,9 +102,28 @@ CFOdiagnosis_v1/
 │   │   │   ├── IntroSidebar.jsx      # Sidebar for intro page
 │   │   │   ├── SetupSidebar.jsx      # Sidebar for setup page
 │   │   │   ├── QuestionnaireSidebar.jsx  # Progress + themes
-│   │   │   └── ReportSidebar.jsx     # Navigation + actions
+│   │   │   ├── ReportSidebar.jsx     # Navigation + actions
+│   │   │   └── report/               # V2.8.0 Report components
+│   │   │       ├── index.js          # Exports
+│   │   │       ├── HeaderBar.jsx     # Sticky header
+│   │   │       ├── ExecutiveSummary.jsx  # 3-column grid
+│   │   │       ├── ScoreCard.jsx     # Execution score
+│   │   │       ├── MaturityCard.jsx  # Maturity display
+│   │   │       ├── AssessmentCard.jsx # Stats grid
+│   │   │       ├── ObjectiveCard.jsx # Traffic light card
+│   │   │       ├── InitiativeCard.jsx # Collapsible initiative
+│   │   │       ├── ActionRow.jsx     # Dense action row
+│   │   │       ├── PriorityTabs.jsx  # P1/P2/P3 tabs
+│   │   │       ├── MaturityLadder.jsx # Levels 1-4
+│   │   │       ├── CappedWarning.jsx # Alert banners
+│   │   │       ├── EmptyState.jsx    # Victory message
+│   │   │       ├── StatBox.jsx       # Quick stat
+│   │   │       └── TabButton.jsx     # Tab navigation
 │   │   └── lib/
 │   │       └── supabase.js       # Supabase client
+│   ├── tailwind.config.js        # Gartner enterprise colors
+│   ├── postcss.config.js         # Tailwind v4 PostCSS
+│   ├── vercel.json               # SPA routing config
 │   ├── package.json
 │   └── vite.config.js
 │
@@ -219,7 +242,8 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 | `/run/:runId/setup` | SetupPage | Yes |
 | `/run/:runId/intro` | IntroPage | Yes |
 | `/assess` | DiagnosticInput | Yes |
-| `/report/:runId` | FinanceDiagnosticReport | Yes |
+| `/report/:runId` | FinanceDiagnosticReport (V1) | Yes |
+| `/report-v2/:runId` | PillarReport (V2.8.0) | Yes |
 
 ### Assessment Flow
 1. User clicks "Start Assessment"
@@ -342,6 +366,7 @@ npm run build        # Vite build to dist/
 | v2.7.1 Content Update (48 questions) | ✅ Complete |
 | AppShell Responsive Layout | ✅ Complete |
 | IntroPage (methodology) | ✅ Complete |
+| V2.8.0 Enterprise Report UI | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-V1 |
 
 ---
@@ -494,28 +519,26 @@ npm run build        # Vite build to dist/
 
 **Philosophy:** Not every unanswered question is fatal. Only foundational controls trigger critical risks.
 
-**Distribution:**
+**Distribution (v2.7.1):**
 
-| Level | Critical | Non-Critical | Rationale |
-|-------|----------|--------------|-----------|
-| L1 (Emerging) | 6 | 4 | Core budget/control fundamentals |
-| L2 (Defined) | 4 | 6 | Key variance/forecast processes |
-| L3 (Managed) | 0 | 10 | Advanced practices, not fatal |
-| L4 (Optimized) | 0 | 10 | Excellence indicators, not fatal |
-| **Total** | **10** | **30** | |
+| Level | Questions | Critical | Non-Critical | Rationale |
+|-------|-----------|----------|--------------|-----------|
+| L1 (Emerging) | 9 | 4 | 5 | Core budget/control fundamentals |
+| L2 (Defined) | 14 | 4 | 10 | Key variance/forecast processes |
+| L3 (Managed) | 15 | 0 | 15 | Advanced practices, not fatal |
+| L4 (Optimized) | 10 | 0 | 10 | Excellence indicators, not fatal |
+| **Total** | **48** | **8** | **40** | |
 
-**Critical Questions (L1):**
+**Critical Questions (L1) - 4 total:**
 - fpa_l1_q01: Annual budget exists
-- fpa_l1_q02: Budget owner assigned
-- fpa_l1_q03: Full P&L budget
-- fpa_l1_q06: Consistent chart of accounts
-- fpa_l1_q07: JE review/approval
-- fpa_l1_q10: Role-based access (SoD)
+- fpa_l1_q02: Full P&L budget
+- fpa_l1_q05: Chart of accounts
+- fpa_l1_q06: Approval controls
 
-**Critical Questions (L2):**
+**Critical Questions (L2) - 4 total:**
 - fpa_l2_q01: Monthly BvA report
 - fpa_l2_q02: Variance investigation
-- fpa_l2_q06: Quarterly forecast
+- fpa_l2_q06: Collaborative planning system
 - fpa_l2_q07: Cash flow forecast
 
 **Tests:** `npm run test:vs9` validates critical question counts
@@ -628,11 +651,110 @@ cfo-frontend/src/components/
 
 ---
 
+## V2.8.0 Enterprise Report UI
+
+**Problem solved:** Original report needed a more enterprise-friendly design with better component organization.
+
+**Solution:** New report page at `/report-v2/:runId` with Gartner-inspired styling and modular components.
+
+### Tech Stack
+- **Tailwind CSS v4** with `@tailwindcss/postcss` plugin
+- **Gartner Enterprise Colors**: Navy (#172B4D), Slate (#42526E), Primary (#0052CC)
+- **Sharp corners**: `rounded-sm` (2px) instead of rounded corners
+- **No shadows**: Clean flat design
+
+### Component Architecture
+```
+src/components/report/
+├── HeaderBar.jsx         # Sticky header with stats + tabs
+├── ExecutiveSummary.jsx  # 3-column grid container
+│   ├── ScoreCard.jsx     # Execution score with progress bar
+│   ├── MaturityCard.jsx  # Level display with bar indicators
+│   └── AssessmentCard.jsx # Questions/critical stats
+├── ObjectiveCard.jsx     # Traffic light with left border
+├── InitiativeCard.jsx    # Collapsible with nested actions
+│   └── ActionRow.jsx     # Dense tabular row
+├── PriorityTabs.jsx      # P1/P2/P3 (never disabled)
+├── MaturityLadder.jsx    # Levels 1-4 table
+├── CappedWarning.jsx     # Yellow alert + OnTrackBanner
+└── EmptyState.jsx        # Victory message when count=0
+```
+
+### Data Layer
+```javascript
+// src/data/spec.js
+LEVEL_NAMES = {1: 'Emerging', 2: 'Defined', 3: 'Managed', 4: 'Optimized'}
+LEVEL_THRESHOLDS = {1: 0, 2: 50, 3: 80, 4: 95}
+INITIATIVES = [...] // 9 initiatives with metadata
+QUESTION_TITLES = {...} // Human-readable titles for all 48 questions
+
+// Lookup functions
+getQuestionTitle(id) → string
+getLevelName(level) → string
+getInitiative(id) → Initiative
+```
+
+### Key UX Decisions
+1. **No Level 0** - Maturity ladder shows only Levels 1-4
+2. **P1/P2/P3 tabs never disabled** - Show ✓ when count=0
+3. **Mobile-safe** - Score/Effort columns hidden on small screens
+4. **Human-readable titles** - No question IDs shown to users
+
+### URLs
+- **Production**: `https://cfodiagnosisv1.vercel.app/report-v2/:runId`
+- **Original report**: `https://cfodiagnosisv1.vercel.app/report/:runId` (still available)
+
+### Known Issues
+- Tailwind v4 custom colors not fully applying (design needs polish)
+- Consider switching to inline styles for more predictable results
+
+---
+
 ## Session Log
+
+### December 22, 2025 - V2.8.0 Enterprise Report UI
+
+**Completed Today:**
+
+1. **V2.8.0 Frontend Implementation**
+   - Installed Tailwind CSS v4 with `@tailwindcss/postcss` plugin
+   - Created Gartner enterprise color theme (navy, slate, primary, status colors)
+   - Added data layer (`src/data/spec.js`) with question titles and lookup helpers
+   - Created 15 report components in `src/components/report/`
+   - Added new PillarReport page at `/report-v2/:runId`
+
+2. **Component Library Created:**
+   - `HeaderBar` - Sticky header with quick stats and tab navigation
+   - `ExecutiveSummary` - 3-column grid (Score, Maturity, Assessment)
+   - `ScoreCard`, `MaturityCard`, `AssessmentCard` - Summary cards
+   - `ObjectiveCard` - Traffic light health indicator
+   - `InitiativeCard` - Collapsible card with nested actions
+   - `ActionRow` - Dense tabular action with mobile-safe columns
+   - `PriorityTabs` - P1/P2/P3 tabs (never disabled, ✓ when count=0)
+   - `MaturityLadder` - Levels 1-4 only (no Level 0)
+   - `CappedWarning`, `OnTrackBanner` - Alert banners
+   - `EmptyState`, `StatBox`, `TabButton` - Utilities
+
+3. **Vercel SPA Routing Fix**
+   - Added `vercel.json` with rewrites for client-side routing
+
+**Key Commits:**
+- `8b8eac2` - V2.8.0 Frontend: Enterprise report UI with Gartner styling
+- `359711e` - Add Vercel SPA routing config for client-side routes
+
+**Files Created:**
+- `cfo-frontend/src/pages/PillarReport.jsx` - Main report page
+- `cfo-frontend/src/data/spec.js` - Question titles, initiatives, lookups
+- `cfo-frontend/src/components/report/*.jsx` - 15 components
+- `cfo-frontend/tailwind.config.js` - Gartner colors
+- `cfo-frontend/postcss.config.js` - Tailwind v4 config
+- `cfo-frontend/vercel.json` - SPA routing
+
+---
 
 ### December 21, 2025 - V2.1 Initiative Engine + Bug Fixes
 
-**Completed Today:**
+**Completed:**
 
 1. **V2.1 Initiative Engine** (Backend + Frontend)
    - Backend: `src/reports/builder.ts` now returns `grouped_initiatives` in report
@@ -649,40 +771,26 @@ cfo-frontend/src/components/
    - Added `LEVEL_NAMES` constant: `{1: "Emerging", 2: "Defined", 3: "Managed", 4: "Optimized"}`
    - Filtered out Level 0 "Ad-hoc" from MaturityLadder (model is 1-4 only)
    - Fixed header to use `getLevelName()` instead of API's `achieved_label`
-   - Fixed PillarCard to use `LEVEL_NAMES` mapping
-   - Passed `actualLevel` prop to all MaturityLadder calls
 
 **Key Commits:**
 - `ec5d81a` - Fix question IDs to show human-readable text
 - `8054a70` - Group actions by Initiative (P1/P2/P3 tabs)
-- `f8a85a3` - Add test utility files
 - `b869858` - Fix maturity level display
-
-**Files Modified Today:**
-- `cfo-frontend/src/FinanceDiagnosticReport.jsx` - LEVEL_NAMES, getLevelName, MaturityLadder fixes
-- `cfo-frontend/src/components/PrioritizedActionsV2.jsx` - Initiative grouping UI
-- `cfo-frontend/src/components/ObjectiveTrafficLights.jsx` - Question text lookup
-- `src/reports/builder.ts` - grouped_initiatives in report
 
 ---
 
-### Where to Start Tomorrow
+### Known Issues
 
-**Immediate Next Steps:**
-1. **Manual QA Testing** - Open production report and verify:
-   - Header shows "L2 Defined" (not "L2 Ad-hoc")
-   - Maturity Ladder shows only Levels 1-4
-   - CURRENT marker is on correct level
-   - Initiative grouping displays correctly in P1/P2/P3 tabs
+1. **V2.8.0 Report Design** - Functional but needs visual polish (Tailwind v4 colors not fully applying)
+2. **API Level 0** - Backend still returns Level 0 "Ad-hoc" in `maturityGates` (frontend filters it out)
+3. **Test utilities** - Test files in repo root should be moved to `scripts/`
 
-2. **Review V2.1 Content** - Verify initiatives make sense:
-   - Foundation theme initiatives (Budget Foundation, Financial Controls, etc.)
-   - Future theme initiatives (Forecasting, Driver-Based Planning, etc.)
-   - Intelligence theme initiatives (Scenario Modeling, Predictive Analytics)
+### Next Steps
 
-3. **Known Issues to Address:**
-   - API still returns Level 0 "Ad-hoc" in `maturityGates` (frontend handles it, but backend should be cleaned up)
-   - Test utility files in repo root (can be moved to `scripts/` or `.gitignore`)
+**Design Polish (V2.8.0 Report):**
+- Fix Tailwind v4 color theming
+- Refine spacing and layout
+- Consider switching to inline styles for reliability
 
 **Post-V1 Feature Backlog:**
 - VS15: Admin Dashboard
