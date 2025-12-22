@@ -1,104 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ============================================
+   TAILWIND V4 THEME - Gartner Enterprise Colors
+   ============================================ */
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Custom colors */
+  --color-navy: #172B4D;
+  --color-slate: #42526E;
+  --color-slate-50: #F8F9FA;
+  --color-slate-100: #F4F5F7;
+  --color-slate-200: #EBECF0;
+  --color-slate-300: #DFE1E6;
+  --color-slate-400: #C1C7D0;
+  --color-slate-500: #6B778C;
+
+  --color-primary: #0052CC;
+  --color-primary-hover: #0747A6;
+  --color-primary-light: #DEEBFF;
+
+  --color-status-green-text: #006644;
+  --color-status-green-bg: #E3FCEF;
+  --color-status-green-border: #ABF5D1;
+
+  --color-status-yellow-text: #FF991F;
+  --color-status-yellow-bg: #FFFAE6;
+  --color-status-yellow-border: #FFE380;
+
+  --color-status-red-text: #DE350B;
+  --color-status-red-bg: #FFEBE6;
+  --color-status-red-border: #FFBDAD;
+
+  /* Border radius - sharp Gartner corners */
+  --radius-sm: 2px;
+}
+
+/* ============================================
+   GARTNER ENTERPRISE DESIGN SYSTEM
+   ============================================ */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* === BACKGROUNDS === */
+  --background: #F4F5F7;
+  --card: #FFFFFF;
+  --card-header: #F8F9FA;
+
+  /* === TEXT === */
+  --navy: #172B4D;
+  --slate: #42526E;
+  --muted: #6B778C;
+
+  /* === BORDERS === */
+  --border: #DFE1E6;
+  --border-strong: #C1C7D0;
+
+  /* === PRIMARY ACTION === */
+  --primary: #0052CC;
+  --primary-hover: #0747A6;
+
+  /* === STATUS COLORS === */
+  --status-green-text: #006644;
+  --status-green-bg: #E3FCEF;
+  --status-green-border: #ABF5D1;
+
+  --status-yellow-text: #FF991F;
+  --status-yellow-bg: #FFFAE6;
+  --status-yellow-border: #FFE380;
+
+  --status-red-text: #DE350B;
+  --status-red-bg: #FFEBE6;
+  --status-red-border: #FFBDAD;
+
+  /* === TYPOGRAPHY === */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--slate);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-/* Print Styles */
+/* ============================================
+   PRINT STYLES
+   ============================================ */
 @media print {
-  /* Page margins */
   @page {
     margin: 0.6in;
     size: letter;
   }
 
-  /* Hide interactive elements */
-  .no-print {
-    display: none !important;
+  /* Force white background */
+  body, .bg-slate-100 {
+    background: white !important;
   }
 
-  /* Show print-only elements */
-  .print-only {
-    display: block !important;
-  }
-
-  /* Ensure background colors print */
+  /* Ensure colors print */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Reset page styles */
-  body {
-    margin: 0;
-    padding: 0;
-    min-height: auto;
-    background: white !important;
-    display: block;
-    place-items: unset;
+  /* Hide interactive elements */
+  button:not([data-print]),
+  .no-print,
+  nav {
+    display: none !important;
+  }
+
+  /* Expand all collapsibles */
+  [data-collapsed="true"] {
+    display: block !important;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Remove sticky header */
+  header {
+    position: relative !important;
+  }
+
+  /* Ensure borders are visible */
+  .border {
+    border-color: #DFE1E6 !important;
   }
 
   /* Prevent cards from breaking across pages */
@@ -107,54 +141,9 @@ button:focus-visible {
     page-break-inside: avoid;
   }
 
-  /* Prevent section headings from being orphaned */
-  .print-section-header {
-    break-after: avoid;
-    page-break-after: avoid;
-  }
-
-  /* Force single-column layout for print */
-  .print-single-column {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Force action cards to show expanded content */
-  .print-expand {
-    display: block !important;
-  }
-
-  /* Hide collapsed chevron indicators in print */
-  .print-hide-chevron {
-    display: none !important;
-  }
-
-  /* Increase badge font size for legibility */
-  .print-badge {
-    font-size: 11px !important;
-    padding: 3px 10px !important;
-  }
-
   /* Remove shadows for cleaner print */
   * {
     box-shadow: none !important;
-  }
-
-  /* Ensure full width printing */
-  html, body, #root {
-    width: 100% !important;
-  }
-
-  /* Add spacing between print sections */
-  .print-section {
-    margin-bottom: 24px;
-    break-inside: avoid;
-  }
-
-  /* Ensure footer stays at bottom and doesn't break */
-  .print-footer {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin-top: 32px;
   }
 }
 
@@ -163,111 +152,15 @@ button:focus-visible {
   display: none;
 }
 
+@media print {
+  .print-only {
+    display: block !important;
+  }
+}
+
 /* ============================================
    MOBILE RESPONSIVE STYLES
    ============================================ */
-
-/* Stats grid - 4 cols → 2 cols on tablet → 1 col on mobile */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-
-@media (max-width: 900px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-}
-
-@media (max-width: 500px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-}
-
-/* Overview grid - 2 cols → 1 col on mobile */
-.overview-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-}
-
-@media (max-width: 768px) {
-  .overview-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-}
-
-/* Header layout - flex row → stack on mobile */
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .header-buttons {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .header-buttons > * {
-    flex: 1;
-    min-width: 100px;
-    text-align: center;
-    justify-content: center;
-  }
-}
-
-/* Tab bar - horizontal scroll on mobile */
-.tab-bar {
-  display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.tab-bar::-webkit-scrollbar {
-  display: none;
-}
-
-@media (max-width: 500px) {
-  .tab-bar button {
-    padding: 12px 14px;
-    font-size: 12px;
-    white-space: nowrap;
-  }
-}
-
-/* Pillar grid - responsive min-width */
-.pillar-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-}
-
-@media (max-width: 400px) {
-  .pillar-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Touch-friendly targets */
 @media (max-width: 768px) {
   .touch-target {
     min-height: 44px;
@@ -279,12 +172,4 @@ button:focus-visible {
 .container-responsive {
   max-width: 100%;
   overflow-x: hidden;
-}
-
-/* Mobile-friendly padding */
-@media (max-width: 500px) {
-  .mobile-padding {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
 }
