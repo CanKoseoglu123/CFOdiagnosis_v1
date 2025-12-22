@@ -144,12 +144,12 @@ export default function App() {
           } />
           <Route path="/report/:runId" element={
             <ProtectedRoute>
-              <FinanceDiagnosticReport />
+              <PillarReport />
             </ProtectedRoute>
           } />
-          <Route path="/report-v2/:runId" element={
+          <Route path="/report-legacy/:runId" element={
             <ProtectedRoute>
-              <PillarReport />
+              <FinanceDiagnosticReport />
             </ProtectedRoute>
           } />
         </Routes>
