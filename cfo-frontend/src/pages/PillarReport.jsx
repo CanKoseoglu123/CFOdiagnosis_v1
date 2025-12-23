@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import SummaryTable from '../components/report/SummaryTable';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
@@ -12,25 +12,28 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function PillarReport() {
   const { runId } = useParams();
-  const { session } = useAuth();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (session?.access_token) {
+    if (runId) {
       fetchReport();
     }
-  }, [runId, session]);
+  }, [runId]);
 
   async function fetchReport() {
     try {
       setLoading(true);
       setError(null);
 
+      // Get session from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/report`, {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          ...(token && { Authorization: `Bearer ${token}` }),
           'Content-Type': 'application/json'
         }
       });
