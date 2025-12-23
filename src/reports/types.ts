@@ -119,4 +119,47 @@ export interface FinanceReportDTO {
 
   // V2.1: Actions grouped by initiative
   grouped_initiatives?: PrioritizedInitiative[];
+
+  // VS23: Maturity Footprint Grid (practice-level evidence states)
+  maturity_footprint?: MaturityFootprint;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VS23: Maturity Footprint Types
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type EvidenceState = 'proven' | 'partial' | 'not_proven';
+
+export interface PracticeWithEvidence {
+  id: string;
+  title: string;
+  description: string;
+  maturity_level: number;
+  theme_id: string;
+  evidence_state: EvidenceState;
+  has_critical: boolean;
+  gap_score: number;
+}
+
+export interface LevelSummary {
+  level: 1 | 2 | 3 | 4;
+  name: string;
+  practices: PracticeWithEvidence[];
+  proven_count: number;
+  partial_count: number;
+  total_count: number;
+}
+
+export interface FocusItem {
+  practice_id: string;
+  practice_title: string;
+  level: number;
+  priority_score: number;
+  reason: 'critical_gap' | 'foundation_gap' | 'optimization_gap';
+}
+
+export interface MaturityFootprint {
+  levels: LevelSummary[];
+  focus_next: FocusItem[];
+  summary_text: string;
 }

@@ -20,6 +20,7 @@ import { deriveActions, deriveActionsFromObjectives, prioritizeActions, groupAct
 import { CalibrationData } from "../actions/types";  // VS21: Import calibration type
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 import { calculateObjectiveScores } from "../scoring/objectiveScoring";
+import { buildMaturityFootprint } from "../maturity/footprint";  // VS23: Maturity Footprint
 
 // ------------------------------------------------------------------
 // Input Types
@@ -160,6 +161,17 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     overallMaturity
   );
 
+  // VS23: Build maturity footprint (practice-level evidence states)
+  const footprintAnswers = inputs.map((i) => ({
+    question_id: i.question_id,
+    value: i.value as boolean | string | null,
+  }));
+  const footprintQuestions = spec.questions.map((q) => ({
+    id: q.id,
+    is_critical: q.is_critical,
+  }));
+  const maturityFootprint = buildMaturityFootprint(footprintAnswers, footprintQuestions);
+
   return {
     ...reportWithoutActions,
     actions,
@@ -170,6 +182,8 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     // V2.1 fields
     prioritized_actions: prioritizedActions,
     grouped_initiatives: groupedInitiatives,
+    // VS23 fields
+    maturity_footprint: maturityFootprint,
   };
 }
 
