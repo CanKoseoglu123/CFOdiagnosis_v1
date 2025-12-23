@@ -10,6 +10,7 @@ import SummaryTable from '../components/report/SummaryTable';
 import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
+import PathToMaturity from '../components/report/PathToMaturity';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -30,6 +31,7 @@ export default function PillarReport() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (runId) {
@@ -230,13 +232,34 @@ export default function PillarReport() {
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex gap-6">
-            <button className="pb-3 pt-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
+                activeTab === 'overview'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
               Overview
             </button>
-            <button className="pb-3 pt-3 text-sm font-semibold text-slate-500 hover:text-slate-700">
+            <button
+              onClick={() => setActiveTab('maturity')}
+              className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
+                activeTab === 'maturity'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
               Path to Maturity
             </button>
-            <button className="pb-3 pt-3 text-sm font-semibold text-slate-500 hover:text-slate-700">
+            <button
+              onClick={() => setActiveTab('actions')}
+              className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
+                activeTab === 'actions'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
               Action Planning
             </button>
           </div>
@@ -247,28 +270,55 @@ export default function PillarReport() {
       {/* MAIN CONTENT */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto p-4 space-y-4">
-        {/* VS22-v3: Executive Summary (3-column cards) */}
-        <ExecutiveSummary
-          execution_score={executionScore}
-          actual_level={actualLevel}
-          level_name={levelName}
-          questions_total={48}
-          questions_answered={questionsAnswered}
-          critical_count={8}
-          failed_critical_count={criticalRisks.length}
-        />
+        {/* OVERVIEW TAB */}
+        {activeTab === 'overview' && (
+          <>
+            {/* VS22-v3: Executive Summary (3-column cards) */}
+            <ExecutiveSummary
+              execution_score={executionScore}
+              actual_level={actualLevel}
+              level_name={levelName}
+              questions_total={48}
+              questions_answered={questionsAnswered}
+              critical_count={8}
+              failed_critical_count={criticalRisks.length}
+            />
 
-        {/* Summary Table */}
-        <SummaryTable objectives={objectives} />
+            {/* Summary Table */}
+            <SummaryTable objectives={objectives} />
 
-        {/* Strengths Bar (only shows if objectives >= 70% exist) */}
-        <StrengthsBar objectives={objectives} />
+            {/* Strengths Bar (only shows if objectives >= 70% exist) */}
+            <StrengthsBar objectives={objectives} />
 
-        {/* Two Column: Critical Risks + High Value */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CriticalRisksCard risks={criticalRisks} />
-          <HighValueCard initiatives={initiatives} />
-        </div>
+            {/* Two Column: Critical Risks + High Value */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CriticalRisksCard risks={criticalRisks} />
+              <HighValueCard initiatives={initiatives} />
+            </div>
+          </>
+        )}
+
+        {/* PATH TO MATURITY TAB */}
+        {activeTab === 'maturity' && (
+          <PathToMaturity
+            actualLevel={actualLevel}
+            potentialLevel={potentialLevel}
+            executionScore={executionScore}
+            cappedBy={cappedBy}
+            criticalRisks={criticalRisks}
+          />
+        )}
+
+        {/* ACTION PLANNING TAB */}
+        {activeTab === 'actions' && (
+          <div className="bg-white rounded-lg border border-slate-300 p-8 text-center">
+            <div className="text-slate-400 text-4xl mb-4">🚧</div>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">Coming Soon</h3>
+            <p className="text-slate-500">
+              Detailed action planning with timeline and resource allocation will be available in a future update.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
