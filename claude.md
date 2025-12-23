@@ -155,8 +155,10 @@ CFOdiagnosis_v1/
 | POST | `/diagnostic-inputs` | Save question answer | Yes |
 | POST | `/diagnostic-runs/:id/complete` | Mark run as complete | Yes |
 | POST | `/diagnostic-runs/:id/score` | Calculate scores for run | Yes |
+| GET | `/diagnostic-runs/:id/calibration` | Get calibration data (VS21) | Yes |
+| POST | `/diagnostic-runs/:id/calibration` | Save importance map (VS21) | Yes |
 | GET | `/diagnostic-runs/:id/results` | Get aggregated results | Yes |
-| GET | `/diagnostic-runs/:id/report` | Get full report (includes context) | Yes |
+| GET | `/diagnostic-runs/:id/report` | Get full report (with calibration) | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -173,9 +175,10 @@ CFOdiagnosis_v1/
 - `id` (uuid, PK)
 - `user_id` (uuid, FK to auth.users)
 - `status` (text): NOT_STARTED | IN_PROGRESS | COMPLETED | LOCKED
-- `spec_version` (text): e.g., "2.6.4"
+- `spec_version` (text): e.g., "2.7.0"
 - `context` (jsonb): `{company_name, industry}` - VS18
 - `setup_completed_at` (timestamptz): When context intake was completed - VS18
+- `calibration` (jsonb): `{importance_map: {...}, locked: [...]}` - VS21
 - `created_at`, `updated_at`
 
 **diagnostic_inputs**
@@ -242,6 +245,7 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 | `/run/:runId/setup` | SetupPage | Yes |
 | `/run/:runId/intro` | IntroPage | Yes |
 | `/assess` | DiagnosticInput | Yes |
+| `/run/:runId/calibrate` | CalibrationPage (VS21) | Yes |
 | `/report/:runId` | PillarReport (V2.8.0 - Main) | Yes |
 | `/report-legacy/:runId` | FinanceDiagnosticReport (V1) | Yes |
 
@@ -259,8 +263,11 @@ NOT_STARTED → IN_PROGRESS → COMPLETED → LOCKED
 11. User clicks "Submit"
 12. POST `/diagnostic-runs/:id/complete`
 13. POST `/diagnostic-runs/:id/score`
-14. Redirect to `/report/:runId`
-15. GET `/diagnostic-runs/:id/report` displays results (includes context)
+14. **Redirect to `/run/:id/calibrate` (VS21 - priority calibration)**
+15. **User sets objective importance levels (optional)**
+16. **POST `/diagnostic-runs/:id/calibration` saves calibration**
+17. Redirect to `/report/:runId`
+18. GET `/diagnostic-runs/:id/report` displays results (with calibrated scores)
 
 ### Current Questions (48 FP&A questions) - v2.7.1
 
@@ -362,6 +369,7 @@ npm run build        # Vite build to dist/
 | VS18: Context Intake | ✅ Complete |
 | VS19: Critical Risk Engine | ✅ Complete |
 | VS20: Dynamic Action Engine | ✅ Complete |
+| VS21: Objective Importance Matrix | ✅ Complete |
 | v2.7.0 Behavioral Edition | ✅ Complete |
 | v2.7.1 Content Update (48 questions) | ✅ Complete |
 | AppShell Responsive Layout | ✅ Complete |
@@ -718,7 +726,128 @@ Alternative visualization approaches for P1/P2/P3 to show recommendations withou
 
 ---
 
+## VS21: Objective Importance Matrix (Calibration Layer)
+
+**Problem solved:** All objectives treated equally regardless of organizational priorities.
+
+**Solution:** User-declared importance (1-5 scale) that multiplies action scores.
+
+### Database Schema
+```sql
+ALTER TABLE diagnostic_runs
+ADD COLUMN calibration JSONB DEFAULT '{}'::jsonb;
+
+-- JSONB Shape:
+-- {
+--   "importance_map": { "obj_fpa_l1_budget": 5, "obj_fpa_l2_variance": 3, ... },
+--   "locked": ["obj_fpa_l1_budget"]  -- Safety Valve applied
+-- }
+```
+
+### Importance Levels & Multipliers
+
+| Level | Label | Multiplier | Use Case |
+|-------|-------|------------|----------|
+| 5 | Critical | 1.50x | Top organizational priority |
+| 4 | High | 1.25x | Important focus area |
+| 3 | Medium | 1.00x | Default (no adjustment) |
+| 2 | Low | 0.75x | Lower priority this cycle |
+| 1 | Minimal | 0.50x | Deprioritized |
+
+### Score Formula
+```
+Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
+```
+
+Where:
+- `Impact` = Question impact (1-5)
+- `Complexity` = Implementation complexity (1-5)
+- `CriticalBoost` = 2x if `is_critical`
+- `ImportanceFactor` = IMPORTANCE_MULTIPLIERS[importance] (0.5x to 1.5x)
+
+### Safety Valve
+**Critical failures cannot be deprioritized.** If an objective contains a failed critical question, its importance is locked at 5 (Critical Priority) and cannot be changed.
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/diagnostic-runs/:id/calibration` | Get calibration data (with defaults + locked objectives) |
+| POST | `/diagnostic-runs/:id/calibration` | Save importance_map (Safety Valve auto-applied) |
+
+### Frontend Components
+
+**CalibrationPage** (`/run/:runId/calibrate`)
+- Shows all 8 objectives grouped by theme
+- 5-button importance selector (Min/Low/Med/High/Crit)
+- Locked objectives shown with red styling + lock icon
+- Submit saves to API → redirects to report
+
+**ActionRow** (importance badge)
+- Shows importance badge when non-default (not 3)
+- Color-coded: red (5), orange (4), slate (2), light slate (1)
+
+### User Flow
+```
+Questionnaire → Complete → Calibration → Report
+                    ↓
+              /run/:runId/calibrate
+                    ↓
+              Set importance levels
+                    ↓
+              /report/:runId (with weighted scores)
+```
+
+### Key Files
+- `src/actions/types.ts` - CalibrationData, ImportanceLevel, IMPORTANCE_MULTIPLIERS
+- `src/actions/prioritizeActions.ts` - Score calculation with ImportanceFactor
+- `src/index.ts` - GET/POST calibration endpoints
+- `cfo-frontend/src/pages/CalibrationPage.jsx` - Calibration UI
+- `cfo-frontend/src/components/report/ActionRow.jsx` - Importance badges
+- `supabase/migrations/20241223_vs21_calibration_column.sql` - Migration
+
+---
+
 ## Session Log
+
+### December 23, 2025 - VS21 Objective Importance Matrix
+
+**Completed:**
+
+1. **VS21 Backend Implementation**
+   - Added `calibration` JSONB column to `diagnostic_runs` table
+   - Added CalibrationData, ImportanceLevel types with 0.5x-1.5x multipliers
+   - Added GET/POST `/diagnostic-runs/:id/calibration` endpoints
+   - Implemented Safety Valve: lock objectives with failed criticals at importance=5
+   - Updated action scoring: Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
+
+2. **VS21 Frontend Implementation**
+   - Created CalibrationPage with ObjectiveImportanceCard UI
+   - Updated navigation: Questionnaire → Calibration → Report
+   - Added importance badges to ActionRow (shown when non-default)
+   - Added IMPORTANCE_CONFIG to spec.js data layer
+
+3. **End-to-End Testing**
+   - Created `test-vs21-flow.js` comprehensive test script
+   - Verified all 8 steps pass: create → setup → answer → complete → score → calibrate → report
+   - Confirmed importance-weighted scores appear in report
+
+**Key Commits:**
+- `c73324d` - VS21: Objective Importance Matrix - Calibration Layer
+- `bac9d9e` - Fix calibration endpoint to handle missing column gracefully
+- `3241868` - VS21: Complete implementation and testing
+
+**Test Results:**
+```
+Run ID: 3eed1bae-fc5d-41c8-8d78-daf0746315a1
+Execution Score: 67%
+Actions with Importance: 10
+- "Assign Budget Ownership" (importance=5) → Score 24
+- "Build Driver Literacy" (importance=4) → Score 6.7
+- "Create Challenge Culture" (importance=1) → Score 3.1
+```
+
+---
 
 ### December 22, 2025 (Evening) - Report Production Launch
 

@@ -1,10 +1,23 @@
 # 🚀 FINANCE DIAGNOSTIC PLATFORM — SYSTEM SPEC
 
-**Version:** v2.8.0  
-**Status:** FINAL / FROZEN  
-**Supersedes:** v2.7.0  
-**Audience:** Product, Engineering, Design, Content  
-**Change Type:** V2 Initiative Engine, Fair-but-Firm Maturity, Question Calibration
+**Version:** v2.8.1
+**Status:** FINAL / FROZEN
+**Supersedes:** v2.8.0
+**Audience:** Product, Engineering, Design, Content
+**Change Type:** VS21 Objective Importance Matrix (Calibration Layer)
+
+---
+
+## CHANGELOG (v2.8.0 → v2.8.1)
+
+| Change | Before | After |
+|--------|--------|-------|
+| Calibration Layer | None | **VS21 Objective Importance Matrix** |
+| Importance Levels | N/A | **1-5 scale** (Minimal to Critical) |
+| Score Formula | `Impact²/Complexity × CriticalBoost` | `Impact²/Complexity × CriticalBoost × ImportanceFactor` |
+| Calibration Page | N/A | `/run/:runId/calibrate` |
+| Calibration API | N/A | `GET/POST /diagnostic-runs/:id/calibration` |
+| Database Schema | No calibration | `calibration JSONB` column |
 
 ---
 
@@ -449,6 +462,162 @@ function sortActionsWithinInitiative(actions: GroupedAction[]): GroupedAction[] 
 
 ---
 
+## 5B. VS21 CALIBRATION LAYER (Objective Importance Matrix)
+
+### 5B.1 Purpose
+
+The Calibration Layer allows users to customize the relative importance of each Objective based on their organizational context. This creates **personalized action priorities** without changing the underlying diagnostic logic.
+
+### 5B.2 Importance Levels
+
+| Level | Label | Multiplier | Use Case |
+|-------|-------|------------|----------|
+| **5** | Critical | 1.5x | "This is a board-level priority" |
+| **4** | High | 1.25x | "Executive focus area" |
+| **3** | Medium | 1.0x | "Standard priority" (default) |
+| **2** | Low | 0.75x | "Lower priority for now" |
+| **1** | Minimal | 0.5x | "Not relevant to our context" |
+
+### 5B.3 Updated Score Formula
+
+```typescript
+function calculateActionScore(question: Question, importanceMap?: Record<string, number>): number {
+  // Base score (unchanged)
+  let score = Math.pow(question.impact, 2) / question.complexity;
+
+  // Critical boost (unchanged)
+  if (question.is_critical) {
+    score = score * 2;
+  }
+
+  // VS21: Importance multiplier
+  const importance = importanceMap?.[question.objective_id] ?? 3; // Default: Medium
+  const multiplier = getImportanceMultiplier(importance);
+  score = score * multiplier;
+
+  return score;
+}
+
+function getImportanceMultiplier(importance: number): number {
+  const multipliers: Record<number, number> = {
+    5: 1.5,   // Critical
+    4: 1.25,  // High
+    3: 1.0,   // Medium (default)
+    2: 0.75,  // Low
+    1: 0.5    // Minimal
+  };
+  return multipliers[importance] ?? 1.0;
+}
+```
+
+### 5B.4 Safety Valve
+
+**Rule:** Critical failures **lock** importance at Level 5 (Critical).
+
+If a user marks an objective as "Minimal" (1) but has a failed critical question in that objective, the system automatically overrides to "Critical" (5).
+
+```typescript
+function applyCalibration(
+  objectiveId: string,
+  userImportance: number,
+  hasCriticalFailure: boolean
+): number {
+  if (hasCriticalFailure) {
+    return 5; // Safety valve: force Critical
+  }
+  return userImportance;
+}
+```
+
+### 5B.5 Data Model
+
+```typescript
+interface CalibrationData {
+  importance_map: Record<string, number>;  // objective_id → importance (1-5)
+  calibrated_at?: string;                   // ISO timestamp
+}
+
+// Database column
+// diagnostic_runs.calibration: JSONB DEFAULT '{}'::jsonb
+```
+
+### 5B.6 API Endpoints
+
+#### GET /diagnostic-runs/:id/calibration
+
+Returns current calibration state with objectives and their importance levels.
+
+```typescript
+interface CalibrationResponse {
+  run_id: string;
+  objectives: Array<{
+    id: string;
+    name: string;
+    current_importance: number;  // 1-5
+    has_critical_failure: boolean;
+    locked: boolean;  // true if Safety Valve active
+  }>;
+  importance_map: Record<string, number>;
+}
+```
+
+#### POST /diagnostic-runs/:id/calibration
+
+Saves user's importance preferences.
+
+```typescript
+// Request body
+interface CalibrationRequest {
+  importance_map: Record<string, number>;  // objective_id → importance (1-5)
+}
+
+// Response: CalibrationResponse (same as GET)
+```
+
+### 5B.7 Flow Integration
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ DIAGNOSTIC FLOW WITH CALIBRATION                            │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Setup (company/industry)                                 │
+│ 2. Answer 48 questions                                      │
+│ 3. Complete & Score                                         │
+│ 4. View Initial Report                                      │
+│ 5. [NEW] Calibrate Objectives (/run/:id/calibrate)         │
+│ 6. View Personalized Report (scores recalculated)          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 5B.8 UI Configuration
+
+```typescript
+// Frontend importance config (src/data/spec.js)
+export const IMPORTANCE_CONFIG = {
+  5: { label: 'Crit', fullLabel: 'Critical Priority', color: 'text-red-700 bg-red-50 border-red-200' },
+  4: { label: 'High', fullLabel: 'High Priority', color: 'text-orange-700 bg-orange-50 border-orange-200' },
+  3: { label: 'Med', fullLabel: 'Medium Priority', color: 'text-slate-600 bg-slate-50 border-slate-200' },
+  2: { label: 'Low', fullLabel: 'Low Priority', color: 'text-slate-500 bg-slate-50 border-slate-200' },
+  1: { label: 'Min', fullLabel: 'Minimal Priority', color: 'text-slate-400 bg-slate-50 border-slate-200' }
+};
+```
+
+### 5B.9 Report Display
+
+Actions display an importance badge when calibrated (non-default value):
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ ★ HIGH │ Add Cash Flow to Forecast         │ Structural │
+├────────────────────────────────────────────────────────────┤
+│ Score adjusted from 12.5 → 15.6 (1.25x importance)        │
+└────────────────────────────────────────────────────────────┘
+```
+
+**Rule:** Only show importance badge when `importance !== 3` (non-default).
+
+---
+
 ## 6. API RESPONSE
 
 ### 6.1 Score Response Shape
@@ -648,3 +817,11 @@ Used only to condition AI narratives.
 | API returns grouped initiatives | ✅ Yes |
 | UI shows type badges | ✅ Yes |
 | No question IDs in UI | ✅ Yes |
+| **VS21 Calibration** | |
+| Importance levels | 1-5 (Minimal to Critical) |
+| Default importance | 3 (Medium) |
+| GET /calibration endpoint | ✅ Yes |
+| POST /calibration endpoint | ✅ Yes |
+| Safety Valve for criticals | ✅ Locks at 5 |
+| Importance badge shown | Only when ≠ 3 |
+| calibration JSONB column | ✅ Yes |
