@@ -382,7 +382,8 @@ export default function DiagnosticInput() {
       if (!completeRes.ok) throw new Error("Failed to complete run");
       const scoreRes = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/score`, { method: "POST", headers });
       if (!scoreRes.ok) throw new Error("Failed to score run");
-      navigate(`/report/${runId}`);
+      // VS21: Redirect to calibration page instead of report
+      navigate(`/run/${runId}/calibrate`);
     } catch (err) {
       setError(err.message);
       setStatus("answering");

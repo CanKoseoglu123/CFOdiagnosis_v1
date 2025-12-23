@@ -211,6 +211,164 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// VS21 — Save calibration (objective importance)
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
+  const runId = req.params.id;
+  const { importance_map } = req.body;
+
+  if (!importance_map || typeof importance_map !== "object") {
+    return res.status(400).json({
+      error: "importance_map is required and must be an object",
+    });
+  }
+
+  // Verify run exists and is completed
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, spec_version")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed before calibration" });
+  }
+
+  // Get the spec and inputs to determine locked objectives (Safety Valve)
+  let spec;
+  try {
+    spec = SpecRegistry.get(run.spec_version);
+  } catch (err) {
+    return res.status(500).json({ error: String(err) });
+  }
+
+  const { data: inputs, error: inputsError } = await req.supabase
+    .from("diagnostic_inputs")
+    .select("question_id, value")
+    .eq("run_id", runId);
+
+  if (inputsError) {
+    return res.status(500).json({ error: inputsError.message });
+  }
+
+  // Find failed critical questions
+  const inputMap = new Map((inputs || []).map((i: any) => [i.question_id, i.value]));
+  const failedCriticals: string[] = [];
+
+  for (const q of spec.questions) {
+    if (q.is_critical && inputMap.get(q.id) !== true) {
+      failedCriticals.push(q.id);
+    }
+  }
+
+  // Find objectives that contain failed criticals (Safety Valve)
+  const lockedObjectives = new Set<string>();
+  for (const criticalId of failedCriticals) {
+    const question = spec.questions.find((q: any) => q.id === criticalId);
+    if (question?.objective_id) {
+      lockedObjectives.add(question.objective_id);
+    }
+  }
+
+  // Build final importance map with Safety Valve applied
+  const finalMap: Record<string, number> = {};
+
+  // Set all objectives to user values or default (3)
+  for (const obj of spec.objectives || []) {
+    const userValue = importance_map[obj.id];
+    if (lockedObjectives.has(obj.id)) {
+      finalMap[obj.id] = 5;  // Force to Critical
+    } else if (typeof userValue === "number" && userValue >= 1 && userValue <= 5) {
+      finalMap[obj.id] = userValue;
+    } else {
+      finalMap[obj.id] = 3;  // Default to Medium
+    }
+  }
+
+  const calibrationData = {
+    importance_map: finalMap,
+    locked: Array.from(lockedObjectives),
+  };
+
+  // Save to database
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .update({ calibration: calibrationData })
+    .eq("id", runId)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(calibrationData);
+});
+
+// ------------------------------------------------------------------
+// VS21 — Get calibration data
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, calibration, status, spec_version")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // If no calibration data, return defaults with locked objectives
+  if (!run.calibration || Object.keys(run.calibration).length === 0) {
+    // Get the spec and inputs to determine locked objectives
+    let spec;
+    try {
+      spec = SpecRegistry.get(run.spec_version);
+    } catch (err) {
+      return res.status(500).json({ error: String(err) });
+    }
+
+    const { data: inputs } = await req.supabase
+      .from("diagnostic_inputs")
+      .select("question_id, value")
+      .eq("run_id", runId);
+
+    // Find failed critical questions
+    const inputMap = new Map((inputs || []).map((i: any) => [i.question_id, i.value]));
+    const lockedObjectives = new Set<string>();
+
+    for (const q of spec.questions) {
+      if (q.is_critical && inputMap.get(q.id) !== true) {
+        const question = spec.questions.find((sq: any) => sq.id === q.id);
+        if (question?.objective_id) {
+          lockedObjectives.add(question.objective_id);
+        }
+      }
+    }
+
+    // Build default importance map
+    const defaultMap: Record<string, number> = {};
+    for (const obj of spec.objectives || []) {
+      defaultMap[obj.id] = lockedObjectives.has(obj.id) ? 5 : 3;
+    }
+
+    return res.json({
+      importance_map: defaultMap,
+      locked: Array.from(lockedObjectives),
+    });
+  }
+
+  res.json(run.calibration);
+});
+
+// ------------------------------------------------------------------
 // VS2 — Persist diagnostic input
 // ------------------------------------------------------------------
 app.post("/diagnostic-inputs", async (req, res) => {
@@ -422,7 +580,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context")
+    .select("id, status, spec_version, context, calibration")
     .eq("id", runId)
     .single();
 
@@ -478,12 +636,15 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
       question_id: i.question_id,
       value: i.value,
     })),
+    calibration: run.calibration || null,  // VS21: Pass calibration data
   });
 
   // VS18: Include context in report response
+  // VS21: Include calibration in report response
   res.json({
     ...report,
     context: run.context || {},
+    calibration: run.calibration || null,
   });
 });
 

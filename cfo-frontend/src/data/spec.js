@@ -282,3 +282,21 @@ export const EFFORT_CONFIG = {
   medium: { label: 'Med', color: 'text-yellow-700' },
   high: { label: 'High', color: 'text-red-700' }
 };
+
+// =============================================================================
+// VS21: IMPORTANCE CONFIG (Calibration Layer)
+// =============================================================================
+export const IMPORTANCE_CONFIG = {
+  5: { label: 'Crit', fullLabel: 'Critical Priority', color: 'text-red-700 bg-red-50 border-red-200' },
+  4: { label: 'High', fullLabel: 'High Priority', color: 'text-orange-700 bg-orange-50 border-orange-200' },
+  3: { label: 'Med', fullLabel: 'Medium Priority', color: 'text-slate-600 bg-slate-50 border-slate-200' },
+  2: { label: 'Low', fullLabel: 'Low Priority', color: 'text-slate-500 bg-slate-50 border-slate-200' },
+  1: { label: 'Min', fullLabel: 'Minimal Priority', color: 'text-slate-400 bg-slate-50 border-slate-200' }
+};
+
+/**
+ * Get importance config by level
+ */
+export function getImportanceConfig(level) {
+  return IMPORTANCE_CONFIG[level] || IMPORTANCE_CONFIG[3];
+}

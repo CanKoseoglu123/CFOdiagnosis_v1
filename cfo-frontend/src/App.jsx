@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import DiagnosticInput from './DiagnosticInput'
 import FinanceDiagnosticReport from './FinanceDiagnosticReport'
 import PillarReport from './pages/PillarReport'
+import CalibrationPage from './pages/CalibrationPage'
 import SetupPage from './SetupPage'
 import IntroPage from './IntroPage'
 import { LogOut } from 'lucide-react'
@@ -140,6 +141,11 @@ export default function App() {
           <Route path="/assess" element={
             <ProtectedRoute>
               <DiagnosticInput />
+            </ProtectedRoute>
+          } />
+          <Route path="/run/:runId/calibrate" element={
+            <ProtectedRoute>
+              <CalibrationPage />
             </ProtectedRoute>
           } />
           <Route path="/report/:runId" element={

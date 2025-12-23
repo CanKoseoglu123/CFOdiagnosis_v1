@@ -2,8 +2,9 @@
 // V2.1: Prioritized Actions with P1/P2/P3 logic and Initiative grouping
 // Fixes "High Performance Purgatory" - P2 uses potential_level, not actual_level
 // Adds 2x critical multiplier and score calculation
+// VS21: Adds ImportanceFactor multiplier from calibration data
 
-import { PrioritizedAction, PrioritizedInitiative } from "./types";
+import { PrioritizedAction, PrioritizedInitiative, CalibrationData, ImportanceLevel, IMPORTANCE_MULTIPLIERS } from "./types";
 import { MaturityResultV2 } from "../maturity/types";
 import { Spec, SpecQuestion, Initiative } from "../specs/types";
 
@@ -21,19 +22,33 @@ interface DiagnosticInput {
 // =============================================================================
 
 /**
- * Calculates the action score using the V2.1 formula.
- * Score = (Impact² / Complexity) × 2 if Critical
+ * Calculates the action score using the V2.1 formula with VS21 calibration.
+ * Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
  *
- * The 2x multiplier ensures criticals rank above high-ROI governance tasks.
+ * The 2x critical multiplier ensures criticals rank above high-ROI governance tasks.
+ * The ImportanceFactor (0.5x to 1.5x) allows users to adjust priority based on organizational needs.
+ *
+ * @param question - The question/action being scored
+ * @param calibration - Optional calibration data with importance_map
+ * @returns Calculated score (rounded to 1 decimal)
  */
-function calculateScore(question: SpecQuestion): number {
+function calculateScore(question: SpecQuestion, calibration?: CalibrationData | null): number {
   const impact = question.impact ?? 3;
   const complexity = question.complexity ?? 3;
 
   let score = Math.pow(impact, 2) / complexity;
 
+  // CriticalBoost: 2x if critical
   if (question.is_critical) {
     score = score * 2;
+  }
+
+  // VS21: ImportanceFactor from calibration
+  if (calibration?.importance_map && question.objective_id) {
+    const importance = calibration.importance_map[question.objective_id] as ImportanceLevel | undefined;
+    if (importance && IMPORTANCE_MULTIPLIERS[importance]) {
+      score = score * IMPORTANCE_MULTIPLIERS[importance];
+    }
   }
 
   return Math.round(score * 10) / 10; // Round to 1 decimal
@@ -136,21 +151,31 @@ function getFailedQuestionsAtLevel(
  * Key Insight: Use potential_level for P2 to avoid "High Performance Purgatory"
  * A 90% scorer capped at L1 should see L1, L2, AND L3 gaps in P2.
  *
- * Score Formula: (Impact² / Complexity) × 2 if Critical
+ * Score Formula: (Impact² / Complexity) × CriticalBoost × ImportanceFactor
  *
  * @param maturity - V2 maturity result with potential_level
  * @param inputs - User answers
  * @param questions - All questions from spec
+ * @param calibration - Optional VS21 calibration data for importance multipliers
  * @returns Sorted array of PrioritizedAction
  */
 export function prioritizeActions(
   maturity: MaturityResultV2,
   inputs: DiagnosticInput[],
-  questions: SpecQuestion[]
+  questions: SpecQuestion[],
+  calibration?: CalibrationData | null
 ): PrioritizedAction[] {
   const actions: PrioritizedAction[] = [];
   const { actual_level, potential_level, capped_by } = maturity;
   const seenQuestionIds = new Set<string>();
+
+  // Helper to get importance for a question's objective
+  const getImportance = (q: SpecQuestion): ImportanceLevel | undefined => {
+    if (calibration?.importance_map && q.objective_id) {
+      return calibration.importance_map[q.objective_id] as ImportanceLevel | undefined;
+    }
+    return undefined;
+  };
 
   // P1: Critical questions causing the cap (UNLOCK)
   for (const qId of capped_by) {
@@ -168,9 +193,10 @@ export function prioritizeActions(
         impact: 'Unlocks next maturity level',
         effort: estimateEffort(q),
         level: q.level ?? 1,
-        score: calculateScore(q),
+        score: calculateScore(q, calibration),
         is_critical: q.is_critical ?? false,
         initiative_id: q.initiative_id,
+        importance: getImportance(q),
       });
     }
   }
@@ -199,9 +225,10 @@ export function prioritizeActions(
             : 'Advances toward potential',
         effort: estimateEffort(q),
         level: qLevel,
-        score: calculateScore(q),
+        score: calculateScore(q, calibration),
         is_critical: q.is_critical ?? false,
         initiative_id: q.initiative_id,
+        importance: getImportance(q),
       });
     }
   }
@@ -225,9 +252,10 @@ export function prioritizeActions(
         impact: 'Prepares for next level',
         effort: estimateEffort(q),
         level: q.level ?? 1,
-        score: calculateScore(q),
+        score: calculateScore(q, calibration),
         is_critical: q.is_critical ?? false,
         initiative_id: q.initiative_id,
+        importance: getImportance(q),
       });
     }
   }

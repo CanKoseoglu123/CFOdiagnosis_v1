@@ -2,8 +2,37 @@
 // VS8 — Action Plan Types
 // VS20 — Dynamic Action Engine (DerivedAction)
 // V2.1 — PrioritizedAction with P1/P2/P3 and Initiative grouping
+// VS21 — Objective Importance Matrix (Calibration Layer)
 
 import type { ActionType } from "../specs/types";
+
+// VS21: Importance Levels (1-5 scale)
+export type ImportanceLevel = 1 | 2 | 3 | 4 | 5;
+export type ImportanceMap = Record<string, ImportanceLevel>;
+
+// VS21: Calibration data stored on diagnostic_runs
+export interface CalibrationData {
+  importance_map: ImportanceMap;
+  locked: string[];  // objective_ids locked by Safety Valve
+}
+
+// VS21: Importance Multipliers
+export const IMPORTANCE_MULTIPLIERS: Record<ImportanceLevel, number> = {
+  5: 1.50,  // Critical Priority
+  4: 1.25,  // High
+  3: 1.00,  // Medium (default)
+  2: 0.75,  // Low
+  1: 0.50   // Minimal
+};
+
+// VS21: Importance Labels for UI
+export const IMPORTANCE_LABELS: Record<ImportanceLevel, string> = {
+  5: 'Critical Priority',
+  4: 'High',
+  3: 'Medium',
+  2: 'Low',
+  1: 'Minimal'
+};
 
 export interface ActionPlanItem {
   id: string;
@@ -42,9 +71,10 @@ export interface PrioritizedAction {
   impact: string;                    // Why this matters
   effort: 'low' | 'medium' | 'high';
   level: number;                     // Maturity level of the question
-  score: number;                     // Calculated score: (Impact² / Complexity) × 2 if Critical
+  score: number;                     // Calculated score: (Impact² / Complexity) × 2 if Critical × ImportanceFactor
   is_critical: boolean;              // Whether this is a critical question
   initiative_id?: string;            // Initiative this belongs to
+  importance?: ImportanceLevel;      // VS21: Calibrated importance (1-5), default 3
 }
 
 // V2.1: Grouped actions by initiative

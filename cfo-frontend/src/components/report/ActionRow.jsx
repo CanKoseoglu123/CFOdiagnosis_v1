@@ -1,15 +1,17 @@
 // src/components/report/ActionRow.jsx
 // Dense tabular action row with mobile-safe layout
+// VS21: Added importance badge from calibration
 
 import { useState } from 'react';
-import { AlertCircle, ChevronRight } from 'lucide-react';
-import { ACTION_TYPE_CONFIG, EFFORT_CONFIG } from '../../data/spec';
+import { AlertCircle, ChevronRight, Star } from 'lucide-react';
+import { ACTION_TYPE_CONFIG, EFFORT_CONFIG, IMPORTANCE_CONFIG } from '../../data/spec';
 
 export default function ActionRow({ action }) {
   const [showDetail, setShowDetail] = useState(false);
 
   const typeConfig = ACTION_TYPE_CONFIG[action.action_type] || ACTION_TYPE_CONFIG.structural;
   const effortConfig = EFFORT_CONFIG[action.effort] || EFFORT_CONFIG.medium;
+  const importanceConfig = action.importance ? IMPORTANCE_CONFIG[action.importance] : null;
 
   return (
     <div className="bg-white border border-slate-200 rounded-sm overflow-hidden">
@@ -27,6 +29,21 @@ export default function ActionRow({ action }) {
         <span className="flex-1 text-sm text-navy font-medium truncate">
           {action.action_title || action.action_text}
         </span>
+
+        {/* VS21: Importance badge - only show if calibrated (non-default) */}
+        {importanceConfig && action.importance !== 3 && (
+          <span
+            className={`
+              px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide
+              border rounded-sm flex items-center gap-1
+              ${importanceConfig.color}
+            `}
+            title={importanceConfig.fullLabel}
+          >
+            <Star className="w-3 h-3" />
+            {importanceConfig.label}
+          </span>
+        )}
 
         {/* Type badge - always visible */}
         <span className={`

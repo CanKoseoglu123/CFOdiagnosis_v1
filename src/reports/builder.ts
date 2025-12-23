@@ -17,6 +17,7 @@ import {
 import { AggregateResult } from "../results/aggregate";
 import { evaluateMaturity, calculateMaturityV2, Answer } from "../maturity";
 import { deriveActions, deriveActionsFromObjectives, prioritizeActions, groupActionsByInitiative } from "../actions";
+import { CalibrationData } from "../actions/types";  // VS21: Import calibration type
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 import { calculateObjectiveScores } from "../scoring/objectiveScoring";
 
@@ -34,6 +35,7 @@ export interface BuildReportInput {
   spec: Spec;
   aggregateResult: AggregateResult; // From VS5
   inputs: DiagnosticInput[];        // Raw user answers
+  calibration?: CalibrationData | null;  // VS21: Optional calibration data
 }
 
 // ------------------------------------------------------------------
@@ -41,7 +43,7 @@ export interface BuildReportInput {
 // ------------------------------------------------------------------
 
 export function buildReport(input: BuildReportInput): FinanceReportDTO {
-  const { run_id, spec, aggregateResult, inputs } = input;
+  const { run_id, spec, aggregateResult, inputs, calibration } = input;
 
   // Build input lookup map
   const inputMap = new Map<string, unknown>(
@@ -119,10 +121,12 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
   const objectiveScores: ObjectiveScore[] = calculateObjectiveScores(spec, inputs);
 
   // V2.1: Calculate prioritized actions (P1/P2/P3) with score calculation
+  // VS21: Pass calibration for importance multipliers
   const prioritizedActions = prioritizeActions(
     maturityV2Result,
     inputs,
-    spec.questions
+    spec.questions,
+    calibration
   );
 
   // V2.1: Group actions by initiative
