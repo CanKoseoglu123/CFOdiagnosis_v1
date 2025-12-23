@@ -1,141 +1,111 @@
 // src/components/report/MaturityFootprintGrid.jsx
-// VS-23: Maturity Footprint Grid - Consulting-grade visual redesign
+// VS-23: Maturity Footprint Grid - Enterprise design system compliant
 
 import React from 'react';
+import { AlertCircle, CheckCircle, Target } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CONSTANTS
+// LEVEL CONFIGURATION (Ladder perspective - higher = more strategic)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const TILE_WIDTH = 140;
-const TILE_HEIGHT = 80;
-const MAX_PRACTICES_PER_ROW = 6; // Maximum to ensure grid alignment
+const LEVEL_CONFIG = {
+  4: { name: 'Optimized', headerBg: 'bg-slate-800', headerText: 'text-white' },
+  3: { name: 'Managed', headerBg: 'bg-slate-700', headerText: 'text-white' },
+  2: { name: 'Defined', headerBg: 'bg-slate-600', headerText: 'text-white' },
+  1: { name: 'Emerging', headerBg: 'bg-slate-500', headerText: 'text-white' }
+};
+
+// Evidence state → left border color (design system pattern)
+const STATE_BORDER = {
+  proven: 'border-l-green-600',
+  partial: 'border-l-yellow-500',
+  not_proven: 'border-l-slate-300'
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PRACTICE TILE - Uniform size, solid color backgrounds
+// PRACTICE TILE - Compact, fits in one row
 // ═══════════════════════════════════════════════════════════════════════════
 
 function PracticeTile({ practice }) {
-  // Color encodes evidence state (solid fills, not borders)
-  const stateStyles = {
-    proven: {
-      bg: 'bg-emerald-100',
-      text: 'text-emerald-900',
-      accent: 'bg-emerald-500'
-    },
-    partial: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-900',
-      accent: 'bg-amber-500'
-    },
-    not_proven: {
-      bg: 'bg-slate-100',
-      text: 'text-slate-500',
-      accent: 'bg-slate-300'
-    }
-  };
-
-  const style = stateStyles[practice.evidence_state] || stateStyles.not_proven;
+  const borderColor = STATE_BORDER[practice.evidence_state] || STATE_BORDER.not_proven;
 
   return (
     <div
-      className={`relative ${style.bg} rounded flex flex-col items-center justify-center p-2`}
-      style={{ width: TILE_WIDTH, height: TILE_HEIGHT }}
+      className={`
+        bg-white border border-slate-300 rounded-sm border-l-4 ${borderColor}
+        px-2 py-1.5 min-w-0 flex-1
+      `}
     >
-      {/* Critical marker - bold left accent bar */}
-      {practice.is_critical && (
-        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500 rounded-l" />
-      )}
+      <div className="flex items-center gap-1.5">
+        {/* Critical marker */}
+        {practice.is_critical && (
+          <AlertCircle className="w-3 h-3 text-red-600 flex-shrink-0" />
+        )}
 
-      {/* Evidence indicator dot */}
-      <div className={`w-2.5 h-2.5 rounded-full ${style.accent} mb-2`} />
-
-      {/* Practice title */}
-      <div className={`text-xs font-medium ${style.text} text-center leading-tight px-1`}>
-        {practice.title}
+        {/* Practice title - truncate if too long */}
+        <span className="text-xs text-navy font-medium truncate">
+          {practice.title}
+        </span>
       </div>
     </div>
   );
 }
 
-// Empty spacer tile for grid alignment
-function SpacerTile() {
-  return (
-    <div
-      className="bg-transparent"
-      style={{ width: TILE_WIDTH, height: TILE_HEIGHT }}
-    />
-  );
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
-// LEVEL ROW - Aligned grid with spacers
+// LEVEL ROW - Horizontal strip with header + practices
 // ═══════════════════════════════════════════════════════════════════════════
 
 function LevelRow({ level, name, practices }) {
+  const config = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
   const provenCount = practices.filter(p => p.evidence_state === 'proven').length;
   const totalCount = practices.length;
 
-  // Create array with spacers for alignment
-  const tiles = [...practices];
-  while (tiles.length < MAX_PRACTICES_PER_ROW) {
-    tiles.push(null); // Spacer
-  }
-
   return (
-    <div className="flex items-center gap-3 py-3">
-      {/* Level label - fixed width for alignment */}
-      <div className="w-24 flex-shrink-0">
-        <div className="text-sm font-bold text-slate-700">L{level}</div>
-        <div className="text-xs text-slate-500">{name}</div>
-        <div className="text-xs text-slate-400 mt-1">{provenCount}/{totalCount}</div>
+    <div className="flex border-b border-slate-200 last:border-b-0">
+      {/* Level header - fixed width, darker for higher levels */}
+      <div className={`w-28 flex-shrink-0 ${config.headerBg} ${config.headerText} p-3`}>
+        <div className="text-sm font-bold">L{level}</div>
+        <div className="text-xs opacity-80">{name}</div>
+        <div className="text-xs opacity-60 mt-1">{provenCount}/{totalCount}</div>
       </div>
 
-      {/* Practice tiles - uniform grid */}
-      <div className="flex gap-2 flex-wrap">
-        {tiles.map((practice, idx) =>
-          practice ? (
-            <PracticeTile key={practice.id} practice={practice} />
-          ) : (
-            <SpacerTile key={`spacer-${idx}`} />
-          )
-        )}
+      {/* Practice tiles - horizontal strip */}
+      <div className="flex-1 p-2 flex gap-2 overflow-x-auto bg-slate-50">
+        {practices.map(practice => (
+          <PracticeTile key={practice.id} practice={practice} />
+        ))}
       </div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// FOCUS NEXT - Large ranked cards with strong contrast
+// FOCUS NEXT - Priority gaps to address
 // ═══════════════════════════════════════════════════════════════════════════
 
-function FocusNextCard({ item, rank }) {
-  const rankColors = {
-    1: 'bg-red-600',
-    2: 'bg-orange-500',
-    3: 'bg-amber-500'
-  };
-
+function FocusNextRow({ item, rank }) {
   return (
-    <div className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-lg shadow-sm">
-      {/* Rank badge */}
-      <div className={`w-10 h-10 ${rankColors[rank] || 'bg-slate-500'} rounded-full flex items-center justify-center flex-shrink-0`}>
-        <span className="text-white font-bold text-lg">{rank}</span>
+    <div className="flex items-center gap-3 py-2 px-3 bg-white border border-slate-200 rounded-sm">
+      {/* Rank */}
+      <div className="w-6 h-6 bg-slate-800 text-white rounded-sm flex items-center justify-center flex-shrink-0">
+        <span className="text-xs font-bold">{rank}</span>
       </div>
 
-      {/* Content */}
-      <div className="flex-1">
-        <div className="text-base font-semibold text-slate-800">{item.title}</div>
-        <div className="text-sm text-slate-500 mt-0.5">
-          Level {item.level} · {item.is_critical ? 'Critical Blocker' : 'High Impact'}
-        </div>
-      </div>
+      {/* Title */}
+      <span className="flex-1 text-sm text-navy font-medium">
+        {item.title}
+      </span>
 
-      {/* Blocker badge */}
+      {/* Level badge */}
+      <span className="text-xs text-slate-500">
+        L{item.level}
+      </span>
+
+      {/* Critical indicator */}
       {item.is_critical && (
-        <div className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
-          BLOCKER
-        </div>
+        <span className="px-1.5 py-0.5 bg-red-700 text-white text-[10px] font-semibold uppercase tracking-wider rounded-sm">
+          Critical
+        </span>
       )}
     </div>
   );
@@ -149,20 +119,20 @@ function Legend() {
   return (
     <div className="flex items-center gap-6 text-xs text-slate-500">
       <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded bg-emerald-100 border border-emerald-200" />
+        <div className="w-3 h-6 border border-slate-300 border-l-4 border-l-green-600 rounded-sm" />
         <span>Proven</span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded bg-amber-100 border border-amber-200" />
+        <div className="w-3 h-6 border border-slate-300 border-l-4 border-l-yellow-500 rounded-sm" />
         <span>Partial</span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded bg-slate-100 border border-slate-200" />
+        <div className="w-3 h-6 border border-slate-300 border-l-4 border-l-slate-300 rounded-sm" />
         <span>Gap</span>
       </div>
       <div className="flex items-center gap-2 ml-4 pl-4 border-l border-slate-200">
-        <div className="w-1.5 h-4 bg-red-500 rounded" />
-        <span>Contains Critical</span>
+        <AlertCircle className="w-3 h-3 text-red-600" />
+        <span>Critical</span>
       </div>
     </div>
   );
@@ -176,32 +146,35 @@ export default function MaturityFootprintGrid({ levels, focusNext, summaryText }
   return (
     <div className="space-y-6">
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* DOMINANT INSIGHT HEADLINE */}
+      {/* SUMMARY INSIGHT */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {summaryText && (
-        <div className="bg-slate-800 text-white px-6 py-4 rounded-lg">
-          <div className="text-lg font-semibold leading-snug">
-            {summaryText}
+        <div className="bg-white border border-slate-300 rounded-sm p-4">
+          <div className="flex items-start gap-3">
+            <Target className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-slate leading-relaxed">
+              {summaryText}
+            </p>
           </div>
         </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* MATURITY GRID */}
+      {/* MATURITY LADDER GRID */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+      <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Capability Footprint
           </h2>
-          <div className="text-xs text-slate-400 italic">
-            ↑ Strategic leverage increases
+          <div className="text-xs text-slate-400">
+            ↑ Strategic leverage
           </div>
         </div>
 
-        {/* Grid - L4 at top, L1 at bottom */}
-        <div className="px-6 py-4 divide-y divide-slate-100">
+        {/* Grid - L4 at top (highest strategic value), L1 at bottom */}
+        <div>
           {[4, 3, 2, 1].map(levelNum => {
             const level = levels.find(l => l.level === levelNum);
             if (!level || !level.practices || level.practices.length === 0) return null;
@@ -217,22 +190,24 @@ export default function MaturityFootprintGrid({ levels, focusNext, summaryText }
         </div>
 
         {/* Legend */}
-        <div className="px-6 py-3 border-t border-slate-200 bg-slate-50">
+        <div className="px-4 py-3 border-t border-slate-200 bg-slate-50">
           <Legend />
         </div>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* FOCUS NEXT - Visually separated, large ranked cards */}
+      {/* PRIORITY GAPS */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {focusNext && focusNext.length > 0 && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-          <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-4">
-            Priority Actions
-          </h3>
-          <div className="space-y-3">
+        <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Priority Gaps
+            </h3>
+          </div>
+          <div className="p-4 space-y-2">
             {focusNext.map((item, idx) => (
-              <FocusNextCard key={item.id} item={item} rank={idx + 1} />
+              <FocusNextRow key={item.id} item={item} rank={idx + 1} />
             ))}
           </div>
         </div>
