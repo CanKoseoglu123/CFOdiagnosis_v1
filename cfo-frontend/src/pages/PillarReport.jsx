@@ -67,18 +67,31 @@ export default function PillarReport() {
     );
   }
 
+  // Map objective IDs to themes
+  const OBJECTIVE_THEME_MAP = {
+    'obj_fpa_l1_budget': 'Foundation',
+    'obj_fpa_l1_control': 'Foundation',
+    'obj_fpa_l2_variance': 'Foundation',
+    'obj_fpa_l2_forecast': 'Future',
+    'obj_fpa_l3_driver': 'Future',
+    'obj_fpa_l3_scenario': 'Intelligence',
+    'obj_fpa_l4_integrate': 'Intelligence',
+    'obj_fpa_l4_predict': 'Intelligence'
+  };
+
   // Transform objectives data for SummaryTable
-  const objectives = (report.objectives || []).map(obj => ({
-    id: obj.id || obj.objective_id,
-    theme: obj.theme_id === 'foundation' ? 'Foundation'
-         : obj.theme_id === 'future' ? 'Future'
-         : 'Intelligence',
-    objective: obj.title || obj.name,
-    importance: report.calibration?.importance_map?.[obj.id || obj.objective_id] || 3,
-    locked: report.calibration?.locked?.includes(obj.id || obj.objective_id) || false,
-    score: Math.round(obj.score || 0),
-    status: (obj.score || 0) >= 80 ? 'green' : (obj.score || 0) >= 50 ? 'yellow' : 'red'
-  }));
+  const objectives = (report.objectives || []).map(obj => {
+    const objId = obj.id || obj.objective_id;
+    return {
+      id: objId,
+      theme: OBJECTIVE_THEME_MAP[objId] || 'Intelligence',
+      objective: obj.objective_name || obj.title || obj.name || objId,
+      importance: report.calibration?.importance_map?.[objId] || 3,
+      locked: report.calibration?.locked?.includes(objId) || false,
+      score: Math.round(obj.score || 0),
+      status: (obj.score || 0) >= 80 ? 'green' : (obj.score || 0) >= 50 ? 'yellow' : 'red'
+    };
+  });
 
   // Transform critical risks data
   const criticalRisks = (report.critical_risks || []).map(risk => ({
