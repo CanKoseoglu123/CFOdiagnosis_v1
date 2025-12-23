@@ -113,16 +113,19 @@ export default function PillarReport() {
   }));
 
   // Transform initiatives for HighValueCard
+  // Backend returns grouped_initiatives with initiative_title (not title)
   const rawInitiatives = report.grouped_initiatives || report.initiatives || [];
   const initiatives = rawInitiatives.map(init => ({
     id: init.id || init.initiative_id,
-    title: init.title,
+    // VS22-v3 FIX: Use initiative_title from backend (strategic project name)
+    title: init.initiative_title || init.title || 'Strategic Initiative',
     total_score: init.actions?.reduce((sum, a) => sum + (a.score || 0), 0) || 0,
     actions: (init.actions || []).map(a => ({
       ...a,
+      // Action title is the specific gap (from expert_action.title)
       title: a.action_title || a.title || a.action_text,
       is_critical: a.is_critical || false,
-      maturity_level: a.maturity_level || 2
+      maturity_level: a.level || a.maturity_level || 2
     }))
   }));
 
