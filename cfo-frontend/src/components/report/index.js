@@ -15,3 +15,4 @@ export { default as ActionRow } from './ActionRow';
 export { default as MaturityLadder } from './MaturityLadder';
 export { CappedWarning, OnTrackBanner } from './CappedWarning';
 export { default as EmptyState } from './EmptyState';
+export { default as StrategicRoadmap } from './StrategicRoadmap';

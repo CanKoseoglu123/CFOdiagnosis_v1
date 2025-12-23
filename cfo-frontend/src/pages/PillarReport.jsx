@@ -16,6 +16,7 @@ import {
   InitiativeCard,
   MaturityLadder,
   EmptyState,
+  StrategicRoadmap,
 } from '../components/report';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -181,40 +182,9 @@ export default function PillarReport() {
         failedCriticals={criticalRisks.map(r => r.question_text)}
       />
 
-      {/* Priority Actions Section */}
+      {/* Strategic Roadmap Section */}
       <section className="mb-6" data-print-card>
-        <div className="mb-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            PRIORITY ACTIONS
-          </h2>
-        </div>
-
-        <PriorityTabs
-          counts={priorityCounts}
-          activeTab={activePriority}
-          onTabChange={setActivePriority}
-        />
-
-        <div className="mt-4">
-          {initiativesByPriority[activePriority].length === 0 ? (
-            <EmptyState priority={activePriority} />
-          ) : (
-            <div className="space-y-3">
-              <PrioritySectionHeader
-                priority={activePriority}
-                count={priorityCounts[activePriority]}
-              />
-              {initiativesByPriority[activePriority].map(initiative => (
-                <InitiativeCard
-                  key={initiative.initiative_id}
-                  initiative={initiative}
-                  expanded={expandedCards.has(initiative.initiative_id)}
-                  onToggle={() => toggleCard(initiative.initiative_id)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        <StrategicRoadmap initiatives={groupedInitiatives} />
       </section>
     </>
   );
