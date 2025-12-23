@@ -231,7 +231,7 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
     .single();
 
   if (runError || !run) {
-    return res.status(404).json({ error: "Run not found" });
+    return res.status(404).json({ error: "Run not found", details: runError?.message });
   }
 
   if (run.status !== "completed") {
@@ -315,14 +315,33 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
 app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
   const runId = req.params.id;
 
-  const { data: run, error: runError } = await req.supabase
+  // First try with calibration column
+  let run: any;
+  let runError: any;
+
+  const result = await req.supabase
     .from("diagnostic_runs")
     .select("id, calibration, status, spec_version")
     .eq("id", runId)
     .single();
 
+  run = result.data;
+  runError = result.error;
+
+  // If calibration column doesn't exist, try without it
+  if (runError && runError.message?.includes("calibration")) {
+    const fallbackResult = await req.supabase
+      .from("diagnostic_runs")
+      .select("id, status, spec_version")
+      .eq("id", runId)
+      .single();
+
+    run = fallbackResult.data ? { ...fallbackResult.data, calibration: null } : null;
+    runError = fallbackResult.error;
+  }
+
   if (runError || !run) {
-    return res.status(404).json({ error: "Run not found" });
+    return res.status(404).json({ error: "Run not found", details: runError?.message });
   }
 
   // If no calibration data, return defaults with locked objectives
