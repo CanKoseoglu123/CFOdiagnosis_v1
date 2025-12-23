@@ -1,4 +1,5 @@
 // src/components/report/SummaryTable.jsx
+// VS-22 v2: Theme as header rows, score bars (not dots)
 
 import React from 'react';
 
@@ -22,18 +23,17 @@ function ImportanceBadge({ level, locked }) {
   );
 }
 
-function ScoreBar({ score, status }) {
-  const colors = {
-    green: 'bg-emerald-500',
-    yellow: 'bg-amber-500',
-    red: 'bg-red-500'
-  };
+function ScoreBar({ score }) {
+  // Color based on thresholds
+  let barColor = 'bg-red-500';
+  if (score >= 80) barColor = 'bg-emerald-500';
+  else if (score >= 50) barColor = 'bg-amber-500';
 
   return (
     <div className="flex items-center gap-3">
       <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
         <div
-          className={`h-full ${colors[status]}`}
+          className={`h-full ${barColor} transition-all`}
           style={{ width: `${score}%` }}
         />
       </div>
@@ -51,50 +51,46 @@ export default function SummaryTable({ objectives }) {
         </h2>
       </div>
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-200 bg-slate-50">
-            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-28">
-              Theme
-            </th>
-            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase">
-              Objective
-            </th>
-            <th className="px-4 py-2 text-center text-xs font-semibold text-slate-500 uppercase w-24">
-              Importance
-            </th>
-            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase w-40">
-              Score
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {THEMES.map((theme) => {
-            const themeObjectives = objectives.filter(o => o.theme === theme);
-            return themeObjectives.map((obj, idx) => (
-              <tr
-                key={obj.id || obj.objective}
-                className="border-b border-slate-100 hover:bg-slate-50"
-              >
-                <td className="px-4 py-2 text-slate-600">
-                  {idx === 0 && (
-                    <span className="font-semibold text-slate-800">{theme}</span>
-                  )}
-                </td>
-                <td className="px-4 py-2 text-slate-700">
-                  {obj.objective}
-                </td>
-                <td className="px-4 py-2 text-center">
-                  <ImportanceBadge level={obj.importance || 3} locked={obj.locked} />
-                </td>
-                <td className="px-4 py-2">
-                  <ScoreBar score={obj.score} status={obj.status} />
-                </td>
-              </tr>
-            ));
-          })}
-        </tbody>
-      </table>
+      <div className="divide-y divide-slate-200">
+        {THEMES.map((theme) => {
+          const themeObjectives = objectives.filter(o => o.theme === theme);
+
+          if (themeObjectives.length === 0) return null;
+
+          return (
+            <div key={theme}>
+              {/* Theme Header Row */}
+              <div className="px-4 py-2 bg-slate-50 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                  {theme}
+                </span>
+              </div>
+
+              {/* Objective Rows */}
+              <table className="w-full">
+                <tbody>
+                  {themeObjectives.map((obj) => (
+                    <tr
+                      key={obj.id || obj.objective}
+                      className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                    >
+                      <td className="px-4 py-2 text-sm text-slate-700 w-1/2">
+                        {obj.objective}
+                      </td>
+                      <td className="px-4 py-2 text-center w-24">
+                        <ImportanceBadge level={obj.importance || 3} locked={obj.locked} />
+                      </td>
+                      <td className="px-4 py-2 w-40">
+                        <ScoreBar score={obj.score} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

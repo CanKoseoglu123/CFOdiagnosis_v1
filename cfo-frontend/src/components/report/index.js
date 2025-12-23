@@ -1,6 +1,13 @@
 // src/components/report/index.js
-// Export all report components
+// VS-22 v2: All report components
 
+export { default as MaturityBanner } from './MaturityBanner';
+export { default as SummaryTable } from './SummaryTable';
+export { default as StrengthsBar } from './StrengthsBar';
+export { default as CriticalRisksCard } from './CriticalRisksCard';
+export { default as HighValueCard } from './HighValueCard';
+
+// Legacy exports (if needed for backward compatibility)
 export { default as HeaderBar } from './HeaderBar';
 export { default as StatBox } from './StatBox';
 export { default as TabButton } from './TabButton';
@@ -16,8 +23,3 @@ export { default as MaturityLadder } from './MaturityLadder';
 export { CappedWarning, OnTrackBanner } from './CappedWarning';
 export { default as EmptyState } from './EmptyState';
 export { default as StrategicRoadmap } from './StrategicRoadmap';
-
-// VS-22: New report components
-export { default as SummaryTable } from './SummaryTable';
-export { default as CriticalRisksCard } from './CriticalRisksCard';
-export { default as HighValueCard } from './HighValueCard';

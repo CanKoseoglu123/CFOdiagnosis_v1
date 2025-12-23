@@ -1,4 +1,5 @@
 // src/components/report/CriticalRisksCard.jsx
+// VS-22 v2: Shows "Unlocks Level X" instead of generic impact
 
 import React, { useState } from 'react';
 import { AlertTriangle, XCircle, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
@@ -56,7 +57,7 @@ export default function CriticalRisksCard({ risks }) {
                       {risk.recommendation}
                     </p>
                     <p className="mt-2 text-xs text-red-600 font-semibold">
-                      {risk.impact}
+                      🔓 {risk.unlocks || risk.impact}
                     </p>
                   </div>
                 )}

@@ -1,14 +1,28 @@
 // src/pages/PillarReport.jsx
-// VS-22: Redesigned report with Summary Table + Critical Risks + High Value
+// VS-22 v2: Complete redesign with MaturityBanner, Strengths, updated layout
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import MaturityBanner from '../components/report/MaturityBanner';
 import SummaryTable from '../components/report/SummaryTable';
+import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+// Map objective IDs to themes (API doesn't include theme_id on objectives)
+const OBJECTIVE_THEME_MAP = {
+  'obj_fpa_l1_budget': 'Foundation',
+  'obj_fpa_l1_control': 'Foundation',
+  'obj_fpa_l2_variance': 'Foundation',
+  'obj_fpa_l2_forecast': 'Future',
+  'obj_fpa_l3_driver': 'Future',
+  'obj_fpa_l3_scenario': 'Intelligence',
+  'obj_fpa_l4_integrate': 'Intelligence',
+  'obj_fpa_l4_predict': 'Intelligence'
+};
 
 export default function PillarReport() {
   const { runId } = useParams();
@@ -27,7 +41,7 @@ export default function PillarReport() {
       setLoading(true);
       setError(null);
 
-      // Get session from Supabase
+      // Get session from Supabase directly (useAuth hook doesn't work reliably)
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
@@ -70,19 +84,11 @@ export default function PillarReport() {
     );
   }
 
-  // Map objective IDs to themes
-  const OBJECTIVE_THEME_MAP = {
-    'obj_fpa_l1_budget': 'Foundation',
-    'obj_fpa_l1_control': 'Foundation',
-    'obj_fpa_l2_variance': 'Foundation',
-    'obj_fpa_l2_forecast': 'Future',
-    'obj_fpa_l3_driver': 'Future',
-    'obj_fpa_l3_scenario': 'Intelligence',
-    'obj_fpa_l4_integrate': 'Intelligence',
-    'obj_fpa_l4_predict': 'Intelligence'
-  };
+  // ─────────────────────────────────────────────────────────────────────────
+  // DATA TRANSFORMATIONS
+  // ─────────────────────────────────────────────────────────────────────────
 
-  // Transform objectives data for SummaryTable
+  // Transform objectives for SummaryTable and StrengthsBar
   const objectives = (report.objectives || []).map(obj => {
     const objId = obj.id || obj.objective_id;
     return {
@@ -91,30 +97,30 @@ export default function PillarReport() {
       objective: obj.objective_name || obj.title || obj.name || objId,
       importance: report.calibration?.importance_map?.[objId] || 3,
       locked: report.calibration?.locked?.includes(objId) || false,
-      score: Math.round(obj.score || 0),
-      status: (obj.score || 0) >= 80 ? 'green' : (obj.score || 0) >= 50 ? 'yellow' : 'red'
+      score: Math.round(obj.score || 0)
     };
   });
 
-  // Transform critical risks data
+  // Transform critical risks
   const criticalRisks = (report.critical_risks || []).map(risk => ({
     id: risk.question_id,
     title: risk.title || risk.question_text,
     action: risk.action || risk.expert_action?.title || 'Address this gap',
     recommendation: risk.recommendation || risk.expert_action?.recommendation || '',
-    impact: `Blocks advancement to Level ${(risk.level || 1) + 1}`
+    unlocks: `Unlocks Level ${(risk.level || 1) + 1}`
   }));
 
-  // Transform initiatives for High Value
-  // Use grouped_initiatives if available, otherwise use initiatives
+  // Transform initiatives for HighValueCard
   const rawInitiatives = report.grouped_initiatives || report.initiatives || [];
   const initiatives = rawInitiatives.map(init => ({
     id: init.id || init.initiative_id,
     title: init.title,
     total_score: init.actions?.reduce((sum, a) => sum + (a.score || 0), 0) || 0,
     actions: (init.actions || []).map(a => ({
+      ...a,
       title: a.action_title || a.title || a.action_text,
-      is_critical: a.is_critical || false
+      is_critical: a.is_critical || false,
+      maturity_level: a.maturity_level || 2
     }))
   }));
 
@@ -125,11 +131,19 @@ export default function PillarReport() {
   const maturityV2 = report.maturity_v2 || {};
   const executionScore = maturityV2.execution_score ?? Math.round((report.overall_score || 0) * 100);
   const actualLevel = maturityV2.actual_level ?? report.maturity?.achieved_level ?? 1;
+  const potentialLevel = maturityV2.potential_level ?? actualLevel;
   const levelName = maturityV2.level_name || ['', 'Emerging', 'Defined', 'Managed', 'Optimized'][actualLevel] || 'Emerging';
+  const cappedBy = maturityV2.capped_by || [];
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-slate-100">
-      {/* Header */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* HEADER */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-slate-300">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <h1 className="text-lg font-bold text-slate-800 text-center">
@@ -144,60 +158,78 @@ export default function PillarReport() {
         </div>
       </header>
 
-      {/* Metrics Bar */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* METRICS BAR */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-slate-300">
-        <div className="max-w-5xl mx-auto px-4 py-3 grid grid-cols-4 gap-3">
-          {/* Execution Score */}
-          <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-            <div className="text-2xl font-bold text-slate-800">
-              {executionScore}%
+        <div className="max-w-5xl mx-auto px-4 py-3 space-y-3">
+          {/* Metric Boxes */}
+          <div className="grid grid-cols-4 gap-3">
+            {/* Execution Score */}
+            <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
+              <div className="text-2xl font-bold text-slate-800">
+                {executionScore}%
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                Execution
+              </div>
             </div>
-            <div className="text-xs font-semibold text-slate-500 uppercase">
-              Execution
+
+            {/* Maturity Level */}
+            <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
+              <div className="text-2xl font-bold text-blue-700">
+                L{actualLevel}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                {levelName}
+              </div>
+            </div>
+
+            {/* Critical Count */}
+            <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
+              <div className={`text-2xl font-bold ${criticalRisks.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                {criticalRisks.length}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                Critical
+              </div>
+            </div>
+
+            {/* Action Count */}
+            <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
+              <div className="text-2xl font-bold text-slate-800">
+                {totalActions}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                Actions
+              </div>
             </div>
           </div>
 
-          {/* Maturity Level */}
-          <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
-            <div className="text-2xl font-bold text-blue-700">
-              L{actualLevel}
-            </div>
-            <div className="text-xs font-semibold text-slate-500 uppercase">
-              {levelName}
-            </div>
-          </div>
-
-          {/* Critical Count */}
-          <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-            <div className={`text-2xl font-bold ${criticalRisks.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-              {criticalRisks.length}
-            </div>
-            <div className="text-xs font-semibold text-slate-500 uppercase">
-              Critical
-            </div>
-          </div>
-
-          {/* Action Count */}
-          <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-            <div className="text-2xl font-bold text-slate-800">
-              {totalActions}
-            </div>
-            <div className="text-xs font-semibold text-slate-500 uppercase">
-              Actions
-            </div>
-          </div>
+          {/* Maturity Banner */}
+          <MaturityBanner
+            execution_score={executionScore}
+            potential_level={potentialLevel}
+            actual_level={actualLevel}
+            capped_by={cappedBy}
+          />
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* MAIN CONTENT */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto p-4 space-y-4">
         {/* Summary Table */}
         <SummaryTable objectives={objectives} />
 
+        {/* Strengths Bar (only shows if objectives >= 70% exist) */}
+        <StrengthsBar objectives={objectives} />
+
         {/* Two Column: Critical Risks + High Value */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CriticalRisksCard risks={criticalRisks} />
-          <HighValueCard initiatives={initiatives} />
+          <HighValueCard initiatives={initiatives} criticalRisks={criticalRisks} />
         </div>
       </div>
 
