@@ -50,6 +50,9 @@ export interface ObjectiveScore {
 
 // === Critical Risk ===
 // VS19: Updated to include severity and pillar_name
+// VS22-v3: Added expert_action for gap titles
+
+import { ExpertAction } from "../specs/types";
 
 export interface CriticalRisk {
   evidence_id: string;
@@ -58,6 +61,8 @@ export interface CriticalRisk {
   pillar_name: string;              // VS19: Added for display
   severity: "CRITICAL";             // VS19: Always CRITICAL for now
   user_answer: boolean | null;      // The actual answer that triggered the risk
+  level?: number;                   // VS22-v3: Maturity level of the question
+  expert_action?: ExpertAction;     // VS22-v3: Expert action for gap title/recommendation
 }
 
 // === Pillar Report DTO ===

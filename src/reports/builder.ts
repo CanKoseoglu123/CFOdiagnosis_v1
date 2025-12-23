@@ -62,6 +62,7 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
   const engineRisks = deriveRisksFromEngine(inputs, spec);
 
   // Map engine risks to report format (add user_answer for backward compat)
+  // VS22-v3: Include expert_action for gap titles
   const allCriticalRisks: CriticalRisk[] = engineRisks.map((risk) => ({
     evidence_id: risk.questionId,
     question_text: risk.questionText,
@@ -69,6 +70,8 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     pillar_name: risk.pillarName,
     severity: risk.severity,
     user_answer: inputMap.get(risk.questionId) as boolean | null ?? null,
+    level: risk.level,                // VS22-v3: Include maturity level
+    expert_action: risk.expert_action, // VS22-v3: Include expert action for gap title
   }));
 
   // Build pillar reports (each with its own maturity calculation)

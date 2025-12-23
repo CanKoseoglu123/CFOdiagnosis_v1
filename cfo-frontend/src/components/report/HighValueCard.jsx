@@ -1,30 +1,24 @@
 // src/components/report/HighValueCard.jsx
-// VS-22 v2: Shows "Unlocks Level X" instead of "pts"
+// VS-22 v3: Bolder initiative titles with better visual hierarchy
 
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Zap } from 'lucide-react';
 
-export default function HighValueCard({ initiatives, criticalRisks = [] }) {
+export default function HighValueCard({ initiatives }) {
   // Take top 2 by score
   const topTwo = [...initiatives]
     .sort((a, b) => b.total_score - a.total_score)
     .slice(0, 2);
 
-  // Determine label for each initiative
   function getInitiativeLabel(init) {
-    // Check if any action in this initiative is a critical blocker
     const criticalActions = (init.actions || []).filter(a => a.is_critical);
-
     if (criticalActions.length > 0) {
-      // Find highest level blocked (L1 criticals → unlocks L2, L2 criticals → unlocks L3)
       const maxLevel = Math.max(...criticalActions.map(a => a.maturity_level || 2));
-      return `Unlocks Level ${maxLevel + 1}`;
+      return { text: `Unlocks Level ${maxLevel + 1}`, type: 'unlock' };
     }
-
-    return 'High Impact';
+    return { text: 'High Impact', type: 'impact' };
   }
 
-  // Count critical actions
   function getCriticalCount(init) {
     return (init.actions || []).filter(a => a.is_critical).length;
   }
@@ -50,34 +44,47 @@ export default function HighValueCard({ initiatives, criticalRisks = [] }) {
             const actionCount = (init.actions || []).length;
 
             return (
-              <div key={init.id} className="border border-slate-200 rounded">
-                <div className="px-3 py-2 bg-slate-50 border-b border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800">
-                      {init.title}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                      label.includes('Unlocks')
+              <div key={init.id} className="border border-emerald-200 rounded overflow-hidden">
+                {/* Initiative Header - BOLD */}
+                <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-200">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      {/* INITIATIVE TITLE - Prominent */}
+                      <h3 className="text-base font-bold text-slate-800">
+                        {init.title}
+                      </h3>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {criticalCount > 0
+                          ? `${criticalCount} critical · ${actionCount} total actions`
+                          : `${actionCount} actions`
+                        }
+                      </div>
+                    </div>
+                    {/* Unlock/Impact Badge */}
+                    <span className={`text-xs px-2 py-1 rounded font-bold whitespace-nowrap ${
+                      label.type === 'unlock'
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-emerald-100 text-emerald-700'
                     }`}>
-                      {label}
+                      {label.text}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    {criticalCount > 0
-                      ? `${criticalCount} critical action${criticalCount > 1 ? 's' : ''} · ${actionCount} total`
-                      : `${actionCount} action${actionCount > 1 ? 's' : ''}`
-                    }
-                  </div>
                 </div>
-                <div className="px-3 py-2 space-y-1">
-                  {(init.actions || []).slice(0, 2).map((action, aIdx) => (
-                    <div key={aIdx} className="flex items-center gap-2 text-sm">
-                      <span className="text-slate-400">→</span>
-                      <span className="text-slate-700 flex-1">{action.title}</span>
+
+                {/* Actions - Clear hierarchy */}
+                <div className="px-4 py-3 space-y-2">
+                  {(init.actions || []).slice(0, 3).map((action, aIdx) => (
+                    <div key={aIdx} className="flex items-center gap-2">
+                      <Zap className={`w-4 h-4 flex-shrink-0 ${
+                        action.is_critical ? 'text-red-500' : 'text-slate-400'
+                      }`} />
+                      <span className={`text-sm flex-1 ${
+                        action.is_critical ? 'font-semibold text-slate-800' : 'text-slate-600'
+                      }`}>
+                        {action.title}
+                      </span>
                       {action.is_critical && (
-                        <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-semibold">
                           Critical
                         </span>
                       )}

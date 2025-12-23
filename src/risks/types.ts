@@ -1,5 +1,8 @@
 // src/risks/types.ts
 // VS19: Critical Risk Engine Types
+// VS22-v3: Added expert_action for gap titles
+
+import { ExpertAction } from "../specs/types";
 
 /**
  * CriticalRisk - Represents a "Red Flag" issue identified by the risk engine.
@@ -11,6 +14,8 @@ export interface CriticalRisk {
   pillarId: string;
   pillarName: string;
   severity: "CRITICAL";
+  level: number;                    // VS22-v3: Maturity level of the question
+  expert_action?: ExpertAction;     // VS22-v3: Expert action for gap title/recommendation
 }
 
 /**

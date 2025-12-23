@@ -55,6 +55,8 @@ export function deriveCriticalRisks(
       pillarId: question.pillar,
       pillarName: pillarMap.get(question.pillar) ?? "Unknown",
       severity: "CRITICAL",
+      level: question.level ?? 1,           // VS22-v3: Include maturity level
+      expert_action: question.expert_action, // VS22-v3: Include expert action for gap title
     });
   }
 

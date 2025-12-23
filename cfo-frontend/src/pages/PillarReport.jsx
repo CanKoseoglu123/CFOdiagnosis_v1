@@ -1,9 +1,10 @@
 // src/pages/PillarReport.jsx
-// VS-22 v2: Complete redesign with MaturityBanner, Strengths, updated layout
+// VS-22 v3: Added ExecutiveSummary, fixed critical_risks to use expert_action.title
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
 import SummaryTable from '../components/report/SummaryTable';
 import StrengthsBar from '../components/report/StrengthsBar';
@@ -101,12 +102,13 @@ export default function PillarReport() {
     };
   });
 
-  // Transform critical risks
+  // Transform critical risks - VS22-v3: Use expert_action.title as gap name
   const criticalRisks = (report.critical_risks || []).map(risk => ({
-    id: risk.question_id,
-    title: risk.title || risk.question_text,
-    action: risk.action || risk.expert_action?.title || 'Address this gap',
-    recommendation: risk.recommendation || risk.expert_action?.recommendation || '',
+    id: risk.evidence_id || risk.question_id,
+    // VS22-v3: Use expert_action.title as the gap name, NOT question_text
+    title: risk.expert_action?.title || risk.title || risk.question_text || 'Address this gap',
+    action: 'Address this gap',
+    recommendation: risk.expert_action?.recommendation || risk.recommendation || '',
     unlocks: `Unlocks Level ${(risk.level || 1) + 1}`
   }));
 
@@ -134,6 +136,9 @@ export default function PillarReport() {
   const potentialLevel = maturityV2.potential_level ?? actualLevel;
   const levelName = maturityV2.level_name || ['', 'Emerging', 'Defined', 'Managed', 'Optimized'][actualLevel] || 'Emerging';
   const cappedBy = maturityV2.capped_by || [];
+
+  // Count questions answered (estimate from objectives)
+  const questionsAnswered = report.objectives?.reduce((sum, obj) => sum + (obj.questions_passed || 0), 0) || 48;
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -220,6 +225,17 @@ export default function PillarReport() {
       {/* MAIN CONTENT */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto p-4 space-y-4">
+        {/* VS22-v3: Executive Summary (3-column cards) */}
+        <ExecutiveSummary
+          execution_score={executionScore}
+          actual_level={actualLevel}
+          level_name={levelName}
+          questions_total={48}
+          questions_answered={questionsAnswered}
+          critical_count={8}
+          failed_critical_count={criticalRisks.length}
+        />
+
         {/* Summary Table */}
         <SummaryTable objectives={objectives} />
 
@@ -229,7 +245,7 @@ export default function PillarReport() {
         {/* Two Column: Critical Risks + High Value */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CriticalRisksCard risks={criticalRisks} />
-          <HighValueCard initiatives={initiatives} criticalRisks={criticalRisks} />
+          <HighValueCard initiatives={initiatives} />
         </div>
       </div>
 
