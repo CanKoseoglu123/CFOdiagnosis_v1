@@ -16,3 +16,8 @@ export { default as MaturityLadder } from './MaturityLadder';
 export { CappedWarning, OnTrackBanner } from './CappedWarning';
 export { default as EmptyState } from './EmptyState';
 export { default as StrategicRoadmap } from './StrategicRoadmap';
+
+// VS-22: New report components
+export { default as SummaryTable } from './SummaryTable';
+export { default as CriticalRisksCard } from './CriticalRisksCard';
+export { default as HighValueCard } from './HighValueCard';
