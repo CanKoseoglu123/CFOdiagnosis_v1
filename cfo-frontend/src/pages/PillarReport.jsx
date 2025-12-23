@@ -10,7 +10,7 @@ import SummaryTable from '../components/report/SummaryTable';
 import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
-import PathToMaturity from '../components/report/PathToMaturity';
+import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -146,6 +146,85 @@ export default function PillarReport() {
   const questionsAnswered = report.objectives?.reduce((sum, obj) => sum + (obj.questions_passed || 0), 0) || 48;
 
   // ─────────────────────────────────────────────────────────────────────────
+  // MATURITY FOOTPRINT DATA (VS-23)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Practice catalog with level assignments
+  const PRACTICE_CATALOG = [
+    // Level 1 - Foundation
+    { id: 'annual_budget', title: 'Annual Budget', level: 1, is_critical: true, impact_score: 0.9, objective_id: 'obj_fpa_l1_budget' },
+    { id: 'budget_ownership', title: 'Budget Ownership', level: 1, is_critical: true, impact_score: 0.8, objective_id: 'obj_fpa_l1_budget' },
+    { id: 'chart_of_accounts', title: 'Chart of Accounts', level: 1, is_critical: true, impact_score: 0.85, objective_id: 'obj_fpa_l1_control' },
+    { id: 'approval_controls', title: 'Approval Controls', level: 1, is_critical: true, impact_score: 0.85, objective_id: 'obj_fpa_l1_control' },
+    // Level 2 - Defined
+    { id: 'monthly_bva', title: 'Monthly BvA Report', level: 2, is_critical: true, impact_score: 0.9, objective_id: 'obj_fpa_l2_variance' },
+    { id: 'variance_investigation', title: 'Variance Investigation', level: 2, is_critical: true, impact_score: 0.85, objective_id: 'obj_fpa_l2_variance' },
+    { id: 'collaborative_planning', title: 'Collaborative Planning', level: 2, is_critical: true, impact_score: 0.8, objective_id: 'obj_fpa_l2_forecast' },
+    { id: 'cash_flow_forecast', title: 'Cash Flow Forecast', level: 2, is_critical: true, impact_score: 0.9, objective_id: 'obj_fpa_l2_forecast' },
+    // Level 3 - Managed
+    { id: 'driver_models', title: 'Driver-Based Models', level: 3, is_critical: false, impact_score: 0.75, objective_id: 'obj_fpa_l3_driver' },
+    { id: 'rolling_forecast', title: 'Rolling Forecast', level: 3, is_critical: false, impact_score: 0.7, objective_id: 'obj_fpa_l3_driver' },
+    { id: 'scenario_planning', title: 'Scenario Planning', level: 3, is_critical: false, impact_score: 0.7, objective_id: 'obj_fpa_l3_scenario' },
+    { id: 'cross_functional', title: 'Cross-Functional Alignment', level: 3, is_critical: false, impact_score: 0.65, objective_id: 'obj_fpa_l3_scenario' },
+    // Level 4 - Optimized
+    { id: 'integrated_planning', title: 'Integrated Planning', level: 4, is_critical: false, impact_score: 0.6, objective_id: 'obj_fpa_l4_integrate' },
+    { id: 'predictive_analytics', title: 'Predictive Analytics', level: 4, is_critical: false, impact_score: 0.55, objective_id: 'obj_fpa_l4_predict' },
+    { id: 'realtime_insights', title: 'Real-time Insights', level: 4, is_critical: false, impact_score: 0.5, objective_id: 'obj_fpa_l4_predict' },
+    { id: 'strategic_decision', title: 'Strategic Decision Support', level: 4, is_critical: false, impact_score: 0.5, objective_id: 'obj_fpa_l4_integrate' }
+  ];
+
+  // Compute evidence state for each practice based on objective scores
+  const practicesWithEvidence = PRACTICE_CATALOG.map(practice => {
+    const obj = objectives.find(o => o.id === practice.objective_id);
+    const score = obj?.score || 0;
+
+    // Evidence state thresholds
+    let evidence_state = 'not_proven';
+    if (score >= 100) evidence_state = 'proven';
+    else if (score >= 50) evidence_state = 'partial';
+
+    return {
+      ...practice,
+      evidence_state,
+      gap_score: 1 - (score / 100)
+    };
+  });
+
+  // Group by level for MaturityFootprintGrid
+  const maturityLevels = [1, 2, 3, 4].map(level => ({
+    level,
+    name: ['', 'Foundation', 'Defined', 'Managed', 'Optimized'][level],
+    practices: practicesWithEvidence.filter(p => p.level === level)
+  }));
+
+  // Compute Focus Next: top 3 gaps by priority (Impact × Gap × Critical boost)
+  const gaps = practicesWithEvidence.filter(p => p.evidence_state !== 'proven');
+  const focusNext = gaps
+    .map(p => ({
+      ...p,
+      priority: p.impact_score * p.gap_score * (p.is_critical ? 2 : 1)
+    }))
+    .sort((a, b) => b.priority - a.priority)
+    .slice(0, 3);
+
+  // Generate dynamic summary text based on footprint pattern
+  const l1Proven = maturityLevels[0].practices.filter(p => p.evidence_state === 'proven').length;
+  const l2Proven = maturityLevels[1].practices.filter(p => p.evidence_state === 'proven').length;
+  const l3Proven = maturityLevels[2].practices.filter(p => p.evidence_state === 'proven').length;
+  const l2Total = maturityLevels[1].practices.length;
+
+  let footprintSummary = '';
+  if (l3Proven > 0 && l2Proven < l2Total) {
+    footprintSummary = 'Your footprint is uneven: L3 planning capabilities exist, but L2 reliability gaps block scale.';
+  } else if (l2Proven === l2Total && l1Proven === maturityLevels[0].practices.length) {
+    footprintSummary = 'L2 foundation is solid. Focus on L3 capabilities to advance.';
+  } else if (l1Proven < maturityLevels[0].practices.length) {
+    footprintSummary = 'Foundation gaps remain. Address L1 basics before advancing.';
+  } else {
+    footprintSummary = 'Mixed maturity profile. Focus on critical gaps to unlock the next level.';
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -243,14 +322,14 @@ export default function PillarReport() {
               Overview
             </button>
             <button
-              onClick={() => setActiveTab('maturity')}
+              onClick={() => setActiveTab('footprint')}
               className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                activeTab === 'maturity'
+                activeTab === 'footprint'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              Path to Maturity
+              Maturity Footprint
             </button>
             <button
               onClick={() => setActiveTab('actions')}
@@ -298,14 +377,12 @@ export default function PillarReport() {
           </>
         )}
 
-        {/* PATH TO MATURITY TAB */}
-        {activeTab === 'maturity' && (
-          <PathToMaturity
-            actualLevel={actualLevel}
-            potentialLevel={potentialLevel}
-            executionScore={executionScore}
-            cappedBy={cappedBy}
-            criticalRisks={criticalRisks}
+        {/* MATURITY FOOTPRINT TAB */}
+        {activeTab === 'footprint' && (
+          <MaturityFootprintGrid
+            levels={maturityLevels}
+            focusNext={focusNext}
+            summaryText={footprintSummary}
           />
         )}
 
