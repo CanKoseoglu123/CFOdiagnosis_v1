@@ -849,6 +849,53 @@ Actions with Importance: 10
 
 ---
 
+### December 23, 2025 (Evening) - VS-22 v3 Report Polish
+
+**Completed:**
+
+1. **VS-22 v3 Backend Updates**
+   - Added `level` and `expert_action` fields to CriticalRisk interface
+   - Updated `src/risks/engine.ts` to include expert_action in risk output
+   - Updated `src/reports/builder.ts` to pass through expert_action to report
+
+2. **VS-22 v3 Frontend Updates**
+   - **ExecutiveSummary.jsx**: 3-column cards (Score, Maturity, Assessment)
+   - **CriticalRisksCard.jsx**: Shows gap titles (e.g., "Implement Annual Budget Cycle") with "Unlocks Level X" badge
+   - **HighValueCard.jsx**: Shows initiative titles (strategic projects) with nested actions
+   - **PillarReport.jsx**: Fixed data transformation to use `initiative_title` and `expert_action.title`
+
+3. **UI Polish**
+   - Added navigation tabs: Overview | Path to Maturity | Action Planning
+   - Increased section header font sizes (text-sm → text-base)
+   - Decreased MaturityBanner text size and padding
+   - Increased report header font sizes (title: text-xl, company: text-base)
+   - High Value card always shows 2 slots (placeholder if only 1 initiative)
+
+4. **Bug Fixes**
+   - Fixed initiative title mapping: was using `init.title`, now uses `init.initiative_title`
+   - Correct hierarchy: Critical Risks = Gap (action), High Value = Initiative (project)
+
+5. **Edge Case Testing**
+   - Ran 5 comprehensive scenarios:
+     - Perfect Score (100%, L4, 0 risks)
+     - Total Failure (0%, L1, 8 risks, 23 actions)
+     - Critical Only Pass (17%, L1, 0 risks)
+     - L1+L2 Criticals Only (17%, L1, 0 risks)
+     - 98% But Capped (98%, L1 from L4, 1 risk)
+
+**Key Commits:**
+- `3b5853a` - VS-22 v3: Executive Summary, gap titles in Critical Risks
+- `cbed166` - Fix High Value card: use initiative_title not action name
+- `7c53178` - UI polish: add navigation tabs, adjust font sizes
+- `9d6fbaa` - UI: larger header, always show 2 initiatives
+
+**Test Reports:**
+- Perfect Score: https://cfodiagnosisv1.vercel.app/report/8decc159-3e36-42b9-9e00-a0e61efb5a7d
+- Total Failure: https://cfodiagnosisv1.vercel.app/report/af678acb-9225-40c0-90cd-35393fa07707
+- 98% Capped: https://cfodiagnosisv1.vercel.app/report/5e68a0b1-fbba-4e9d-a4b7-74585e07790a
+
+---
+
 ### December 22, 2025 (Evening) - Report Production Launch
 
 **Completed:**
