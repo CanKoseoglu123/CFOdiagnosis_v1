@@ -153,12 +153,12 @@ export default function PillarReport() {
       {/* HEADER */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-slate-300">
-        <div className="max-w-5xl mx-auto px-4 py-3">
-          <h1 className="text-lg font-bold text-slate-800 text-center">
+        <div className="max-w-5xl mx-auto px-4 py-4">
+          <h1 className="text-xl font-bold text-slate-800 text-center">
             FP&A Diagnostic Report
           </h1>
           {report.context?.company_name && (
-            <p className="text-sm text-slate-500 text-center mt-1">
+            <p className="text-base text-slate-600 text-center mt-1">
               {report.context.company_name}
               {report.context.industry && ` - ${report.context.industry}`}
             </p>
