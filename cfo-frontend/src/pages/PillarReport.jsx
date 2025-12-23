@@ -225,6 +225,25 @@ export default function PillarReport() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* NAVIGATION TABS */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex gap-6">
+            <button className="pb-3 pt-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600">
+              Overview
+            </button>
+            <button className="pb-3 pt-3 text-sm font-semibold text-slate-500 hover:text-slate-700">
+              Path to Maturity
+            </button>
+            <button className="pb-3 pt-3 text-sm font-semibold text-slate-500 hover:text-slate-700">
+              Action Planning
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
       {/* MAIN CONTENT */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto p-4 space-y-4">

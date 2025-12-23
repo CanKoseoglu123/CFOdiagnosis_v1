@@ -19,7 +19,7 @@ export default function StrengthsBar({ objectives }) {
     <div className="bg-white rounded border border-slate-300">
       <div className="px-4 py-2 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
         <CheckCircle className="w-4 h-4 text-emerald-500" />
-        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+        <h2 className="text-base font-bold text-slate-700 uppercase tracking-wide">
           Strengths
         </h2>
       </div>

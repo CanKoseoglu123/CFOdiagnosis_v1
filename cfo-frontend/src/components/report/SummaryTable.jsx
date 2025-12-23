@@ -46,7 +46,7 @@ export default function SummaryTable({ objectives }) {
   return (
     <div className="bg-white rounded border border-slate-300">
       <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
-        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+        <h2 className="text-base font-bold text-slate-700 uppercase tracking-wide">
           Summary
         </h2>
       </div>

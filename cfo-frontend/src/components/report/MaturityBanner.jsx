@@ -19,11 +19,11 @@ export default function MaturityBanner({
     const nextLevel = actual_level + 1;
 
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded px-4 py-3 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-        <div>
+      <div className="bg-amber-50 border border-amber-200 rounded px-3 py-2 flex items-start gap-2">
+        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="text-sm">
           <span className="font-semibold text-amber-800">Capped</span>
-          <span className="text-amber-700 ml-2">
+          <span className="text-amber-700 ml-1">
             Your execution ({execution_score}%) qualifies for Level {potential_level},
             but critical gaps block advancement. Address {blockerCount} blocker{blockerCount > 1 ? 's' : ''} to unlock Level {nextLevel}.
           </span>
@@ -38,11 +38,11 @@ export default function MaturityBanner({
     // Already at Level 4
     if (actual_level >= 4) {
       return (
-        <div className="bg-emerald-50 border border-emerald-200 rounded px-4 py-3 flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-          <div>
+        <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-2 flex items-start gap-2">
+          <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
             <span className="font-semibold text-emerald-800">Optimized</span>
-            <span className="text-emerald-700 ml-2">
+            <span className="text-emerald-700 ml-1">
               Congratulations! You've achieved the highest maturity level.
             </span>
           </div>
@@ -51,11 +51,11 @@ export default function MaturityBanner({
     }
 
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded px-4 py-3 flex items-start gap-3">
-        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-        <div>
+      <div className="bg-emerald-50 border border-emerald-200 rounded px-3 py-2 flex items-start gap-2">
+        <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+        <div className="text-sm">
           <span className="font-semibold text-emerald-800">On Track</span>
-          <span className="text-emerald-700 ml-2">
+          <span className="text-emerald-700 ml-1">
             Execution matches maturity. Reach {nextThreshold}% for Level {nextLevel}.
           </span>
         </div>
