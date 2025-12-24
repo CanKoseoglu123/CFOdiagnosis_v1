@@ -1,0 +1,152 @@
+{
+  "version": "2.8.1",
+  "practices": [
+    {
+      "id": "prac_annual_budget",
+      "name": "Annual Budget Existence",
+      "short_name": "Budget",
+      "level": 1,
+      "question_ids": ["fpa_l1_q01", "fpa_l1_q02"]
+    },
+    {
+      "id": "prac_budget_owners",
+      "name": "Budget Owner Assignment",
+      "short_name": "Owners",
+      "level": 1,
+      "question_ids": ["fpa_l1_q03", "fpa_l1_q04"]
+    },
+    {
+      "id": "prac_chart_of_accounts",
+      "name": "Chart of Accounts",
+      "short_name": "CoA",
+      "level": 1,
+      "question_ids": ["fpa_l1_q05"]
+    },
+    {
+      "id": "prac_approval_controls",
+      "name": "Basic Approval Controls",
+      "short_name": "Controls",
+      "level": 1,
+      "question_ids": ["fpa_l1_q06", "fpa_l1_q07", "fpa_l1_q08"]
+    },
+    {
+      "id": "prac_mgmt_reporting",
+      "name": "Management Reporting Package",
+      "short_name": "Reporting",
+      "level": 1,
+      "question_ids": ["fpa_l1_q09"]
+    },
+    {
+      "id": "prac_monthly_bva",
+      "name": "Monthly BvA Generation",
+      "short_name": "BvA",
+      "level": 2,
+      "question_ids": ["fpa_l2_q01"]
+    },
+    {
+      "id": "prac_variance_investigation",
+      "name": "Variance Investigation Discipline",
+      "short_name": "Variance",
+      "level": 2,
+      "question_ids": ["fpa_l2_q02", "fpa_l2_q03", "fpa_l2_q04", "fpa_l2_q05"]
+    },
+    {
+      "id": "prac_collaborative_forecast",
+      "name": "Collaborative Forecast System",
+      "short_name": "Collab",
+      "level": 2,
+      "question_ids": ["fpa_l2_q06"]
+    },
+    {
+      "id": "prac_cash_flow_forecast",
+      "name": "Cash Flow Forecasting",
+      "short_name": "Cash Flow",
+      "level": 2,
+      "question_ids": ["fpa_l2_q07"]
+    },
+    {
+      "id": "prac_forecast_cycle",
+      "name": "Forecast Refresh Cycle",
+      "short_name": "Refresh",
+      "level": 2,
+      "question_ids": ["fpa_l2_q08", "fpa_l2_q09", "fpa_l2_q10"]
+    },
+    {
+      "id": "prac_process_controls",
+      "name": "Process & Control Documentation",
+      "short_name": "Docs",
+      "level": 2,
+      "question_ids": ["fpa_l2_q11", "fpa_l2_q12", "fpa_l2_q13", "fpa_l2_q14"]
+    },
+    {
+      "id": "prac_driver_based",
+      "name": "Driver-Based Models",
+      "short_name": "Drivers",
+      "level": 3,
+      "question_ids": ["fpa_l3_q01", "fpa_l3_q02"]
+    },
+    {
+      "id": "prac_integrated_planning",
+      "name": "Integrated Planning",
+      "short_name": "Integrated",
+      "level": 3,
+      "question_ids": ["fpa_l3_q03", "fpa_l3_q04"]
+    },
+    {
+      "id": "prac_business_partnership",
+      "name": "Business Partnership",
+      "short_name": "Partnership",
+      "level": 3,
+      "question_ids": ["fpa_l3_q05", "fpa_l3_q06"]
+    },
+    {
+      "id": "prac_strategic_planning",
+      "name": "Strategic Planning Integration",
+      "short_name": "Strategic",
+      "level": 3,
+      "question_ids": ["fpa_l3_q07", "fpa_l3_q08"]
+    },
+    {
+      "id": "prac_rolling_forecast",
+      "name": "Rolling Forecast Cadence",
+      "short_name": "Rolling",
+      "level": 3,
+      "question_ids": ["fpa_l3_q09", "fpa_l3_q10", "fpa_l3_q11"]
+    },
+    {
+      "id": "prac_scenario_planning",
+      "name": "Scenario Planning",
+      "short_name": "Scenarios",
+      "level": 3,
+      "question_ids": ["fpa_l3_q12", "fpa_l3_q13", "fpa_l3_q14", "fpa_l3_q15"]
+    },
+    {
+      "id": "prac_forward_kpis",
+      "name": "Forward-Looking KPIs",
+      "short_name": "KPIs",
+      "level": 4,
+      "question_ids": ["fpa_l4_q01", "fpa_l4_q04", "fpa_l4_q05"]
+    },
+    {
+      "id": "prac_automated_insights",
+      "name": "Automated Insight Generation",
+      "short_name": "Automation",
+      "level": 4,
+      "question_ids": ["fpa_l4_q02", "fpa_l4_q03"]
+    },
+    {
+      "id": "prac_continuous_planning",
+      "name": "Continuous Planning Cycle",
+      "short_name": "Continuous",
+      "level": 4,
+      "question_ids": ["fpa_l4_q06", "fpa_l4_q07", "fpa_l4_q08", "fpa_l4_q09"]
+    },
+    {
+      "id": "prac_self_service",
+      "name": "Self-Service Analytics",
+      "short_name": "Self-Serve",
+      "level": 4,
+      "question_ids": ["fpa_l4_q10"]
+    }
+  ]
+}
