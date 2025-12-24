@@ -375,6 +375,8 @@ npm run build        # Vite build to dist/
 | AppShell Responsive Layout | ✅ Complete |
 | IntroPage (methodology) | ✅ Complete |
 | V2.8.0 Enterprise Report UI | ✅ Complete |
+| VS-23: Maturity Footprint Grid | ✅ Complete |
+| VS-24: JSON Content Catalog | ✅ Complete |
 | VS15: Admin Dashboard | ❌ Post-V1 |
 
 ---
@@ -922,6 +924,117 @@ Actions with Importance: 10
 **Key Commits:**
 - `0a6e697` - Make PillarReport the main report at /report/:runId
 - `f2d737a` - Add recommendation display to ActionRow component
+
+---
+
+### December 23, 2025 - VS-23 Maturity Footprint Grid
+
+**Completed:**
+
+1. **Practice Catalog (Backend)**
+   - Created `src/specs/practices.ts` with 21 FP&A practices
+   - Practices mapped to questions (1-4 questions per practice)
+   - No `is_critical` on Practice — derived at runtime from questions
+
+2. **Footprint Engine (Backend)**
+   - Created `src/maturity/footprint.ts` with pure functions:
+     - `computeEvidenceState()` — proven/partial/not_proven based on YES%
+     - `practiceHasCritical()` — runtime check for critical questions
+     - `buildMaturityFootprint()` — assembles full footprint response
+   - Priority formula: `(5 - level) × gapScore × (isCritical ? 2 : 1)`
+
+3. **API Integration**
+   - Updated `src/reports/builder.ts` to include `maturity_footprint` in report
+   - Added types to `src/reports/types.ts`
+
+4. **Frontend Grid Component**
+   - Created `MaturityFootprintGrid.jsx` with:
+     - Maturity ladder visual (L4 at top, darker headers for higher levels)
+     - Left-border evidence state pattern (green/yellow/gray)
+     - AlertCircle icon for critical practices
+     - Priority Gaps section with ranked items
+
+**Practice Distribution:**
+- L1 Foundation: 5 practices
+- L2 Defined: 6 practices
+- L3 Managed: 6 practices
+- L4 Optimized: 4 practices
+- **Total: 21 practices**
+
+**Key Commits:**
+- `ae307fa` - VS-23: Full Maturity Footprint implementation with 21 practices
+- `e5c8e45` - VS-23: Consulting-grade Maturity Footprint visual redesign
+- `fcb9ef8` - VS-23: Design system compliant footprint grid
+
+**Remaining Work:**
+- Visual refinement (tiles fit in one row per level)
+- User acceptance review
+
+---
+
+### December 24, 2025 - VS-24 JSON Content Catalog
+
+**Problem Solved:** Content was hardcoded in TypeScript spec files (v2.7.0.ts), making it difficult to validate and update without risking runtime errors.
+
+**Solution:** Extract all content to JSON files with Zod schema validation, creating a single source of truth that fails fast on invalid content.
+
+**Completed:**
+
+1. **JSON Content Files** (`content/`)
+   - `questions.json` - 48 FP&A questions with expert_action metadata
+   - `practices.json` - 21 practices mapped to questions
+   - `initiatives.json` - 9 initiatives across 3 themes
+   - `objectives.json` - 8 objectives with thresholds
+   - `gates.json` - Critical gates and level names
+
+2. **Zod Schema Validation** (`src/specs/schemas.ts`)
+   - Type-safe schemas for all content types
+   - ID format validation (e.g., `fpa_l[1-4]_q##`)
+   - Cross-reference checks via `.refine()`
+   - Unique ID enforcement
+
+3. **Content Loaders** (`src/specs/loader.ts`)
+   - Lazy-loading with validation cache
+   - Cross-reference validation function
+   - Convenience lookup functions (getQuestionById, etc.)
+   - `buildSpecFromContent()` - transforms JSON to Spec interface
+   - `buildSpecWithThemes()` - adds themes for API responses
+
+4. **Registry Wiring** (`src/specs/registry.ts`)
+   - Default spec version now v2.8.1
+   - v2.7.0 aliases to v2.8.1 for backward compat
+   - Lazy-loads spec from JSON content
+   - v2.6.4 preserved for legacy support
+
+5. **Content Tests** (`src/tests/vs24-content.test.ts`)
+   - 32 tests for content integrity
+   - Validates counts, unique IDs, cross-references
+   - Distribution checks by level/theme
+   - Schema validation
+
+**Architecture:**
+```
+content/*.json (Source of Truth)
+       ↓
+src/specs/schemas.ts (Zod Validation)
+       ↓
+src/specs/loader.ts (Load + Transform)
+       ↓
+src/specs/registry.ts (Spec Registry)
+       ↓
+API / Reports / Tests
+```
+
+**Key Commits:**
+- `392b74b` - VS-24: Extract content to JSON with Zod validation
+- `3f7be92` - VS-24: Wire registry.ts to use JSON content loaders
+- `372c560` - Fix tsconfig: set rootDir to preserve dist structure
+
+**Production Verification:**
+- E2E test: 7/7 passed
+- Edge case tests: 5/5 scenarios passed
+- Spec version serving as v2.8.1
+- All 657 unit tests pass
 
 ---
 
