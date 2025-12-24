@@ -26,12 +26,12 @@ export const TIMING_THRESHOLDS = {
 
 export const MODEL_CONFIG = {
   generator: {
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'gpt-4o',           // Best quality for report writing
     temperature: 0.7,
     maxTokens: 1000,
   },
   critic: {
-    model: 'claude-3-5-sonnet-20241022',
+    model: 'gpt-4o-mini',      // Fast & cheap for assessment
     temperature: 0.3,
     maxTokens: 800,
   },

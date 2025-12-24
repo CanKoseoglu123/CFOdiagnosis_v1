@@ -5,9 +5,11 @@
  * 1. Assess: Identify gaps in draft
  * 2. Questions: Generate clarifying questions
  * 3. Final: Give polish feedback
+ *
+ * Uses OpenAI GPT-4o-mini for fast, cost-effective assessment.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import {
   CriticAssessInput,
   CriticQuestionsInput,
@@ -24,8 +26,8 @@ import {
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
 
-// Initialize Anthropic client
-const anthropic = new Anthropic();
+// Initialize OpenAI client
+const openai = new OpenAI();
 
 /**
  * Assess gaps in draft (Call 1).
@@ -39,7 +41,7 @@ export async function assessGaps(
   const prompt = buildCriticAssessPrompt(input);
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: MODEL_CONFIG.critic.model,
     max_tokens: MODEL_CONFIG.critic.maxTokens,
     temperature: MODEL_CONFIG.critic.temperature,
@@ -52,7 +54,7 @@ export async function assessGaps(
   });
 
   const latencyMs = Date.now() - startTime;
-  const rawResponse = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawResponse = response.choices[0]?.message?.content || '';
 
   const output = parseJsonResponse<CriticAssessOutput>(rawResponse);
 
@@ -73,8 +75,8 @@ export async function assessGaps(
       prompt_sent: prompt,
       raw_response: rawResponse,
       output,
-      tokens_input: response.usage.input_tokens,
-      tokens_output: response.usage.output_tokens,
+      tokens_input: response.usage?.prompt_tokens || 0,
+      tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
       temperature: MODEL_CONFIG.critic.temperature,
     },
@@ -92,7 +94,7 @@ export async function generateQuestions(
   const prompt = buildCriticQuestionsPrompt(input);
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: MODEL_CONFIG.critic.model,
     max_tokens: MODEL_CONFIG.critic.maxTokens,
     temperature: MODEL_CONFIG.critic.temperature,
@@ -105,7 +107,7 @@ export async function generateQuestions(
   });
 
   const latencyMs = Date.now() - startTime;
-  const rawResponse = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawResponse = response.choices[0]?.message?.content || '';
 
   const output = parseJsonResponse<CriticQuestionsOutput>(rawResponse);
 
@@ -126,8 +128,8 @@ export async function generateQuestions(
       prompt_sent: prompt,
       raw_response: rawResponse,
       output,
-      tokens_input: response.usage.input_tokens,
-      tokens_output: response.usage.output_tokens,
+      tokens_input: response.usage?.prompt_tokens || 0,
+      tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
       temperature: MODEL_CONFIG.critic.temperature,
     },
@@ -144,7 +146,7 @@ export async function getFinalFeedback(
   const prompt = buildCriticFinalPrompt(input);
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: MODEL_CONFIG.critic.model,
     max_tokens: MODEL_CONFIG.critic.maxTokens,
     temperature: MODEL_CONFIG.critic.temperature,
@@ -157,7 +159,7 @@ export async function getFinalFeedback(
   });
 
   const latencyMs = Date.now() - startTime;
-  const rawResponse = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawResponse = response.choices[0]?.message?.content || '';
 
   const output = parseJsonResponse<CriticFinalOutput>(rawResponse);
 
@@ -177,8 +179,8 @@ export async function getFinalFeedback(
       prompt_sent: prompt,
       raw_response: rawResponse,
       output,
-      tokens_input: response.usage.input_tokens,
-      tokens_output: response.usage.output_tokens,
+      tokens_input: response.usage?.prompt_tokens || 0,
+      tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
       temperature: MODEL_CONFIG.critic.temperature,
     },

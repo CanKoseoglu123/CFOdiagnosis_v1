@@ -3,9 +3,10 @@
  *
  * Creates and rewrites the report.
  * Follows tonality instructions exactly.
+ * Uses OpenAI GPT-4o for best writing quality.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import {
   GeneratorInput,
   RewriteInput,
@@ -21,8 +22,8 @@ import {
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
 
-// Initialize Anthropic client
-const anthropic = new Anthropic();
+// Initialize OpenAI client
+const openai = new OpenAI();
 
 /**
  * Create initial draft with [NEED: x] markers.
@@ -34,7 +35,7 @@ export async function createDraft(
   const prompt = buildGeneratorDraftPrompt(input);
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: MODEL_CONFIG.generator.model,
     max_tokens: MODEL_CONFIG.generator.maxTokens,
     temperature: MODEL_CONFIG.generator.temperature,
@@ -47,7 +48,7 @@ export async function createDraft(
   });
 
   const latencyMs = Date.now() - startTime;
-  const rawResponse = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawResponse = response.choices[0]?.message?.content || '';
 
   // Parse JSON response
   const draft = parseJsonResponse<DraftReport>(rawResponse);
@@ -68,8 +69,8 @@ export async function createDraft(
       prompt_sent: prompt,
       raw_response: rawResponse,
       output: draft,
-      tokens_input: response.usage.input_tokens,
-      tokens_output: response.usage.output_tokens,
+      tokens_input: response.usage?.prompt_tokens || 0,
+      tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
       temperature: MODEL_CONFIG.generator.temperature,
     },
@@ -87,7 +88,7 @@ export async function rewriteWithAnswers(
   const prompt = buildGeneratorRewritePrompt(input);
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: MODEL_CONFIG.generator.model,
     max_tokens: MODEL_CONFIG.generator.maxTokens,
     temperature: MODEL_CONFIG.generator.temperature,
@@ -100,7 +101,7 @@ export async function rewriteWithAnswers(
   });
 
   const latencyMs = Date.now() - startTime;
-  const rawResponse = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawResponse = response.choices[0]?.message?.content || '';
 
   const draft = parseJsonResponse<DraftReport>(rawResponse);
 
@@ -122,8 +123,8 @@ export async function rewriteWithAnswers(
       raw_response: rawResponse,
       output: draft,
       previous_draft: input.previous_draft,
-      tokens_input: response.usage.input_tokens,
-      tokens_output: response.usage.output_tokens,
+      tokens_input: response.usage?.prompt_tokens || 0,
+      tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
       temperature: MODEL_CONFIG.generator.temperature,
     },
@@ -165,7 +166,7 @@ export async function finalize(
   const prompt = buildGeneratorFinalizePrompt(draft, feedback);
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
+  const response = await openai.chat.completions.create({
     model: MODEL_CONFIG.generator.model,
     max_tokens: MODEL_CONFIG.generator.maxTokens,
     temperature: MODEL_CONFIG.generator.temperature,
@@ -178,7 +179,7 @@ export async function finalize(
   });
 
   const latencyMs = Date.now() - startTime;
-  const rawResponse = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawResponse = response.choices[0]?.message?.content || '';
 
   const report = parseJsonResponse<InterpretedReport>(rawResponse);
 
@@ -194,8 +195,8 @@ export async function finalize(
       raw_response: rawResponse,
       output: report,
       previous_draft: draft,
-      tokens_input: response.usage.input_tokens,
-      tokens_output: response.usage.output_tokens,
+      tokens_input: response.usage?.prompt_tokens || 0,
+      tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
       temperature: MODEL_CONFIG.generator.temperature,
     },
