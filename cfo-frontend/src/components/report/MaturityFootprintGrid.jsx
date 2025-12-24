@@ -9,10 +9,10 @@ import { AlertCircle, CheckCircle, Target } from 'lucide-react';
 // ═══════════════════════════════════════════════════════════════════════════
 
 const LEVEL_CONFIG = {
-  4: { name: 'Optimized', headerBg: 'bg-slate-800', headerText: 'text-white' },
-  3: { name: 'Managed', headerBg: 'bg-slate-700', headerText: 'text-white' },
-  2: { name: 'Defined', headerBg: 'bg-slate-600', headerText: 'text-white' },
-  1: { name: 'Emerging', headerBg: 'bg-slate-500', headerText: 'text-white' }
+  4: { name: 'Optimized', headerBg: 'bg-indigo-900', headerText: 'text-white' },
+  3: { name: 'Managed', headerBg: 'bg-indigo-700', headerText: 'text-white' },
+  2: { name: 'Defined', headerBg: 'bg-indigo-500', headerText: 'text-white' },
+  1: { name: 'Emerging', headerBg: 'bg-indigo-400', headerText: 'text-white' }
 };
 
 // Evidence state → left border color (design system pattern)
@@ -32,8 +32,8 @@ function PracticeTile({ practice }) {
   return (
     <div
       className={`
-        bg-white border border-slate-300 rounded-sm border-l-4 ${borderColor}
-        px-2 py-1.5 min-w-[100px] flex-shrink-0
+        bg-white border border-slate-200 rounded-sm border-l-4 ${borderColor}
+        px-2 py-1 min-w-[90px] max-w-[140px] flex-shrink-0
       `}
     >
       <div className="flex items-center gap-1">
@@ -43,7 +43,7 @@ function PracticeTile({ practice }) {
         )}
 
         {/* Practice title - truncate if too long */}
-        <span className="text-[10px] text-navy font-medium truncate">
+        <span className="text-xs text-slate-700 font-medium truncate">
           {practice.title}
         </span>
       </div>
@@ -63,14 +63,14 @@ function LevelRow({ level, name, practices }) {
   return (
     <div className="flex border-b border-slate-200 last:border-b-0">
       {/* Level header - fixed width, darker for higher levels */}
-      <div className={`w-28 flex-shrink-0 ${config.headerBg} ${config.headerText} p-3`}>
+      <div className={`w-20 flex-shrink-0 ${config.headerBg} ${config.headerText} p-2`}>
         <div className="text-sm font-bold">L{level}</div>
-        <div className="text-xs opacity-80">{name}</div>
-        <div className="text-xs opacity-60 mt-1">{provenCount}/{totalCount}</div>
+        <div className="text-[10px] opacity-80">{name}</div>
+        <div className="text-[10px] opacity-60 mt-0.5">{provenCount}/{totalCount}</div>
       </div>
 
       {/* Practice tiles - horizontal strip */}
-      <div className="flex-1 p-2 flex flex-nowrap overflow-x-auto gap-2 pb-1 bg-slate-50">
+      <div className="flex-1 p-1.5 flex flex-nowrap overflow-x-auto gap-1.5 bg-slate-50">
         {practices.map(practice => (
           <PracticeTile key={practice.id} practice={practice} />
         ))}
