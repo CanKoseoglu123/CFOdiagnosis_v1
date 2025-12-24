@@ -33,17 +33,17 @@ function PracticeTile({ practice }) {
     <div
       className={`
         bg-white border border-slate-300 rounded-sm border-l-4 ${borderColor}
-        px-2 py-1.5 min-w-0 flex-1
+        px-2 py-1.5 min-w-[100px] flex-shrink-0
       `}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         {/* Critical marker */}
         {practice.is_critical && (
           <AlertCircle className="w-3 h-3 text-red-600 flex-shrink-0" />
         )}
 
         {/* Practice title - truncate if too long */}
-        <span className="text-xs text-navy font-medium truncate">
+        <span className="text-[10px] text-navy font-medium truncate">
           {practice.title}
         </span>
       </div>
@@ -70,7 +70,7 @@ function LevelRow({ level, name, practices }) {
       </div>
 
       {/* Practice tiles - horizontal strip */}
-      <div className="flex-1 p-2 flex gap-2 overflow-x-auto bg-slate-50">
+      <div className="flex-1 p-2 flex flex-nowrap overflow-x-auto gap-2 pb-1 bg-slate-50">
         {practices.map(practice => (
           <PracticeTile key={practice.id} practice={practice} />
         ))}
