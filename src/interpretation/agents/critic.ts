@@ -26,8 +26,14 @@ import {
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
 
-// Initialize OpenAI client
-const openai = new OpenAI();
+// Lazy-initialize OpenAI client (avoids crash if key not set at startup)
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI();
+  }
+  return _openai;
+}
 
 /**
  * Assess gaps in draft (Call 1).
@@ -41,7 +47,7 @@ export async function assessGaps(
   const prompt = buildCriticAssessPrompt(input);
   const startTime = Date.now();
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL_CONFIG.critic.model,
     max_tokens: MODEL_CONFIG.critic.maxTokens,
     temperature: MODEL_CONFIG.critic.temperature,
@@ -94,7 +100,7 @@ export async function generateQuestions(
   const prompt = buildCriticQuestionsPrompt(input);
   const startTime = Date.now();
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL_CONFIG.critic.model,
     max_tokens: MODEL_CONFIG.critic.maxTokens,
     temperature: MODEL_CONFIG.critic.temperature,
@@ -146,7 +152,7 @@ export async function getFinalFeedback(
   const prompt = buildCriticFinalPrompt(input);
   const startTime = Date.now();
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL_CONFIG.critic.model,
     max_tokens: MODEL_CONFIG.critic.maxTokens,
     temperature: MODEL_CONFIG.critic.temperature,

@@ -22,8 +22,14 @@ import {
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
 
-// Initialize OpenAI client
-const openai = new OpenAI();
+// Lazy-initialize OpenAI client (avoids crash if key not set at startup)
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI();
+  }
+  return _openai;
+}
 
 /**
  * Create initial draft with [NEED: x] markers.
@@ -35,7 +41,7 @@ export async function createDraft(
   const prompt = buildGeneratorDraftPrompt(input);
   const startTime = Date.now();
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL_CONFIG.generator.model,
     max_tokens: MODEL_CONFIG.generator.maxTokens,
     temperature: MODEL_CONFIG.generator.temperature,
@@ -88,7 +94,7 @@ export async function rewriteWithAnswers(
   const prompt = buildGeneratorRewritePrompt(input);
   const startTime = Date.now();
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL_CONFIG.generator.model,
     max_tokens: MODEL_CONFIG.generator.maxTokens,
     temperature: MODEL_CONFIG.generator.temperature,
@@ -166,7 +172,7 @@ export async function finalize(
   const prompt = buildGeneratorFinalizePrompt(draft, feedback);
   const startTime = Date.now();
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL_CONFIG.generator.model,
     max_tokens: MODEL_CONFIG.generator.maxTokens,
     temperature: MODEL_CONFIG.generator.temperature,
