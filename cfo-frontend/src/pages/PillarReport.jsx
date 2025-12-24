@@ -11,6 +11,7 @@ import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
+import InterpretationSection from '../components/report/InterpretationSection';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -315,6 +316,9 @@ export default function PillarReport() {
               critical_count={8}
               failed_critical_count={criticalRisks.length}
             />
+
+            {/* VS-25: AI Interpretation Section */}
+            <InterpretationSection runId={runId} />
 
             {/* Summary Table */}
             <SummaryTable objectives={objectives} />

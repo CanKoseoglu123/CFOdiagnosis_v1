@@ -810,7 +810,150 @@ Questionnaire → Complete → Calibration → Report
 
 ---
 
+## VS-25: Interpretation Layer
+
+**Problem solved:** Reports were static data - users got numbers and charts but no personalized narrative explaining what matters.
+
+**Solution:** AI-powered interpretation layer that generates personalized insights with human-in-the-loop refinement.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    INTERPRETATION PIPELINE                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────┐     ┌──────────┐     ┌──────────┐                │
+│  │ Tonality │────▶│Generator │────▶│ Quality  │                │
+│  │ Injector │     │  (AI1)   │     │ Heuristics│               │
+│  └──────────┘     └──────────┘     └──────────┘                │
+│       │                │                │                        │
+│       │                ▼                ▼                        │
+│       │         ┌──────────┐    ┌────────────┐                  │
+│       │         │ Critic   │◀───│  Traffic   │                  │
+│       │         │  (AI2)   │    │   Light    │                  │
+│       │         └──────────┘    └────────────┘                  │
+│       │                │                                         │
+│       │                ▼                                         │
+│       │         ┌──────────────┐                                │
+│       └────────▶│   Gap        │──────▶ User Questions          │
+│                 │ Prioritizer  │                                 │
+│                 └──────────────┘                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Components
+
+| Component | Location | Description |
+|-----------|----------|-------------|
+| Tonality Injector | `src/interpretation/tonality.ts` | Code-based tone calculation (celebrate/refine/remediate/urgent) |
+| Generator (AI1) | `src/interpretation/agents/generator.ts` | Creates and refines draft reports |
+| Critic (AI2) | `src/interpretation/agents/critic.ts` | Assesses gaps, generates questions, provides feedback |
+| Quality Assessment | `src/interpretation/validation/quality-assessment.ts` | Heuristic-based validation with Traffic Light Protocol |
+| Gap Prioritizer | `src/interpretation/questions/prioritizer.ts` | Ranks gaps by criticality and importance |
+| Pipeline | `src/interpretation/pipeline.ts` | Orchestrates the full workflow |
+
+### Tonality Rules
+
+| Score | Has Critical | Tone | Instruction |
+|-------|--------------|------|-------------|
+| 0-100 | Yes | Urgent | Be direct about risk. State consequences clearly. |
+| 80-100 | No | Celebrate | Validate success briefly. Don't dwell. |
+| 40-79 | No | Refine | Focus on friction points. Be constructive. |
+| 0-39 | No | Remediate | Be direct but constructive. Focus on risk. |
+
+### Traffic Light Protocol
+
+| Color | Meaning | Action |
+|-------|---------|--------|
+| Green | Quality passed | Proceed to finalization |
+| Yellow | Minor issues | Continue loop, may ask questions |
+| Red | Quality failed | Fallback to basic report |
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/diagnostic-runs/:id/interpret/start` | Start interpretation pipeline |
+| GET | `/diagnostic-runs/:id/interpret/status` | Poll for status updates |
+| POST | `/diagnostic-runs/:id/interpret/answer` | Submit answers to clarifying questions |
+| GET | `/diagnostic-runs/:id/interpret/report` | Get final interpreted report |
+| POST | `/diagnostic-runs/:id/interpret/feedback` | Submit rating (1-5) and feedback |
+
+### Database Tables
+
+```sql
+-- interpretation_sessions: Track pipeline progress
+-- interpretation_steps: Log each AI call
+-- interpretation_ai_conversations: Full conversation history
+-- interpretation_questions: Questions shown to user
+-- interpretation_reports: Final generated reports
+```
+
+### Frontend Components
+
+| Component | Description |
+|-----------|-------------|
+| `InterpretationSection` | Main workflow wrapper (idle → loading → questions → complete) |
+| `InterpretationLoader` | Animated loading state with progress steps |
+| `InterpretationQuestions` | Question cards with MCQ and free-text support |
+| `InterpretedReport` | Display AI insights with feedback collection |
+
+### Key Files
+
+- `src/interpretation/` - Backend interpretation module
+- `supabase/migrations/20241224_vs25_interpretation_layer.sql` - Database schema
+- `cfo-frontend/src/components/report/InterpretationSection.jsx` - Main UI
+- `scripts/test-vs25-interpretation.js` - Test script
+
+---
+
 ## Session Log
+
+### December 24, 2025 - VS-25 Interpretation Layer
+
+**Completed:**
+
+1. **VS-25 Backend Implementation**
+   - Created interpretation module with 2-agent architecture (Generator + Critic)
+   - Implemented code-based tonality injection (celebrate/refine/remediate/urgent)
+   - Built quality assessment with heuristic-based validation
+   - Added gap prioritizer with criticality-weighted scoring
+   - Created async pipeline with session management and polling
+   - Integrated with Anthropic Claude API (@anthropic-ai/sdk)
+
+2. **VS-25 Database Schema**
+   - Created 5 new tables for interpretation tracking
+   - Added RLS policies for user data isolation
+   - Implemented auto-prune function for GDPR compliance (30-day retention)
+
+3. **VS-25 API Endpoints**
+   - POST `/interpret/start` - Start interpretation
+   - GET `/interpret/status` - Poll status
+   - POST `/interpret/answer` - Submit user answers
+   - GET `/interpret/report` - Get final report
+   - POST `/interpret/feedback` - Submit rating
+
+4. **VS-25 Frontend Components**
+   - InterpretationSection - Main workflow wrapper
+   - InterpretationLoader - Animated loading with steps
+   - InterpretationQuestions - Question collection UI
+   - InterpretedReport - Display with feedback
+
+**Files Created:**
+- `src/interpretation/types.ts` - Core type definitions
+- `src/interpretation/config.ts` - Model and prompt configuration
+- `src/interpretation/tonality.ts` - Tonality calculation
+- `src/interpretation/prompts/*.ts` - 6 prompt templates
+- `src/interpretation/validation/quality-assessment.ts` - Heuristics
+- `src/interpretation/questions/prioritizer.ts` - Gap prioritization
+- `src/interpretation/agents/generator.ts` - AI1 agent
+- `src/interpretation/agents/critic.ts` - AI2 agent
+- `src/interpretation/pipeline.ts` - Orchestration
+- `cfo-frontend/src/components/report/Interpretation*.jsx` - 4 components
+- `scripts/test-vs25-interpretation.js` - Test script
+
+---
 
 ### December 23, 2025 - VS21 Objective Importance Matrix
 

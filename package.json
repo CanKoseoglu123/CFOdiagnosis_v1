@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/CanKoseoglu123/CFOdiagnosis_v1#readme",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@supabase/supabase-js": "^2.87.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

@@ -9,6 +9,18 @@ import { SpecRegistry, DEFAULT_SPEC_VERSION } from "./specs/registry";
 import { aggregateResults } from "./results/aggregate";
 import { toAggregateSpec } from "./specs/toAggregateSpec";
 import { buildReport } from "./reports";
+import {
+  runPipeline,
+  resumePipeline,
+  getSessionByRunId,
+  getQuestions,
+  getReport,
+  DiagnosticData,
+  ObjectiveScore,
+  Initiative,
+} from "./interpretation";
+import { deriveCriticalRisks } from "./risks";
+import { calculateMaturityV2 } from "./maturity/engine";
 
 const app = express();
 app.use(cors({
@@ -665,6 +677,449 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     context: run.context || {},
     calibration: run.calibration || null,
   });
+});
+
+// ------------------------------------------------------------------
+// VS25 — Start interpretation (returns 202, async processing)
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
+  const runId = req.params.id;
+
+  // Verify run exists and is completed
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, spec_version, context")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed before interpretation" });
+  }
+
+  // Check for existing session - prevent duplicate pipelines
+  const existingSession = await getSessionByRunId(req.supabase, runId);
+  if (existingSession) {
+    // If complete, return the report
+    if (existingSession.status === "complete") {
+      const report = await getReport(req.supabase, runId);
+      if (report) {
+        return res.json({
+          session_id: existingSession.id,
+          status: "complete",
+          report,
+        });
+      }
+    }
+    // If already in progress, return current status (no duplicate)
+    if (existingSession.status === "pending" || existingSession.status === "generating" || existingSession.status === "finalizing") {
+      return res.status(202).json({
+        session_id: existingSession.id,
+        status: existingSession.status,
+        message: "Interpretation already in progress",
+        poll_url: `/diagnostic-runs/${runId}/interpret/status`,
+      });
+    }
+    // If awaiting_user, return questions
+    if (existingSession.status === "awaiting_user") {
+      const questions = await getQuestions(req.supabase, existingSession.id);
+      return res.status(202).json({
+        session_id: existingSession.id,
+        status: "awaiting_user",
+        questions,
+      });
+    }
+    // If failed, allow retry by continuing (will create new session below)
+  }
+
+  // Build diagnostic data for interpretation
+  let spec;
+  try {
+    spec = SpecRegistry.get(run.spec_version);
+  } catch (err) {
+    return res.status(500).json({ error: String(err) });
+  }
+
+  const { data: scores } = await req.supabase
+    .from("diagnostic_scores")
+    .select("question_id, score")
+    .eq("run_id", runId);
+
+  const { data: inputs } = await req.supabase
+    .from("diagnostic_inputs")
+    .select("question_id, value")
+    .eq("run_id", runId);
+
+  const { data: calibration } = await req.supabase
+    .from("diagnostic_runs")
+    .select("calibration")
+    .eq("id", runId)
+    .single();
+
+  const aggregateSpec = toAggregateSpec(spec);
+  const aggregateResult = aggregateResults(aggregateSpec, scores || []);
+
+  // Calculate maturity level
+  const maturityResult = calculateMaturityV2({
+    answers: (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
+    questions: spec.questions.map((q: any) => ({ id: q.id, text: q.text, level: q.level })),
+  });
+
+  // Build objective scores
+  const objectiveScores: ObjectiveScore[] = (spec.objectives || []).map((obj: any) => {
+    const objQuestions = spec.questions.filter((q: any) => q.objective_id === obj.id);
+    const objScores = (scores || []).filter((s: any) =>
+      objQuestions.some((q: any) => q.id === s.question_id)
+    );
+    const avgScore = objScores.length > 0
+      ? objScores.reduce((sum: number, s: any) => sum + s.score, 0) / objScores.length * 100
+      : 0;
+    const hasCritical = objQuestions.some((q: any) => {
+      if (!q.is_critical) return false;
+      const input = (inputs || []).find((i: any) => i.question_id === q.id);
+      return input?.value !== true;
+    });
+    const importance = calibration?.calibration?.importance_map?.[obj.id] || 3;
+
+    return {
+      id: obj.id,
+      name: obj.name,
+      score: Math.round(avgScore),
+      has_critical_failure: hasCritical,
+      importance,
+      level: obj.level,
+    };
+  });
+
+  // Build initiatives
+  const initiatives: Initiative[] = (spec.initiatives || []).map((init: any) => {
+    const obj = objectiveScores.find((o) => o.id === init.objective_id);
+    let priority: "P1" | "P2" | "P3" = "P3";
+    if (obj?.has_critical_failure || (obj?.score || 0) < 50) {
+      priority = "P1";
+    } else if ((obj?.score || 0) < 80) {
+      priority = "P2";
+    }
+    return {
+      id: init.id,
+      title: init.title,
+      recommendation: init.description || "",
+      priority,
+      objective_id: init.objective_id,
+    };
+  });
+
+  // Get critical risks for capping info
+  const criticalRisks = deriveCriticalRisks(
+    (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
+    spec
+  );
+
+  const diagnosticData: DiagnosticData = {
+    run_id: runId,
+    company_name: run.context?.company_name || "Unknown Company",
+    industry: run.context?.industry || "Unknown Industry",
+    team_size: run.context?.team_size,
+    pain_points: run.context?.pain_points,
+    systems: run.context?.systems,
+    execution_score: maturityResult.execution_score,
+    maturity_level: maturityResult.actual_level,
+    level_name: maturityResult.actual_label,
+    capped: maturityResult.capped,
+    capped_by_titles: criticalRisks.map((r) => r.pillarName),
+    objectives: objectiveScores,
+    initiatives,
+    critical_risks: criticalRisks.map((r) => ({
+      id: r.questionId,
+      title: r.questionText,
+      objective_id: spec.questions.find((q: any) => q.id === r.questionId)?.objective_id || "",
+    })),
+  };
+
+  // Run pipeline (synchronous for now, can be made async with job queue later)
+  try {
+    const result = await runPipeline(req.supabase, diagnosticData);
+
+    if (result.status === "awaiting_user") {
+      return res.status(202).json({
+        session_id: result.session_id,
+        status: "awaiting_user",
+        questions: result.questions,
+        poll_url: `/diagnostic-runs/${runId}/interpret/status`,
+      });
+    }
+
+    if (result.status === "complete") {
+      return res.json({
+        session_id: result.session_id,
+        status: "complete",
+        report: result.report,
+      });
+    }
+
+    return res.status(500).json({
+      session_id: result.session_id,
+      status: "failed",
+      error: result.error,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+// ------------------------------------------------------------------
+// VS25 — Get interpretation status
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/interpret/status", async (req, res) => {
+  const runId = req.params.id;
+
+  const session = await getSessionByRunId(req.supabase, runId);
+  if (!session) {
+    return res.status(404).json({ error: "No interpretation session found" });
+  }
+
+  if (session.status === "complete") {
+    const report = await getReport(req.supabase, runId);
+    return res.json({
+      session_id: session.id,
+      status: "complete",
+      report,
+    });
+  }
+
+  if (session.status === "awaiting_user") {
+    const questions = await getQuestions(req.supabase, session.id);
+    return res.json({
+      session_id: session.id,
+      status: "awaiting_user",
+      questions,
+    });
+  }
+
+  if (session.status === "failed") {
+    return res.json({
+      session_id: session.id,
+      status: "failed",
+    });
+  }
+
+  // Still processing
+  return res.json({
+    session_id: session.id,
+    status: session.status,
+    progress: {
+      current_round: session.current_round,
+      total_questions_asked: session.total_questions_asked,
+    },
+  });
+});
+
+// ------------------------------------------------------------------
+// VS25 — Submit interpretation answers
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
+  const runId = req.params.id;
+  const { answers } = req.body;
+
+  if (!answers || !Array.isArray(answers)) {
+    return res.status(400).json({ error: "answers array is required" });
+  }
+
+  const session = await getSessionByRunId(req.supabase, runId);
+  if (!session) {
+    return res.status(404).json({ error: "No interpretation session found" });
+  }
+
+  if (session.status !== "awaiting_user") {
+    return res.status(409).json({ error: "Session is not awaiting answers" });
+  }
+
+  // Get run context for resuming
+  const { data: run } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, spec_version, context, calibration")
+    .eq("id", runId)
+    .single();
+
+  if (!run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Rebuild diagnostic data (same as start endpoint)
+  let spec;
+  try {
+    spec = SpecRegistry.get(run.spec_version);
+  } catch (err) {
+    return res.status(500).json({ error: String(err) });
+  }
+
+  const { data: scores } = await req.supabase
+    .from("diagnostic_scores")
+    .select("question_id, score")
+    .eq("run_id", runId);
+
+  const { data: inputs } = await req.supabase
+    .from("diagnostic_inputs")
+    .select("question_id, value")
+    .eq("run_id", runId);
+
+  const aggregateSpec = toAggregateSpec(spec);
+  const aggregateResult = aggregateResults(aggregateSpec, scores || []);
+
+  const objectiveScores: ObjectiveScore[] = (spec.objectives || []).map((obj: any) => {
+    const objQuestions = spec.questions.filter((q: any) => q.objective_id === obj.id);
+    const objScores = (scores || []).filter((s: any) =>
+      objQuestions.some((q: any) => q.id === s.question_id)
+    );
+    const avgScore = objScores.length > 0
+      ? objScores.reduce((sum: number, s: any) => sum + s.score, 0) / objScores.length * 100
+      : 0;
+    const hasCritical = objQuestions.some((q: any) => {
+      if (!q.is_critical) return false;
+      const input = (inputs || []).find((i: any) => i.question_id === q.id);
+      return input?.value !== true;
+    });
+    const importance = run.calibration?.importance_map?.[obj.id] || 3;
+
+    return {
+      id: obj.id,
+      name: obj.name,
+      score: Math.round(avgScore),
+      has_critical_failure: hasCritical,
+      importance,
+      level: obj.level,
+    };
+  });
+
+  const initiatives: Initiative[] = (spec.initiatives || []).map((init: any) => {
+    const obj = objectiveScores.find((o) => o.id === init.objective_id);
+    let priority: "P1" | "P2" | "P3" = "P3";
+    if (obj?.has_critical_failure || (obj?.score || 0) < 50) {
+      priority = "P1";
+    } else if ((obj?.score || 0) < 80) {
+      priority = "P2";
+    }
+    return {
+      id: init.id,
+      title: init.title,
+      recommendation: init.description || "",
+      priority,
+      objective_id: init.objective_id,
+    };
+  });
+
+  // Get critical risks for capping info (inputs first, then spec)
+  const criticalRisks = deriveCriticalRisks(
+    (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
+    spec
+  );
+
+  // Calculate maturity using maturity engine
+  const maturityResult = calculateMaturityV2({
+    answers: (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
+    questions: spec.questions.map((q: any) => ({ id: q.id, text: q.text, level: q.level })),
+  });
+
+  const diagnosticData: DiagnosticData = {
+    run_id: runId,
+    company_name: run.context?.company_name || "Unknown Company",
+    industry: run.context?.industry || "Unknown Industry",
+    team_size: run.context?.team_size,
+    pain_points: run.context?.pain_points,
+    systems: run.context?.systems,
+    execution_score: maturityResult.execution_score,
+    maturity_level: maturityResult.actual_level,
+    level_name: maturityResult.actual_label,
+    capped: maturityResult.capped,
+    capped_by_titles: criticalRisks.map((r) => r.pillarName),
+    objectives: objectiveScores,
+    initiatives,
+    critical_risks: criticalRisks.map((r) => ({
+      id: r.questionId,
+      title: r.questionText,
+      objective_id: spec.questions.find((q: any) => q.id === r.questionId)?.objective_id || "",
+    })),
+  };
+
+  try {
+    const result = await resumePipeline(req.supabase, session.id, answers, diagnosticData);
+
+    if (result.status === "awaiting_user") {
+      return res.status(202).json({
+        session_id: result.session_id,
+        status: "awaiting_user",
+        questions: result.questions,
+      });
+    }
+
+    if (result.status === "complete") {
+      return res.json({
+        session_id: result.session_id,
+        status: "complete",
+        report: result.report,
+      });
+    }
+
+    return res.status(500).json({
+      session_id: result.session_id,
+      status: "failed",
+      error: result.error,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
+
+// ------------------------------------------------------------------
+// VS25 — Get interpretation report
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/interpret/report", async (req, res) => {
+  const runId = req.params.id;
+
+  const report = await getReport(req.supabase, runId);
+  if (!report) {
+    return res.status(404).json({ error: "No interpretation report found" });
+  }
+
+  res.json(report);
+});
+
+// ------------------------------------------------------------------
+// VS25 — Submit interpretation feedback
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
+  const runId = req.params.id;
+  const { rating, feedback } = req.body;
+
+  if (typeof rating !== "number" || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: "rating must be a number between 1 and 5" });
+  }
+
+  const session = await getSessionByRunId(req.supabase, runId);
+  if (!session) {
+    return res.status(404).json({ error: "No interpretation session found" });
+  }
+
+  const { error } = await req.supabase
+    .from("interpretation_sessions")
+    .update({
+      user_rating: rating,
+      user_feedback: feedback || null,
+    })
+    .eq("id", session.id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ success: true });
 });
 
 // ------------------------------------------------------------------

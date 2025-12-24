@@ -23,3 +23,9 @@ export { default as MaturityLadder } from './MaturityLadder';
 export { CappedWarning, OnTrackBanner } from './CappedWarning';
 export { default as EmptyState } from './EmptyState';
 export { default as StrategicRoadmap } from './StrategicRoadmap';
+
+// VS-25: Interpretation components
+export { default as InterpretationSection } from './InterpretationSection';
+export { default as InterpretationLoader } from './InterpretationLoader';
+export { default as InterpretationQuestions } from './InterpretationQuestions';
+export { default as InterpretedReport } from './InterpretedReport';

@@ -1,0 +1,81 @@
+// src/components/report/InterpretationLoader.jsx
+// VS-25: Loading skeleton for interpretation generation
+
+import React from 'react';
+
+const STEPS = [
+  { id: 'analyzing', label: 'Analyzing your assessment data...' },
+  { id: 'drafting', label: 'Drafting personalized insights...' },
+  { id: 'reviewing', label: 'Reviewing quality and accuracy...' },
+  { id: 'finalizing', label: 'Finalizing your report...' }
+];
+
+export default function InterpretationLoader({ currentStep = 'analyzing', progress = 25 }) {
+  const stepIndex = STEPS.findIndex(s => s.id === currentStep);
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-sm p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+          <svg className="w-4 h-4 text-primary-600 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-navy-900">Generating AI Insights</h3>
+          <p className="text-sm text-slate-500">This may take a moment</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mb-6">
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary-500 transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Steps */}
+      <div className="space-y-3">
+        {STEPS.map((step, index) => {
+          const isComplete = index < stepIndex;
+          const isCurrent = index === stepIndex;
+          const isPending = index > stepIndex;
+
+          return (
+            <div
+              key={step.id}
+              className={`flex items-center gap-3 p-3 rounded ${
+                isCurrent ? 'bg-primary-50 border border-primary-200' : 'bg-slate-50'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                isComplete ? 'bg-green-500' :
+                isCurrent ? 'bg-primary-500' : 'bg-slate-300'
+              }`}>
+                {isComplete ? (
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : isCurrent ? (
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                ) : (
+                  <div className="w-2 h-2 bg-white/50 rounded-full" />
+                )}
+              </div>
+              <span className={`text-sm ${
+                isComplete ? 'text-slate-500' :
+                isCurrent ? 'text-primary-700 font-medium' : 'text-slate-400'
+              }`}>
+                {step.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
