@@ -1,40 +1,125 @@
 # VS-Cards — Version Sprints Roadmap
 
-**Last Updated:** December 23, 2025
+**Last Updated:** December 24, 2025
 **Status:** Active Development
 
 ---
 
-## VS-23: Maturity Footprint Grid
+## VS-25: AI Interpretation Layer
 
-**Status:** 🟡 In Progress (Visual refinement pending)
+**Status:** ✅ Complete (Backend)
 **Priority:** High
-**Sprint:** December 23, 2025
+**Completed:** December 24, 2025
 
 ### Problem Statement
-The report needs a visual "capability map" showing which practices are proven, partial, or gaps — organized by maturity level. This helps executives see their capability footprint at a glance.
+The diagnostic report provides raw scores and actions but lacks personalized, narrative interpretation. Users need context-aware synthesis that explains what the scores mean for their specific situation.
 
 ### Deliverables
 
 | Component | Status | Description |
 |-----------|--------|-------------|
-| Practice Catalog | ✅ Done | 21 FP&A practices across L1-L4 (`src/specs/practices.ts`) |
-| Footprint Engine | ✅ Done | Evidence state computation (`src/maturity/footprint.ts`) |
-| API Integration | ✅ Done | `maturity_footprint` in report response |
-| Frontend Grid | 🟡 WIP | `MaturityFootprintGrid.jsx` - visual refinement pending |
-| Focus Next | ✅ Done | Priority gap ranking algorithm |
+| Pipeline Architecture | ✅ Done | Generator-Critic loop with 2 rounds max |
+| Generator Agent | ✅ Done | GPT-4o for high-quality report writing |
+| Critic Agent | ✅ Done | GPT-4o-mini for fast assessment |
+| Database Schema | ✅ Done | Sessions, steps, questions, reports tables |
+| Safety Limits | ✅ Done | 20K tokens, 8 AI calls, 5 questions max |
+| API Endpoints | ✅ Done | /interpret/start, /status, /answer, /report |
 
 ### Technical Implementation
 
 **Backend Files Created:**
-- `src/specs/practices.ts` — 21 practice definitions with question mappings
-- `src/maturity/footprint.ts` — `buildMaturityFootprint()` pure function
-- Updated `src/reports/builder.ts` — includes `maturity_footprint` in response
-- Updated `src/reports/types.ts` — `MaturityFootprint` interface
+- `src/interpretation/` — Full module with types, prompts, config
+- `src/interpretation/agents/generator.ts` — GPT-4o for drafting
+- `src/interpretation/agents/critic.ts` — GPT-4o-mini for assessment
+- `src/interpretation/pipeline.ts` — Orchestrator with safety limits
+- `supabase/migrations/20241224_vs25_interpretation_layer_fixed.sql`
 
-**Frontend Files:**
-- `cfo-frontend/src/components/report/MaturityFootprintGrid.jsx`
-- Updated `cfo-frontend/src/pages/PillarReport.jsx` — consumes API data
+**API Endpoints:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/diagnostic-runs/:id/interpret/start` | POST | Start interpretation pipeline |
+| `/diagnostic-runs/:id/interpret/status` | GET | Poll for progress/completion |
+| `/diagnostic-runs/:id/interpret/answer` | POST | Submit clarifying answers |
+| `/diagnostic-runs/:id/interpret/report` | GET | Get final interpreted report |
+| `/diagnostic-runs/:id/interpret/feedback` | POST | Submit user rating |
+
+### AI Model Configuration
+
+```typescript
+MODEL_CONFIG = {
+  generator: {
+    model: 'gpt-4o',        // Best quality for writing
+    temperature: 0.7,
+    maxTokens: 1000,
+  },
+  critic: {
+    model: 'gpt-4o-mini',   // Fast & cheap for assessment
+    temperature: 0.3,
+    maxTokens: 800,
+  },
+}
+```
+
+### Safety Limits
+
+```typescript
+LOOP_CONFIG = {
+  maxRounds: 2,              // Maximum refinement rounds
+  maxQuestionsTotal: 5,      // Maximum clarifying questions
+  maxTokensPerSession: 20000, // Token budget per session
+  maxAICallsPerSession: 8,   // API call limit
+}
+```
+
+### Remaining Work (Frontend)
+
+1. **Interpretation UI Flow** — Pages for question answering
+2. **Integration with Report** — Show interpreted synthesis
+3. **Quality Testing** — Validate AI output quality
+
+---
+
+## VS-24: JSON Catalog Refactor
+
+**Status:** ✅ Complete
+**Priority:** High
+**Completed:** December 24, 2025
+
+### Deliverables
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| `content/questions.json` | ✅ Done | 48 questions with metadata |
+| `content/practices.json` | ✅ Done | 21 practices with question mappings |
+| `content/initiatives.json` | ✅ Done | 9 initiatives with action mappings |
+| `content/objectives.json` | ✅ Done | 8 objectives with thresholds |
+| `src/content/loader.ts` | ✅ Done | Zod validation loader |
+| Registry Update | ✅ Done | `registry.ts` uses JSON loaders |
+
+### Benefits Achieved
+
+- Content editable without TypeScript knowledge
+- Cleaner git diffs for content changes
+- Runtime Zod validation catches errors early
+- Foundation for future i18n/CMS integration
+
+---
+
+## VS-23: Maturity Footprint Grid
+
+**Status:** ✅ Complete
+**Priority:** High
+**Completed:** December 23, 2025
+
+### Deliverables
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| Practice Catalog | ✅ Done | 21 FP&A practices across L1-L4 |
+| Footprint Engine | ✅ Done | Evidence state computation |
+| API Integration | ✅ Done | `maturity_footprint` in report response |
+| Frontend Grid | ✅ Done | Design system compliant visualization |
+| Focus Next | ✅ Done | Priority gap ranking algorithm |
 
 ### Practice Distribution
 
@@ -46,145 +131,90 @@ The report needs a visual "capability map" showing which practices are proven, p
 | L4 Optimized | 4 | Forward KPIs, Automated Insights, Continuous Planning, Self-Service Analytics |
 | **Total** | **21** | |
 
-### Evidence State Logic
-
-```typescript
-function computeEvidenceState(practice, answers): 'proven' | 'partial' | 'not_proven' {
-  const yesCount = answers.filter(a => a.value === true).length;
-  const coverage = yesCount / answers.length;
-
-  if (coverage >= 1.0) return 'proven';    // 100% YES
-  if (coverage >= 0.5) return 'partial';   // 50-99% YES
-  return 'not_proven';                      // <50% YES
-}
-```
-
-### Focus Next Priority Formula
-
-```
-Priority = (5 - level) × gapScore × (isCritical ? 2 : 1)
-```
-
-- **Level weight:** Lower levels get higher priority (foundation first)
-- **Gap score:** `1 - coverage` (bigger gaps rank higher)
-- **Critical boost:** 2× multiplier for practices containing critical questions
-
-### Remaining Work
-
-1. **Visual Refinement** — Finalize grid design (tiles fit in one row, design system colors)
-2. **User Acceptance** — Review with stakeholder
-3. **Documentation** — Update CLAUDE.md with session notes
-
-### Acceptance Criteria
-
-- [ ] All 21 practices render correctly in grid
-- [ ] Evidence states show via left-border color (green/yellow/gray)
-- [ ] Critical practices marked with AlertCircle icon
-- [ ] L4 at top, L1 at bottom (strategic leverage perspective)
-- [ ] Focus Next shows top 3 priority gaps
-- [ ] Tiles fit in single horizontal row per level
-
 ---
 
-## VS-24: JSON Catalog Refactor
+## VS-26: Interpretation UI & Flow (NEXT)
 
 **Status:** 📋 Planned
 **Priority:** High
-**Depends On:** VS-23 completion
-**Sprint:** December 24, 2025
+**Sprint:** December 25, 2025
 
 ### Problem Statement
-The spec file (`src/specs/v2.7.0.ts`) has grown large and complex with 48 questions, 21 practices, 9 initiatives, and various mappings. This creates:
-- Difficult content updates (requires TypeScript knowledge)
-- Risk of breaking type contracts
-- No separation between content and code
-- Complex git diffs for content changes
-
-### Proposed Solution
-Extract all content into JSON files with TypeScript loaders that validate at build time.
+VS-25 backend is complete but needs frontend integration. Users need a seamless flow from assessment completion to interpreted report.
 
 ### Deliverables
 
 | Component | Description |
 |-----------|-------------|
-| `content/questions.json` | All 48 questions with metadata |
-| `content/practices.json` | 21 practices with question mappings |
-| `content/initiatives.json` | 9 initiatives with action mappings |
-| `content/objectives.json` | 8 objectives with thresholds |
-| `content/gates.json` | Maturity gates configuration |
-| `src/specs/loader.ts` | TypeScript loader with Zod validation |
-| Migration script | Convert existing TS to JSON |
+| Interpretation Start Page | Trigger interpretation after calibration |
+| Question Answering UI | Show clarifying questions, collect answers |
+| Progress Indicator | Show pipeline status (generating, awaiting, finalizing) |
+| Interpreted Report Section | Display synthesis in report page |
+| Error Handling | Graceful fallback if AI fails |
 
-### Benefits
+### User Flow
 
-1. **Content team autonomy** — Edit JSON without touching code
-2. **Cleaner diffs** — Content changes isolated from logic
-3. **Runtime validation** — Zod schemas catch errors early
-4. **Easier i18n** — JSON structure supports translations
-5. **API-ready** — Could serve from CMS/database later
-
-### JSON Schema Example
-
-```json
-// content/questions.json
-{
-  "version": "2.8.1",
-  "questions": [
-    {
-      "id": "fpa_l1_q01",
-      "text": "Does the company produce an approved annual budget...",
-      "help": "This tests whether formal budgeting exists",
-      "maturity_level": 1,
-      "is_critical": true,
-      "objective_id": "obj_fpa_l1_budget",
-      "practice_id": "prac_annual_budget",
-      "initiative_id": "init_budget_foundation",
-      "impact": 5,
-      "complexity": 2,
-      "expert_action": {
-        "title": "Establish Annual Budget Process",
-        "recommendation": "Create a formal annual budget cycle...",
-        "type": "structural"
-      }
-    }
-  ]
-}
 ```
-
-### Loader Pattern
-
-```typescript
-// src/specs/loader.ts
-import questionsJson from '../../content/questions.json';
-import { QuestionSchema } from './schemas';
-import { z } from 'zod';
-
-export function loadQuestions(): Question[] {
-  const result = z.array(QuestionSchema).safeParse(questionsJson.questions);
-  if (!result.success) {
-    throw new Error(`Invalid questions.json: ${result.error.message}`);
-  }
-  return result.data;
-}
+Questionnaire → Complete → Score → Calibrate → Interpret → Report
+                                        ↓
+                              /interpret/start
+                                        ↓
+                              [AI generates draft]
+                                        ↓
+                              /interpret/status → awaiting_user
+                                        ↓
+                              [Show questions to user]
+                                        ↓
+                              /interpret/answer
+                                        ↓
+                              [AI refines with answers]
+                                        ↓
+                              /interpret/status → complete
+                                        ↓
+                              [Show interpreted report]
 ```
-
-### Migration Steps
-
-1. Create `content/` directory structure
-2. Write JSON schemas with Zod
-3. Extract content from v2.7.0.ts to JSON files
-4. Create loader functions with validation
-5. Update spec exports to use loaders
-6. Run all tests to verify
-7. Remove hardcoded content from TS files
 
 ### Acceptance Criteria
 
-- [ ] All content in JSON files
-- [ ] TypeScript loaders with Zod validation
-- [ ] All 625 tests pass after migration
-- [ ] Content editable without TypeScript knowledge
-- [ ] Build fails on invalid JSON (schema enforcement)
+- [ ] User can trigger interpretation from calibration page
+- [ ] Questions render correctly with input fields
+- [ ] Progress shown while AI processes
+- [ ] Interpreted synthesis displays in report
+- [ ] Graceful handling of AI errors
+
+---
+
+## VS-27: Hierarchy Clarification
+
+**Status:** 📋 Planned
+**Priority:** Medium
+
+### Problem Statement
+The relationship between Objectives, Practices, and Questions needs clearer documentation and potentially UI visualization.
+
+### Current Hierarchy
+
+```
+Pillar (FP&A)
+└── Objective (8 total) — "What we're trying to achieve"
+    └── Practice (21 total) — "How we achieve it"
+        └── Question (48 total) — "Evidence of practice"
+```
+
+### Relationships
+
+| Entity | Parent | Children | Example |
+|--------|--------|----------|---------|
+| Objective | Pillar | Practices | "Budget Foundation" |
+| Practice | Objective | Questions | "Annual Budget Process" |
+| Question | Practice | — | "Does company produce annual budget?" |
+
+### Deliverables
+
+- [ ] Hierarchy diagram in documentation
+- [ ] Visual explorer in UI (optional)
+- [ ] Validation that all questions map to practices
+- [ ] Validation that all practices map to objectives
 
 ---
 
@@ -193,11 +223,11 @@ export function loadQuestions(): Question[] {
 | VS | Name | Priority | Status |
 |----|------|----------|--------|
 | VS-15 | Admin Dashboard | Medium | 📋 Backlog |
-| VS-25 | Multi-Pillar Architecture | High | 📋 Backlog |
-| VS-26 | Benchmarking Engine | Medium | 📋 Backlog |
-| VS-27 | Trend Analysis | Low | 📋 Backlog |
-| VS-28 | Email Reports | Low | 📋 Backlog |
-| VS-29 | SSO Integration | Medium | 📋 Backlog |
+| VS-28 | Multi-Pillar Architecture | High | 📋 Backlog |
+| VS-29 | Benchmarking Engine | Medium | 📋 Backlog |
+| VS-30 | Trend Analysis | Low | 📋 Backlog |
+| VS-31 | Email Reports | Low | 📋 Backlog |
+| VS-32 | SSO Integration | Medium | 📋 Backlog |
 
 ---
 
@@ -214,3 +244,6 @@ export function loadQuestions(): Question[] {
 | VS-20 | Dynamic Action Engine | Dec 2025 | Objective-based actions |
 | VS-21 | Objective Importance | Dec 2025 | Calibration layer |
 | VS-22 | Enterprise Report UI | Dec 2025 | Gartner-style report v2.8.0 |
+| VS-23 | Maturity Footprint | Dec 2025 | 21-practice capability grid |
+| VS-24 | JSON Catalog | Dec 2025 | Content extraction to JSON |
+| VS-25 | AI Interpretation | Dec 2025 | GPT-4o/mini pipeline |
