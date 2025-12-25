@@ -129,7 +129,7 @@ async function createTestRun(testCase, index) {
       }
     }
 
-    // 4. Complete the run (this also triggers scoring)
+    // 4. Complete the run
     const completeRes = await fetch(`${API}/diagnostic-runs/${run.id}/complete`, {
       method: 'POST',
       headers
@@ -139,7 +139,14 @@ async function createTestRun(testCase, index) {
       throw new Error(`Complete failed: ${await completeRes.text()}`);
     }
 
-    // 5. Fetch the report (which has the calculated scores)
+    // 5. Calculate scores (ignore "already exists" error)
+    const scoreRes = await fetch(`${API}/diagnostic-runs/${run.id}/score`, {
+      method: 'POST',
+      headers
+    });
+    // Don't check scoreRes.ok - it may error if scores already exist
+
+    // 6. Fetch the report (which has the calculated scores)
     const reportRes = await fetch(`${API}/diagnostic-runs/${run.id}/report`, {
       headers
     });
