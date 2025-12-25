@@ -1,6 +1,7 @@
 // src/components/report/ObjectivesPracticesOverview.jsx
 // VS-27: Objectives & Practices Overview Grid
 // Shows objectives as columns with practices stacked vertically
+// Compact design to fit on one screen
 
 import React from 'react';
 
@@ -8,17 +9,17 @@ import React from 'react';
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Objectives in display order (left to right)
+// Objectives in display order (left to right) - shorter titles for compact view
 const OBJECTIVES = [
-  { id: 'obj_budget_discipline', title: 'Budget Discipline', shortTitle: 'Budget Discipline' },
-  { id: 'obj_financial_controls', title: 'Financial Controls', shortTitle: 'Financial Controls' },
-  { id: 'obj_performance_monitoring', title: 'Performance Monitoring', shortTitle: 'Performance Monitoring' },
-  { id: 'obj_forecasting_agility', title: 'Forecasting Agility', shortTitle: 'Forecasting Agility' },
-  { id: 'obj_driver_based_planning', title: 'Driver-Based Planning', shortTitle: 'Driver-Based Planning' },
-  { id: 'obj_scenario_modeling', title: 'Scenario Modeling', shortTitle: 'Scenario Modeling' },
-  { id: 'obj_strategic_influence', title: 'Strategic Influence', shortTitle: 'Strategic Influence' },
-  { id: 'obj_decision_support', title: 'Decision Support', shortTitle: 'Decision Support' },
-  { id: 'obj_operational_excellence', title: 'Operational Excellence', shortTitle: 'Operational Excellence' }
+  { id: 'obj_budget_discipline', shortTitle: 'Budget Discipline' },
+  { id: 'obj_financial_controls', shortTitle: 'Financial Controls' },
+  { id: 'obj_performance_monitoring', shortTitle: 'Performance Monitoring' },
+  { id: 'obj_forecasting_agility', shortTitle: 'Forecasting Agility' },
+  { id: 'obj_driver_based_planning', shortTitle: 'Driver-Based Planning' },
+  { id: 'obj_scenario_modeling', shortTitle: 'Scenario Modeling' },
+  { id: 'obj_strategic_influence', shortTitle: 'Strategic Influence' },
+  { id: 'obj_decision_support', shortTitle: 'Decision Support' },
+  { id: 'obj_operational_excellence', shortTitle: 'Operational Excellence' }
 ];
 
 // Practice to objective mapping
@@ -60,8 +61,15 @@ const STATE_BG = {
   not_proven: 'bg-[#6699CC]'   // Light blue - gap
 };
 
+// Score to color for bubble
+function getScoreColor(score) {
+  if (score >= 70) return 'bg-emerald-500';
+  if (score >= 40) return 'bg-amber-500';
+  return 'bg-red-500';
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
-// PRACTICE BOX - Single activity tile
+// PRACTICE BOX - Single activity tile (compact)
 // ═══════════════════════════════════════════════════════════════════════════
 
 function PracticeBox({ practice }) {
@@ -70,17 +78,17 @@ function PracticeBox({ practice }) {
   return (
     <div
       className={`
-        ${bgColor} text-white rounded-sm p-2 relative
-        min-h-[50px] flex items-center justify-center text-center
+        ${bgColor} text-white rounded-sm px-1.5 py-1 relative
+        min-h-[36px] flex items-center justify-center text-center
       `}
     >
       {/* Maturity level badge - top right */}
-      <span className="absolute top-1 right-1 text-[10px] font-bold text-white/70">
+      <span className="absolute top-0.5 right-1 text-[9px] font-bold text-white/60">
         {practice.level}
       </span>
 
       {/* Practice title */}
-      <span className="text-[11px] font-medium leading-tight px-1">
+      <span className="text-[9px] font-medium leading-tight">
         {practice.title}
       </span>
     </div>
@@ -88,27 +96,27 @@ function PracticeBox({ practice }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// OBJECTIVE COLUMN - Header + practices stack
+// OBJECTIVE COLUMN - Card with header + practices stack
 // ═══════════════════════════════════════════════════════════════════════════
 
-function ObjectiveColumn({ objective, practices }) {
+function ObjectiveColumn({ objective, practices, score }) {
   return (
-    <div className="flex flex-col min-w-[110px] max-w-[130px]">
-      {/* Objective header */}
-      <div className="bg-[#002244] text-white rounded-t-sm p-2 text-center relative min-h-[56px] flex items-center justify-center">
-        {/* Level badge - top right */}
-        {practices.length > 0 && (
-          <span className="absolute top-1 right-1 text-[10px] font-bold text-white/70">
-            {Math.max(...practices.map(p => p.level))}
+    <div className="flex flex-col w-[100px] flex-shrink-0 border border-slate-300 rounded bg-slate-50 overflow-hidden">
+      {/* Objective header with score bubble */}
+      <div className="bg-[#001a33] text-white p-1.5 text-center relative min-h-[44px] flex items-center justify-center">
+        {/* Score bubble - top right */}
+        {score !== undefined && (
+          <span className={`absolute -top-0 -right-0 w-6 h-6 ${getScoreColor(score)} text-white text-[9px] font-bold rounded-bl-lg flex items-center justify-center`}>
+            {score}
           </span>
         )}
-        <span className="text-[11px] font-semibold leading-tight">
+        <span className="text-[9px] font-semibold leading-tight pr-3">
           {objective.shortTitle}
         </span>
       </div>
 
       {/* Practices stack */}
-      <div className="flex flex-col gap-1 pt-1">
+      <div className="flex flex-col gap-0.5 p-1 flex-1">
         {practices.map(practice => (
           <PracticeBox key={practice.id} practice={practice} />
         ))}
@@ -118,27 +126,27 @@ function ObjectiveColumn({ objective, practices }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// LEGEND
+// LEGEND (compact)
 // ═══════════════════════════════════════════════════════════════════════════
 
 function Legend() {
   return (
-    <div className="flex items-center gap-6 text-xs text-slate-500 mt-4">
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 bg-[#003366] rounded-sm" />
+    <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-200">
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 bg-[#003366] rounded-sm" />
         <span>Proven</span>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 bg-[#336699] rounded-sm" />
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 bg-[#336699] rounded-sm" />
         <span>Partial</span>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 bg-[#6699CC] rounded-sm" />
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 bg-[#6699CC] rounded-sm" />
         <span>Gap</span>
       </div>
-      <div className="flex items-center gap-2 ml-4 pl-4 border-l border-slate-200">
-        <span className="text-[10px] font-bold text-slate-400">1-4</span>
-        <span>Maturity Level</span>
+      <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-300">
+        <span className="text-[9px] font-bold text-slate-400">1-4</span>
+        <span>Level</span>
       </div>
     </div>
   );
@@ -148,7 +156,7 @@ function Legend() {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default function ObjectivesPracticesOverview({ levels }) {
+export default function ObjectivesPracticesOverview({ levels, objectiveScores = {} }) {
   // Flatten all practices from all levels and add level info
   const allPractices = [];
   (levels || []).forEach(level => {
@@ -181,43 +189,27 @@ export default function ObjectivesPracticesOverview({ levels }) {
   return (
     <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h2 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
           Objectives & Practices
         </h2>
-        <p className="text-[10px] text-slate-400 mt-1">
-          Overall Objectives (top row) with Functional Activities below
-        </p>
+        <span className="text-[9px] text-slate-400">
+          Score shown in corner
+        </span>
       </div>
 
-      {/* Grid container - horizontal scroll for smaller screens */}
-      <div className="p-4 overflow-x-auto">
-        <div className="flex gap-2 min-w-max">
-          {/* Y-axis label */}
-          <div className="flex flex-col justify-center pr-2">
-            <div
-              className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide"
-              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-            >
-              Functional Activities for each Objective
-            </div>
-          </div>
-
+      {/* Grid container */}
+      <div className="p-2 overflow-x-auto">
+        <div className="flex gap-1.5 justify-center">
           {/* Objective columns */}
           {OBJECTIVES.map(objective => (
             <ObjectiveColumn
               key={objective.id}
               objective={objective}
               practices={practicesByObjective[objective.id] || []}
+              score={objectiveScores[objective.id]}
             />
           ))}
-        </div>
-
-        {/* X-axis label */}
-        <div className="text-center mt-3">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-            Overall Objectives
-          </span>
         </div>
 
         {/* Legend */}

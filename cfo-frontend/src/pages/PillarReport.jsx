@@ -16,7 +16,9 @@ import InterpretationSection from '../components/report/InterpretationSection';
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Map objective IDs to themes (API doesn't include theme_id on objectives)
+// VS-26: Updated for new objective IDs
 const OBJECTIVE_THEME_MAP = {
+  // Old IDs (for backward compatibility)
   'obj_fpa_l1_budget': 'Foundation',
   'obj_fpa_l1_control': 'Foundation',
   'obj_fpa_l2_variance': 'Foundation',
@@ -24,7 +26,17 @@ const OBJECTIVE_THEME_MAP = {
   'obj_fpa_l3_driver': 'Future',
   'obj_fpa_l3_scenario': 'Intelligence',
   'obj_fpa_l4_integrate': 'Intelligence',
-  'obj_fpa_l4_predict': 'Intelligence'
+  'obj_fpa_l4_predict': 'Intelligence',
+  // New IDs (VS-26)
+  'obj_budget_discipline': 'Foundation',
+  'obj_financial_controls': 'Foundation',
+  'obj_performance_monitoring': 'Foundation',
+  'obj_forecasting_agility': 'Future',
+  'obj_driver_based_planning': 'Future',
+  'obj_scenario_modeling': 'Future',
+  'obj_strategic_influence': 'Intelligence',
+  'obj_decision_support': 'Intelligence',
+  'obj_operational_excellence': 'Intelligence'
 };
 
 export default function PillarReport() {
@@ -182,6 +194,12 @@ export default function PillarReport() {
 
   // Summary text from API
   const footprintSummary = maturityFootprint?.summary_text || '';
+
+  // Build objective scores map for the footprint grid (VS-27)
+  const objectiveScores = {};
+  objectives.forEach(obj => {
+    objectiveScores[obj.id] = obj.score;
+  });
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -345,6 +363,7 @@ export default function PillarReport() {
             levels={maturityLevels}
             focusNext={focusNext}
             summaryText={footprintSummary}
+            objectiveScores={objectiveScores}
           />
         )}
 

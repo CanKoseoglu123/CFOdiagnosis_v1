@@ -144,7 +144,7 @@ function Legend() {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default function MaturityFootprintGrid({ levels, focusNext, summaryText }) {
+export default function MaturityFootprintGrid({ levels, focusNext, summaryText, objectiveScores = {} }) {
   return (
     <div className="space-y-6">
       {/* ─────────────────────────────────────────────────────────────────── */}
@@ -164,7 +164,7 @@ export default function MaturityFootprintGrid({ levels, focusNext, summaryText }
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* OBJECTIVES & PRACTICES OVERVIEW (VS-27) */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <ObjectivesPracticesOverview levels={levels} />
+      <ObjectivesPracticesOverview levels={levels} objectiveScores={objectiveScores} />
 
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* MATURITY LADDER GRID */}
