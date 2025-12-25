@@ -18,6 +18,10 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+NUL
+
+# Supabase CLI
+supabase/.temp/
 
 # Logs
 *.log
