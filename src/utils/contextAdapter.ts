@@ -73,12 +73,18 @@ export function normalizeContext(raw: unknown): NormalizedContext {
       change_appetite: asString(ctx.change_appetite)
     },
     pillar: ctx.systems || ctx.tools || ctx.pain_points ? {
-      tools: asStringArray(ctx.tools) || asStringArray(ctx.systems) || [],
+      tools: ctx.tools
+        ? (Array.isArray(ctx.tools) ? ctx.tools.filter((v: unknown): v is string => typeof v === 'string') : [String(ctx.tools)])
+        : ctx.systems
+          ? (Array.isArray(ctx.systems) ? ctx.systems.filter((v: unknown): v is string => typeof v === 'string') : [String(ctx.systems)])
+          : [],
       other_tool: asString(ctx.other_tool),
       team_size: asString(ctx.team_size),
       forecast_frequency: asString(ctx.forecast_frequency),
       budget_process: asStringArray(ctx.budget_process) || [],
-      pain_points: asStringArray(ctx.pain_points) || [],
+      pain_points: ctx.pain_points
+        ? (Array.isArray(ctx.pain_points) ? ctx.pain_points.filter((v: unknown): v is string => typeof v === 'string') : [String(ctx.pain_points)])
+        : [],
       other_pain_point: asString(ctx.other_pain_point),
       user_role: asString(ctx.user_role),
       other_role: asString(ctx.other_role),
