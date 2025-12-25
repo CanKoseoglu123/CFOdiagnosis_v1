@@ -1,4 +1,4 @@
-# Session Start Prompt — December 25, 2025
+# Session Start Prompt — December 26, 2025
 
 Copy and paste this entire prompt to start your session:
 
@@ -37,118 +37,169 @@ You have FULL AUTONOMY to:
 
 ---
 
-## Today's Priority Tasks
+## Session Completed Yesterday (Dec 25)
 
-### 1. Interpretation Flow & Pages (HIGH PRIORITY)
-
-**Goal:** Ensure the user can complete the full interpretation flow from start to finish.
-
-**Current State:**
-- Backend API endpoints working: `/interpret/start`, `/status`, `/answer`, `/report`
-- No frontend UI for the interpretation flow yet
-
-**Needed Pages/Components:**
-1. **InterpretationPage** (`/run/:runId/interpret`)
-   - Triggers interpretation after calibration
-   - Shows progress while AI generates
-   - Displays clarifying questions when `awaiting_user`
-   - Submits answers and polls for completion
-
-2. **Update PillarReport**
-   - Fetch and display interpreted synthesis if available
-   - Show "Executive Interpretation" section with AI-generated content
-
-**API Flow to Wire Up:**
-```
-POST /diagnostic-runs/:id/interpret/start → 202 + poll_url
-GET  /diagnostic-runs/:id/interpret/status → {status, questions?}
-POST /diagnostic-runs/:id/interpret/answer → {answers: {...}}
-GET  /diagnostic-runs/:id/interpret/report → {synthesis, priority_rationale, key_insight}
-```
-
-**Test Run ID:** `9751a455-8855-4e54-aa84-cda70a49ea16` (has interpretation session in `awaiting_user` state)
+1. ✅ VS-28 Action Planning & Simulator — Full war room with gap selection, timelines, projections
+2. ✅ VS-29 Global Sidebar Layout — AppShell + WorkflowSidebar pattern
+3. ✅ ActionSidebar inside Action Planning content (interactive, not global)
+4. ✅ Fixed React hooks violation (useMemo before early returns)
+5. ✅ Three-tab report structure: Overview | Maturity Footprint | Action Planning
 
 ---
 
-### 2. AI Output Quality (MEDIUM PRIORITY)
+## Today's Priority Tasks
 
-**Goal:** Verify the AI-generated content is valuable and well-formatted.
+### 1. MCQ Page Separation (HIGH PRIORITY) — VS-30
 
-**Check Points:**
-- [ ] Synthesis is concise (200-300 words target)
-- [ ] Priority rationale explains why actions are ordered
-- [ ] Key insight provides actionable value
-- [ ] Questions are relevant to gaps identified
-- [ ] No hallucinations or generic responses
+**Goal:** Separate the 48 questions into 3 theme-based pages with improved UI quality.
 
-**Test Script:**
+**Current State:**
+- All questions on single `/assess` page
+- Basic list format, not visually polished
+
+**Target State:**
+- **Page 1: Foundation** — L1/L2 questions (Budget, Controls, Variance, Forecasting)
+- **Page 2: Future** — L3 questions (Driver-Based Planning, Scenario Modeling)
+- **Page 3: Intelligence** — L4 questions (Strategic Influence, Predictive Analytics)
+
+**UI Requirements:**
+- Individual card per question (like Action Planning cards)
+- Clear typography (question title prominent, help text secondary)
+- Yes/No/Unsure toggle buttons (not basic checkboxes)
+- Progress indicator showing theme completion
+- Consistent with Action Planning design quality
+
+**Files to Create/Modify:**
+- `cfo-frontend/src/pages/AssessFoundation.jsx` — Theme 1 questions
+- `cfo-frontend/src/pages/AssessFuture.jsx` — Theme 2 questions
+- `cfo-frontend/src/pages/AssessIntelligence.jsx` — Theme 3 questions
+- `cfo-frontend/src/components/QuestionCard.jsx` — Reusable question card
+- `cfo-frontend/src/App.jsx` — Add routes
+
+**Theme Mapping:**
+```javascript
+const THEME_OBJECTIVES = {
+  foundation: ['obj_budget_discipline', 'obj_financial_controls', 'obj_performance_monitoring', 'obj_forecasting_agility'],
+  future: ['obj_driver_based_planning', 'obj_scenario_modeling'],
+  intelligence: ['obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence']
+};
+```
+
+---
+
+### 2. Maturity Ladder Completion (HIGH PRIORITY)
+
+**Goal:** Finalize the maturity ladder visualization that shows progression L1 → L2 → L3 → L4.
+
+**Current State:**
+- MaturityFootprintGrid shows practices grid
+- No clear "ladder" showing level progression with gates
+
+**Target State:**
+- Visual ladder/staircase showing 4 levels
+- Each level shows: name, threshold, practices count, current status
+- Gates between levels (locked/unlocked based on critical questions)
+- Current position highlighted
+
+**Possible Component:**
+- `cfo-frontend/src/components/report/MaturityLadder.jsx`
+
+---
+
+### 3. AI Fine-Tuning (MEDIUM PRIORITY) — VS-31
+
+**Goal:** Improve AI interpretation quality and follow-up question impact.
+
+**Tasks:**
+1. Review generated interpretations for quality
+2. Tune prompts in `src/interpretation/prompts.ts` if needed
+3. Ensure follow-up answers affect the final summary
+4. Verify tonality matches score (celebrate/refine/remediate/urgent)
+
+**Test Commands:**
 ```bash
 TEST_PASSWORD=123456 node scripts/get-auth-token.js
 AUTH_TOKEN="<token>" node scripts/test-interpretation.js
 ```
 
-**If Quality Issues Found:**
-- Adjust prompts in `src/interpretation/prompts.ts`
-- Tune temperatures in `src/interpretation/config.ts`
+---
+
+### 4. Printable Report Foundation (MEDIUM PRIORITY) — VS-32
+
+**Goal:** Set up the foundation for final printable PDF report.
+
+**Requirements:**
+- Print-optimized CSS (hide nav, fix widths)
+- Executive summary one-pager
+- Full report with all sections
+- Browser print or jsPDF integration
+
+**Files to Consider:**
+- `cfo-frontend/src/pages/PrintableReport.jsx`
+- `cfo-frontend/src/styles/print.css`
 
 ---
 
-### 3. Hierarchy Clarity (MEDIUM PRIORITY)
+## Design System Reference
 
-**Goal:** Ensure the Objective → Practice → Question hierarchy is clear and correctly wired.
-
-**Current Hierarchy:**
+**Colors (Gartner-inspired):**
+```css
+--slate-800: #1e293b;  /* Headers, primary text */
+--slate-600: #475569;  /* Secondary text */
+--slate-300: #cbd5e1;  /* Borders */
+--slate-50:  #f8fafc;  /* Backgrounds */
+--blue-600:  #2563eb;  /* Primary actions */
+--emerald-500: #10b981; /* Success/evidenced */
+--amber-400: #fbbf24;   /* Partial/warning */
+--red-600:  #dc2626;    /* Critical/error */
 ```
-Pillar (FP&A)
-└── Objective (8 total) — "What we're trying to achieve"
-    ├── obj_fpa_l1_budget: "Budget Foundation"
-    ├── obj_fpa_l1_control: "Financial Controls"
-    ├── obj_fpa_l2_variance: "Variance Analysis"
-    ├── obj_fpa_l2_forecast: "Forecasting"
-    ├── obj_fpa_l3_driver: "Driver-Based Planning"
-    ├── obj_fpa_l3_integrate: "Integrated Planning"
-    ├── obj_fpa_l4_scenario: "Scenario Modeling"
-    └── obj_fpa_l4_predict: "Predictive Analytics"
 
-    └── Practice (21 total) — "How we achieve it"
-        └── Question (48 total) — "Evidence of practice"
+**Card Pattern (from Action Planning):**
+```jsx
+<div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+  <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+      Card Title
+    </h3>
+  </div>
+  <div className="p-4">
+    {/* Content */}
+  </div>
+</div>
 ```
 
-**JSON Files (Source of Truth):**
-- `content/questions.json` — 48 questions with `objective_id`, `practice_id`
-- `content/practices.json` — 21 practices with `objective_id`
-- `content/objectives.json` — 8 objectives
+**Button Styles:**
+```jsx
+// Primary
+className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700"
 
-**Validation Task:**
-1. Verify all 48 questions have valid `practice_id`
-2. Verify all 21 practices have valid `objective_id`
-3. Ensure no orphaned entities
+// Secondary
+className="px-4 py-2 bg-white text-slate-600 text-sm font-medium rounded border border-slate-300 hover:bg-slate-50"
 
----
+// Toggle (selected)
+className="px-4 py-2 bg-slate-800 text-white text-sm font-medium"
 
-## Technical Debt / Nice-to-Have
-
-### 4. Error Handling for Interpretation
-
-- What happens if OpenAI API fails mid-pipeline?
-- Need graceful fallback with user-friendly message
-- Consider retry logic for transient failures
-
-### 5. Test Coverage
-
-- Add tests for interpretation pipeline (`src/interpretation/__tests__/`)
-- Validate prompt outputs with mock responses
-
-### 6. Documentation Update
-
-- Update CLAUDE.md with VS-25 interpretation layer details
-- Add interpretation flow to user documentation
+// Toggle (unselected)
+className="px-4 py-2 bg-white text-slate-600 text-sm font-medium hover:bg-slate-50"
+```
 
 ---
 
-## Quick Reference
+## Key Files Reference
 
-### Content Hierarchy
+| Purpose | File |
+|---------|------|
+| Current Assessment Page | `cfo-frontend/src/pages/DiagnosticInput.jsx` |
+| Report Page | `cfo-frontend/src/pages/PillarReport.jsx` |
+| Action Planning Tab | `cfo-frontend/src/components/report/ActionPlanTab.jsx` |
+| Question Card Reference | `cfo-frontend/src/components/report/CommandCenter.jsx` |
+| Global Sidebar | `cfo-frontend/src/components/WorkflowSidebar.jsx` |
+| App Routes | `cfo-frontend/src/App.jsx` |
+| Design System | `DESIGN_SYSTEM.md` |
+
+---
+
+## Content Hierarchy
 
 | Entity | Count | JSON File |
 |--------|-------|-----------|
@@ -157,82 +208,47 @@ Pillar (FP&A)
 | Questions | 48 | `content/questions.json` |
 | Initiatives | 9 | `content/initiatives.json` |
 
-### AI Model Config
-
-| Agent | Model | Temperature | Purpose |
-|-------|-------|-------------|---------|
-| Generator | gpt-4o | 0.7 | Report writing |
-| Critic | gpt-4o-mini | 0.3 | Quality assessment |
-
-### Safety Limits
-
-| Limit | Value | Purpose |
-|-------|-------|---------|
-| maxRounds | 2 | Prevent infinite loops |
-| maxQuestionsTotal | 5 | Limit user burden |
-| maxTokensPerSession | 20000 | Cost control |
-| maxAICallsPerSession | 8 | API rate control |
-
 ---
 
-## Commands Reference
+## Quick Commands
 
 ```bash
 # Get fresh auth token
 TEST_PASSWORD=123456 node scripts/get-auth-token.js
 
-# Test interpretation endpoint
-AUTH_TOKEN="<token>" node scripts/test-interpretation.js [runId]
+# Build frontend
+cd cfo-frontend && npm run build
 
-# Build backend
-npm run build
+# Run backend
+npm run dev
 
 # Run all tests
 npm run test:all
-
-# Build frontend
-cd cfo-frontend && npm run build
 ```
 
 ---
 
-## Key Files for Today
+## End Goal for V1.0 Completion
 
-| Purpose | File |
-|---------|------|
-| Interpretation Pipeline | `src/interpretation/pipeline.ts` |
-| AI Prompts | `src/interpretation/prompts.ts` |
-| API Endpoints | `src/index.ts` (lines 683-1120) |
-| Config/Limits | `src/interpretation/config.ts` |
-| Report Page | `cfo-frontend/src/pages/PillarReport.jsx` |
-| Calibration Page | `cfo-frontend/src/pages/CalibrationPage.jsx` |
+After today's work:
+1. ✅ 3-page MCQ flow with polished UI
+2. ✅ Maturity ladder visualization complete
+3. ✅ AI interpretations fine-tuned
+4. ✅ Foundation for printable report
 
----
-
-## Session Completed Yesterday (Dec 24)
-
-1. ✅ VS-25 AI Interpretation Layer — Backend complete with OpenAI
-2. ✅ Supabase migration for interpretation tables
-3. ✅ Safety limits (tokens, calls, rounds)
-4. ✅ Lazy OpenAI client initialization (prevents crash if no key)
-5. ✅ End-to-end test showing questions generated
-
-**Test Result:**
-```
-Response received in 20.9s
-Status: 202
-Questions: 5 clarifying questions generated
-Status: awaiting_user
-```
+**Next Session (Dec 27):**
+- Finalize printable report
+- End-to-end QA testing
+- Polish any remaining UI issues
 
 ---
 
 ## Start Working
 
-1. First, get a fresh auth token for API testing
-2. Review the interpretation test result from yesterday
-3. Create InterpretationPage component for the flow
-4. Wire up the pages in App.jsx routing
-5. Test the full flow: Calibrate → Interpret → Report
+1. Review the current `/assess` page to understand question structure
+2. Create theme-based assessment pages with card-based UI
+3. Add progress indicators and navigation between themes
+4. Implement maturity ladder component for report
+5. Test full flow: Setup → Assess (3 pages) → Calibrate → Report
 
 GO!

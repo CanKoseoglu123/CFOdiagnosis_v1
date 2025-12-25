@@ -58,11 +58,16 @@ CFOdiagnosis_v1/
 │   ├── src/
 │   │   ├── App.jsx               # Routes, auth, navigation
 │   │   ├── pages/
-│   │   │   ├── PillarReport.jsx  # Main report (V2.8.0)
+│   │   │   ├── PillarReport.jsx  # Main report with 3 tabs (VS-28)
 │   │   │   └── CalibrationPage.jsx # VS21 importance calibration
 │   │   ├── components/
 │   │   │   ├── AppShell.jsx      # Responsive layout wrapper
+│   │   │   ├── WorkflowSidebar.jsx # Global sidebar (VS-29)
 │   │   │   └── report/           # Report components
+│   │   │       ├── ActionPlanTab.jsx   # Action Planning (VS-28)
+│   │   │       ├── SimulatorHUD.jsx    # Score projections (VS-28)
+│   │   │       ├── CommandCenter.jsx   # Gap list with controls (VS-28)
+│   │   │       └── ActionSidebar.jsx   # Interactive sidebar (VS-28)
 │   │   └── data/
 │   │       └── spec.js           # Question titles, lookups
 │   └── tailwind.config.js        # Gartner enterprise colors
@@ -101,6 +106,9 @@ CFOdiagnosis_v1/
 | POST | `/diagnostic-runs/:id/interpret/start` | Start AI interpretation (VS25) | Yes |
 | GET | `/diagnostic-runs/:id/interpret/status` | Poll interpretation status | Yes |
 | GET | `/diagnostic-runs/:id/interpret/report` | Get interpreted report | Yes |
+| GET | `/diagnostic-runs/:id/action-plan` | Get saved action plan (VS28) | Yes |
+| POST | `/diagnostic-runs/:id/action-plan` | Upsert action item (VS28) | Yes |
+| DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action item (VS28) | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -259,6 +267,8 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-23: Maturity Footprint | 21 practices grid with evidence states |
 | VS-24: JSON Content Catalog | Zod-validated content in `content/*.json` |
 | VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
+| VS-28: Action Planning | War room for gap selection, timelines, projections |
+| VS-29: Global Sidebar | AppShell + WorkflowSidebar layout pattern |
 
 ---
 
