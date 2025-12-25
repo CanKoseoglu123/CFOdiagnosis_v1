@@ -99,7 +99,20 @@ export const FORECAST_FREQUENCIES = [
   { value: 'rolling', label: 'Rolling' }
 ];
 
-// Budget process types
+// Budget process types - base (mutually exclusive)
+export const BUDGET_PROCESS_BASE = [
+  { value: 'top_down', label: 'Top-down' },
+  { value: 'bottom_up', label: 'Bottom-up' },
+  { value: 'hybrid', label: 'Hybrid' }
+];
+
+// Budget process modifiers (can be added to base)
+export const BUDGET_PROCESS_MODIFIERS = [
+  { value: 'driver_based', label: 'Driver-based' },
+  { value: 'zero_based', label: 'Zero-based' }
+];
+
+// Legacy: Combined for backward compatibility
 export const BUDGET_PROCESSES = [
   { value: 'top_down', label: 'Top-down only' },
   { value: 'bottom_up', label: 'Bottom-up only' },

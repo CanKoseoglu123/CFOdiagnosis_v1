@@ -1,6 +1,7 @@
 // IntroPage.jsx
 // Intro page wrapped with AppShell layout
 
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { CheckCircle, Target, AlertTriangle, Zap } from 'lucide-react';
 import AppShell from './components/AppShell';
@@ -43,6 +44,11 @@ const maturityLevels = [
 
 export default function IntroPage() {
   const { runId } = useParams();
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <AppShell sidebarContent={<IntroSidebar />}>

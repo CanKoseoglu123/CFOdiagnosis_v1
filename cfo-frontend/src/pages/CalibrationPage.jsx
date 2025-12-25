@@ -189,6 +189,11 @@ export default function CalibrationPage() {
     fetchData();
   }, [runId]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Update importance for an objective
   const handleImportanceChange = (objectiveId, value) => {
     setImportanceMap(prev => ({

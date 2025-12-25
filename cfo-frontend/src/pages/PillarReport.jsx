@@ -40,6 +40,11 @@ export default function PillarReport() {
     }
   }, [runId]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   async function fetchReport() {
     try {
       setLoading(true);

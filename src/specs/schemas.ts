@@ -333,7 +333,7 @@ export const PillarContextSchema = z.object({
   // Team & Process
   team_size: TeamSizeSchema.optional(),
   forecast_frequency: ForecastFrequencySchema.optional(),
-  budget_process: BudgetProcessSchema.optional(),
+  budget_process: z.array(BudgetProcessSchema).max(3).optional(), // Array: 1 base + up to 2 modifiers
   // Pain Points
   pain_points: z.array(PainPointsSchema).max(5).optional(),
   other_pain_point: z.string().max(100).optional(),

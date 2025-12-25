@@ -188,6 +188,11 @@ export default function CompanySetupPage() {
     }
   }, [runId, navigate]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const isValid = () => {
     return company.name && company.industry && company.revenue_range &&
            company.employee_count && company.finance_structure &&

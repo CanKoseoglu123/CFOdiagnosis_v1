@@ -259,6 +259,11 @@ export default function DiagnosticInput() {
     verifyRun();
   }, [urlRunId, navigate]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Fetch full spec from backend on mount
   useEffect(() => {
     const fetchSpec = async () => {

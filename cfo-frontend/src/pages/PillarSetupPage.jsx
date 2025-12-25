@@ -14,7 +14,7 @@ import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import {
   PLANNING_TOOLS, TEAM_SIZES, FORECAST_FREQUENCIES,
-  BUDGET_PROCESSES, PAIN_POINTS, USER_ROLES
+  BUDGET_PROCESS_BASE, BUDGET_PROCESS_MODIFIERS, PAIN_POINTS, USER_ROLES
 } from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -98,6 +98,68 @@ function MultiChipSelector({ label, icon: Icon, value, onChange, options, maxSel
   );
 }
 
+// Budget process selector with base (mutually exclusive) + modifiers (additive)
+function BudgetProcessSelector({ baseValue, modifiersValue, onBaseChange, onModifiersChange }) {
+  const toggleModifier = (mod) => {
+    if (modifiersValue.includes(mod)) {
+      onModifiersChange(modifiersValue.filter(v => v !== mod));
+    } else {
+      onModifiersChange([...modifiersValue, mod]);
+    }
+  };
+
+  return (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <span className="flex items-center gap-2">
+          <Target size={16} className="text-gray-500" />
+          How would you describe your budget process?
+        </span>
+      </label>
+
+      {/* Base process - mutually exclusive */}
+      <p className="text-xs text-gray-500 mb-2">Select primary approach:</p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {BUDGET_PROCESS_BASE.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onBaseChange(opt.value)}
+            className={`px-4 py-2 rounded border text-sm font-medium transition-all
+              ${baseValue === opt.value
+                ? 'border-blue-600 bg-blue-50 text-blue-700 border-2'
+                : 'border-gray-300 hover:border-gray-400 text-gray-600'}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Modifiers - can select multiple */}
+      <p className="text-xs text-gray-500 mb-2">Additional approaches (optional):</p>
+      <div className="flex flex-wrap gap-2">
+        {BUDGET_PROCESS_MODIFIERS.map((opt) => {
+          const isSelected = modifiersValue.includes(opt.value);
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => toggleModifier(opt.value)}
+              className={`px-4 py-2 rounded border text-sm font-medium transition-all flex items-center gap-2
+                ${isSelected
+                  ? 'border-blue-600 bg-blue-50 text-blue-700 border-2'
+                  : 'border-gray-300 hover:border-gray-400 text-gray-600'}`}
+            >
+              {isSelected && <Check size={14} />}
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function PillarSetupPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
@@ -114,7 +176,8 @@ export default function PillarSetupPage() {
     // Team & Process
     team_size: '',
     forecast_frequency: '',
-    budget_process: '',
+    budget_process_base: '',      // One of: top_down, bottom_up, hybrid
+    budget_process_modifiers: [], // Any of: driver_based, zero_based
     // Pain Points
     pain_points: [],
     other_pain_point: '',
@@ -182,6 +245,11 @@ export default function PillarSetupPage() {
     }
   }, [runId, navigate]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const isValid = () => {
     return pillar.tools.length >= 1;
   };
@@ -197,11 +265,25 @@ export default function PillarSetupPage() {
     setError(null);
 
     try {
+      // Combine budget process base and modifiers into single array for API
+      const budget_process = [
+        ...(pillar.budget_process_base ? [pillar.budget_process_base] : []),
+        ...pillar.budget_process_modifiers
+      ];
+
+      const pillarData = {
+        ...pillar,
+        budget_process, // Combined array
+      };
+      // Remove the separate fields before sending
+      delete pillarData.budget_process_base;
+      delete pillarData.budget_process_modifiers;
+
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/setup`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ company, pillar })
+        body: JSON.stringify({ company, pillar: pillarData })
       });
 
       if (!response.ok) {
@@ -304,12 +386,11 @@ export default function PillarSetupPage() {
               options={FORECAST_FREQUENCIES}
             />
 
-            <ChipSelector
-              label="How would you describe your budget process?"
-              icon={Target}
-              value={pillar.budget_process}
-              onChange={(v) => setPillar({ ...pillar, budget_process: v })}
-              options={BUDGET_PROCESSES}
+            <BudgetProcessSelector
+              baseValue={pillar.budget_process_base}
+              modifiersValue={pillar.budget_process_modifiers}
+              onBaseChange={(v) => setPillar({ ...pillar, budget_process_base: v })}
+              onModifiersChange={(v) => setPillar({ ...pillar, budget_process_modifiers: v })}
             />
           </div>
 
