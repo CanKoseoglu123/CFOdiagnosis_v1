@@ -178,3 +178,168 @@ export const THEME_CONFIG: Record<ThemeId, { label: string; description: string 
     description: "Drive decisions: strategic influence, analytics"
   }
 };
+
+// === VS25: CONTEXT INTAKE SCHEMAS ===
+
+// Company Context Enums
+export const IndustrySchema = z.enum([
+  'saas',
+  'manufacturing',
+  'retail_ecom',
+  'professional_services',
+  'fintech',
+  'healthcare',
+  'other'
+]);
+
+export const RevenueRangeSchema = z.enum([
+  'under_10m',
+  '10m_50m',
+  '50m_250m',
+  'over_250m'
+]);
+
+export const EmployeeCountSchema = z.enum([
+  '1_50',
+  '51_200',
+  '201_1000',
+  'over_1000'
+]);
+
+export const FinanceStructureSchema = z.enum([
+  'centralized',
+  'decentralized',
+  'hybrid'
+]);
+
+export const ChangeAppetiteSchema = z.enum([
+  'optimize',    // Fix basics, low disruption
+  'standardize', // Scale, medium disruption
+  'transform'    // Reinvent, high disruption
+]);
+
+// Pillar Context Enums
+export const SystemsSchema = z.enum([
+  'excel_sheets',      // Manual
+  'anaplan_adaptive',  // Modern CPM
+  'sap_oracle',        // Legacy ERP
+  'bi_tools',          // Tableau, PowerBI
+  'other'
+]);
+
+export const PainPointsSchema = z.enum([
+  'long_budget_cycles',
+  'data_accuracy',
+  'manual_consolidation',
+  'lack_of_insights',
+  'business_partnership'
+]);
+
+// Company Context Object
+export const CompanyContextSchema = z.object({
+  name: z.string().min(1).max(100),
+  industry: IndustrySchema,
+  revenue_range: RevenueRangeSchema,
+  employee_count: EmployeeCountSchema,
+  finance_structure: FinanceStructureSchema,
+  change_appetite: ChangeAppetiteSchema
+});
+
+// Pillar Context Object (FP&A Specific)
+export const PillarContextSchema = z.object({
+  ftes: z.number().min(0).max(100).multipleOf(0.5),
+  systems: z.array(SystemsSchema).min(1).max(5),
+  complexity: z.object({
+    business_units: z.number().int().min(1).max(50),
+    currencies: z.number().int().min(1).max(20),
+    legal_entities: z.number().int().min(1).max(50)
+  }),
+  pain_points: z.array(PainPointsSchema).max(3),
+  ongoing_projects: z.string().max(200).optional()
+});
+
+// Full Context v1 Schema
+export const DiagnosticContextV1Schema = z.object({
+  version: z.literal('v1'),
+  company: CompanyContextSchema,
+  pillar: PillarContextSchema
+});
+
+// Legacy Context Schema (pre-v1)
+export const LegacyContextSchema = z.object({
+  company_name: z.string().optional(),
+  industry: z.string().optional()
+});
+
+// Union of all context versions
+export const DiagnosticContextSchema = z.union([
+  DiagnosticContextV1Schema,
+  LegacyContextSchema
+]);
+
+// Type exports
+export type Industry = z.infer<typeof IndustrySchema>;
+export type RevenueRange = z.infer<typeof RevenueRangeSchema>;
+export type EmployeeCount = z.infer<typeof EmployeeCountSchema>;
+export type FinanceStructure = z.infer<typeof FinanceStructureSchema>;
+export type ChangeAppetite = z.infer<typeof ChangeAppetiteSchema>;
+export type Systems = z.infer<typeof SystemsSchema>;
+export type PainPoints = z.infer<typeof PainPointsSchema>;
+export type CompanyContext = z.infer<typeof CompanyContextSchema>;
+export type PillarContext = z.infer<typeof PillarContextSchema>;
+export type DiagnosticContextV1 = z.infer<typeof DiagnosticContextV1Schema>;
+export type DiagnosticContext = z.infer<typeof DiagnosticContextSchema>;
+
+// === CONTEXT DISPLAY LABELS ===
+
+export const INDUSTRY_LABELS: Record<Industry, string> = {
+  saas: 'SaaS',
+  manufacturing: 'Manufacturing',
+  retail_ecom: 'Retail / E-commerce',
+  professional_services: 'Professional Services',
+  fintech: 'Fintech',
+  healthcare: 'Healthcare',
+  other: 'Other'
+};
+
+export const REVENUE_RANGE_LABELS: Record<RevenueRange, string> = {
+  under_10m: '< $10M',
+  '10m_50m': '$10M - $50M',
+  '50m_250m': '$50M - $250M',
+  over_250m: '$250M+'
+};
+
+export const EMPLOYEE_COUNT_LABELS: Record<EmployeeCount, string> = {
+  '1_50': '1 - 50',
+  '51_200': '51 - 200',
+  '201_1000': '201 - 1,000',
+  over_1000: '1,000+'
+};
+
+export const FINANCE_STRUCTURE_LABELS: Record<FinanceStructure, string> = {
+  centralized: 'Centralized',
+  decentralized: 'Decentralized (BU-led)',
+  hybrid: 'Hybrid'
+};
+
+export const CHANGE_APPETITE_LABELS: Record<ChangeAppetite, { label: string; description: string }> = {
+  optimize: { label: 'Optimize', description: 'Fix basics, low disruption' },
+  standardize: { label: 'Standardize', description: 'Scale processes, medium disruption' },
+  transform: { label: 'Transform', description: 'Reinvent the function, high disruption' }
+};
+
+export const SYSTEMS_LABELS: Record<Systems, string> = {
+  excel_sheets: 'Excel / Google Sheets',
+  anaplan_adaptive: 'Anaplan / Adaptive Insights',
+  sap_oracle: 'SAP / Oracle EPM',
+  bi_tools: 'BI Tools (Tableau, PowerBI)',
+  other: 'Other'
+};
+
+export const PAIN_POINTS_LABELS: Record<PainPoints, string> = {
+  long_budget_cycles: 'Long Budget Cycles',
+  data_accuracy: 'Data Accuracy / Trust Issues',
+  manual_consolidation: 'Manual Consolidation',
+  lack_of_insights: 'Lack of Actionable Insights',
+  business_partnership: 'Weak Business Partnership'
+};

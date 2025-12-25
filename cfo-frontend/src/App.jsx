@@ -8,7 +8,7 @@ import DiagnosticInput from './DiagnosticInput'
 import FinanceDiagnosticReport from './FinanceDiagnosticReport'
 import PillarReport from './pages/PillarReport'
 import CalibrationPage from './pages/CalibrationPage'
-import SetupPage from './SetupPage'
+import ContextWizard from './components/ContextWizard'
 import IntroPage from './IntroPage'
 import { LogOut } from 'lucide-react'
 import { useState } from 'react'
@@ -130,7 +130,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/run/:runId/setup" element={
             <ProtectedRoute>
-              <SetupPage />
+              <ContextWizard />
             </ProtectedRoute>
           } />
           <Route path="/run/:runId/intro" element={

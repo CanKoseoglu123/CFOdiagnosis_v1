@@ -21,6 +21,12 @@ import {
 } from "./interpretation";
 import { deriveCriticalRisks } from "./risks";
 import { calculateMaturityV2 } from "./maturity/engine";
+import {
+  DiagnosticContextV1Schema,
+  CompanyContextSchema,
+  PillarContextSchema,
+  DiagnosticContextV1
+} from "./specs/schemas";
 
 const app = express();
 app.use(cors({
@@ -180,16 +186,47 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS18 — Complete setup (save context, mark setup complete)
+// VS18/VS25 — Complete setup (save context, mark setup complete)
+// Accepts either legacy format { company_name, industry } or v1 format { company, pillar }
 // ------------------------------------------------------------------
 app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   const runId = req.params.id;
-  const { company_name, industry } = req.body;
+  const body = req.body;
 
-  if (!company_name || !industry) {
-    return res.status(400).json({
-      error: "company_name and industry are required",
+  // Detect format: v1 has 'company' object, legacy has 'company_name' string
+  const isV1Format = body.company && typeof body.company === 'object';
+
+  let context: DiagnosticContextV1 | { company_name: string; industry: string };
+
+  if (isV1Format) {
+    // VS25: Full v1 context validation
+    const result = DiagnosticContextV1Schema.safeParse({
+      version: 'v1',
+      company: body.company,
+      pillar: body.pillar
     });
+
+    if (!result.success) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: result.error.issues.map((i) =>
+          `${String(i.path.join('.'))}: ${i.message}`
+        )
+      });
+    }
+
+    context = result.data;
+  } else {
+    // Legacy format: just company_name and industry
+    const { company_name, industry } = body;
+
+    if (!company_name || !industry) {
+      return res.status(400).json({
+        error: "company_name and industry are required (legacy format), or provide company and pillar objects (v1 format)",
+      });
+    }
+
+    context = { company_name, industry };
   }
 
   // Verify run exists
@@ -207,7 +244,7 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
     .update({
-      context: { company_name, industry },
+      context,
       setup_completed_at: new Date().toISOString(),
       status: "in_progress",
     })
