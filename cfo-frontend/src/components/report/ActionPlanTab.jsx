@@ -1,10 +1,12 @@
 // src/components/report/ActionPlanTab.jsx
 // VS-28: Action Planning & Simulator - War Room for maturity improvement
+// Includes ActionSidebar inside content container for interactive metrics
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
+import ActionSidebar from './ActionSidebar';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -23,7 +25,8 @@ export default function ActionPlanTab({
   questions = [],
   initiatives = [],
   objectives = [],
-  onStatsChange
+  companyName,
+  industry
 }) {
   // View mode: 'actions' or 'initiatives'
   const [viewMode, setViewMode] = useState('actions');
@@ -274,18 +277,20 @@ export default function ActionPlanTab({
     return counts;
   }, [actionPlan]);
 
-  // Report stats to parent for sidebar (VS-28 page-level sidebar)
-  useEffect(() => {
-    if (onStatsChange) {
-      onStatsChange({
-        totalGaps: gaps.length,
-        selectedCount: actionCounts.total,
-        assignedCount: actionCounts['6m'] + actionCounts['12m'] + actionCounts['24m'],
-        timelineCounts: actionCounts,
-        saving
-      });
-    }
-  }, [gaps.length, actionCounts, saving, onStatsChange]);
+  // Sidebar navigation handlers
+  function handleSidebarBack() {
+    // Could scroll to top or change view
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function handleSidebarProceed() {
+    // Show completion message
+    alert('Action plan saved! Your selections have been automatically saved.');
+  }
+
+  function handleSidebarSave() {
+    // Already auto-saving, this is just a manual trigger indication
+  }
 
   if (loading) {
     return (
@@ -296,61 +301,86 @@ export default function ActionPlanTab({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Simulator HUD */}
-      <SimulatorHUD
-        executionScore={executionScores.current}
-        projectedScore={executionScores.projected}
-        objectives={objectives}
-        projectedByTimeline={projectedByTimeline}
-        actionCounts={actionCounts}
-        gapsTotal={gaps.length}
-        saving={saving}
-      />
+    <div className="flex gap-4">
+      {/* ─────────────────────────────────────────────────────────────────────── */}
+      {/* MAIN CONTENT - Actions List */}
+      {/* ─────────────────────────────────────────────────────────────────────── */}
+      <div className="flex-1 min-w-0 space-y-4">
+        {/* Simulator HUD */}
+        <SimulatorHUD
+          executionScore={executionScores.current}
+          projectedScore={executionScores.projected}
+          objectives={objectives}
+          projectedByTimeline={projectedByTimeline}
+          actionCounts={actionCounts}
+          gapsTotal={gaps.length}
+          saving={saving}
+        />
 
-      {/* View Mode Toggle */}
-      <div className="bg-white border border-slate-300 rounded-sm p-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-600">View:</span>
-          <div className="flex border border-slate-300 rounded overflow-hidden">
-            <button
-              onClick={() => setViewMode('actions')}
-              className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                viewMode === 'actions'
-                  ? 'bg-slate-800 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              By Objective
-            </button>
-            <button
-              onClick={() => setViewMode('initiatives')}
-              className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                viewMode === 'initiatives'
-                  ? 'bg-slate-800 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              By Initiative
-            </button>
+        {/* View Mode Toggle */}
+        <div className="bg-white border border-slate-300 rounded-sm p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">View:</span>
+            <div className="flex border border-slate-300 rounded overflow-hidden">
+              <button
+                onClick={() => setViewMode('actions')}
+                className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === 'actions'
+                    ? 'bg-slate-800 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                By Objective
+              </button>
+              <button
+                onClick={() => setViewMode('initiatives')}
+                className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === 'initiatives'
+                    ? 'bg-slate-800 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                By Initiative
+              </button>
+            </div>
+          </div>
+          <div className="text-xs text-slate-400">
+            {saving ? 'Saving...' : 'Auto-saved'}
           </div>
         </div>
-        <div className="text-xs text-slate-400">
-          {saving ? 'Saving...' : 'Auto-saved'}
-        </div>
+
+        {/* Command Center - Scrollable Actions/Initiatives List */}
+        <CommandCenter
+          viewMode={viewMode}
+          gaps={gaps}
+          initiatives={initiatives}
+          objectives={objectives}
+          actionPlan={actionPlan}
+          onActionToggle={handleActionToggle}
+          onTimelineChange={handleTimelineChange}
+          onOwnerChange={handleOwnerChange}
+        />
       </div>
 
-      {/* Command Center - Scrollable Actions/Initiatives List */}
-      <CommandCenter
-        viewMode={viewMode}
-        gaps={gaps}
-        initiatives={initiatives}
-        objectives={objectives}
-        actionPlan={actionPlan}
-        onActionToggle={handleActionToggle}
-        onTimelineChange={handleTimelineChange}
-        onOwnerChange={handleOwnerChange}
-      />
+      {/* ─────────────────────────────────────────────────────────────────────── */}
+      {/* SIDEBAR - Planning Progress (inside content container) */}
+      {/* ─────────────────────────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 hidden lg:block">
+        <ActionSidebar
+          companyName={companyName}
+          industry={industry}
+          pillarName="FP&A"
+          totalGaps={gaps.length}
+          selectedCount={actionCounts.total}
+          assignedCount={actionCounts['6m'] + actionCounts['12m'] + actionCounts['24m']}
+          timelineCounts={actionCounts}
+          onBack={handleSidebarBack}
+          onProceed={handleSidebarProceed}
+          onSave={handleSidebarSave}
+          saving={saving}
+          canProceed={actionCounts.total > 0}
+        />
+      </div>
     </div>
   );
 }

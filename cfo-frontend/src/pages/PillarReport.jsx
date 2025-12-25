@@ -1,10 +1,13 @@
 // src/pages/PillarReport.jsx
 // VS-22 v3: Added ExecutiveSummary, fixed critical_risks to use expert_action.title
 // VS-28: Added Action Planning & Simulator tab
+// VS-29: Global sidebar with WorkflowSidebar + AppShell layout
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import AppShell from '../components/AppShell';
+import WorkflowSidebar, { ReportOverviewContent, FootprintContent } from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
 import SummaryTable from '../components/report/SummaryTable';
@@ -14,7 +17,6 @@ import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
-import ActionSidebar from '../components/report/ActionSidebar';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,30 +52,6 @@ export default function PillarReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
-
-  // Action plan stats lifted to page level for sidebar
-  const [actionPlanStats, setActionPlanStats] = useState({
-    totalGaps: 0,
-    selectedCount: 0,
-    assignedCount: 0,
-    timelineCounts: { '6m': 0, '12m': 0, '24m': 0, unassigned: 0 },
-    saving: false
-  });
-
-  // Callbacks for sidebar navigation
-  function handleSidebarBack() {
-    setActiveTab('overview');
-  }
-
-  function handleSidebarProceed() {
-    alert('Action plan saved! You can export or share your plan from the report.');
-  }
-
-  function handleSidebarSave() {
-    // This is handled by ActionPlanTab's auto-save
-    setActionPlanStats(prev => ({ ...prev, saving: true }));
-    setTimeout(() => setActionPlanStats(prev => ({ ...prev, saving: false })), 500);
-  }
 
   useEffect(() => {
     if (runId) {
@@ -247,38 +225,74 @@ export default function PillarReport() {
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Extract company context for sidebar
+  // Extract company context
   const companyName = report.context?.company_name || report.context?.company?.name;
   const industry = report.context?.industry || report.context?.company?.industry;
 
-  return (
-    <div className="min-h-screen bg-slate-100 flex">
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* PAGE-LEVEL SIDEBAR (only on Action Planning tab) */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
+  // Calculate footprint stats for sidebar
+  const footprintStats = useMemo(() => {
+    const totalPractices = maturityLevels.reduce((sum, lvl) => sum + lvl.practices.length, 0);
+    const evidenced = maturityLevels.reduce((sum, lvl) =>
+      sum + lvl.practices.filter(p => p.evidence_state === 'full').length, 0);
+    const partial = maturityLevels.reduce((sum, lvl) =>
+      sum + lvl.practices.filter(p => p.evidence_state === 'partial').length, 0);
+    const gaps = totalPractices - evidenced - partial;
+    return { totalPractices, evidencedPractices: evidenced, partialPractices: partial, gapPractices: gaps };
+  }, [maturityLevels]);
+
+  // Sidebar navigation
+  function handleSidebarBack() {
+    navigate(`/run/${runId}/calibrate`);
+  }
+
+  function handleSidebarProceed() {
+    if (activeTab === 'overview') {
+      setActiveTab('footprint');
+    } else if (activeTab === 'footprint') {
+      setActiveTab('actions');
+    }
+  }
+
+  // Build sidebar content based on active tab
+  const sidebarContent = (
+    <WorkflowSidebar
+      currentStep="report"
+      completedSteps={['setup', 'assess', 'calibrate']}
+      onBack={handleSidebarBack}
+      onProceed={handleSidebarProceed}
+      backLabel="Calibration"
+      proceedLabel={activeTab === 'overview' ? 'Footprint' : activeTab === 'footprint' ? 'Action Plan' : 'Complete'}
+      canProceed={activeTab !== 'actions'}
+      showNavigation={activeTab !== 'actions'}
+    >
+      {/* Tab-specific content */}
+      {activeTab === 'overview' && (
+        <ReportOverviewContent
+          executionScore={executionScore}
+          maturityLevel={actualLevel}
+          criticalCount={criticalRisks.length}
+          actionCount={totalActions}
+        />
+      )}
+      {activeTab === 'footprint' && (
+        <FootprintContent
+          totalPractices={footprintStats.totalPractices}
+          evidencedPractices={footprintStats.evidencedPractices}
+          partialPractices={footprintStats.partialPractices}
+          gapPractices={footprintStats.gapPractices}
+        />
+      )}
       {activeTab === 'actions' && (
-        <div className="flex-shrink-0 p-4">
-          <ActionSidebar
-            companyName={companyName}
-            industry={industry}
-            pillarName="FP&A"
-            totalGaps={actionPlanStats.totalGaps}
-            selectedCount={actionPlanStats.selectedCount}
-            assignedCount={actionPlanStats.assignedCount}
-            timelineCounts={actionPlanStats.timelineCounts}
-            onBack={handleSidebarBack}
-            onProceed={handleSidebarProceed}
-            onSave={handleSidebarSave}
-            saving={actionPlanStats.saving}
-            canProceed={actionPlanStats.selectedCount > 0}
-          />
+        <div className="text-sm text-slate-600">
+          <p>Use the interactive sidebar in the Action Planning tab to select and schedule improvement actions.</p>
         </div>
       )}
+    </WorkflowSidebar>
+  );
 
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* MAIN PAGE CONTENT */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-w-0">
+  return (
+    <AppShell sidebarContent={sidebarContent}>
+      <div className="min-h-screen bg-slate-100">
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* HEADER */}
         {/* ─────────────────────────────────────────────────────────────────── */}
@@ -287,10 +301,10 @@ export default function PillarReport() {
             <h1 className="text-xl font-bold text-slate-800 text-center">
               FP&A Diagnostic Report
             </h1>
-            {report.context?.company_name && (
+            {companyName && (
               <p className="text-base text-slate-600 text-center mt-1">
-                {report.context.company_name}
-                {report.context.industry && ` - ${report.context.industry}`}
+                {companyName}
+                {industry && ` - ${industry}`}
               </p>
             )}
           </div>
@@ -397,7 +411,7 @@ export default function PillarReport() {
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* MAIN CONTENT */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        <div className={`mx-auto p-4 space-y-4 ${activeTab === 'footprint' ? 'max-w-6xl' : 'max-w-5xl'}`}>
+        <div className={`mx-auto p-4 space-y-4 ${activeTab === 'footprint' ? 'max-w-6xl' : activeTab === 'actions' ? 'max-w-none' : 'max-w-5xl'}`}>
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <>
@@ -439,7 +453,7 @@ export default function PillarReport() {
             />
           )}
 
-          {/* ACTION PLANNING TAB (VS-28) */}
+          {/* ACTION PLANNING TAB (VS-28) - has its own sidebar inside */}
           {activeTab === 'actions' && (
             spec ? (
               <ActionPlanTab
@@ -448,7 +462,8 @@ export default function PillarReport() {
                 questions={spec.questions || []}
                 initiatives={spec.initiatives || []}
                 objectives={spec.objectives || []}
-                onStatsChange={setActionPlanStats}
+                companyName={companyName}
+                industry={industry}
               />
             ) : (
               <div className="flex items-center justify-center py-12">
@@ -466,6 +481,6 @@ export default function PillarReport() {
           </div>
         </footer>
       </div>
-    </div>
+    </AppShell>
   );
 }
