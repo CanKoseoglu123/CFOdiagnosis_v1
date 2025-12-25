@@ -1171,6 +1171,115 @@ app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// VS28 — Get action plan for a run
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/action-plan", async (req, res) => {
+  const runId = req.params.id;
+
+  // Verify run exists
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Get all action plan items for this run
+  const { data: actions, error } = await req.supabase
+    .from("action_plans")
+    .select("*")
+    .eq("run_id", runId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(actions || []);
+});
+
+// ------------------------------------------------------------------
+// VS28 — Upsert action plan item (auto-save on toggle)
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
+  const runId = req.params.id;
+  const { question_id, status, timeline, assigned_owner } = req.body;
+
+  if (!question_id) {
+    return res.status(400).json({ error: "question_id is required" });
+  }
+
+  // Validate status
+  const validStatuses = ["planned", "completed"];
+  if (status && !validStatuses.includes(status)) {
+    return res.status(400).json({ error: "status must be 'planned' or 'completed'" });
+  }
+
+  // Validate timeline
+  const validTimelines = ["6m", "12m", "24m", null];
+  if (timeline !== undefined && !validTimelines.includes(timeline)) {
+    return res.status(400).json({ error: "timeline must be '6m', '12m', '24m', or null" });
+  }
+
+  // Verify run exists
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Upsert the action plan item
+  const { data, error } = await req.supabase
+    .from("action_plans")
+    .upsert(
+      {
+        run_id: runId,
+        question_id,
+        status: status || "planned",
+        timeline: timeline ?? null,
+        assigned_owner: assigned_owner ?? null,
+      },
+      { onConflict: "run_id,question_id" }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.status(200).json(data);
+});
+
+// ------------------------------------------------------------------
+// VS28 — Delete action plan item
+// ------------------------------------------------------------------
+app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
+  const runId = req.params.id;
+  const questionId = req.params.questionId;
+
+  // Delete the action plan item
+  const { error } = await req.supabase
+    .from("action_plans")
+    .delete()
+    .eq("run_id", runId)
+    .eq("question_id", questionId);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.status(204).send();
+});
+
+// ------------------------------------------------------------------
 // Server
 // ------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;

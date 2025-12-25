@@ -1,5 +1,6 @@
 // src/pages/PillarReport.jsx
 // VS-22 v3: Added ExecutiveSummary, fixed critical_risks to use expert_action.title
+// VS-28: Added Action Planning & Simulator tab
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
@@ -12,6 +13,7 @@ import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
+import ActionPlanTab from '../components/report/ActionPlanTab';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -42,6 +44,7 @@ const OBJECTIVE_THEME_MAP = {
 export default function PillarReport() {
   const { runId } = useParams();
   const [report, setReport] = useState(null);
+  const [spec, setSpec] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -49,6 +52,7 @@ export default function PillarReport() {
   useEffect(() => {
     if (runId) {
       fetchReport();
+      fetchSpec();
     }
   }, [runId]);
 
@@ -84,6 +88,18 @@ export default function PillarReport() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchSpec() {
+    try {
+      const res = await fetch(`${API_URL}/api/spec`);
+      if (res.ok) {
+        const data = await res.json();
+        setSpec(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch spec:', err);
     }
   }
 
@@ -367,15 +383,21 @@ export default function PillarReport() {
           />
         )}
 
-        {/* ACTION PLANNING TAB */}
+        {/* ACTION PLANNING TAB (VS-28) */}
         {activeTab === 'actions' && (
-          <div className="bg-white rounded-lg border border-slate-300 p-8 text-center">
-            <div className="text-slate-400 text-4xl mb-4">🚧</div>
-            <h3 className="text-lg font-semibold text-slate-700 mb-2">Coming Soon</h3>
-            <p className="text-slate-500">
-              Detailed action planning with timeline and resource allocation will be available in a future update.
-            </p>
-          </div>
+          spec ? (
+            <ActionPlanTab
+              runId={runId}
+              report={report}
+              questions={spec.questions || []}
+              initiatives={spec.initiatives || []}
+              objectives={spec.objectives || []}
+            />
+          ) : (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-slate-500">Loading action planning...</div>
+            </div>
+          )
         )}
       </div>
 
