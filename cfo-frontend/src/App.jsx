@@ -1,14 +1,15 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import DiagnosticInput from './DiagnosticInput'
 import FinanceDiagnosticReport from './FinanceDiagnosticReport'
 import PillarReport from './pages/PillarReport'
 import CalibrationPage from './pages/CalibrationPage'
-import ContextWizard from './components/ContextWizard'
+import CompanySetupPage from './pages/CompanySetupPage'
+import PillarSetupPage from './pages/PillarSetupPage'
 import IntroPage from './IntroPage'
 import { LogOut } from 'lucide-react'
 import { useState } from 'react'
@@ -128,9 +129,16 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/run/:runId/setup" element={
+          {/* Legacy route redirect */}
+          <Route path="/run/:runId/setup" element={<Navigate to="company" replace />} />
+          <Route path="/run/:runId/setup/company" element={
             <ProtectedRoute>
-              <ContextWizard />
+              <CompanySetupPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/run/:runId/setup/pillar" element={
+            <ProtectedRoute>
+              <PillarSetupPage />
             </ProtectedRoute>
           } />
           <Route path="/run/:runId/intro" element={

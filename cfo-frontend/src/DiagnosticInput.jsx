@@ -239,9 +239,9 @@ export default function DiagnosticInput() {
 
         const run = await response.json();
 
-        // Gate: If setup not completed, redirect to setup
+        // Gate: If setup not completed, redirect to company setup
         if (!run.setup_completed_at) {
-          navigate(`/run/${urlRunId}/setup`);
+          navigate(`/run/${urlRunId}/setup/company`);
           return;
         }
 
@@ -348,7 +348,7 @@ export default function DiagnosticInput() {
       });
       if (!response.ok) throw new Error("Failed to create diagnostic run");
       const data = await response.json();
-      navigate(`/run/${data.id}/setup`);
+      navigate(`/run/${data.id}/setup/company`);
     } catch (err) {
       setError(err.message);
       setStatus("idle");
