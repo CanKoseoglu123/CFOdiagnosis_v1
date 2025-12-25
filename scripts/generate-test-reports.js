@@ -54,7 +54,7 @@ const TEST_CASES = [
   // Edge Cases
   { name: 'Random 50%', description: '50% random answers', pattern: { yes: ALL_QUESTIONS.filter(() => Math.random() > 0.5) } },
   { name: 'Alternating', description: 'Every other question Yes', pattern: { yes: ALL_QUESTIONS.filter((_, i) => i % 2 === 0) } },
-  { name: 'Partial Completion', description: 'Only first 24 questions answered', pattern: { yes: ALL_QUESTIONS.slice(0, 24).filter((_, i) => i % 2 === 0), answered: ALL_QUESTIONS.slice(0, 24) } },
+  // Note: Partial completion test removed - API requires all 48 questions
 ];
 
 async function createTestRun(testCase, index) {
@@ -75,7 +75,7 @@ async function createTestRun(testCase, index) {
     }
 
     const run = await createRes.json();
-    console.log(`[${index + 1}/20] Created run ${run.id} for "${testCase.name}"`);
+    console.log(`[${index + 1}/${TEST_CASES.length}] Created run ${run.id} for "${testCase.name}"`);
 
     // 2. Save context
     const company = {
@@ -151,12 +151,13 @@ async function createTestRun(testCase, index) {
 
     const scoreData = await scoreRes.json();
 
+    // API returns: overall_score (0-1 scale), maturity.achieved_level
     return {
       runId: run.id,
       name: testCase.name,
       description: testCase.description,
-      overallScore: scoreData.summary?.overall_score || 0,
-      maturityLevel: scoreData.summary?.maturity_level || 1,
+      overallScore: Math.round((scoreData.overall_score || 0) * 100),
+      maturityLevel: scoreData.maturity?.achieved_level || 1,
       url: `https://cfodiagnosisv1.vercel.app/report/${run.id}`
     };
   } catch (err) {
@@ -166,7 +167,7 @@ async function createTestRun(testCase, index) {
 }
 
 async function main() {
-  console.log('=== Generating 20 Test Reports ===\n');
+  console.log(`=== Generating ${TEST_CASES.length} Test Reports ===\n`);
   console.log('Using API:', API);
   console.log('Questions loaded:', questions.length);
   console.log('');
