@@ -101,7 +101,7 @@ function PracticeBox({ practice }) {
 
 function ObjectiveColumn({ objective, practices, score }) {
   return (
-    <div className="flex flex-col w-[100px] flex-shrink-0 border border-slate-300 rounded bg-slate-50 overflow-hidden">
+    <div className="flex flex-col flex-1 min-w-[95px] max-w-[130px] border border-slate-300 rounded bg-slate-50 overflow-hidden">
       {/* Objective header with score bubble */}
       <div className="bg-[#001a33] text-white p-1.5 text-center relative min-h-[44px] flex items-center justify-center">
         {/* Score bubble - top right */}
@@ -199,8 +199,8 @@ export default function ObjectivesPracticesOverview({ levels, objectiveScores = 
       </div>
 
       {/* Grid container */}
-      <div className="p-2 overflow-x-auto">
-        <div className="flex gap-1.5 justify-center">
+      <div className="p-2">
+        <div className="flex gap-1.5">
           {/* Objective columns */}
           {OBJECTIVES.map(objective => (
             <ObjectiveColumn

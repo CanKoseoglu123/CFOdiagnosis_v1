@@ -325,7 +325,7 @@ export default function PillarReport() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* MAIN CONTENT */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto p-4 space-y-4">
+      <div className={`mx-auto p-4 space-y-4 ${activeTab === 'footprint' ? 'max-w-6xl' : 'max-w-5xl'}`}>
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <>
