@@ -2,11 +2,9 @@
 // VS-28: Action Planning & Simulator - War Room for maturity improvement
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
-import ActionSidebar from './ActionSidebar';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -24,7 +22,8 @@ export default function ActionPlanTab({
   report,
   questions = [],
   initiatives = [],
-  objectives = []
+  objectives = [],
+  onStatsChange
 }) {
   // View mode: 'actions' or 'initiatives'
   const [viewMode, setViewMode] = useState('actions');
@@ -275,26 +274,18 @@ export default function ActionPlanTab({
     return counts;
   }, [actionPlan]);
 
-  // Navigation
-  const navigate = useNavigate();
-
-  function handleBack() {
-    // Go back to report overview
-    navigate(`/report/${runId}`);
-  }
-
-  function handleProceed() {
-    // For now, show completion message or go to summary
-    // Could navigate to a summary/export page in future
-    alert('Action plan saved! You can export or share your plan from the report.');
-  }
-
-  function handleSave() {
-    // Force save all current actions (they're already auto-saved)
-    // This is more of a user reassurance action
-    setSaving(true);
-    setTimeout(() => setSaving(false), 500);
-  }
+  // Report stats to parent for sidebar (VS-28 page-level sidebar)
+  useEffect(() => {
+    if (onStatsChange) {
+      onStatsChange({
+        totalGaps: gaps.length,
+        selectedCount: actionCounts.total,
+        assignedCount: actionCounts['6m'] + actionCounts['12m'] + actionCounts['24m'],
+        timelineCounts: actionCounts,
+        saving
+      });
+    }
+  }, [gaps.length, actionCounts, saving, onStatsChange]);
 
   if (loading) {
     return (
@@ -304,85 +295,62 @@ export default function ActionPlanTab({
     );
   }
 
-  // Extract company context
-  const companyName = report?.context?.company_name || report?.context?.company?.name;
-  const industry = report?.context?.industry || report?.context?.company?.industry;
-
   return (
-    <div className="flex gap-4">
-      {/* Left Sidebar */}
-      <ActionSidebar
-        companyName={companyName}
-        industry={industry}
-        pillarName="FP&A"
-        totalGaps={gaps.length}
-        selectedCount={actionCounts.total}
-        assignedCount={actionCounts['6m'] + actionCounts['12m'] + actionCounts['24m']}
-        timelineCounts={actionCounts}
-        onBack={handleBack}
-        onProceed={handleProceed}
-        onSave={handleSave}
+    <div className="space-y-4">
+      {/* Simulator HUD */}
+      <SimulatorHUD
+        executionScore={executionScores.current}
+        projectedScore={executionScores.projected}
+        objectives={objectives}
+        projectedByTimeline={projectedByTimeline}
+        actionCounts={actionCounts}
+        gapsTotal={gaps.length}
         saving={saving}
-        canProceed={actionCounts.total > 0}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 space-y-4 min-w-0">
-        {/* Simulator HUD */}
-        <SimulatorHUD
-          executionScore={executionScores.current}
-          projectedScore={executionScores.projected}
-          objectives={objectives}
-          projectedByTimeline={projectedByTimeline}
-          actionCounts={actionCounts}
-          gapsTotal={gaps.length}
-          saving={saving}
-        />
-
-        {/* View Mode Toggle */}
-        <div className="bg-white border border-slate-300 rounded-sm p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-600">View:</span>
-            <div className="flex border border-slate-300 rounded overflow-hidden">
-              <button
-                onClick={() => setViewMode('actions')}
-                className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                  viewMode === 'actions'
-                    ? 'bg-slate-800 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                By Objective
-              </button>
-              <button
-                onClick={() => setViewMode('initiatives')}
-                className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                  viewMode === 'initiatives'
-                    ? 'bg-slate-800 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                By Initiative
-              </button>
-            </div>
-          </div>
-          <div className="text-xs text-slate-400">
-            {saving ? 'Saving...' : 'Auto-saved'}
+      {/* View Mode Toggle */}
+      <div className="bg-white border border-slate-300 rounded-sm p-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-600">View:</span>
+          <div className="flex border border-slate-300 rounded overflow-hidden">
+            <button
+              onClick={() => setViewMode('actions')}
+              className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'actions'
+                  ? 'bg-slate-800 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              By Objective
+            </button>
+            <button
+              onClick={() => setViewMode('initiatives')}
+              className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'initiatives'
+                  ? 'bg-slate-800 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              By Initiative
+            </button>
           </div>
         </div>
-
-        {/* Command Center - Scrollable Actions/Initiatives List */}
-        <CommandCenter
-          viewMode={viewMode}
-          gaps={gaps}
-          initiatives={initiatives}
-          objectives={objectives}
-          actionPlan={actionPlan}
-          onActionToggle={handleActionToggle}
-          onTimelineChange={handleTimelineChange}
-          onOwnerChange={handleOwnerChange}
-        />
+        <div className="text-xs text-slate-400">
+          {saving ? 'Saving...' : 'Auto-saved'}
+        </div>
       </div>
+
+      {/* Command Center - Scrollable Actions/Initiatives List */}
+      <CommandCenter
+        viewMode={viewMode}
+        gaps={gaps}
+        initiatives={initiatives}
+        objectives={objectives}
+        actionPlan={actionPlan}
+        onActionToggle={handleActionToggle}
+        onTimelineChange={handleTimelineChange}
+        onOwnerChange={handleOwnerChange}
+      />
     </div>
   );
 }

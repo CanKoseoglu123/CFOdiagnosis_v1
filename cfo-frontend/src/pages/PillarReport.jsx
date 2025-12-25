@@ -3,7 +3,7 @@
 // VS-28: Added Action Planning & Simulator tab
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
@@ -14,6 +14,7 @@ import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
+import ActionSidebar from '../components/report/ActionSidebar';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -43,11 +44,36 @@ const OBJECTIVE_THEME_MAP = {
 
 export default function PillarReport() {
   const { runId } = useParams();
+  const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Action plan stats lifted to page level for sidebar
+  const [actionPlanStats, setActionPlanStats] = useState({
+    totalGaps: 0,
+    selectedCount: 0,
+    assignedCount: 0,
+    timelineCounts: { '6m': 0, '12m': 0, '24m': 0, unassigned: 0 },
+    saving: false
+  });
+
+  // Callbacks for sidebar navigation
+  function handleSidebarBack() {
+    setActiveTab('overview');
+  }
+
+  function handleSidebarProceed() {
+    alert('Action plan saved! You can export or share your plan from the report.');
+  }
+
+  function handleSidebarSave() {
+    // This is handled by ActionPlanTab's auto-save
+    setActionPlanStats(prev => ({ ...prev, saving: true }));
+    setTimeout(() => setActionPlanStats(prev => ({ ...prev, saving: false })), 500);
+  }
 
   useEffect(() => {
     if (runId) {
@@ -221,193 +247,225 @@ export default function PillarReport() {
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
 
+  // Extract company context for sidebar
+  const companyName = report.context?.company_name || report.context?.company?.name;
+  const industry = report.context?.industry || report.context?.company?.industry;
+
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 flex">
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HEADER */}
+      {/* PAGE-LEVEL SIDEBAR (only on Action Planning tab) */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <header className="bg-white border-b border-slate-300">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-slate-800 text-center">
-            FP&A Diagnostic Report
-          </h1>
-          {report.context?.company_name && (
-            <p className="text-base text-slate-600 text-center mt-1">
-              {report.context.company_name}
-              {report.context.industry && ` - ${report.context.industry}`}
-            </p>
+      {activeTab === 'actions' && (
+        <div className="flex-shrink-0 p-4">
+          <ActionSidebar
+            companyName={companyName}
+            industry={industry}
+            pillarName="FP&A"
+            totalGaps={actionPlanStats.totalGaps}
+            selectedCount={actionPlanStats.selectedCount}
+            assignedCount={actionPlanStats.assignedCount}
+            timelineCounts={actionPlanStats.timelineCounts}
+            onBack={handleSidebarBack}
+            onProceed={handleSidebarProceed}
+            onSave={handleSidebarSave}
+            saving={actionPlanStats.saving}
+            canProceed={actionPlanStats.selectedCount > 0}
+          />
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* MAIN PAGE CONTENT */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <div className="flex-1 min-w-0">
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        {/* HEADER */}
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        <header className="bg-white border-b border-slate-300">
+          <div className="max-w-5xl mx-auto px-4 py-4">
+            <h1 className="text-xl font-bold text-slate-800 text-center">
+              FP&A Diagnostic Report
+            </h1>
+            {report.context?.company_name && (
+              <p className="text-base text-slate-600 text-center mt-1">
+                {report.context.company_name}
+                {report.context.industry && ` - ${report.context.industry}`}
+              </p>
+            )}
+          </div>
+        </header>
+
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        {/* METRICS BAR */}
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        <div className="bg-white border-b border-slate-300">
+          <div className="max-w-5xl mx-auto px-4 py-3 space-y-3">
+            {/* Metric Boxes */}
+            <div className="grid grid-cols-4 gap-3">
+              {/* Execution Score */}
+              <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
+                <div className="text-2xl font-bold text-slate-800">
+                  {executionScore}%
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase">
+                  Execution
+                </div>
+              </div>
+
+              {/* Maturity Level */}
+              <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
+                <div className="text-2xl font-bold text-blue-700">
+                  L{actualLevel}
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase">
+                  {levelName}
+                </div>
+              </div>
+
+              {/* Critical Count */}
+              <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
+                <div className={`text-2xl font-bold ${criticalRisks.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                  {criticalRisks.length}
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase">
+                  Critical
+                </div>
+              </div>
+
+              {/* Action Count */}
+              <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
+                <div className="text-2xl font-bold text-slate-800">
+                  {totalActions}
+                </div>
+                <div className="text-xs font-semibold text-slate-500 uppercase">
+                  Actions
+                </div>
+              </div>
+            </div>
+
+            {/* Maturity Banner */}
+            <MaturityBanner
+              execution_score={executionScore}
+              potential_level={potentialLevel}
+              actual_level={actualLevel}
+              capped_by={cappedBy}
+            />
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        {/* NAVIGATION TABS */}
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        <div className="bg-white border-b border-slate-200">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="flex gap-6">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
+                  activeTab === 'overview'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('footprint')}
+                className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
+                  activeTab === 'footprint'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Maturity Footprint
+              </button>
+              <button
+                onClick={() => setActiveTab('actions')}
+                className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
+                  activeTab === 'actions'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Action Planning
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        {/* MAIN CONTENT */}
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        <div className={`mx-auto p-4 space-y-4 ${activeTab === 'footprint' ? 'max-w-6xl' : 'max-w-5xl'}`}>
+          {/* OVERVIEW TAB */}
+          {activeTab === 'overview' && (
+            <>
+              {/* VS22-v3: Executive Summary (3-column cards) */}
+              <ExecutiveSummary
+                execution_score={executionScore}
+                actual_level={actualLevel}
+                level_name={levelName}
+                questions_total={48}
+                questions_answered={questionsAnswered}
+                critical_count={8}
+                failed_critical_count={criticalRisks.length}
+              />
+
+              {/* VS-25: AI Interpretation Section */}
+              <InterpretationSection runId={runId} />
+
+              {/* Summary Table */}
+              <SummaryTable objectives={objectives} />
+
+              {/* Strengths Bar (only shows if objectives >= 70% exist) */}
+              <StrengthsBar objectives={objectives} />
+
+              {/* Two Column: Critical Risks + High Value */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CriticalRisksCard risks={criticalRisks} />
+                <HighValueCard initiatives={initiatives} />
+              </div>
+            </>
+          )}
+
+          {/* MATURITY FOOTPRINT TAB */}
+          {activeTab === 'footprint' && (
+            <MaturityFootprintGrid
+              levels={maturityLevels}
+              focusNext={focusNext}
+              summaryText={footprintSummary}
+              objectiveScores={objectiveScores}
+            />
+          )}
+
+          {/* ACTION PLANNING TAB (VS-28) */}
+          {activeTab === 'actions' && (
+            spec ? (
+              <ActionPlanTab
+                runId={runId}
+                report={report}
+                questions={spec.questions || []}
+                initiatives={spec.initiatives || []}
+                objectives={spec.objectives || []}
+                onStatsChange={setActionPlanStats}
+              />
+            ) : (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-slate-500">Loading action planning...</div>
+              </div>
+            )
           )}
         </div>
-      </header>
 
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* METRICS BAR */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-slate-300">
-        <div className="max-w-5xl mx-auto px-4 py-3 space-y-3">
-          {/* Metric Boxes */}
-          <div className="grid grid-cols-4 gap-3">
-            {/* Execution Score */}
-            <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-              <div className="text-2xl font-bold text-slate-800">
-                {executionScore}%
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">
-                Execution
-              </div>
-            </div>
-
-            {/* Maturity Level */}
-            <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
-              <div className="text-2xl font-bold text-blue-700">
-                L{actualLevel}
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">
-                {levelName}
-              </div>
-            </div>
-
-            {/* Critical Count */}
-            <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-              <div className={`text-2xl font-bold ${criticalRisks.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                {criticalRisks.length}
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">
-                Critical
-              </div>
-            </div>
-
-            {/* Action Count */}
-            <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-              <div className="text-2xl font-bold text-slate-800">
-                {totalActions}
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">
-                Actions
-              </div>
-            </div>
+        {/* Footer */}
+        <footer className="border-t border-slate-200 bg-white py-4 mt-8">
+          <div className="max-w-5xl mx-auto px-4 flex justify-between text-xs text-slate-500">
+            <span>Finance Diagnostic Platform</span>
+            <span>{new Date().toLocaleDateString()}</span>
           </div>
-
-          {/* Maturity Banner */}
-          <MaturityBanner
-            execution_score={executionScore}
-            potential_level={potentialLevel}
-            actual_level={actualLevel}
-            capped_by={cappedBy}
-          />
-        </div>
+        </footer>
       </div>
-
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* NAVIGATION TABS */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex gap-6">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                activeTab === 'overview'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('footprint')}
-              className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                activeTab === 'footprint'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Maturity Footprint
-            </button>
-            <button
-              onClick={() => setActiveTab('actions')}
-              className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                activeTab === 'actions'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Action Planning
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* MAIN CONTENT */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className={`mx-auto p-4 space-y-4 ${activeTab === 'footprint' ? 'max-w-6xl' : 'max-w-5xl'}`}>
-        {/* OVERVIEW TAB */}
-        {activeTab === 'overview' && (
-          <>
-            {/* VS22-v3: Executive Summary (3-column cards) */}
-            <ExecutiveSummary
-              execution_score={executionScore}
-              actual_level={actualLevel}
-              level_name={levelName}
-              questions_total={48}
-              questions_answered={questionsAnswered}
-              critical_count={8}
-              failed_critical_count={criticalRisks.length}
-            />
-
-            {/* VS-25: AI Interpretation Section */}
-            <InterpretationSection runId={runId} />
-
-            {/* Summary Table */}
-            <SummaryTable objectives={objectives} />
-
-            {/* Strengths Bar (only shows if objectives >= 70% exist) */}
-            <StrengthsBar objectives={objectives} />
-
-            {/* Two Column: Critical Risks + High Value */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <CriticalRisksCard risks={criticalRisks} />
-              <HighValueCard initiatives={initiatives} />
-            </div>
-          </>
-        )}
-
-        {/* MATURITY FOOTPRINT TAB */}
-        {activeTab === 'footprint' && (
-          <MaturityFootprintGrid
-            levels={maturityLevels}
-            focusNext={focusNext}
-            summaryText={footprintSummary}
-            objectiveScores={objectiveScores}
-          />
-        )}
-
-        {/* ACTION PLANNING TAB (VS-28) */}
-        {activeTab === 'actions' && (
-          spec ? (
-            <ActionPlanTab
-              runId={runId}
-              report={report}
-              questions={spec.questions || []}
-              initiatives={spec.initiatives || []}
-              objectives={spec.objectives || []}
-            />
-          ) : (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-slate-500">Loading action planning...</div>
-            </div>
-          )
-        )}
-      </div>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-4 mt-8">
-        <div className="max-w-5xl mx-auto px-4 flex justify-between text-xs text-slate-500">
-          <span>Finance Diagnostic Platform</span>
-          <span>{new Date().toLocaleDateString()}</span>
-        </div>
-      </footer>
     </div>
   );
 }
