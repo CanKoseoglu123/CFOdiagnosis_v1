@@ -129,7 +129,7 @@ async function createTestRun(testCase, index) {
       }
     }
 
-    // 4. Complete the run
+    // 4. Complete the run (this also triggers scoring)
     const completeRes = await fetch(`${API}/diagnostic-runs/${run.id}/complete`, {
       method: 'POST',
       headers
@@ -139,25 +139,24 @@ async function createTestRun(testCase, index) {
       throw new Error(`Complete failed: ${await completeRes.text()}`);
     }
 
-    // 5. Calculate scores
-    const scoreRes = await fetch(`${API}/diagnostic-runs/${run.id}/score`, {
-      method: 'POST',
+    // 5. Fetch the report (which has the calculated scores)
+    const reportRes = await fetch(`${API}/diagnostic-runs/${run.id}/report`, {
       headers
     });
 
-    if (!scoreRes.ok) {
-      throw new Error(`Score failed: ${await scoreRes.text()}`);
+    if (!reportRes.ok) {
+      throw new Error(`Report failed: ${await reportRes.text()}`);
     }
 
-    const scoreData = await scoreRes.json();
+    const reportData = await reportRes.json();
 
     // API returns: overall_score (0-1 scale), maturity.achieved_level
     return {
       runId: run.id,
       name: testCase.name,
       description: testCase.description,
-      overallScore: Math.round((scoreData.overall_score || 0) * 100),
-      maturityLevel: scoreData.maturity?.achieved_level || 1,
+      overallScore: Math.round((reportData.overall_score || 0) * 100),
+      maturityLevel: reportData.maturity?.achieved_level || 1,
       url: `https://cfodiagnosisv1.vercel.app/report/${run.id}`
     };
   } catch (err) {
