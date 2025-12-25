@@ -65,6 +65,21 @@ export default function PillarReport() {
     window.scrollTo(0, 0);
   }, []);
 
+  // Calculate footprint stats for sidebar (must be before early returns - React hooks rule)
+  const footprintStats = useMemo(() => {
+    if (!report?.maturity_footprint?.levels) {
+      return { totalPractices: 0, evidencedPractices: 0, partialPractices: 0, gapPractices: 0 };
+    }
+    const levels = report.maturity_footprint.levels;
+    const totalPractices = levels.reduce((sum, lvl) => sum + (lvl.practices?.length || 0), 0);
+    const evidenced = levels.reduce((sum, lvl) =>
+      sum + (lvl.practices?.filter(p => p.evidence_state === 'full').length || 0), 0);
+    const partial = levels.reduce((sum, lvl) =>
+      sum + (lvl.practices?.filter(p => p.evidence_state === 'partial').length || 0), 0);
+    const gaps = totalPractices - evidenced - partial;
+    return { totalPractices, evidencedPractices: evidenced, partialPractices: partial, gapPractices: gaps };
+  }, [report?.maturity_footprint?.levels]);
+
   async function fetchReport() {
     try {
       setLoading(true);
@@ -228,17 +243,6 @@ export default function PillarReport() {
   // Extract company context
   const companyName = report.context?.company_name || report.context?.company?.name;
   const industry = report.context?.industry || report.context?.company?.industry;
-
-  // Calculate footprint stats for sidebar
-  const footprintStats = useMemo(() => {
-    const totalPractices = maturityLevels.reduce((sum, lvl) => sum + lvl.practices.length, 0);
-    const evidenced = maturityLevels.reduce((sum, lvl) =>
-      sum + lvl.practices.filter(p => p.evidence_state === 'full').length, 0);
-    const partial = maturityLevels.reduce((sum, lvl) =>
-      sum + lvl.practices.filter(p => p.evidence_state === 'partial').length, 0);
-    const gaps = totalPractices - evidenced - partial;
-    return { totalPractices, evidencedPractices: evidenced, partialPractices: partial, gapPractices: gaps };
-  }, [maturityLevels]);
 
   // Sidebar navigation
   function handleSidebarBack() {
