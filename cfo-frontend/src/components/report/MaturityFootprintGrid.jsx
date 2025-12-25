@@ -1,8 +1,10 @@
 // src/components/report/MaturityFootprintGrid.jsx
 // VS-23: Maturity Footprint Grid - Enterprise design system compliant
+// VS-27: Added Objectives & Practices Overview
 
 import React from 'react';
 import { AlertCircle, CheckCircle, Target } from 'lucide-react';
+import ObjectivesPracticesOverview from './ObjectivesPracticesOverview';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LEVEL CONFIGURATION (Ladder perspective - higher = more strategic)
@@ -158,6 +160,11 @@ export default function MaturityFootprintGrid({ levels, focusNext, summaryText }
           </div>
         </div>
       )}
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* OBJECTIVES & PRACTICES OVERVIEW (VS-27) */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <ObjectivesPracticesOverview levels={levels} />
 
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* MATURITY LADDER GRID */}
