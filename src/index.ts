@@ -27,6 +27,7 @@ import {
   PillarContextSchema,
   DiagnosticContextV1
 } from "./specs/schemas";
+import { normalizeContext } from "./utils/contextAdapter";
 
 const app = express();
 app.use(cors({
@@ -182,7 +183,11 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  res.json(run);
+  // Normalize context to v1 format for backward compatibility
+  res.json({
+    ...run,
+    context: normalizeContext(run.context)
+  });
 });
 
 // ------------------------------------------------------------------
@@ -707,11 +712,11 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     calibration: run.calibration || null,  // VS21: Pass calibration data
   });
 
-  // VS18: Include context in report response
+  // VS18: Include context in report response (normalized for backward compatibility)
   // VS21: Include calibration in report response
   res.json({
     ...report,
-    context: run.context || {},
+    context: normalizeContext(run.context),
     calibration: run.calibration || null,
   });
 });
@@ -855,13 +860,16 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
     spec
   );
 
+  // Normalize context for backward compatibility
+  const normalizedCtx = normalizeContext(run.context);
+
   const diagnosticData: DiagnosticData = {
     run_id: runId,
-    company_name: run.context?.company_name || "Unknown Company",
-    industry: run.context?.industry || "Unknown Industry",
-    team_size: run.context?.team_size,
-    pain_points: run.context?.pain_points,
-    systems: run.context?.systems,
+    company_name: normalizedCtx.company.name,
+    industry: normalizedCtx.company.industry || "Unknown Industry",
+    team_size: normalizedCtx.pillar?.team_size || undefined,
+    pain_points: normalizedCtx.pillar?.pain_points || undefined,
+    systems: normalizedCtx.pillar?.tools?.join(", ") || undefined,
     execution_score: maturityResult.execution_score,
     maturity_level: maturityResult.actual_level,
     level_name: maturityResult.actual_label,
@@ -1062,13 +1070,16 @@ app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
     questions: spec.questions.map((q: any) => ({ id: q.id, text: q.text, level: q.level })),
   });
 
+  // Normalize context for backward compatibility
+  const normalizedCtx = normalizeContext(run.context);
+
   const diagnosticData: DiagnosticData = {
     run_id: runId,
-    company_name: run.context?.company_name || "Unknown Company",
-    industry: run.context?.industry || "Unknown Industry",
-    team_size: run.context?.team_size,
-    pain_points: run.context?.pain_points,
-    systems: run.context?.systems,
+    company_name: normalizedCtx.company.name,
+    industry: normalizedCtx.company.industry || "Unknown Industry",
+    team_size: normalizedCtx.pillar?.team_size || undefined,
+    pain_points: normalizedCtx.pillar?.pain_points || undefined,
+    systems: normalizedCtx.pillar?.tools?.join(", ") || undefined,
     execution_score: maturityResult.execution_score,
     maturity_level: maturityResult.actual_level,
     level_name: maturityResult.actual_label,
