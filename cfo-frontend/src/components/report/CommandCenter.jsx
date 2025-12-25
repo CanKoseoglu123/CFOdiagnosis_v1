@@ -102,34 +102,36 @@ function ActionsView({
   const objectivesWithGaps = objectives.filter(obj => gapsByObjective[obj.id].length > 0);
 
   return (
-    <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
-      <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
-        <h3 className="text-sm font-semibold text-slate-700">
-          Actions by Objective
-        </h3>
+    <div className="space-y-3">
+      {/* Header - matches Simulator style */}
+      <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+        <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
+          <h2 className="text-base font-bold text-slate-700 uppercase tracking-wide">
+            Actions by Objective
+          </h2>
+        </div>
       </div>
 
-      <div className="divide-y divide-slate-200">
-        {objectivesWithGaps.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
-            No gaps identified. Great job!
-          </div>
-        ) : (
-          objectivesWithGaps.map(obj => (
-            <ObjectiveGroup
-              key={obj.id}
-              objective={obj}
-              gaps={gapsByObjective[obj.id]}
-              actionPlan={actionPlan}
-              isExpanded={expandedGroups.has(obj.id) || expandedGroups.has('all')}
-              onToggle={() => toggleGroup(obj.id)}
-              onActionToggle={onActionToggle}
-              onTimelineChange={onTimelineChange}
-              onOwnerChange={onOwnerChange}
-            />
-          ))
-        )}
-      </div>
+      {/* Objective Cards */}
+      {objectivesWithGaps.length === 0 ? (
+        <div className="bg-white border border-slate-300 rounded-sm p-8 text-center text-slate-500">
+          No gaps identified. Great job!
+        </div>
+      ) : (
+        objectivesWithGaps.map(obj => (
+          <ObjectiveGroup
+            key={obj.id}
+            objective={obj}
+            gaps={gapsByObjective[obj.id]}
+            actionPlan={actionPlan}
+            isExpanded={expandedGroups.has(obj.id) || expandedGroups.has('all')}
+            onToggle={() => toggleGroup(obj.id)}
+            onActionToggle={onActionToggle}
+            onTimelineChange={onTimelineChange}
+            onOwnerChange={onOwnerChange}
+          />
+        ))
+      )}
     </div>
   );
 }
@@ -148,11 +150,11 @@ function ObjectiveGroup({
   const objName = OBJECTIVE_NAMES[objective.id] || objective.name || objective.id;
 
   return (
-    <div>
+    <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
       {/* Group Header */}
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
+        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors bg-white"
       >
         {isExpanded ? (
           <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -210,34 +212,36 @@ function InitiativesView({
   const initiativesWithGaps = initiatives.filter(init => gapsByInitiative[init.id].length > 0);
 
   return (
-    <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
-      <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
-        <h3 className="text-sm font-semibold text-slate-700">
-          Actions by Initiative
-        </h3>
+    <div className="space-y-3">
+      {/* Header - matches Simulator style */}
+      <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+        <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
+          <h2 className="text-base font-bold text-slate-700 uppercase tracking-wide">
+            Actions by Initiative
+          </h2>
+        </div>
       </div>
 
-      <div className="divide-y divide-slate-200">
-        {initiativesWithGaps.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
-            No gaps identified. Great job!
-          </div>
-        ) : (
-          initiativesWithGaps.map(init => (
-            <InitiativeGroup
-              key={init.id}
-              initiative={init}
-              gaps={gapsByInitiative[init.id]}
-              actionPlan={actionPlan}
-              isExpanded={expandedGroups.has(init.id) || expandedGroups.has('all')}
-              onToggle={() => toggleGroup(init.id)}
-              onActionToggle={onActionToggle}
-              onTimelineChange={onTimelineChange}
-              onOwnerChange={onOwnerChange}
-            />
-          ))
-        )}
-      </div>
+      {/* Initiative Cards */}
+      {initiativesWithGaps.length === 0 ? (
+        <div className="bg-white border border-slate-300 rounded-sm p-8 text-center text-slate-500">
+          No gaps identified. Great job!
+        </div>
+      ) : (
+        initiativesWithGaps.map(init => (
+          <InitiativeGroup
+            key={init.id}
+            initiative={init}
+            gaps={gapsByInitiative[init.id]}
+            actionPlan={actionPlan}
+            isExpanded={expandedGroups.has(init.id) || expandedGroups.has('all')}
+            onToggle={() => toggleGroup(init.id)}
+            onActionToggle={onActionToggle}
+            onTimelineChange={onTimelineChange}
+            onOwnerChange={onOwnerChange}
+          />
+        ))
+      )}
     </div>
   );
 }
@@ -255,11 +259,11 @@ function InitiativeGroup({
   const selectedCount = gaps.filter(g => actionPlan[g.id]).length;
 
   return (
-    <div>
+    <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
       {/* Group Header */}
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
+        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors bg-white"
       >
         {isExpanded ? (
           <ChevronDown className="w-4 h-4 text-slate-400" />
