@@ -1,68 +1,65 @@
-{
-  "version": "2.8.1",
-  "initiatives": [
-    {
-      "id": "init_budget_discipline",
-      "title": "Establish Budget Discipline",
-      "description": "A credible budget is the foundation of financial management. Without it, variance analysis is meaningless and forecasting has no anchor. Get the basics right first.",
-      "theme_id": "foundation",
-      "objective_id": "obj_fpa_l1_budget"
-    },
-    {
-      "id": "init_financial_controls",
-      "title": "Strengthen Financial Controls",
-      "description": "Controls protect the integrity of your numbers. A single chart of accounts, reconciliation discipline, and journal entry governance prevent the errors that destroy credibility.",
-      "theme_id": "foundation",
-      "objective_id": "obj_fpa_l1_control"
-    },
-    {
-      "id": "init_feedback_loops",
-      "title": "Implement Performance Feedback Loops",
-      "description": "Budgets without follow-up are just wishes. Monthly BvA, variance investigation, and owner accountability create the feedback loops that drive performance.",
-      "theme_id": "foundation",
-      "objective_id": "obj_fpa_l2_variance"
-    },
-    {
-      "id": "init_forecast_infrastructure",
-      "title": "Modernize Forecasting Infrastructure",
-      "description": "A forecast trapped in one person's spreadsheet is a liability. Multi-user systems, cash flow integration, regular refresh cycles, and scenario capability create a forecast you can trust.",
-      "theme_id": "future",
-      "objective_id": "obj_fpa_l2_forecast"
-    },
-    {
-      "id": "init_forward_visibility",
-      "title": "Build Forward Visibility",
-      "description": "Connect finance models to strategy. Track leading indicators, monitor value-creation initiatives, and stress-test the plan. Know where you're going, not just where you've been.",
-      "theme_id": "future",
-      "objective_id": "obj_fpa_l3_driver"
-    },
-    {
-      "id": "init_seat_at_table",
-      "title": "Earn a Seat at the Table",
-      "description": "Finance must be consulted before decisions are made, not informed after. This requires building trust through reliability, then proving value through insight.",
-      "theme_id": "intelligence",
-      "objective_id": "obj_fpa_l3_scenario"
-    },
-    {
-      "id": "init_strategic_influence",
-      "title": "Exercise Strategic Influence",
-      "description": "The ultimate test of Finance credibility: can you stop a bad project? Can you present uncomfortable truths? Influence comes from courage backed by rigor.",
-      "theme_id": "intelligence",
-      "objective_id": "obj_fpa_l3_scenario"
-    },
-    {
-      "id": "init_decision_support",
-      "title": "Enable Decision Support",
-      "description": "Business moves fast. Finance must answer questions in hours, not weeks. Self-serve analytics, rapid ad-hoc analysis, and real-time data access enable this.",
-      "theme_id": "intelligence",
-      "objective_id": "obj_fpa_l4_predict"
-    },
-    {
-      "id": "init_operational_excellence",
-      "title": "Achieve Operational Excellence",
-      "description": "Automate the routine to free capacity for the strategic. Data pipelines, integrated systems, streamlined processes, and continuous improvement create the efficiency headroom for high-value work.",
-      "theme_id": "intelligence",
-      "objective_id": "obj_fpa_l4_predict"
-    }
-  ]
-}
+[
+  {
+    "id": "init_budget_discipline",
+    "theme_id": "foundation",
+    "objective_id": "obj_budget_discipline",
+    "title": "Establish Budget Discipline",
+    "description": "A credible budget is the foundation of financial management. Without it, variance analysis is meaningless and forecasting has no anchor. Get the basics right first."
+  },
+  {
+    "id": "init_financial_controls",
+    "theme_id": "foundation",
+    "objective_id": "obj_financial_controls",
+    "title": "Strengthen Financial Controls",
+    "description": "Controls protect the integrity of your numbers. A single chart of accounts, reconciliation discipline, and journal entry governance prevent the errors that destroy credibility."
+  },
+  {
+    "id": "init_feedback_loops",
+    "theme_id": "foundation",
+    "objective_id": "obj_performance_monitoring",
+    "title": "Implement Performance Feedback Loops",
+    "description": "Budgets without follow-up are just wishes. Monthly BvA, variance investigation, and owner accountability create the feedback loops that drive performance."
+  },
+  {
+    "id": "init_forecast_infrastructure",
+    "theme_id": "future",
+    "objective_id": "obj_forecasting_agility",
+    "title": "Modernize Forecasting Infrastructure",
+    "description": "A forecast trapped in one person's spreadsheet is a liability. Multi-user systems, cash flow integration, regular refresh cycles, and scenario capability create a forecast you can trust."
+  },
+  {
+    "id": "init_forward_visibility",
+    "theme_id": "future",
+    "objective_id": "obj_driver_based_planning",
+    "title": "Build Forward Visibility",
+    "description": "Connect finance models to strategy. Track leading indicators, monitor value-creation initiatives, and stress-test the plan. Know where you're going, not just where you've been."
+  },
+  {
+    "id": "init_seat_at_table",
+    "theme_id": "intelligence",
+    "objective_id": "obj_strategic_influence",
+    "title": "Earn a Seat at the Table",
+    "description": "Finance must be consulted before decisions are made, not informed after. This requires building trust through reliability, then proving value through insight."
+  },
+  {
+    "id": "init_strategic_influence",
+    "theme_id": "intelligence",
+    "objective_id": "obj_strategic_influence",
+    "title": "Exercise Strategic Influence",
+    "description": "The ultimate test of Finance credibility: can you stop a bad project? Can you present uncomfortable truths? Influence comes from courage backed by rigor."
+  },
+  {
+    "id": "init_decision_support",
+    "theme_id": "intelligence",
+    "objective_id": "obj_decision_support",
+    "title": "Enable Decision Support",
+    "description": "Business moves fast. Finance must answer questions in hours, not weeks. Self-serve analytics, rapid ad-hoc analysis, and real-time data access enable this."
+  },
+  {
+    "id": "init_operational_excellence",
+    "theme_id": "intelligence",
+    "objective_id": "obj_operational_excellence",
+    "title": "Achieve Operational Excellence",
+    "description": "Automate the routine to free capacity for the strategic. Data pipelines, integrated systems, streamlined processes, and continuous improvement create the efficiency headroom for high-value work."
+  }
+]

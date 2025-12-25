@@ -45,7 +45,7 @@ export const QuestionSchema = z.object({
   help: z.string().min(10).max(500),
   maturity_level: MaturityLevelSchema,
   is_critical: z.boolean(),
-  objective_id: z.string().regex(/^obj_fpa_/, 'Must start with obj_fpa_'),
+  objective_id: z.string().regex(/^obj_/, 'Must start with obj_'),  // VS-26: Simplified ID format
   initiative_id: z.string().regex(/^init_/, 'Must start with init_'),
   impact: z.number().int().min(1).max(5),
   complexity: z.number().int().min(1).max(5),
@@ -65,74 +65,61 @@ export const QuestionsFileSchema = z.object({
 });
 
 // === PRACTICE ===
+// VS-26: Simplified schema - practices now link FROM questions, not TO questions
 
 export const PracticeSchema = z.object({
   id: z.string().regex(/^prac_/, 'Must start with prac_'),
-  name: z.string().min(3).max(50),
-  short_name: z.string().min(2).max(30),
-  level: MaturityLevelSchema,
-  question_ids: z.array(z.string()).min(1).max(6)
+  objective_id: z.string().regex(/^obj_/, 'Must start with obj_'),
+  title: z.string().min(3).max(100),
+  capability_tags: z.array(z.string()).default([])
 });
 
-export const PracticesFileSchema = z.object({
-  version: z.string(),
-  practices: z.array(PracticeSchema)
-    .min(21)
-    .max(21)
-    .refine((items) => {
-      const ids = items.map(i => i.id);
-      return new Set(ids).size === ids.length;
-    }, { message: "Duplicate practice IDs found" })
-});
+// VS-26: Flat array format (no version wrapper)
+export const PracticesFileSchema = z.array(PracticeSchema)
+  .min(20)
+  .max(35)
+  .refine((items) => {
+    const ids = items.map(i => i.id);
+    return new Set(ids).size === ids.length;
+  }, { message: "Duplicate practice IDs found" });
 
 // === INITIATIVE ===
 
 export const InitiativeSchema = z.object({
   id: z.string().regex(/^init_/, 'Must start with init_'),
-  title: z.string().min(10).max(100),
-  description: z.string().min(50).max(500),
   theme_id: ThemeIdSchema,
-  objective_id: z.string().regex(/^obj_fpa_/, 'Must start with obj_fpa_')
+  objective_id: z.string().regex(/^obj_/, 'Must start with obj_'),
+  title: z.string().min(10).max(100),
+  description: z.string().min(50).max(500)
 });
 
-export const InitiativesFileSchema = z.object({
-  version: z.string(),
-  initiatives: z.array(InitiativeSchema)
-    .min(9)
-    .max(9)
-    .refine((items) => {
-      const ids = items.map(i => i.id);
-      return new Set(ids).size === ids.length;
-    }, { message: "Duplicate initiative IDs found" })
-});
+// VS-26: Flat array format
+export const InitiativesFileSchema = z.array(InitiativeSchema)
+  .min(9)
+  .max(12)
+  .refine((items) => {
+    const ids = items.map(i => i.id);
+    return new Set(ids).size === ids.length;
+  }, { message: "Duplicate initiative IDs found" });
 
 // === OBJECTIVE ===
+// VS-26: Simplified schema - no level/pillar/thresholds
 
 export const ObjectiveSchema = z.object({
-  id: z.string().regex(/^obj_fpa_/, 'Must start with obj_fpa_'),
-  name: z.string().min(3).max(50),
-  description: z.string().min(10).max(200),
-  pillar: z.literal('fpa'),
-  level: MaturityLevelSchema,
+  id: z.string().regex(/^obj_/, 'Must start with obj_'),
   theme_id: ThemeIdSchema,
-  thresholds: z.object({
-    green: z.number().int().min(1).max(100),
-    yellow: z.number().int().min(1).max(100)
-  }).refine(data => data.green > data.yellow, {
-    message: 'Green threshold must be higher than yellow'
-  })
+  title: z.string().min(3).max(50),
+  description: z.string().min(10).max(200)
 });
 
-export const ObjectivesFileSchema = z.object({
-  version: z.string(),
-  objectives: z.array(ObjectiveSchema)
-    .min(8)
-    .max(8)
-    .refine((items) => {
-      const ids = items.map(i => i.id);
-      return new Set(ids).size === ids.length;
-    }, { message: "Duplicate objective IDs found" })
-});
+// VS-26: Flat array format
+export const ObjectivesFileSchema = z.array(ObjectiveSchema)
+  .min(8)
+  .max(12)
+  .refine((items) => {
+    const ids = items.map(i => i.id);
+    return new Set(ids).size === ids.length;
+  }, { message: "Duplicate objective IDs found" });
 
 // === GATES ===
 
@@ -150,6 +137,19 @@ export const GatesFileSchema = z.object({
   level_names: z.record(z.string(), z.string())
 });
 
+// === THEME ===
+// VS-26: Themes now in content/themes.json
+
+export const ThemeSchema = z.object({
+  id: ThemeIdSchema,
+  label: z.string().min(5).max(50),
+  description: z.string().min(20).max(200)
+});
+
+export const ThemesFileSchema = z.array(ThemeSchema)
+  .min(3)
+  .max(5);
+
 // === TYPE EXPORTS ===
 
 export type Question = z.infer<typeof QuestionSchema>;
@@ -160,9 +160,10 @@ export type ExpertAction = z.infer<typeof ExpertActionSchema>;
 export type MaturityLevel = z.infer<typeof MaturityLevelSchema>;
 export type ActionType = z.infer<typeof ActionTypeSchema>;
 export type ThemeId = z.infer<typeof ThemeIdSchema>;
+export type Theme = z.infer<typeof ThemeSchema>;
 export type GatesConfig = z.infer<typeof GatesFileSchema>;
 
-// === THEME CONFIG (Hardcoded - rarely changes) ===
+// === THEME CONFIG (Fallback - loaded from themes.json in production) ===
 
 export const THEME_CONFIG: Record<ThemeId, { label: string; description: string }> = {
   foundation: {

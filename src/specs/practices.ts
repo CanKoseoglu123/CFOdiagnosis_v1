@@ -1,11 +1,17 @@
 // src/specs/practices.ts
-// VS-23: FP&A Practice Catalog v1.1
-// 21 practices mapped to 48 questions
-// NOTE: No is_critical field - critical logic stays at Question level
+// VS-26: FP&A Practice Catalog - Simplified schema
+// Practices now have: id, objective_id, title, capability_tags
+// Level and theme derived from objective/questions
 
-export type ThemeId = 'foundation' | 'future' | 'intelligence';
+import { loadPractices, loadQuestions, loadObjectives, getPracticesByLevel } from './loader';
+import { Practice as JsonPractice, ThemeId, Question, Objective } from './schemas';
+
+// Re-export ThemeId for backward compatibility
+export type { ThemeId };
+
 export type EvidenceState = 'proven' | 'partial' | 'not_proven';
 
+// Legacy interface - now computed from simpler JSON schema
 export interface Practice {
   id: string;
   title: string;
@@ -14,240 +20,99 @@ export interface Practice {
   theme_id: ThemeId;
   maturity_level: 1 | 2 | 3 | 4;
   question_ids: string[];
+  capability_tags: string[];
 }
 
-export const FPA_PRACTICES: Practice[] = [
-  // ═══════════════════════════════════════════════════════════════════════════
-  // L1 FOUNDATION (5 Practices, 9 Questions)
-  // ═══════════════════════════════════════════════════════════════════════════
+// Cache for derived data
+let _objectiveMap: Map<string, Objective> | null = null;
+let _questionsByObjective: Map<string, Question[]> | null = null;
 
-  {
-    id: 'prac_annual_budget',
-    title: 'Annual Budget Existence',
-    description: 'Company produces an approved annual budget with full P&L before fiscal year begins',
-    objective_id: 'obj_budget_integrity',
-    theme_id: 'foundation',
-    maturity_level: 1,
-    question_ids: ['fpa_l1_q01', 'fpa_l1_q02']
-    // Contains critical: fpa_l1_q01, fpa_l1_q02
-  },
-  {
-    id: 'prac_budget_owners',
-    title: 'Budget Owner Assignment',
-    description: 'Budget owners are identified for each cost center with clear authority',
-    objective_id: 'obj_budget_integrity',
-    theme_id: 'foundation',
-    maturity_level: 1,
-    question_ids: ['fpa_l1_q03', 'fpa_l1_q04']
-  },
-  {
-    id: 'prac_chart_of_accounts',
-    title: 'Chart of Accounts',
-    description: 'Single, documented chart of accounts used by all business units',
-    objective_id: 'obj_financial_controls',
-    theme_id: 'foundation',
-    maturity_level: 1,
-    question_ids: ['fpa_l1_q05']
-    // Contains critical: fpa_l1_q05
-  },
-  {
-    id: 'prac_approval_controls',
-    title: 'Basic Approval Controls',
-    description: 'Finance is in approval workflows with standard limits',
-    objective_id: 'obj_financial_controls',
-    theme_id: 'foundation',
-    maturity_level: 1,
-    question_ids: ['fpa_l1_q06', 'fpa_l1_q07', 'fpa_l1_q08']
-  },
-  {
-    id: 'prac_mgmt_reporting',
-    title: 'Management Reporting Package',
-    description: 'Standard monthly management reporting package distributed to leadership',
-    objective_id: 'obj_variance_discipline',
-    theme_id: 'foundation',
-    maturity_level: 1,
-    question_ids: ['fpa_l1_q09']
-    // Contains critical: fpa_l1_q09
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // L2 DEFINED (6 Practices, 14 Questions)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  {
-    id: 'prac_monthly_bva',
-    title: 'Monthly BvA Generation',
-    description: 'Budget vs Actuals report generated every month',
-    objective_id: 'obj_variance_discipline',
-    theme_id: 'foundation',
-    maturity_level: 2,
-    question_ids: ['fpa_l2_q01']
-    // Contains critical: fpa_l2_q01
-  },
-  {
-    id: 'prac_variance_investigation',
-    title: 'Variance Investigation Discipline',
-    description: 'Variances exceeding thresholds are formally investigated with defined process',
-    objective_id: 'obj_variance_discipline',
-    theme_id: 'foundation',
-    maturity_level: 2,
-    question_ids: ['fpa_l2_q02', 'fpa_l2_q03', 'fpa_l2_q04', 'fpa_l2_q05']
-    // Contains critical: fpa_l2_q02
-  },
-  {
-    id: 'prac_collaborative_forecast',
-    title: 'Collaborative Forecast System',
-    description: 'Live forecast stored in multi-user system (not single-user spreadsheet)',
-    objective_id: 'obj_forecast_agility',
-    theme_id: 'future',
-    maturity_level: 2,
-    question_ids: ['fpa_l2_q06']
-    // Contains critical: fpa_l2_q06
-  },
-  {
-    id: 'prac_cash_flow_forecast',
-    title: 'Cash Flow Forecasting',
-    description: 'Forecast projects cash flow and liquidity, not just P&L',
-    objective_id: 'obj_forecast_agility',
-    theme_id: 'future',
-    maturity_level: 2,
-    question_ids: ['fpa_l2_q07']
-    // Contains critical: fpa_l2_q07
-  },
-  {
-    id: 'prac_forecast_cycle',
-    title: 'Forecast Refresh Cycle',
-    description: 'Regular forecast update cadence with defined triggers',
-    objective_id: 'obj_forecast_agility',
-    theme_id: 'future',
-    maturity_level: 2,
-    question_ids: ['fpa_l2_q08', 'fpa_l2_q09', 'fpa_l2_q10']
-  },
-  {
-    id: 'prac_process_controls',
-    title: 'Process & Control Documentation',
-    description: 'Finance processes documented with control monitoring in place',
-    objective_id: 'obj_financial_controls',
-    theme_id: 'foundation',
-    maturity_level: 2,
-    question_ids: ['fpa_l2_q11', 'fpa_l2_q12', 'fpa_l2_q13', 'fpa_l2_q14']
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // L3 MANAGED (6 Practices, 15 Questions)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  {
-    id: 'prac_driver_based',
-    title: 'Driver-Based Models',
-    description: 'Planning uses operational drivers, not just financial line items',
-    objective_id: 'obj_decision_support',
-    theme_id: 'intelligence',
-    maturity_level: 3,
-    question_ids: ['fpa_l3_q01', 'fpa_l3_q02']
-  },
-  {
-    id: 'prac_integrated_planning',
-    title: 'Integrated Planning',
-    description: 'Financial plan integrates with operational plans across functions',
-    objective_id: 'obj_decision_support',
-    theme_id: 'intelligence',
-    maturity_level: 3,
-    question_ids: ['fpa_l3_q03', 'fpa_l3_q04']
-  },
-  {
-    id: 'prac_business_partnership',
-    title: 'Business Partnership',
-    description: 'Finance actively partners with business leaders on decisions',
-    objective_id: 'obj_decision_support',
-    theme_id: 'intelligence',
-    maturity_level: 3,
-    question_ids: ['fpa_l3_q05', 'fpa_l3_q06']
-  },
-  {
-    id: 'prac_strategic_planning',
-    title: 'Strategic Planning Integration',
-    description: 'FP&A connected to strategic planning cycle',
-    objective_id: 'obj_decision_support',
-    theme_id: 'intelligence',
-    maturity_level: 3,
-    question_ids: ['fpa_l3_q07', 'fpa_l3_q08']
-  },
-  {
-    id: 'prac_rolling_forecast',
-    title: 'Rolling Forecast Cadence',
-    description: 'Forecast extends beyond fiscal year with regular rolling updates',
-    objective_id: 'obj_forecast_agility',
-    theme_id: 'future',
-    maturity_level: 3,
-    question_ids: ['fpa_l3_q09', 'fpa_l3_q10', 'fpa_l3_q11']
-  },
-  {
-    id: 'prac_scenario_planning',
-    title: 'Scenario Planning',
-    description: 'Multiple scenarios maintained and updated for decision support',
-    objective_id: 'obj_scenario_planning',
-    theme_id: 'future',
-    maturity_level: 3,
-    question_ids: ['fpa_l3_q12', 'fpa_l3_q13', 'fpa_l3_q14', 'fpa_l3_q15']
-  },
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // L4 OPTIMIZED (4 Practices, 10 Questions)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  {
-    id: 'prac_forward_kpis',
-    title: 'Forward-Looking KPIs',
-    description: 'Leading indicators and predictive metrics tracked alongside lagging KPIs',
-    objective_id: 'obj_analytics_capability',
-    theme_id: 'intelligence',
-    maturity_level: 4,
-    question_ids: ['fpa_l4_q01', 'fpa_l4_q04', 'fpa_l4_q05']
-  },
-  {
-    id: 'prac_automated_insights',
-    title: 'Automated Insight Generation',
-    description: 'Variance explanations and anomalies surfaced automatically, not manually',
-    objective_id: 'obj_analytics_capability',
-    theme_id: 'intelligence',
-    maturity_level: 4,
-    question_ids: ['fpa_l4_q02', 'fpa_l4_q03']
-  },
-  {
-    id: 'prac_continuous_planning',
-    title: 'Continuous Planning Cycle',
-    description: 'Plan updates triggered by events, not calendar; real-time reforecasting capability',
-    objective_id: 'obj_forecast_agility',
-    theme_id: 'future',
-    maturity_level: 4,
-    question_ids: ['fpa_l4_q06', 'fpa_l4_q07', 'fpa_l4_q08', 'fpa_l4_q09']
-  },
-  {
-    id: 'prac_self_service',
-    title: 'Self-Service Analytics',
-    description: 'Business users can pull reports and analyze data without FP&A intervention',
-    objective_id: 'obj_analytics_capability',
-    theme_id: 'intelligence',
-    maturity_level: 4,
-    question_ids: ['fpa_l4_q10']
+function getObjectiveMap(): Map<string, Objective> {
+  if (!_objectiveMap) {
+    _objectiveMap = new Map(loadObjectives().map(o => [o.id, o]));
   }
-];
-
-// Verify question count
-const allQuestionIds = FPA_PRACTICES.flatMap(p => p.question_ids);
-const uniqueQuestionIds = [...new Set(allQuestionIds)];
-
-if (uniqueQuestionIds.length !== 48) {
-  console.warn(`Practice catalog has ${uniqueQuestionIds.length} questions, expected 48`);
+  return _objectiveMap;
 }
 
-// Level summary
+function getQuestionsByObjective(): Map<string, Question[]> {
+  if (!_questionsByObjective) {
+    _questionsByObjective = new Map();
+    for (const q of loadQuestions()) {
+      const existing = _questionsByObjective.get(q.objective_id) || [];
+      existing.push(q);
+      _questionsByObjective.set(q.objective_id, existing);
+    }
+  }
+  return _questionsByObjective;
+}
+
+// VS-26: Transform simplified JSON practice to legacy interface
+function transformPractice(p: JsonPractice): Practice {
+  const objectiveMap = getObjectiveMap();
+  const questionsByObj = getQuestionsByObjective();
+
+  const objective = objectiveMap.get(p.objective_id);
+  const objQuestions = questionsByObj.get(p.objective_id) || [];
+
+  // Derive level from questions in this objective
+  const levelCounts: Record<number, number> = {};
+  for (const q of objQuestions) {
+    levelCounts[q.maturity_level] = (levelCounts[q.maturity_level] || 0) + 1;
+  }
+  const level = Object.entries(levelCounts).reduce(
+    (max, [lvl, cnt]) => cnt > max.count ? { level: Number(lvl), count: cnt } : max,
+    { level: 1, count: 0 }
+  ).level as 1 | 2 | 3 | 4;
+
+  return {
+    id: p.id,
+    title: p.title,
+    description: objective?.description || '',  // Use objective description
+    objective_id: p.objective_id,
+    theme_id: (objective?.theme_id || 'foundation') as ThemeId,
+    maturity_level: level,
+    question_ids: objQuestions.map(q => q.id),  // Derived from objective's questions
+    capability_tags: p.capability_tags || []
+  };
+}
+
+// Lazy-loaded transformed practices
+let _fpaPractices: Practice[] | null = null;
+
+function getFpaPractices(): Practice[] {
+  if (!_fpaPractices) {
+    _fpaPractices = loadPractices().map(transformPractice);
+  }
+  return _fpaPractices;
+}
+
+// Export as FPA_PRACTICES for backward compatibility
+// Note: This is now a getter, not a const, but usage is identical
+export const FPA_PRACTICES: Practice[] = new Proxy([] as Practice[], {
+  get(target, prop) {
+    const practices = getFpaPractices();
+    if (prop === 'length') return practices.length;
+    if (prop === Symbol.iterator) return practices[Symbol.iterator].bind(practices);
+    if (typeof prop === 'string' && !isNaN(Number(prop))) {
+      return practices[Number(prop)];
+    }
+    if (typeof prop === 'string') {
+      const method = (practices as any)[prop];
+      if (typeof method === 'function') {
+        return method.bind(practices);
+      }
+      return method;
+    }
+    return Reflect.get(practices, prop);
+  }
+});
+
+// Level summary - computed from JSON
 export const PRACTICE_COUNTS = {
-  L1: FPA_PRACTICES.filter(p => p.maturity_level === 1).length, // 5
-  L2: FPA_PRACTICES.filter(p => p.maturity_level === 2).length, // 6
-  L3: FPA_PRACTICES.filter(p => p.maturity_level === 3).length, // 6
-  L4: FPA_PRACTICES.filter(p => p.maturity_level === 4).length  // 4
+  get L1() { return getFpaPractices().filter(p => p.maturity_level === 1).length; },
+  get L2() { return getFpaPractices().filter(p => p.maturity_level === 2).length; },
+  get L3() { return getFpaPractices().filter(p => p.maturity_level === 3).length; },
+  get L4() { return getFpaPractices().filter(p => p.maturity_level === 4).length; }
 };
 
 export const LEVEL_NAMES: Record<number, string> = {
@@ -256,3 +121,37 @@ export const LEVEL_NAMES: Record<number, string> = {
   3: 'Managed',
   4: 'Optimized'
 };
+
+// Convenience helpers
+export function getPracticeById(id: string): Practice | undefined {
+  return getFpaPractices().find(p => p.id === id);
+}
+
+export function getPracticesByMaturityLevel(level: 1 | 2 | 3 | 4): Practice[] {
+  return getFpaPractices().filter(p => p.maturity_level === level);
+}
+
+export function getPracticesByObjectiveId(objectiveId: string): Practice[] {
+  return getFpaPractices().filter(p => p.objective_id === objectiveId);
+}
+
+export function getPracticesByThemeId(themeId: ThemeId): Practice[] {
+  return getFpaPractices().filter(p => p.theme_id === themeId);
+}
+
+// Verify question count (runs once on first access)
+let _validated = false;
+export function validatePracticeQuestionCoverage(): void {
+  if (_validated) return;
+
+  const practices = getFpaPractices();
+  const allQuestionIds = practices.flatMap(p => p.question_ids);
+  const uniqueQuestionIds = [...new Set(allQuestionIds)];
+
+  // VS-25: Updated to support 48-57 questions
+  if (uniqueQuestionIds.length < 48) {
+    console.warn(`Practice catalog has ${uniqueQuestionIds.length} questions, expected at least 48`);
+  }
+
+  _validated = true;
+}

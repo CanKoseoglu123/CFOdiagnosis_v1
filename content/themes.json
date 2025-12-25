@@ -1,0 +1,17 @@
+[
+  {
+    "id": "foundation",
+    "label": "The Foundation",
+    "description": "Control & Trust: Establishing the accuracy, governance, and discipline required to trust the numbers."
+  },
+  {
+    "id": "future",
+    "label": "The Future",
+    "description": "Speed & Agility: Moving beyond static backward-looking reporting to dynamic forward-looking guidance."
+  },
+  {
+    "id": "intelligence",
+    "label": "The Intelligence",
+    "description": "Value & Influence: Driving strategic decisions through predictive insights and business partnership."
+  }
+]

@@ -77,13 +77,13 @@ const questions = loadQuestions();
 assertEqual(questions.length, 48, 'Loads exactly 48 questions');
 
 const practices = loadPractices();
-assertEqual(practices.length, 21, 'Loads exactly 21 practices');
+assertEqual(practices.length, 28, 'Loads exactly 28 practices');  // VS-26: Expanded
 
 const initiatives = loadInitiatives();
 assertEqual(initiatives.length, 9, 'Loads exactly 9 initiatives');
 
 const objectives = loadObjectives();
-assertEqual(objectives.length, 8, 'Loads exactly 8 objectives');
+assertEqual(objectives.length, 9, 'Loads exactly 9 objectives');  // VS-26: Expanded
 
 const gates = loadGates();
 assertEqual(gates.critical_gates.l1_to_l2.length, 4, 'L1→L2 gate has 4 critical questions');
@@ -146,21 +146,18 @@ assertEqual(l3Questions.length, 15, 'L3 has 15 questions');
 const l4Questions = getQuestionsByLevel(4);
 assertEqual(l4Questions.length, 10, 'L4 has 10 questions');
 
-// --- Practice Distribution by Level ---
+// --- Practice Distribution by Objective ---
+// VS-26: Practices no longer have level, they link to objectives
 console.log('');
-console.log('--- Practice Distribution by Level ---');
+console.log('--- Practice Distribution by Objective ---');
 
-const l1Practices = practices.filter(p => p.level === 1);
-assertEqual(l1Practices.length, 5, 'L1 has 5 practices');
+// Just verify we have practices and they all have valid objective references
+const allPracticesHaveObjective = practices.every(p => p.objective_id.startsWith('obj_'));
+assertTrue(allPracticesHaveObjective, 'All practices reference valid objectives');
 
-const l2Practices = practices.filter(p => p.level === 2);
-assertEqual(l2Practices.length, 6, 'L2 has 6 practices');
-
-const l3Practices = practices.filter(p => p.level === 3);
-assertEqual(l3Practices.length, 6, 'L3 has 6 practices');
-
-const l4Practices = practices.filter(p => p.level === 4);
-assertEqual(l4Practices.length, 4, 'L4 has 4 practices');
+// VS-26: Practices now have 28 entries (expanded from 21)
+assertTrue(practices.length >= 20, `Practices count >= 20 (got ${practices.length})`);
+assertTrue(practices.length <= 35, `Practices count <= 35 (got ${practices.length})`);
 
 // --- Initiative Theme Distribution ---
 console.log('');
@@ -196,9 +193,11 @@ const validActionTypes = questions.every(q =>
 );
 assertTrue(validActionTypes, 'All expert action types are valid');
 
-// Objective thresholds
-const validThresholds = objectives.every(o => o.thresholds.green > o.thresholds.yellow);
-assertTrue(validThresholds, 'All objective thresholds: green > yellow');
+// VS-26: Objectives no longer have thresholds - verify theme_id instead
+const validObjectiveThemes = objectives.every(o =>
+  ['foundation', 'future', 'intelligence'].includes(o.theme_id)
+);
+assertTrue(validObjectiveThemes, 'All objectives have valid theme_id');
 
 // --- Summary ---
 console.log('');

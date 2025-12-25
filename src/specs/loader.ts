@@ -1,8 +1,10 @@
 /**
- * VS-24: JSON Content Loaders with Zod Validation
+ * VS-24/VS-26: JSON Content Loaders with Zod Validation
  *
  * All content files are validated at module load time.
  * Invalid content will cause the application to fail fast.
+ *
+ * VS-26: Updated for flat array format (no version wrappers)
  */
 
 import { z } from 'zod';
@@ -11,11 +13,13 @@ import {
   PracticesFileSchema,
   InitiativesFileSchema,
   ObjectivesFileSchema,
+  ThemesFileSchema,
   GatesFileSchema,
   Question,
   Practice,
   Initiative,
   Objective,
+  Theme,
   GatesConfig
 } from './schemas';
 
@@ -24,6 +28,7 @@ import questionsJson from '../../content/questions.json';
 import practicesJson from '../../content/practices.json';
 import initiativesJson from '../../content/initiatives.json';
 import objectivesJson from '../../content/objectives.json';
+import themesJson from '../../content/themes.json';
 import gatesJson from '../../content/gates.json';
 
 // === VALIDATION CACHE ===
@@ -33,6 +38,7 @@ let _questions: Question[] | null = null;
 let _practices: Practice[] | null = null;
 let _initiatives: Initiative[] | null = null;
 let _objectives: Objective[] | null = null;
+let _themes: Theme[] | null = null;
 let _gates: GatesConfig | null = null;
 
 function validateOnce<T>(
@@ -60,28 +66,33 @@ export function loadQuestions(): Question[] {
   return _questions;
 }
 
+// VS-26: Now flat arrays
 export function loadPractices(): Practice[] {
   if (!_practices) {
-    const validated = validateOnce(practicesJson, PracticesFileSchema, 'practices.json');
-    _practices = validated.practices;
+    _practices = validateOnce(practicesJson, PracticesFileSchema, 'practices.json');
   }
   return _practices;
 }
 
 export function loadInitiatives(): Initiative[] {
   if (!_initiatives) {
-    const validated = validateOnce(initiativesJson, InitiativesFileSchema, 'initiatives.json');
-    _initiatives = validated.initiatives;
+    _initiatives = validateOnce(initiativesJson, InitiativesFileSchema, 'initiatives.json');
   }
   return _initiatives;
 }
 
 export function loadObjectives(): Objective[] {
   if (!_objectives) {
-    const validated = validateOnce(objectivesJson, ObjectivesFileSchema, 'objectives.json');
-    _objectives = validated.objectives;
+    _objectives = validateOnce(objectivesJson, ObjectivesFileSchema, 'objectives.json');
   }
   return _objectives;
+}
+
+export function loadThemes(): Theme[] {
+  if (!_themes) {
+    _themes = validateOnce(themesJson, ThemesFileSchema, 'themes.json');
+  }
+  return _themes;
 }
 
 export function loadGates(): GatesConfig {
@@ -98,11 +109,14 @@ export function validateCrossReferences(): void {
   const practices = loadPractices();
   const initiatives = loadInitiatives();
   const objectives = loadObjectives();
+  const themes = loadThemes();
   const gates = loadGates();
 
   const questionIds = new Set(questions.map(q => q.id));
+  const practiceIds = new Set(practices.map(p => p.id));
   const objectiveIds = new Set(objectives.map(o => o.id));
   const initiativeIds = new Set(initiatives.map(i => i.id));
+  const themeIds = new Set(themes.map(t => t.id));
 
   // Every question must reference valid objective and initiative
   for (const q of questions) {
@@ -114,19 +128,27 @@ export function validateCrossReferences(): void {
     }
   }
 
-  // Every practice must reference valid questions
+  // VS-26: Every practice must reference valid objective
   for (const p of practices) {
-    for (const qId of p.question_ids) {
-      if (!questionIds.has(qId)) {
-        throw new Error(`Practice ${p.id} references invalid question: ${qId}`);
-      }
+    if (!objectiveIds.has(p.objective_id)) {
+      throw new Error(`Practice ${p.id} references invalid objective: ${p.objective_id}`);
     }
   }
 
-  // Every initiative must reference valid objective
+  // Every initiative must reference valid objective and theme
   for (const i of initiatives) {
     if (!objectiveIds.has(i.objective_id)) {
       throw new Error(`Initiative ${i.id} references invalid objective: ${i.objective_id}`);
+    }
+    if (!themeIds.has(i.theme_id)) {
+      throw new Error(`Initiative ${i.id} references invalid theme: ${i.theme_id}`);
+    }
+  }
+
+  // Every objective must reference valid theme
+  for (const o of objectives) {
+    if (!themeIds.has(o.theme_id)) {
+      throw new Error(`Objective ${o.id} references invalid theme: ${o.theme_id}`);
     }
   }
 
@@ -165,8 +187,14 @@ export function getQuestionsByObjective(objectiveId: string): Question[] {
   return loadQuestions().filter(q => q.objective_id === objectiveId);
 }
 
+// VS-26: Practices no longer have level - use getPracticesByObjective instead
 export function getPracticesByLevel(level: 1 | 2 | 3 | 4): Practice[] {
-  return loadPractices().filter(p => p.level === level);
+  // Derive level from questions that link to this practice's objective
+  const questions = loadQuestions();
+  const practices = loadPractices();
+  const levelQuestions = questions.filter(q => q.maturity_level === level);
+  const levelObjectiveIds = new Set(levelQuestions.map(q => q.objective_id));
+  return practices.filter(p => levelObjectiveIds.has(p.objective_id));
 }
 
 export function getObjectiveById(id: string): Objective | undefined {
@@ -179,6 +207,23 @@ export function getInitiativeById(id: string): Initiative | undefined {
 
 export function getPracticeById(id: string): Practice | undefined {
   return loadPractices().find(p => p.id === id);
+}
+
+export function getPracticesByObjective(objectiveId: string): Practice[] {
+  return loadPractices().filter(p => p.objective_id === objectiveId);
+}
+
+// VS-26: Get practices by theme through objectives
+export function getPracticesByTheme(themeId: string): Practice[] {
+  const objectives = loadObjectives();
+  const themeObjectiveIds = new Set(
+    objectives.filter(o => o.theme_id === themeId).map(o => o.id)
+  );
+  return loadPractices().filter(p => themeObjectiveIds.has(p.objective_id));
+}
+
+export function getThemeById(id: string): Theme | undefined {
+  return loadThemes().find(t => t.id === id);
 }
 
 // === SPEC BUILDER ===
@@ -261,27 +306,47 @@ const PILLARS: SpecPillar[] = [
   }
 ];
 
+// VS-26: Updated for new objective IDs
 const PURPOSE_MAP: Record<string, string> = {
-  'obj_fpa_l1_budget': 'To establish a formal financial baseline against which performance can be measured',
-  'obj_fpa_l1_control': 'To ensure data integrity, prevent fraud, and create a verifiable audit trail',
-  'obj_fpa_l2_variance': 'To systematically identify, explain, and correct deviations from the plan',
-  'obj_fpa_l2_forecast': 'To provide a realistic, rolling view of future performance as conditions change',
-  'obj_fpa_l3_driver': 'To link financial outcomes directly to the operational levers that drive them',
-  'obj_fpa_l3_scenario': 'To prepare the organization for volatility by modeling multiple what-if outcomes',
-  'obj_fpa_l4_integrate': 'To unify data across functions into a single source of truth',
-  'obj_fpa_l4_predict': 'To use algorithms to automate baseline predictions and flag anomalies in real-time'
+  'obj_budget_discipline': 'To establish a formal financial baseline against which performance can be measured',
+  'obj_financial_controls': 'To ensure data integrity, prevent fraud, and create a verifiable audit trail',
+  'obj_performance_monitoring': 'To systematically identify, explain, and correct deviations from the plan',
+  'obj_forecasting_agility': 'To provide a realistic, rolling view of future performance as conditions change',
+  'obj_driver_based_planning': 'To link financial outcomes directly to the operational levers that drive them',
+  'obj_scenario_modeling': 'To prepare the organization for volatility by modeling multiple what-if outcomes',
+  'obj_strategic_influence': 'To shape strategic decisions through financial insight and business partnership',
+  'obj_decision_support': 'To democratize data and enable faster business decisions',
+  'obj_operational_excellence': 'To run the finance function with maximum efficiency'
 };
 
+// VS-26: Theme ordering for display purposes
 const THEME_ORDER_MAP: Record<string, number> = {
-  'obj_fpa_l1_budget': 1,
-  'obj_fpa_l1_control': 2,
-  'obj_fpa_l2_variance': 3,
-  'obj_fpa_l2_forecast': 4,
-  'obj_fpa_l3_driver': 5,
-  'obj_fpa_l4_integrate': 6,
-  'obj_fpa_l3_scenario': 7,
-  'obj_fpa_l4_predict': 8
+  'obj_budget_discipline': 1,
+  'obj_financial_controls': 2,
+  'obj_performance_monitoring': 3,
+  'obj_forecasting_agility': 4,
+  'obj_driver_based_planning': 5,
+  'obj_scenario_modeling': 6,
+  'obj_strategic_influence': 7,
+  'obj_decision_support': 8,
+  'obj_operational_excellence': 9
 };
+
+// VS-26: Derive objective level from questions
+function getObjectiveLevel(objectiveId: string, questions: Question[]): 1 | 2 | 3 | 4 {
+  const objQuestions = questions.filter(q => q.objective_id === objectiveId);
+  if (objQuestions.length === 0) return 1;
+  // Use the most common level among questions
+  const levelCounts = objQuestions.reduce((acc: Record<number, number>, q) => {
+    acc[q.maturity_level] = (acc[q.maturity_level] || 0) + 1;
+    return acc;
+  }, {});
+  const maxLevel = Object.entries(levelCounts).reduce(
+    (max, [level, count]) => count > max.count ? { level: Number(level), count } : max,
+    { level: 1, count: 0 }
+  );
+  return maxLevel.level as 1 | 2 | 3 | 4;
+}
 
 /**
  * Build a complete Spec from JSON content files
@@ -309,18 +374,21 @@ export function buildSpecFromContent(): Spec {
     expert_action: q.expert_action
   }));
 
-  // Transform objectives to SpecObjective format
-  const specObjectives: SpecObjective[] = objectives.map(o => ({
-    id: o.id,
-    pillar_id: o.pillar,
-    level: o.level,
-    name: o.name,
-    purpose: PURPOSE_MAP[o.id],
-    description: o.description,
-    action_id: o.id.replace('obj_', 'act_'),
-    theme: o.theme_id as ThemeCode,
-    theme_order: THEME_ORDER_MAP[o.id]
-  }));
+  // VS-26: Transform objectives to SpecObjective format with derived level
+  const specObjectives: SpecObjective[] = objectives.map(o => {
+    const level = getObjectiveLevel(o.id, questions);
+    return {
+      id: o.id,
+      pillar_id: 'fpa',  // VS-26: Hardcoded for now, single-pillar
+      level,
+      name: o.title,  // VS-26: 'title' in new schema
+      purpose: PURPOSE_MAP[o.id] || o.description,
+      description: o.description,
+      action_id: o.id.replace('obj_', 'act_'),
+      theme: o.theme_id as ThemeCode,
+      theme_order: THEME_ORDER_MAP[o.id] || 99
+    };
+  });
 
   // Build maturity gates from gates.json
   const maturityGates: MaturityGateSpec[] = [

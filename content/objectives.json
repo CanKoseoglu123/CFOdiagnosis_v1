@@ -1,101 +1,56 @@
-{
-  "version": "2.8.1",
-  "objectives": [
-    {
-      "id": "obj_fpa_l1_budget",
-      "name": "Budgeting",
-      "description": "Establish a formal, owned, and communicated annual budget process",
-      "pillar": "fpa",
-      "level": 1,
-      "theme_id": "foundation",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l1_control",
-      "name": "Financial Controls",
-      "description": "Implement basic financial controls and segregation of duties",
-      "pillar": "fpa",
-      "level": 1,
-      "theme_id": "foundation",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l2_variance",
-      "name": "Variance Management",
-      "description": "Establish monthly variance analysis with accountability",
-      "pillar": "fpa",
-      "level": 2,
-      "theme_id": "foundation",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l2_forecast",
-      "name": "Forecasting",
-      "description": "Implement rolling forecasts with documented assumptions",
-      "pillar": "fpa",
-      "level": 2,
-      "theme_id": "future",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l3_driver",
-      "name": "Driver-Based Planning",
-      "description": "Link financial models to operational drivers and unit economics",
-      "pillar": "fpa",
-      "level": 3,
-      "theme_id": "future",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l3_scenario",
-      "name": "Scenario Planning",
-      "description": "Build multi-scenario models with trigger-based contingencies",
-      "pillar": "fpa",
-      "level": 3,
-      "theme_id": "intelligence",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l4_integrate",
-      "name": "Integrated Planning",
-      "description": "Connect planning across functions with live system integration",
-      "pillar": "fpa",
-      "level": 4,
-      "theme_id": "future",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    },
-    {
-      "id": "obj_fpa_l4_predict",
-      "name": "Predictive Analytics",
-      "description": "Deploy ML-based forecasting and real-time anomaly detection",
-      "pillar": "fpa",
-      "level": 4,
-      "theme_id": "intelligence",
-      "thresholds": {
-        "green": 80,
-        "yellow": 50
-      }
-    }
-  ]
-}
+[
+  {
+    "id": "obj_budget_discipline",
+    "theme_id": "foundation",
+    "title": "Budget Discipline",
+    "description": "Establish a baseline of financial accountability."
+  },
+  {
+    "id": "obj_financial_controls",
+    "theme_id": "foundation",
+    "title": "Financial Controls",
+    "description": "Ensure data integrity and prevent leakage."
+  },
+  {
+    "id": "obj_performance_monitoring",
+    "theme_id": "foundation",
+    "title": "Performance Monitoring",
+    "description": "Create feedback loops to track actuals against the plan."
+  },
+  {
+    "id": "obj_forecasting_agility",
+    "theme_id": "future",
+    "title": "Forecasting Agility",
+    "description": "Update the financial outlook frequently and efficiently."
+  },
+  {
+    "id": "obj_driver_based_planning",
+    "theme_id": "future",
+    "title": "Driver-Based Planning",
+    "description": "Link financial outcomes to operational inputs."
+  },
+  {
+    "id": "obj_scenario_modeling",
+    "theme_id": "future",
+    "title": "Scenario Modeling",
+    "description": "Prepare the business for multiple potential futures."
+  },
+  {
+    "id": "obj_strategic_influence",
+    "theme_id": "intelligence",
+    "title": "Strategic Influence",
+    "description": "Seat at the table for major commercial decisions."
+  },
+  {
+    "id": "obj_decision_support",
+    "theme_id": "intelligence",
+    "title": "Decision Support",
+    "description": "Democratize data to enable faster business decisions."
+  },
+  {
+    "id": "obj_operational_excellence",
+    "theme_id": "intelligence",
+    "title": "Operational Excellence",
+    "description": "Run the finance function with maximum efficiency."
+  }
+]
