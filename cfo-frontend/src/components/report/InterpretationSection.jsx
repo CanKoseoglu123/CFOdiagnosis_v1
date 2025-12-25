@@ -244,20 +244,6 @@ export default function InterpretationSection({ runId }) {
     }
   };
 
-  // Skip questions (use draft as-is)
-  const handleSkip = async () => {
-    setState('loading');
-    setStatus('finalizing');
-    // PATCH V2: Submit with explicit skipped markers
-    const skippedAnswers = questions.map(q => ({
-      question_id: q.question_id,
-      answer: null,
-      skipped: true,
-      time_to_answer_ms: null
-    }));
-    await handleSubmitAnswers(skippedAnswers);
-  };
-
   // PATCH V2: Resume polling after "Keep Waiting" on timeout
   const handleKeepWaiting = () => {
     pollStartTime.current = Date.now();
@@ -375,7 +361,6 @@ export default function InterpretationSection({ runId }) {
       <InterpretationQuestions
         questions={questions}
         onSubmit={handleSubmitAnswers}
-        onSkip={handleSkip}
       />
     );
   }

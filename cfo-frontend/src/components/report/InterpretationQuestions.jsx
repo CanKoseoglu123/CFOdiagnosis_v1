@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 
-export default function InterpretationQuestions({ questions, onSubmit, onSkip }) {
+export default function InterpretationQuestions({ questions, onSubmit }) {
   const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [timings, setTimings] = useState({});
@@ -142,20 +142,11 @@ export default function InterpretationQuestions({ questions, onSubmit, onSkip })
         })}
       </div>
 
-      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-        {onSkip && (
-          <button
-            onClick={onSkip}
-            disabled={submitting}
-            className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-50"
-          >
-            Skip for now
-          </button>
-        )}
+      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end">
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="px-6 py-2 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {submitting ? (
             <>

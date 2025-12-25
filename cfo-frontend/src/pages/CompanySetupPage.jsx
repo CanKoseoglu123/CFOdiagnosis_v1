@@ -124,7 +124,7 @@ export default function CompanySetupPage() {
   const [error, setError] = useState(null);
 
   const [company, setCompany] = useState({
-    name: '',
+    name: 'Acme GmbH',
     industry: '',
     revenue_range: '',
     employee_count: '',
