@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 
 const STEPS = [
   { key: 'company', label: 'Company' },
-  { key: 'pillar', label: 'FP&A Context' }
+  { key: 'pillar', label: 'FP&A' }
 ];
 
 export default function SetupProgress({ currentStep }) {
@@ -24,17 +24,17 @@ export default function SetupProgress({ currentStep }) {
               <div
                 className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-semibold
                   ${isCompleted ? 'bg-green-600 text-white' :
-                    isCurrent ? 'bg-primary-600 text-white' :
-                    'bg-slate-200 text-slate-500'}`}
+                    isCurrent ? 'bg-blue-600 text-white' :
+                    'bg-gray-200 text-gray-500'}`}
               >
                 {isCompleted ? <Check size={16} /> : index + 1}
               </div>
-              <span className={`text-xs mt-1 ${isCurrent ? 'text-primary-600 font-medium' : 'text-slate-500'}`}>
+              <span className={`text-xs mt-1 ${isCurrent ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
                 {step.label}
               </span>
             </div>
             {index < STEPS.length - 1 && (
-              <div className={`w-12 h-0.5 mx-3 ${isCompleted ? 'bg-green-600' : 'bg-slate-200'}`} />
+              <div className={`w-12 h-0.5 mx-3 ${isCompleted ? 'bg-green-600' : 'bg-gray-200'}`} />
             )}
           </div>
         );

@@ -143,8 +143,8 @@ export default function PillarReport() {
   const levelName = maturityV2.level_name || ['', 'Emerging', 'Defined', 'Managed', 'Optimized'][actualLevel] || 'Emerging';
   const cappedBy = maturityV2.capped_by || [];
 
-  // Count questions answered (estimate from objectives)
-  const questionsAnswered = report.objectives?.reduce((sum, obj) => sum + (obj.questions_passed || 0), 0) || 48;
+  // Count questions answered from pillar data (scored_questions counts all answered)
+  const questionsAnswered = report.pillars?.[0]?.scored_questions || 48;
 
   // ─────────────────────────────────────────────────────────────────────────
   // MATURITY FOOTPRINT DATA (VS-23)
