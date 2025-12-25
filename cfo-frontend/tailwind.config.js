@@ -7,7 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: '#172B4D',
+        navy: {
+          DEFAULT: '#172B4D',
+          900: '#172B4D',
+          800: '#1D3557',
+          700: '#253D5B',
+        },
         slate: {
           DEFAULT: '#42526E',
           50: '#F8F9FA',
@@ -19,6 +24,11 @@ export default {
         },
         primary: {
           DEFAULT: '#0052CC',
+          50: '#E6F0FF',
+          100: '#DEEBFF',
+          500: '#0065FF',
+          600: '#0052CC',
+          700: '#0747A6',
           hover: '#0747A6',
           light: '#DEEBFF',
         },

@@ -1,22 +1,54 @@
 // src/pages/CompanySetupPage.jsx
 // VS25: Company context setup - Step 1 of 2
+// Includes: Company Info, Organisation Scale, Ownership Structure, Transformation Ambition
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
-  Building2, Users, DollarSign, GitBranch, Zap,
-  ArrowRight, Loader, AlertCircle, Check
+  Building2, Users, Euro, GitBranch, Zap, Briefcase,
+  ArrowRight, Loader, AlertCircle, Check, Info
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import {
   INDUSTRIES, REVENUE_RANGES, EMPLOYEE_COUNTS,
-  FINANCE_STRUCTURES, CHANGE_APPETITES
+  FINANCE_STRUCTURES, OWNERSHIP_STRUCTURES, CHANGE_APPETITES,
+  FINANCE_FTE_RANGES, LEGAL_ENTITY_RANGES
 } from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Chip selector component (single select)
+function ChipSelector({ label, icon: Icon, value, onChange, options, required }) {
+  return (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-slate-700 mb-2">
+        <span className="flex items-center gap-2">
+          {Icon && <Icon size={16} className="text-slate-500" />}
+          {label}
+          {required && <span className="text-red-500">*</span>}
+        </span>
+      </label>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`px-4 py-2 rounded-sm border text-sm font-medium transition-all
+              ${value === opt.value
+                ? 'border-primary-600 bg-primary-50 text-primary-700'
+                : 'border-slate-300 hover:border-slate-400 text-slate-600'}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Dropdown component
 function Dropdown({ label, icon: Icon, value, onChange, options, placeholder, required }) {
@@ -32,8 +64,8 @@ function Dropdown({ label, icon: Icon, value, onChange, options, placeholder, re
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 border border-slate-200 rounded-sm text-sm
-          focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none
+        className="w-full px-4 py-3 border border-slate-300 rounded-sm text-sm
+          focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none
           bg-white appearance-none cursor-pointer"
         required={required}
       >
@@ -65,8 +97,8 @@ function ChangeAppetiteSelector({ value, onChange }) {
             onClick={() => onChange(option.value)}
             className={`p-4 rounded-sm border-2 text-left transition-all
               ${value === option.value
-                ? 'border-primary-500 bg-primary-50'
-                : 'border-slate-200 hover:border-slate-300'}`}
+                ? 'border-primary-600 bg-primary-50'
+                : 'border-slate-300 hover:border-slate-400'}`}
           >
             <div className="flex items-center gap-2 mb-1">
               <div
@@ -96,7 +128,10 @@ export default function CompanySetupPage() {
     industry: '',
     revenue_range: '',
     employee_count: '',
+    finance_ftes: '',
+    legal_entities: '',
     finance_structure: '',
+    ownership_structure: '',
     change_appetite: ''
   });
 
@@ -155,7 +190,8 @@ export default function CompanySetupPage() {
 
   const isValid = () => {
     return company.name && company.industry && company.revenue_range &&
-           company.employee_count && company.finance_structure && company.change_appetite;
+           company.employee_count && company.finance_structure &&
+           company.ownership_structure && company.change_appetite;
   };
 
   const handleContinue = async () => {
@@ -191,13 +227,22 @@ export default function CompanySetupPage() {
         {/* Header */}
         <div className="bg-navy-900 text-white py-6">
           <div className="max-w-2xl mx-auto px-5">
-            <div className="text-xs tracking-widest text-slate-400 mb-1">FINANCE DIAGNOSTIC</div>
-            <h1 className="text-xl font-bold">Company Profile</h1>
+            <div className="text-xs tracking-widest text-slate-300 mb-1">FINANCE DIAGNOSTIC</div>
+            <h1 className="text-xl font-bold text-white">Organizational Context</h1>
           </div>
         </div>
 
         <main className="max-w-2xl mx-auto px-5 py-8">
           <SetupProgress currentStep="company" />
+
+          {/* Info banner */}
+          <div className="bg-primary-50 border border-primary-200 rounded-sm p-4 mb-6 flex items-start gap-3">
+            <Info size={20} className="text-primary-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-primary-800">Before We Begin</p>
+              <p className="text-sm text-primary-700">To ensure accurate benchmarking and tailored insights, please provide context on your organization's scale and structure.</p>
+            </div>
+          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-sm p-4 mb-6 flex items-start gap-3">
@@ -207,10 +252,11 @@ export default function CompanySetupPage() {
             </div>
           )}
 
-          <div className="bg-white border border-slate-200 rounded-sm p-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-slate-800">Tell us about your organization</h2>
-              <p className="text-sm text-slate-500 mt-1">This helps us calibrate recommendations to your scale and structure.</p>
+          {/* Company Information Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Company Information</h2>
+              <p className="text-sm text-slate-500">Basic details about your organization</p>
             </div>
 
             {/* Company Name */}
@@ -227,8 +273,8 @@ export default function CompanySetupPage() {
                 value={company.name}
                 onChange={(e) => setCompany({ ...company, name: e.target.value })}
                 placeholder="e.g., Acme Corporation"
-                className="w-full px-4 py-3 border border-slate-200 rounded-sm text-sm
-                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+                className="w-full px-4 py-3 border border-slate-300 rounded-sm text-sm
+                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
                 required
               />
             </div>
@@ -239,66 +285,107 @@ export default function CompanySetupPage() {
               value={company.industry}
               onChange={(v) => setCompany({ ...company, industry: v })}
               options={INDUSTRIES}
-              placeholder="Select industry..."
+              placeholder="Select your industry"
               required
             />
+          </div>
 
-            <Dropdown
-              label="Annual Revenue"
-              icon={DollarSign}
-              value={company.revenue_range}
-              onChange={(v) => setCompany({ ...company, revenue_range: v })}
-              options={REVENUE_RANGES}
-              placeholder="Select range..."
-              required
-            />
+          {/* Organisation Scale Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Organisation Scale</h2>
+              <p className="text-sm text-slate-500">Quantitative metrics about your organization</p>
+            </div>
 
-            <Dropdown
-              label="Total Headcount"
+            <ChipSelector
+              label="Company Size (Employees)"
               icon={Users}
               value={company.employee_count}
               onChange={(v) => setCompany({ ...company, employee_count: v })}
               options={EMPLOYEE_COUNTS}
-              placeholder="Select range..."
               required
             />
 
-            <Dropdown
+            <ChipSelector
+              label="Turnover Band"
+              icon={Euro}
+              value={company.revenue_range}
+              onChange={(v) => setCompany({ ...company, revenue_range: v })}
+              options={REVENUE_RANGES}
+              required
+            />
+
+            <ChipSelector
+              label="Finance FTEs (Scope Entity)"
+              icon={Users}
+              value={company.finance_ftes}
+              onChange={(v) => setCompany({ ...company, finance_ftes: v })}
+              options={FINANCE_FTE_RANGES}
+            />
+
+            <ChipSelector
+              label="# Legal Entities"
+              icon={Building2}
+              value={company.legal_entities}
+              onChange={(v) => setCompany({ ...company, legal_entities: v })}
+              options={LEGAL_ENTITY_RANGES}
+            />
+          </div>
+
+          {/* Ownership Structure Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Ownership Structure</h2>
+              <p className="text-sm text-slate-500">Type of organizational ownership</p>
+            </div>
+
+            <ChipSelector
+              label="Ownership Type"
+              icon={Briefcase}
+              value={company.ownership_structure}
+              onChange={(v) => setCompany({ ...company, ownership_structure: v })}
+              options={OWNERSHIP_STRUCTURES}
+              required
+            />
+
+            <ChipSelector
               label="Finance Structure"
               icon={GitBranch}
               value={company.finance_structure}
               onChange={(v) => setCompany({ ...company, finance_structure: v })}
-              options={FINANCE_STRUCTURES}
-              placeholder="Select structure..."
+              options={FINANCE_STRUCTURES.map(f => ({ value: f.value, label: f.label }))}
               required
             />
+          </div>
 
+          {/* Transformation Ambition Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
             <ChangeAppetiteSelector
               value={company.change_appetite}
               onChange={(v) => setCompany({ ...company, change_appetite: v })}
             />
-
-            <button
-              onClick={handleContinue}
-              disabled={!isValid() || saving}
-              className={`w-full py-3 rounded-sm font-semibold flex items-center justify-center gap-2
-                ${isValid() && !saving
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-            >
-              {saving ? (
-                <>
-                  <Loader size={18} className="animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight size={18} />
-                </>
-              )}
-            </button>
           </div>
+
+          <button
+            onClick={handleContinue}
+            disabled={!isValid() || saving}
+            className={`w-full py-3 rounded-sm font-semibold flex items-center justify-center gap-2
+              ${isValid() && !saving
+                ? 'bg-primary-600 text-white hover:bg-primary-700'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+          >
+            {saving ? (
+              <>
+                <Loader size={18} className="animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                Continue to FP&A Context
+                <ArrowRight size={18} />
+              </>
+            )}
+          </button>
         </main>
       </div>
     </AppShell>

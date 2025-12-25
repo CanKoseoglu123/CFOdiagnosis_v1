@@ -1,58 +1,48 @@
 // src/pages/PillarSetupPage.jsx
 // VS25: FP&A pillar context setup - Step 2 of 2
+// Includes: Tools & Technology, Team & Process, Pain Points, Additional Context
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
-  Calculator, Wrench, Layers, AlertCircle, FileText,
-  ArrowRight, ArrowLeft, Loader, Check
+  Wrench, Users, Calendar, Target, AlertCircle, User,
+  ArrowRight, ArrowLeft, Loader, Check, MessageSquare
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
-import { SYSTEMS, PAIN_POINTS } from '../data/contextOptions';
+import {
+  PLANNING_TOOLS, TEAM_SIZES, FORECAST_FREQUENCIES,
+  BUDGET_PROCESSES, PAIN_POINTS, USER_ROLES
+} from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// Multi-select for systems
-function SystemsSelector({ value, onChange }) {
-  const toggleSystem = (sys) => {
-    if (value.includes(sys)) {
-      onChange(value.filter(v => v !== sys));
-    } else if (value.length < 5) {
-      onChange([...value, sys]);
-    }
-  };
-
+// Chip selector component (single select)
+function ChipSelector({ label, icon: Icon, value, onChange, options, required, hint }) {
   return (
     <div className="mb-5">
-      <label className="block text-sm font-semibold text-slate-700 mb-3">
+      <label className="block text-sm font-semibold text-slate-700 mb-2">
         <span className="flex items-center gap-2">
-          <Wrench size={16} className="text-slate-500" />
-          Primary Planning Tools
-          <span className="text-red-500">*</span>
-          <span className="text-xs text-slate-400 font-normal ml-2">(Select all that apply)</span>
+          {Icon && <Icon size={16} className="text-slate-500" />}
+          {label}
+          {required && <span className="text-red-500">*</span>}
+          {hint && <span className="text-xs text-slate-400 font-normal ml-2">{hint}</span>}
         </span>
       </label>
-      <div className="grid grid-cols-2 gap-2">
-        {SYSTEMS.map((sys) => (
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
           <button
-            key={sys.value}
+            key={opt.value}
             type="button"
-            onClick={() => toggleSystem(sys.value)}
-            className={`p-3 rounded-sm border text-left text-sm transition-all
-              ${value.includes(sys.value)
-                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                : 'border-slate-200 hover:border-slate-300 text-slate-600'}`}
+            onClick={() => onChange(opt.value)}
+            className={`px-4 py-2 rounded-sm border text-sm font-medium transition-all
+              ${value === opt.value
+                ? 'border-primary-600 bg-primary-50 text-primary-700'
+                : 'border-slate-300 hover:border-slate-400 text-slate-600'}`}
           >
-            <div className="flex items-center gap-2">
-              <div className={`w-4 h-4 rounded-sm border flex items-center justify-center
-                ${value.includes(sys.value) ? 'bg-primary-500 border-primary-500' : 'border-slate-300'}`}>
-                {value.includes(sys.value) && <Check size={12} className="text-white" />}
-              </div>
-              {sys.label}
-            </div>
+            {opt.label}
           </button>
         ))}
       </div>
@@ -60,104 +50,49 @@ function SystemsSelector({ value, onChange }) {
   );
 }
 
-// Pain points multi-select (max 3)
-function PainPointsSelector({ value, onChange }) {
-  const togglePain = (pain) => {
-    if (value.includes(pain)) {
-      onChange(value.filter(v => v !== pain));
-    } else if (value.length < 3) {
-      onChange([...value, pain]);
+// Multi-select chip component
+function MultiChipSelector({ label, icon: Icon, value, onChange, options, maxSelect, required, hint }) {
+  const toggleOption = (optValue) => {
+    if (value.includes(optValue)) {
+      onChange(value.filter(v => v !== optValue));
+    } else if (!maxSelect || value.length < maxSelect) {
+      onChange([...value, optValue]);
     }
   };
 
   return (
     <div className="mb-5">
-      <label className="block text-sm font-semibold text-slate-700 mb-3">
+      <label className="block text-sm font-semibold text-slate-700 mb-2">
         <span className="flex items-center gap-2">
-          <AlertCircle size={16} className="text-slate-500" />
-          Top Pain Points
-          <span className="text-xs text-slate-400 font-normal ml-2">(Select up to 3)</span>
+          {Icon && <Icon size={16} className="text-slate-500" />}
+          {label}
+          {required && <span className="text-red-500">*</span>}
+          {hint && <span className="text-xs text-slate-400 font-normal ml-2">{hint}</span>}
         </span>
       </label>
-      <div className="space-y-2">
-        {PAIN_POINTS.map((pain) => (
-          <button
-            key={pain.value}
-            type="button"
-            onClick={() => togglePain(pain.value)}
-            disabled={value.length >= 3 && !value.includes(pain.value)}
-            className={`w-full p-3 rounded-sm border text-left text-sm transition-all
-              ${value.includes(pain.value)
-                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                : value.length >= 3
-                  ? 'border-slate-100 text-slate-300 cursor-not-allowed'
-                  : 'border-slate-200 hover:border-slate-300 text-slate-600'}`}
-          >
-            <div className="flex items-center gap-2">
-              <div className={`w-4 h-4 rounded-sm border flex items-center justify-center
-                ${value.includes(pain.value) ? 'bg-primary-500 border-primary-500' : 'border-slate-300'}`}>
-                {value.includes(pain.value) && <Check size={12} className="text-white" />}
-              </div>
-              {pain.label}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => {
+          const isSelected = value.includes(opt.value);
+          const isDisabled = maxSelect && value.length >= maxSelect && !isSelected;
 
-// Complexity inputs
-function ComplexityInputs({ value, onChange }) {
-  const updateField = (field, val) => {
-    onChange({ ...value, [field]: parseInt(val) || 1 });
-  };
-
-  return (
-    <div className="mb-5">
-      <label className="block text-sm font-semibold text-slate-700 mb-3">
-        <span className="flex items-center gap-2">
-          <Layers size={16} className="text-slate-500" />
-          Complexity Drivers
-        </span>
-      </label>
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-xs text-slate-500 mb-1"># Business Units</label>
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={value.business_units}
-            onChange={(e) => updateField('business_units', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-sm text-sm
-              focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-slate-500 mb-1"># Currencies</label>
-          <input
-            type="number"
-            min="1"
-            max="20"
-            value={value.currencies}
-            onChange={(e) => updateField('currencies', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-sm text-sm
-              focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-slate-500 mb-1"># Legal Entities</label>
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={value.legal_entities}
-            onChange={(e) => updateField('legal_entities', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-sm text-sm
-              focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-          />
-        </div>
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => toggleOption(opt.value)}
+              disabled={isDisabled}
+              className={`px-4 py-2 rounded-sm border text-sm font-medium transition-all flex items-center gap-2
+                ${isSelected
+                  ? 'border-primary-600 bg-primary-50 text-primary-700'
+                  : isDisabled
+                    ? 'border-slate-200 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-300 hover:border-slate-400 text-slate-600'}`}
+            >
+              {isSelected && <Check size={14} />}
+              {opt.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -173,11 +108,20 @@ export default function PillarSetupPage() {
   const [company, setCompany] = useState(null);
 
   const [pillar, setPillar] = useState({
-    ftes: 1,
-    systems: [],
-    complexity: { business_units: 1, currencies: 1, legal_entities: 1 },
+    // Tools & Technology
+    tools: [],
+    other_tool: '',
+    // Team & Process
+    team_size: '',
+    forecast_frequency: '',
+    budget_process: '',
+    // Pain Points
     pain_points: [],
-    ongoing_projects: ''
+    other_pain_point: '',
+    // Additional Context
+    user_role: '',
+    other_role: '',
+    additional_context: ''
   });
 
   const getAuthHeaders = async () => {
@@ -213,7 +157,7 @@ export default function PillarSetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed, redirect to questions
+        // If setup already completed, redirect to intro
         if (run.setup_completed_at) {
           localStorage.removeItem(`setup_company_${runId}`);
           navigate(`/run/${runId}/intro`);
@@ -222,7 +166,7 @@ export default function PillarSetupPage() {
 
         // Pre-fill if v1 pillar context exists
         if (run.context?.version === 'v1' && run.context.pillar) {
-          setPillar(run.context.pillar);
+          setPillar(prev => ({ ...prev, ...run.context.pillar }));
         }
       } catch (err) {
         setError(`Failed to load: ${err.message}`);
@@ -239,7 +183,7 @@ export default function PillarSetupPage() {
   }, [runId, navigate]);
 
   const isValid = () => {
-    return pillar.systems.length >= 1;
+    return pillar.tools.length >= 1;
   };
 
   const handleBack = () => {
@@ -291,8 +235,8 @@ export default function PillarSetupPage() {
         {/* Header */}
         <div className="bg-navy-900 text-white py-6">
           <div className="max-w-2xl mx-auto px-5">
-            <div className="text-xs tracking-widest text-slate-400 mb-1">FINANCE DIAGNOSTIC</div>
-            <h1 className="text-xl font-bold">FP&A Context</h1>
+            <div className="text-xs tracking-widest text-slate-300 mb-1">FINANCE DIAGNOSTIC</div>
+            <h1 className="text-xl font-bold text-white">FP&A Context</h1>
           </div>
         </div>
 
@@ -307,99 +251,173 @@ export default function PillarSetupPage() {
             </div>
           )}
 
-          <div className="bg-white border border-slate-200 rounded-sm p-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-slate-800">FP&A Team Context</h2>
-              <p className="text-sm text-slate-500 mt-1">Help us understand your team's capacity and current challenges.</p>
+          {/* Tools & Technology Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Tools & Technology</h2>
+              <p className="text-sm text-slate-500">Which planning and reporting tools do you use?</p>
             </div>
 
-            {/* FTEs */}
+            <MultiChipSelector
+              label="Planning Tools"
+              icon={Wrench}
+              value={pillar.tools}
+              onChange={(v) => setPillar({ ...pillar, tools: v })}
+              options={PLANNING_TOOLS}
+              required
+              hint="(Select all that apply)"
+            />
+
+            <div className="mb-5">
+              <label className="block text-xs text-slate-500 mb-1">Other tool...</label>
+              <input
+                type="text"
+                value={pillar.other_tool}
+                onChange={(e) => setPillar({ ...pillar, other_tool: e.target.value })}
+                placeholder="Specify other tool"
+                className="w-full px-4 py-2 border border-slate-300 rounded-sm text-sm
+                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Team & Process Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Team & Process</h2>
+              <p className="text-sm text-slate-500">Tell us about your FP&A team structure</p>
+            </div>
+
+            <ChipSelector
+              label="How large is your FP&A team?"
+              icon={Users}
+              value={pillar.team_size}
+              onChange={(v) => setPillar({ ...pillar, team_size: v })}
+              options={TEAM_SIZES}
+            />
+
+            <ChipSelector
+              label="How often do you update forecasts?"
+              icon={Calendar}
+              value={pillar.forecast_frequency}
+              onChange={(v) => setPillar({ ...pillar, forecast_frequency: v })}
+              options={FORECAST_FREQUENCIES}
+            />
+
+            <ChipSelector
+              label="How would you describe your budget process?"
+              icon={Target}
+              value={pillar.budget_process}
+              onChange={(v) => setPillar({ ...pillar, budget_process: v })}
+              options={BUDGET_PROCESSES}
+            />
+          </div>
+
+          {/* Pain Points Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Pain Points</h2>
+              <p className="text-sm text-slate-500">Which challenges best describe your FP&A today?</p>
+            </div>
+
+            <MultiChipSelector
+              label="Current Challenges"
+              icon={AlertCircle}
+              value={pillar.pain_points}
+              onChange={(v) => setPillar({ ...pillar, pain_points: v })}
+              options={PAIN_POINTS}
+              maxSelect={5}
+              hint="(Select up to 5)"
+            />
+
+            <div className="mb-5">
+              <label className="block text-xs text-slate-500 mb-1">Other pain point...</label>
+              <input
+                type="text"
+                value={pillar.other_pain_point}
+                onChange={(e) => setPillar({ ...pillar, other_pain_point: e.target.value })}
+                placeholder="Specify other challenge"
+                className="w-full px-4 py-2 border border-slate-300 rounded-sm text-sm
+                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Additional Context Section */}
+          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-primary-700">Additional Context</h2>
+              <p className="text-sm text-slate-500">Help us understand your perspective</p>
+            </div>
+
+            <ChipSelector
+              label="What is your role?"
+              icon={User}
+              value={pillar.user_role}
+              onChange={(v) => setPillar({ ...pillar, user_role: v })}
+              options={USER_ROLES}
+            />
+
+            <div className="mb-5">
+              <label className="block text-xs text-slate-500 mb-1">Other role...</label>
+              <input
+                type="text"
+                value={pillar.other_role}
+                onChange={(e) => setPillar({ ...pillar, other_role: e.target.value })}
+                placeholder="Specify other role"
+                className="w-full px-4 py-2 border border-slate-300 rounded-sm text-sm
+                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
+              />
+            </div>
+
             <div className="mb-5">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 <span className="flex items-center gap-2">
-                  <Calculator size={16} className="text-slate-500" />
-                  FP&A Team Size (FTEs)
+                  <MessageSquare size={16} className="text-slate-500" />
+                  Any specific context you'd like to share about your FP&A environment?
                 </span>
               </label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.5"
-                value={pillar.ftes}
-                onChange={(e) => setPillar({ ...pillar, ftes: parseFloat(e.target.value) || 0 })}
-                className="w-full px-4 py-3 border border-slate-200 rounded-sm text-sm
-                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
+              <textarea
+                value={pillar.additional_context}
+                onChange={(e) => setPillar({ ...pillar, additional_context: e.target.value })}
+                placeholder="Optional: Share any additional context about your planning processes, challenges, or priorities..."
+                rows={4}
+                className="w-full px-4 py-3 border border-slate-300 rounded-sm text-sm
+                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none resize-none"
               />
-              <p className="text-xs text-slate-400 mt-1">Include partial FTEs (e.g., 2.5 for 2 full-time + 1 part-time)</p>
+              <p className="text-xs text-slate-400 mt-1">This helps us provide more tailored recommendations</p>
             </div>
+          </div>
 
-            <SystemsSelector
-              value={pillar.systems}
-              onChange={(v) => setPillar({ ...pillar, systems: v })}
-            />
-
-            <ComplexityInputs
-              value={pillar.complexity}
-              onChange={(v) => setPillar({ ...pillar, complexity: v })}
-            />
-
-            <PainPointsSelector
-              value={pillar.pain_points}
-              onChange={(v) => setPillar({ ...pillar, pain_points: v })}
-            />
-
-            {/* Ongoing Projects */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                <span className="flex items-center gap-2">
-                  <FileText size={16} className="text-slate-500" />
-                  Active Initiatives
-                  <span className="text-xs text-slate-400 font-normal ml-2">(Optional)</span>
-                </span>
-              </label>
-              <input
-                type="text"
-                value={pillar.ongoing_projects}
-                onChange={(e) => setPillar({ ...pillar, ongoing_projects: e.target.value.slice(0, 200) })}
-                placeholder="e.g., ERP implementation, New CFO onboarding"
-                maxLength={200}
-                className="w-full px-4 py-3 border border-slate-200 rounded-sm text-sm
-                  focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-              />
-              <p className="text-xs text-slate-400 mt-1">{pillar.ongoing_projects.length}/200 characters</p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleBack}
-                className="flex-1 py-3 rounded-sm font-semibold border border-slate-200
-                  text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2"
-              >
-                <ArrowLeft size={18} />
-                Back
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!isValid() || saving}
-                className={`flex-1 py-3 rounded-sm font-semibold flex items-center justify-center gap-2
-                  ${isValid() && !saving
-                    ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-              >
-                {saving ? (
-                  <>
-                    <Loader size={18} className="animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    Start Assessment
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleBack}
+              className="flex-1 py-3 rounded-sm font-semibold border border-slate-300
+                text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2"
+            >
+              <ArrowLeft size={18} />
+              Back
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid() || saving}
+              className={`flex-1 py-3 rounded-sm font-semibold flex items-center justify-center gap-2
+                ${isValid() && !saving
+                  ? 'bg-primary-600 text-white hover:bg-primary-700'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+            >
+              {saving ? (
+                <>
+                  <Loader size={18} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Start Diagnostic
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
           </div>
         </main>
       </div>

@@ -192,11 +192,13 @@ export const IndustrySchema = z.enum([
   'other'
 ]);
 
+// EUR-based revenue ranges
 export const RevenueRangeSchema = z.enum([
-  'under_10m',
-  '10m_50m',
-  '50m_250m',
-  'over_250m'
+  '0_50m',
+  '50m_100m',
+  '100m_250m',
+  '250m_500m',
+  'over_500m'
 ]);
 
 export const EmployeeCountSchema = z.enum([
@@ -212,27 +214,102 @@ export const FinanceStructureSchema = z.enum([
   'hybrid'
 ]);
 
+export const OwnershipStructureSchema = z.enum([
+  'pe_backed',
+  'listed',
+  'family_owned',
+  'corporate_subsidiary'
+]);
+
 export const ChangeAppetiteSchema = z.enum([
   'optimize',    // Fix basics, low disruption
   'standardize', // Scale, medium disruption
   'transform'    // Reinvent, high disruption
 ]);
 
-// Pillar Context Enums
-export const SystemsSchema = z.enum([
-  'excel_sheets',      // Manual
-  'anaplan_adaptive',  // Modern CPM
-  'sap_oracle',        // Legacy ERP
-  'bi_tools',          // Tableau, PowerBI
-  'other'
+// Finance FTE ranges
+export const FinanceFTERangeSchema = z.enum([
+  '1_10',
+  '10_20',
+  '21_35',
+  '36_50',
+  'over_50'
 ]);
 
+// Legal entity ranges
+export const LegalEntityRangeSchema = z.enum([
+  '1_3',
+  '4_10',
+  '11_25',
+  'over_25'
+]);
+
+// Pillar Context Enums
+
+// Expanded planning tools (13 options)
+export const PlanningToolsSchema = z.enum([
+  'excel',
+  'adaptive_insights',
+  'anaplan',
+  'planful',
+  'oracle_pbcs',
+  'sap_analytics',
+  'board',
+  'prophix',
+  'workday_adaptive',
+  'power_bi',
+  'tableau',
+  'hyperion',
+  'tm1_cognos'
+]);
+
+// Team size ranges
+export const TeamSizeSchema = z.enum([
+  '1_3',
+  '4_10',
+  '11_25',
+  '26_50',
+  'over_50'
+]);
+
+// Forecast frequency
+export const ForecastFrequencySchema = z.enum([
+  'annual',
+  'semi_annual',
+  'quarterly',
+  'monthly',
+  'rolling'
+]);
+
+// Budget process types
+export const BudgetProcessSchema = z.enum([
+  'top_down',
+  'bottom_up',
+  'hybrid',
+  'driver_based',
+  'zero_based'
+]);
+
+// Expanded pain points (8 options)
 export const PainPointsSchema = z.enum([
-  'long_budget_cycles',
-  'data_accuracy',
+  'forecast_accuracy',
+  'slow_budget_cycles',
+  'limited_business_buyin',
   'manual_consolidation',
-  'lack_of_insights',
-  'business_partnership'
+  'disconnected_tools',
+  'lack_driver_models',
+  'poor_scenario_planning',
+  'weak_business_partnering'
+]);
+
+// User roles
+export const UserRoleSchema = z.enum([
+  'cfo',
+  'finance_director',
+  'fpa_manager',
+  'fpa_analyst',
+  'controller',
+  'business_partner'
 ]);
 
 // Company Context Object
@@ -241,21 +318,29 @@ export const CompanyContextSchema = z.object({
   industry: IndustrySchema,
   revenue_range: RevenueRangeSchema,
   employee_count: EmployeeCountSchema,
+  finance_ftes: FinanceFTERangeSchema.optional(),
+  legal_entities: LegalEntityRangeSchema.optional(),
   finance_structure: FinanceStructureSchema,
+  ownership_structure: OwnershipStructureSchema,
   change_appetite: ChangeAppetiteSchema
 });
 
 // Pillar Context Object (FP&A Specific)
 export const PillarContextSchema = z.object({
-  ftes: z.number().min(0).max(100).multipleOf(0.5),
-  systems: z.array(SystemsSchema).min(1).max(5),
-  complexity: z.object({
-    business_units: z.number().int().min(1).max(50),
-    currencies: z.number().int().min(1).max(20),
-    legal_entities: z.number().int().min(1).max(50)
-  }),
-  pain_points: z.array(PainPointsSchema).max(3),
-  ongoing_projects: z.string().max(200).optional()
+  // Tools & Technology
+  tools: z.array(PlanningToolsSchema).min(1).max(13),
+  other_tool: z.string().max(100).optional(),
+  // Team & Process
+  team_size: TeamSizeSchema.optional(),
+  forecast_frequency: ForecastFrequencySchema.optional(),
+  budget_process: BudgetProcessSchema.optional(),
+  // Pain Points
+  pain_points: z.array(PainPointsSchema).max(5).optional(),
+  other_pain_point: z.string().max(100).optional(),
+  // Additional Context
+  user_role: UserRoleSchema.optional(),
+  other_role: z.string().max(100).optional(),
+  additional_context: z.string().max(500).optional()
 });
 
 // Full Context v1 Schema
@@ -282,9 +367,16 @@ export type Industry = z.infer<typeof IndustrySchema>;
 export type RevenueRange = z.infer<typeof RevenueRangeSchema>;
 export type EmployeeCount = z.infer<typeof EmployeeCountSchema>;
 export type FinanceStructure = z.infer<typeof FinanceStructureSchema>;
+export type OwnershipStructure = z.infer<typeof OwnershipStructureSchema>;
 export type ChangeAppetite = z.infer<typeof ChangeAppetiteSchema>;
-export type Systems = z.infer<typeof SystemsSchema>;
+export type FinanceFTERange = z.infer<typeof FinanceFTERangeSchema>;
+export type LegalEntityRange = z.infer<typeof LegalEntityRangeSchema>;
+export type PlanningTools = z.infer<typeof PlanningToolsSchema>;
+export type TeamSize = z.infer<typeof TeamSizeSchema>;
+export type ForecastFrequency = z.infer<typeof ForecastFrequencySchema>;
+export type BudgetProcess = z.infer<typeof BudgetProcessSchema>;
 export type PainPoints = z.infer<typeof PainPointsSchema>;
+export type UserRole = z.infer<typeof UserRoleSchema>;
 export type CompanyContext = z.infer<typeof CompanyContextSchema>;
 export type PillarContext = z.infer<typeof PillarContextSchema>;
 export type DiagnosticContextV1 = z.infer<typeof DiagnosticContextV1Schema>;
@@ -302,11 +394,13 @@ export const INDUSTRY_LABELS: Record<Industry, string> = {
   other: 'Other'
 };
 
+// EUR-based revenue labels
 export const REVENUE_RANGE_LABELS: Record<RevenueRange, string> = {
-  under_10m: '< $10M',
-  '10m_50m': '$10M - $50M',
-  '50m_250m': '$50M - $250M',
-  over_250m: '$250M+'
+  '0_50m': '0 - 50m€',
+  '50m_100m': '50 - 100m€',
+  '100m_250m': '100 - 250m€',
+  '250m_500m': '250 - 500m€',
+  over_500m: '500m€+'
 };
 
 export const EMPLOYEE_COUNT_LABELS: Record<EmployeeCount, string> = {
@@ -322,24 +416,90 @@ export const FINANCE_STRUCTURE_LABELS: Record<FinanceStructure, string> = {
   hybrid: 'Hybrid'
 };
 
+export const OWNERSHIP_STRUCTURE_LABELS: Record<OwnershipStructure, string> = {
+  pe_backed: 'PE Backed',
+  listed: 'Listed',
+  family_owned: 'Family Owned',
+  corporate_subsidiary: 'Corporate Subsidiary'
+};
+
 export const CHANGE_APPETITE_LABELS: Record<ChangeAppetite, { label: string; description: string }> = {
   optimize: { label: 'Optimize', description: 'Fix basics, low disruption' },
   standardize: { label: 'Standardize', description: 'Scale processes, medium disruption' },
   transform: { label: 'Transform', description: 'Reinvent the function, high disruption' }
 };
 
-export const SYSTEMS_LABELS: Record<Systems, string> = {
-  excel_sheets: 'Excel / Google Sheets',
-  anaplan_adaptive: 'Anaplan / Adaptive Insights',
-  sap_oracle: 'SAP / Oracle EPM',
-  bi_tools: 'BI Tools (Tableau, PowerBI)',
-  other: 'Other'
+export const FINANCE_FTE_LABELS: Record<FinanceFTERange, string> = {
+  '1_10': '1 - 10',
+  '10_20': '10 - 20',
+  '21_35': '21 - 35',
+  '36_50': '36 - 50',
+  over_50: '50+'
+};
+
+export const LEGAL_ENTITY_LABELS: Record<LegalEntityRange, string> = {
+  '1_3': '1 - 3',
+  '4_10': '4 - 10',
+  '11_25': '11 - 25',
+  over_25: '25+'
+};
+
+export const PLANNING_TOOLS_LABELS: Record<PlanningTools, string> = {
+  excel: 'Excel (primary)',
+  adaptive_insights: 'Adaptive Insights',
+  anaplan: 'Anaplan',
+  planful: 'Planful',
+  oracle_pbcs: 'Oracle PBCS/EPBCS',
+  sap_analytics: 'SAP Analytics Cloud',
+  board: 'Board',
+  prophix: 'Prophix',
+  workday_adaptive: 'Workday Adaptive Planning',
+  power_bi: 'Power BI',
+  tableau: 'Tableau',
+  hyperion: 'Hyperion',
+  tm1_cognos: 'TM1/Cognos'
+};
+
+export const TEAM_SIZE_LABELS: Record<TeamSize, string> = {
+  '1_3': '1 - 3',
+  '4_10': '4 - 10',
+  '11_25': '11 - 25',
+  '26_50': '26 - 50',
+  over_50: '50+'
+};
+
+export const FORECAST_FREQUENCY_LABELS: Record<ForecastFrequency, string> = {
+  annual: 'Annual only',
+  semi_annual: 'Semi-annual',
+  quarterly: 'Quarterly',
+  monthly: 'Monthly',
+  rolling: 'Rolling'
+};
+
+export const BUDGET_PROCESS_LABELS: Record<BudgetProcess, string> = {
+  top_down: 'Top-down only',
+  bottom_up: 'Bottom-up only',
+  hybrid: 'Hybrid (top-down + bottom-up)',
+  driver_based: 'Driver-based',
+  zero_based: 'Zero-based budgeting'
 };
 
 export const PAIN_POINTS_LABELS: Record<PainPoints, string> = {
-  long_budget_cycles: 'Long Budget Cycles',
-  data_accuracy: 'Data Accuracy / Trust Issues',
-  manual_consolidation: 'Manual Consolidation',
-  lack_of_insights: 'Lack of Actionable Insights',
-  business_partnership: 'Weak Business Partnership'
+  forecast_accuracy: 'Forecast accuracy issues',
+  slow_budget_cycles: 'Slow budget cycles',
+  limited_business_buyin: 'Limited business buy-in',
+  manual_consolidation: 'Manual consolidation',
+  disconnected_tools: 'Disconnected planning tools',
+  lack_driver_models: 'Lack of driver-based models',
+  poor_scenario_planning: 'Poor scenario planning',
+  weak_business_partnering: 'Weak business partnering'
+};
+
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+  cfo: 'CFO',
+  finance_director: 'Finance Director',
+  fpa_manager: 'FP&A Manager',
+  fpa_analyst: 'FP&A Analyst',
+  controller: 'Controller',
+  business_partner: 'Business Partner'
 };
