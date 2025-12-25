@@ -23,12 +23,12 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 function ChipSelector({ label, icon: Icon, value, onChange, options, required, hint }) {
   return (
     <div className="mb-5">
-      <label className="block text-sm font-semibold text-slate-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
         <span className="flex items-center gap-2">
-          {Icon && <Icon size={16} className="text-slate-500" />}
+          {Icon && <Icon size={16} className="text-gray-500" />}
           {label}
           {required && <span className="text-red-500">*</span>}
-          {hint && <span className="text-xs text-slate-400 font-normal ml-2">{hint}</span>}
+          {hint && <span className="text-xs text-gray-400 font-normal ml-2">{hint}</span>}
         </span>
       </label>
       <div className="flex flex-wrap gap-2">
@@ -37,10 +37,10 @@ function ChipSelector({ label, icon: Icon, value, onChange, options, required, h
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`px-4 py-2 rounded-sm border text-sm font-medium transition-all
+            className={`px-4 py-2 rounded border text-sm font-medium transition-all
               ${value === opt.value
-                ? 'border-primary-600 bg-primary-50 text-primary-700'
-                : 'border-slate-300 hover:border-slate-400 text-slate-600'}`}
+                ? 'border-blue-600 bg-blue-50 text-blue-700 border-2'
+                : 'border-gray-300 hover:border-gray-400 text-gray-600'}`}
           >
             {opt.label}
           </button>
@@ -62,12 +62,12 @@ function MultiChipSelector({ label, icon: Icon, value, onChange, options, maxSel
 
   return (
     <div className="mb-5">
-      <label className="block text-sm font-semibold text-slate-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
         <span className="flex items-center gap-2">
-          {Icon && <Icon size={16} className="text-slate-500" />}
+          {Icon && <Icon size={16} className="text-gray-500" />}
           {label}
           {required && <span className="text-red-500">*</span>}
-          {hint && <span className="text-xs text-slate-400 font-normal ml-2">{hint}</span>}
+          {hint && <span className="text-xs text-gray-400 font-normal ml-2">{hint}</span>}
         </span>
       </label>
       <div className="flex flex-wrap gap-2">
@@ -81,12 +81,12 @@ function MultiChipSelector({ label, icon: Icon, value, onChange, options, maxSel
               type="button"
               onClick={() => toggleOption(opt.value)}
               disabled={isDisabled}
-              className={`px-4 py-2 rounded-sm border text-sm font-medium transition-all flex items-center gap-2
+              className={`px-4 py-2 rounded border text-sm font-medium transition-all flex items-center gap-2
                 ${isSelected
-                  ? 'border-primary-600 bg-primary-50 text-primary-700'
+                  ? 'border-blue-600 bg-blue-50 text-blue-700 border-2'
                   : isDisabled
-                    ? 'border-slate-200 text-slate-300 cursor-not-allowed'
-                    : 'border-slate-300 hover:border-slate-400 text-slate-600'}`}
+                    ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    : 'border-gray-300 hover:border-gray-400 text-gray-600'}`}
             >
               {isSelected && <Check size={14} />}
               {opt.label}
@@ -220,10 +220,10 @@ export default function PillarSetupPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader size={40} className="animate-spin text-primary-600 mx-auto" />
-          <p className="mt-4 text-slate-500">Loading...</p>
+          <Loader size={40} className="animate-spin text-blue-600 mx-auto" />
+          <p className="mt-4 text-gray-500">Loading...</p>
         </div>
       </div>
     );
@@ -231,11 +231,11 @@ export default function PillarSetupPage() {
 
   return (
     <AppShell sidebarContent={<SetupSidebar currentStep={1} />}>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="bg-navy-900 text-white py-6">
+        <div className="bg-slate-800 text-white py-6">
           <div className="max-w-2xl mx-auto px-5">
-            <div className="text-xs tracking-widest text-slate-300 mb-1">FINANCE DIAGNOSTIC</div>
+            <div className="text-xs tracking-widest text-blue-300 mb-1">FINANCE DIAGNOSTIC</div>
             <h1 className="text-xl font-bold text-white">FP&A Context</h1>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function PillarSetupPage() {
           <SetupProgress currentStep="pillar" />
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-sm p-4 mb-6 flex items-start gap-3">
+            <div className="bg-red-50 border border-red-200 rounded p-4 mb-6 flex items-start gap-3">
               <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-red-700 flex-1">{error}</div>
               <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">×</button>
@@ -252,10 +252,10 @@ export default function PillarSetupPage() {
           )}
 
           {/* Tools & Technology Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Tools & Technology</h2>
-              <p className="text-sm text-slate-500">Which planning and reporting tools do you use?</p>
+              <h2 className="text-base font-bold text-blue-700">Tools & Technology</h2>
+              <p className="text-sm text-gray-500">Which planning and reporting tools do you use?</p>
             </div>
 
             <MultiChipSelector
@@ -269,23 +269,23 @@ export default function PillarSetupPage() {
             />
 
             <div className="mb-5">
-              <label className="block text-xs text-slate-500 mb-1">Other tool...</label>
+              <label className="block text-xs text-gray-500 mb-1">Other tool...</label>
               <input
                 type="text"
                 value={pillar.other_tool}
                 onChange={(e) => setPillar({ ...pillar, other_tool: e.target.value })}
                 placeholder="Specify other tool"
-                className="w-full px-4 py-2 border border-slate-300 rounded-sm text-sm
-                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded text-sm
+                  focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
               />
             </div>
           </div>
 
           {/* Team & Process Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Team & Process</h2>
-              <p className="text-sm text-slate-500">Tell us about your FP&A team structure</p>
+              <h2 className="text-base font-bold text-blue-700">Team & Process</h2>
+              <p className="text-sm text-gray-500">Tell us about your FP&A team structure</p>
             </div>
 
             <ChipSelector
@@ -314,10 +314,10 @@ export default function PillarSetupPage() {
           </div>
 
           {/* Pain Points Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Pain Points</h2>
-              <p className="text-sm text-slate-500">Which challenges best describe your FP&A today?</p>
+              <h2 className="text-base font-bold text-blue-700">Pain Points</h2>
+              <p className="text-sm text-gray-500">Which challenges best describe your FP&A today?</p>
             </div>
 
             <MultiChipSelector
@@ -331,23 +331,23 @@ export default function PillarSetupPage() {
             />
 
             <div className="mb-5">
-              <label className="block text-xs text-slate-500 mb-1">Other pain point...</label>
+              <label className="block text-xs text-gray-500 mb-1">Other pain point...</label>
               <input
                 type="text"
                 value={pillar.other_pain_point}
                 onChange={(e) => setPillar({ ...pillar, other_pain_point: e.target.value })}
                 placeholder="Specify other challenge"
-                className="w-full px-4 py-2 border border-slate-300 rounded-sm text-sm
-                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded text-sm
+                  focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
               />
             </div>
           </div>
 
           {/* Additional Context Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Additional Context</h2>
-              <p className="text-sm text-slate-500">Help us understand your perspective</p>
+              <h2 className="text-base font-bold text-blue-700">Additional Context</h2>
+              <p className="text-sm text-gray-500">Help us understand your perspective</p>
             </div>
 
             <ChipSelector
@@ -359,21 +359,21 @@ export default function PillarSetupPage() {
             />
 
             <div className="mb-5">
-              <label className="block text-xs text-slate-500 mb-1">Other role...</label>
+              <label className="block text-xs text-gray-500 mb-1">Other role...</label>
               <input
                 type="text"
                 value={pillar.other_role}
                 onChange={(e) => setPillar({ ...pillar, other_role: e.target.value })}
                 placeholder="Specify other role"
-                className="w-full px-4 py-2 border border-slate-300 rounded-sm text-sm
-                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded text-sm
+                  focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
               />
             </div>
 
             <div className="mb-5">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 <span className="flex items-center gap-2">
-                  <MessageSquare size={16} className="text-slate-500" />
+                  <MessageSquare size={16} className="text-gray-500" />
                   Any specific context you'd like to share about your FP&A environment?
                 </span>
               </label>
@@ -382,18 +382,18 @@ export default function PillarSetupPage() {
                 onChange={(e) => setPillar({ ...pillar, additional_context: e.target.value })}
                 placeholder="Optional: Share any additional context about your planning processes, challenges, or priorities..."
                 rows={4}
-                className="w-full px-4 py-3 border border-slate-300 rounded-sm text-sm
-                  focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded text-sm
+                  focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none resize-none"
               />
-              <p className="text-xs text-slate-400 mt-1">This helps us provide more tailored recommendations</p>
+              <p className="text-xs text-gray-400 mt-1">This helps us provide more tailored recommendations</p>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 mb-8">
             <button
               onClick={handleBack}
-              className="flex-1 py-3 rounded-sm font-semibold border border-slate-300
-                text-slate-600 hover:bg-slate-50 flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded font-semibold border border-gray-300
+                text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
             >
               <ArrowLeft size={18} />
               Back
@@ -401,10 +401,10 @@ export default function PillarSetupPage() {
             <button
               onClick={handleSubmit}
               disabled={!isValid() || saving}
-              className={`flex-1 py-3 rounded-sm font-semibold flex items-center justify-center gap-2
+              className={`flex-1 py-3 rounded font-semibold flex items-center justify-center gap-2
                 ${isValid() && !saving
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
             >
               {saving ? (
                 <>

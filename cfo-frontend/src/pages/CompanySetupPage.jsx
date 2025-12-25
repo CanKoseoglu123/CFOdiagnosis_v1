@@ -37,10 +37,10 @@ function ChipSelector({ label, icon: Icon, value, onChange, options, required })
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`px-4 py-2 rounded-sm border text-sm font-medium transition-all
+            className={`px-4 py-2 rounded border text-sm font-medium transition-all
               ${value === opt.value
-                ? 'border-primary-600 bg-primary-50 text-primary-700'
-                : 'border-slate-300 hover:border-slate-400 text-slate-600'}`}
+                ? 'border-blue-600 bg-blue-50 text-blue-700 border-2'
+                : 'border-gray-300 hover:border-gray-400 text-gray-600'}`}
           >
             {opt.label}
           </button>
@@ -95,10 +95,10 @@ function ChangeAppetiteSelector({ value, onChange }) {
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`p-4 rounded-sm border-2 text-left transition-all
+            className={`p-4 rounded border-2 text-left transition-all
               ${value === option.value
-                ? 'border-primary-600 bg-primary-50'
-                : 'border-slate-300 hover:border-slate-400'}`}
+                ? 'border-blue-600 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'}`}
           >
             <div className="flex items-center gap-2 mb-1">
               <div
@@ -107,7 +107,7 @@ function ChangeAppetiteSelector({ value, onChange }) {
               />
               <span className="font-semibold text-sm">{option.label}</span>
             </div>
-            <p className="text-xs text-slate-500">{option.description}</p>
+            <p className="text-xs text-gray-500">{option.description}</p>
           </button>
         ))}
       </div>
@@ -223,11 +223,11 @@ export default function CompanySetupPage() {
 
   return (
     <AppShell sidebarContent={<SetupSidebar currentStep={1} />}>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="bg-navy-900 text-white py-6">
+        <div className="bg-slate-800 text-white py-6">
           <div className="max-w-2xl mx-auto px-5">
-            <div className="text-xs tracking-widest text-slate-300 mb-1">FINANCE DIAGNOSTIC</div>
+            <div className="text-xs tracking-widest text-blue-300 mb-1">FINANCE DIAGNOSTIC</div>
             <h1 className="text-xl font-bold text-white">Organizational Context</h1>
           </div>
         </div>
@@ -236,11 +236,11 @@ export default function CompanySetupPage() {
           <SetupProgress currentStep="company" />
 
           {/* Info banner */}
-          <div className="bg-primary-50 border border-primary-200 rounded-sm p-4 mb-6 flex items-start gap-3">
-            <Info size={20} className="text-primary-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6 flex items-start gap-3">
+            <Info size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-primary-800">Before We Begin</p>
-              <p className="text-sm text-primary-700">To ensure accurate benchmarking and tailored insights, please provide context on your organization's scale and structure.</p>
+              <p className="text-sm font-semibold text-blue-800">Before We Begin</p>
+              <p className="text-sm text-blue-700">To ensure accurate benchmarking and tailored insights, please provide context on your organization's scale and structure.</p>
             </div>
           </div>
 
@@ -253,10 +253,10 @@ export default function CompanySetupPage() {
           )}
 
           {/* Company Information Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Company Information</h2>
-              <p className="text-sm text-slate-500">Basic details about your organization</p>
+              <h2 className="text-base font-bold text-blue-700">Company Information</h2>
+              <p className="text-sm text-gray-500">Basic details about your organization</p>
             </div>
 
             {/* Company Name */}
@@ -291,10 +291,10 @@ export default function CompanySetupPage() {
           </div>
 
           {/* Organisation Scale Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Organisation Scale</h2>
-              <p className="text-sm text-slate-500">Quantitative metrics about your organization</p>
+              <h2 className="text-base font-bold text-blue-700">Organisation Scale</h2>
+              <p className="text-sm text-gray-500">Quantitative metrics about your organization</p>
             </div>
 
             <ChipSelector
@@ -333,10 +333,10 @@ export default function CompanySetupPage() {
           </div>
 
           {/* Ownership Structure Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <div className="mb-5">
-              <h2 className="text-base font-bold text-primary-700">Ownership Structure</h2>
-              <p className="text-sm text-slate-500">Type of organizational ownership</p>
+              <h2 className="text-base font-bold text-blue-700">Ownership Structure</h2>
+              <p className="text-sm text-gray-500">Type of organizational ownership</p>
             </div>
 
             <ChipSelector
@@ -359,7 +359,7 @@ export default function CompanySetupPage() {
           </div>
 
           {/* Transformation Ambition Section */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6 mb-6">
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <ChangeAppetiteSelector
               value={company.change_appetite}
               onChange={(v) => setCompany({ ...company, change_appetite: v })}
@@ -369,10 +369,10 @@ export default function CompanySetupPage() {
           <button
             onClick={handleContinue}
             disabled={!isValid() || saving}
-            className={`w-full py-3 rounded-sm font-semibold flex items-center justify-center gap-2
+            className={`w-full py-3 rounded font-semibold flex items-center justify-center gap-2 mb-8
               ${isValid() && !saving
-                ? 'bg-primary-600 text-white hover:bg-primary-700'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
           >
             {saving ? (
               <>
