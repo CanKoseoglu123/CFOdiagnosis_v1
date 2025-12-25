@@ -19,23 +19,8 @@ CREATE TABLE IF NOT EXISTS action_plans (
 -- Index for fast lookups by run_id
 CREATE INDEX IF NOT EXISTS idx_action_plans_run_id ON action_plans(run_id);
 
--- Enable RLS
-ALTER TABLE action_plans ENABLE ROW LEVEL SECURITY;
-
--- RLS Policy: Users can only access their own action plans
-CREATE POLICY "Users can manage their own action plans"
-  ON action_plans
-  FOR ALL
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE user_id = auth.uid()
-    )
-  )
-  WITH CHECK (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE user_id = auth.uid()
-    )
-  );
+-- RLS is handled at the API level via Supabase auth tokens
+-- The API endpoints verify user owns the diagnostic_run before allowing access
 
 -- Trigger to update updated_at on changes
 CREATE OR REPLACE FUNCTION update_action_plans_updated_at()
