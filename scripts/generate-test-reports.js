@@ -107,12 +107,12 @@ async function createTestRun(testCase, index) {
     }
 
     // 3. Submit answers
-    // API expects: { run_id, question_id, value } where value is 1 (yes) or 0 (no)
+    // API expects: { run_id, question_id, value } where value is boolean (true/false)
     const answeredQuestions = testCase.pattern.answered || ALL_QUESTIONS;
     const yesQuestions = testCase.pattern.yes || [];
 
     for (const questionId of answeredQuestions) {
-      const value = yesQuestions.includes(questionId) ? 1 : 0;
+      const value = yesQuestions.includes(questionId) ? true : false;
 
       const inputRes = await fetch(`${API}/diagnostic-inputs`, {
         method: 'POST',
