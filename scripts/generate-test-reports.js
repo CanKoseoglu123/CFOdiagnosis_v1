@@ -107,21 +107,26 @@ async function createTestRun(testCase, index) {
     }
 
     // 3. Submit answers
+    // API expects: { run_id, question_id, value } where value is 1 (yes) or 0 (no)
     const answeredQuestions = testCase.pattern.answered || ALL_QUESTIONS;
     const yesQuestions = testCase.pattern.yes || [];
 
     for (const questionId of answeredQuestions) {
-      const answer = yesQuestions.includes(questionId) ? 'yes' : 'no';
+      const value = yesQuestions.includes(questionId) ? 1 : 0;
 
-      await fetch(`${API}/diagnostic-inputs`, {
+      const inputRes = await fetch(`${API}/diagnostic-inputs`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           run_id: run.id,
           question_id: questionId,
-          answer
+          value
         })
       });
+
+      if (!inputRes.ok) {
+        throw new Error(`Failed to save answer for ${questionId}: ${await inputRes.text()}`);
+      }
     }
 
     // 4. Complete the run
