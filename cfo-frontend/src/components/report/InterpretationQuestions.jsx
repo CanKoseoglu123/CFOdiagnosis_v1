@@ -1,7 +1,9 @@
 // src/components/report/InterpretationQuestions.jsx
 // VS-25: Question cards for collecting user clarifications
+// PATCH V2: Explicit skip semantics, optional badges
 
 import React, { useState } from 'react';
+import { HelpCircle } from 'lucide-react';
 
 export default function InterpretationQuestions({ questions, onSubmit, onSkip }) {
   const [answers, setAnswers] = useState({});
@@ -26,21 +28,20 @@ export default function InterpretationQuestions({ questions, onSubmit, onSkip })
     }
   };
 
+  // PATCH V2: Allow partial/empty answers with explicit skip markers
   const handleSubmit = async () => {
-    // Validate all questions have answers
-    const unanswered = questions.filter(q => !answers[q.question_id]);
-    if (unanswered.length > 0) {
-      alert(`Please answer all questions (${unanswered.length} remaining)`);
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const formattedAnswers = questions.map(q => ({
-        question_id: q.question_id,
-        answer: answers[q.question_id],
-        time_to_answer_ms: timings[q.question_id] || 0
-      }));
+      // PATCH V2: Build answers with explicit skipped field
+      const formattedAnswers = questions.map(q => {
+        const answer = answers[q.question_id]?.trim() || null;
+        return {
+          question_id: q.question_id,
+          answer: answer,
+          skipped: answer === null,  // Explicit skip marker
+          time_to_answer_ms: answer ? (timings[q.question_id] || 0) : null
+        };
+      });
       await onSubmit(formattedAnswers);
     } catch (err) {
       console.error('Failed to submit answers:', err);
@@ -60,54 +61,85 @@ export default function InterpretationQuestions({ questions, onSubmit, onSkip })
       </div>
 
       <div className="divide-y divide-slate-100">
-        {questions.map((q, index) => (
-          <div key={q.question_id} className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
-                {index + 1}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-navy-900 mb-3">{q.question}</p>
+        {questions.map((q, index) => {
+          const currentAnswer = answers[q.question_id] || '';
+          const isEmpty = !currentAnswer.trim();
 
-                {q.type === 'mcq' && q.options ? (
-                  <div className="space-y-2">
-                    {q.options.map((option, optIndex) => (
-                      <label
-                        key={optIndex}
-                        className={`flex items-center gap-3 p-3 rounded border cursor-pointer transition-colors ${
-                          answers[q.question_id] === option
-                            ? 'border-primary-500 bg-primary-50'
-                            : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                        }`}
-                        onFocus={() => handleFocus(q.question_id)}
-                      >
-                        <input
-                          type="radio"
-                          name={q.question_id}
-                          value={option}
-                          checked={answers[q.question_id] === option}
-                          onChange={() => handleAnswerChange(q.question_id, option)}
-                          className="w-4 h-4 text-primary-600 focus:ring-primary-500"
-                        />
-                        <span className="text-sm text-slate-700">{option}</span>
-                      </label>
-                    ))}
+          return (
+            <div key={q.question_id} className="p-6">
+              <div className="flex items-start gap-4">
+                {/* PATCH V2: Square indicator per design system */}
+                <div className="flex-shrink-0 w-7 h-7 rounded-sm bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <p className="text-sm font-medium text-navy-900">{q.question}</p>
+                    {/* PATCH V2: Optional badge */}
+                    <span className="flex-shrink-0 text-[10px] uppercase tracking-wide text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-sm">
+                      Optional
+                    </span>
                   </div>
-                ) : (
-                  <textarea
-                    placeholder="Type your answer..."
-                    value={answers[q.question_id] || ''}
-                    onChange={(e) => handleAnswerChange(q.question_id, e.target.value)}
-                    onFocus={() => handleFocus(q.question_id)}
-                    maxLength={q.max_length || 500}
-                    rows={3}
-                    className="w-full p-3 border border-slate-200 rounded text-sm text-slate-700 placeholder-slate-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-none"
-                  />
-                )}
+
+                  {/* Context hint if available */}
+                  {q.context && (
+                    <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                      <HelpCircle className="w-3 h-3" />
+                      {q.context}
+                    </p>
+                  )}
+
+                  {q.type === 'mcq' && q.options ? (
+                    <div className="space-y-2">
+                      {q.options.map((option, optIndex) => (
+                        <label
+                          key={optIndex}
+                          className={`flex items-center gap-3 p-3 rounded-sm border cursor-pointer transition-colors ${
+                            answers[q.question_id] === option
+                              ? 'border-primary-500 bg-primary-50'
+                              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                          onFocus={() => handleFocus(q.question_id)}
+                        >
+                          <input
+                            type="radio"
+                            name={q.question_id}
+                            value={option}
+                            checked={answers[q.question_id] === option}
+                            onChange={() => handleAnswerChange(q.question_id, option)}
+                            className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="text-sm text-slate-700">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <textarea
+                        placeholder="Type your answer, or leave blank to skip..."
+                        value={currentAnswer}
+                        onChange={(e) => handleAnswerChange(q.question_id, e.target.value)}
+                        onFocus={() => handleFocus(q.question_id)}
+                        maxLength={q.max_length || 500}
+                        rows={3}
+                        className="w-full p-3 border border-slate-200 rounded-sm text-sm text-slate-700 placeholder-slate-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 resize-none"
+                      />
+                      {/* PATCH V2: Status hint */}
+                      <div className="mt-1 flex justify-between">
+                        <span className="text-xs text-slate-400">
+                          {isEmpty ? 'Will be skipped' : ''}
+                        </span>
+                        <span className={`text-xs ${currentAnswer.length > 400 ? 'text-amber-600' : 'text-slate-400'}`}>
+                          {currentAnswer.length} / 500
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">

@@ -1,13 +1,19 @@
 // src/components/report/InterpretationSection.jsx
 // VS-25: Main interpretation workflow component
+// PATCH V2: Session re-entry, 90s timeout, explicit skip semantics
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import InterpretationLoader from './InterpretationLoader';
 import InterpretationQuestions from './InterpretationQuestions';
 import InterpretedReport from './InterpretedReport';
+import { AlertCircle, Clock } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+// PATCH V2: Timeout constants
+const POLL_TIMEOUT_MS = 90000; // 90 seconds max
+const POLL_INTERVAL_MS = 3000; // 3 seconds between polls
 
 // Map status to loader step
 const STATUS_TO_STEP = {
@@ -29,12 +35,17 @@ const STATUS_TO_PROGRESS = {
 };
 
 export default function InterpretationSection({ runId }) {
-  const [state, setState] = useState('idle'); // idle | loading | questions | complete | error
+  // PATCH V2: Added 'timeout' state
+  const [state, setState] = useState('idle'); // idle | loading | questions | complete | error | timeout
   const [sessionId, setSessionId] = useState(null);
   const [status, setStatus] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
+
+  // PATCH V2: Timeout tracking
+  const pollStartTime = useRef(null);
+  const pollTimeoutRef = useRef(null);
 
   // Get auth token helper
   const getToken = async () => {
@@ -42,10 +53,25 @@ export default function InterpretationSection({ runId }) {
     return session?.access_token;
   };
 
+  // PATCH V2: Safe JSON parser - handles HTML error pages from proxy/gateway
+  const safeJsonParse = async (res) => {
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+    }
+    try {
+      return await res.json();
+    } catch (e) {
+      throw new Error('Server returned invalid response');
+    }
+  };
+
   // Start interpretation
   const startInterpretation = async () => {
     setState('loading');
     setError(null);
+    // PATCH V2: Reset timeout tracking
+    pollStartTime.current = Date.now();
 
     try {
       const token = await getToken();
@@ -58,11 +84,11 @@ export default function InterpretationSection({ runId }) {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await safeJsonParse(res);
         throw new Error(data.error || 'Failed to start interpretation');
       }
 
-      const data = await res.json();
+      const data = await safeJsonParse(res);
       setSessionId(data.session_id);
       setStatus(data.status);
 
@@ -83,11 +109,18 @@ export default function InterpretationSection({ runId }) {
     }
   };
 
-  // Poll for status updates
+  // PATCH V2: Poll for status updates with timeout handling
   const pollStatus = useCallback(async (sid) => {
     const token = await getToken();
 
     const poll = async () => {
+      // PATCH V2: Check timeout BEFORE polling
+      const elapsed = Date.now() - (pollStartTime.current || Date.now());
+      if (elapsed > POLL_TIMEOUT_MS) {
+        setState('timeout');
+        return;
+      }
+
       try {
         const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret/status`, {
           headers: {
@@ -100,7 +133,7 @@ export default function InterpretationSection({ runId }) {
           throw new Error('Failed to fetch status');
         }
 
-        const data = await res.json();
+        const data = await safeJsonParse(res);
         setStatus(data.status);
 
         if (data.status === 'awaiting_user' && data.questions) {
@@ -113,13 +146,18 @@ export default function InterpretationSection({ runId }) {
           setError('Interpretation failed. Please try again.');
           setState('error');
         } else {
-          // Continue polling
-          setTimeout(poll, 2000);
+          // PATCH V2: Continue polling with recursive setTimeout (not setInterval)
+          pollTimeoutRef.current = setTimeout(poll, POLL_INTERVAL_MS);
         }
       } catch (err) {
         console.error('Poll failed:', err);
-        // Retry after longer delay
-        setTimeout(poll, 5000);
+        // Retry after longer delay, but still check timeout
+        const elapsed = Date.now() - (pollStartTime.current || Date.now());
+        if (elapsed < POLL_TIMEOUT_MS) {
+          pollTimeoutRef.current = setTimeout(poll, 5000);
+        } else {
+          setState('timeout');
+        }
       }
     };
 
@@ -210,13 +248,26 @@ export default function InterpretationSection({ runId }) {
   const handleSkip = async () => {
     setState('loading');
     setStatus('finalizing');
-    // Submit empty answers to trigger finalization
-    await handleSubmitAnswers([]);
+    // PATCH V2: Submit with explicit skipped markers
+    const skippedAnswers = questions.map(q => ({
+      question_id: q.question_id,
+      answer: null,
+      skipped: true,
+      time_to_answer_ms: null
+    }));
+    await handleSubmitAnswers(skippedAnswers);
   };
 
-  // Check for existing interpretation on mount
+  // PATCH V2: Resume polling after "Keep Waiting" on timeout
+  const handleKeepWaiting = () => {
+    pollStartTime.current = Date.now();
+    setState('loading');
+    pollStatus(sessionId);
+  };
+
+  // PATCH V2: Check for existing session on mount - STATUS FIRST, only START if 404
   useEffect(() => {
-    const checkExisting = async () => {
+    const checkExistingSession = async () => {
       try {
         const token = await getToken();
         const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret/status`, {
@@ -227,27 +278,54 @@ export default function InterpretationSection({ runId }) {
         });
 
         if (res.ok) {
-          const data = await res.json();
+          // Session exists - resume it
+          const data = await safeJsonParse(res);
           setSessionId(data.session_id);
           setStatus(data.status);
 
-          if (data.status === 'complete') {
-            await fetchReport();
-            setState('complete');
-          } else if (data.status === 'awaiting_user' && data.questions) {
-            setQuestions(data.questions);
-            setState('questions');
-          } else if (data.status === 'generating' || data.status === 'pending') {
-            setState('loading');
-            pollStatus(data.session_id);
+          // Route to correct state based on status
+          switch (data.status) {
+            case 'awaiting_user':
+              setQuestions(data.questions || []);
+              setState('questions');
+              break;
+            case 'complete':
+              await fetchReport();
+              setState('complete');
+              break;
+            case 'failed':
+              setError(data.error || 'Previous attempt failed');
+              setState('error');
+              break;
+            case 'generating':
+            case 'pending':
+              // Resume polling
+              pollStartTime.current = Date.now();
+              setState('loading');
+              pollStatus(data.session_id);
+              break;
+            default:
+              // Unknown state - stay idle, let user click "Generate"
+              break;
           }
+        } else if (res.status === 404) {
+          // No session exists - stay idle, user can click to start
         }
+        // For other errors, stay idle
       } catch (err) {
-        // No existing session, stay idle
+        console.error('Session check failed:', err);
+        // On error, stay idle
       }
     };
 
-    checkExisting();
+    checkExistingSession();
+
+    // PATCH V2: Cleanup on unmount
+    return () => {
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current);
+      }
+    };
   }, [runId]);
 
   // Idle state - show start button
@@ -334,6 +412,39 @@ export default function InterpretationSection({ runId }) {
             >
               Try Again
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PATCH V2: Timeout state - taking too long
+  if (state === 'timeout') {
+    return (
+      <div className="bg-white border border-amber-200 rounded-sm p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <Clock className="w-5 h-5 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-amber-800">Taking Longer Than Expected</h3>
+            <p className="text-sm text-slate-600 mt-1 mb-4">
+              The AI is still processing. This sometimes happens with complex assessments.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleKeepWaiting}
+                className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700 transition-colors"
+              >
+                Keep Waiting
+              </button>
+              <button
+                onClick={() => setState('idle')}
+                className="px-4 py-2 text-slate-600 hover:text-slate-800 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
