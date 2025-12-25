@@ -69,6 +69,8 @@ export const PLANNING_TOOLS = [
   { value: 'anaplan', label: 'Anaplan' },
   { value: 'adaptive', label: 'Adaptive Insights' },
   { value: 'pigment', label: 'Pigment' },
+  { value: 'aleph', label: 'Aleph' },
+  { value: 'datarails', label: 'Datarails' },
   { value: 'sap', label: 'SAP' },
   { value: 'oracle', label: 'Oracle' },
   { value: 'powerbi', label: 'Power BI' },
