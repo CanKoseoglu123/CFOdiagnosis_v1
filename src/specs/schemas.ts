@@ -185,20 +185,20 @@ export const THEME_CONFIG: Record<ThemeId, { label: string; description: string 
 export const IndustrySchema = z.enum([
   'saas',
   'manufacturing',
-  'retail_ecom',
-  'professional_services',
+  'retail',
+  'services',
   'fintech',
   'healthcare',
+  'media',
   'other'
 ]);
 
-// EUR-based revenue ranges
+// Revenue ranges
 export const RevenueRangeSchema = z.enum([
-  '0_50m',
-  '50m_100m',
-  '100m_250m',
-  '250m_500m',
-  'over_500m'
+  'under_10m',
+  '10m_50m',
+  '50m_250m',
+  'over_250m'
 ]);
 
 export const EmployeeCountSchema = z.enum([
@@ -227,7 +227,7 @@ export const ChangeAppetiteSchema = z.enum([
   'transform'    // Reinvent, high disruption
 ]);
 
-// Finance FTE ranges
+// Finance FTE ranges (kept for backward compat)
 export const FinanceFTERangeSchema = z.enum([
   '1_10',
   '10_20',
@@ -236,7 +236,7 @@ export const FinanceFTERangeSchema = z.enum([
   'over_50'
 ]);
 
-// Legal entity ranges
+// Legal entity ranges (kept for backward compat)
 export const LegalEntityRangeSchema = z.enum([
   '1_3',
   '4_10',
@@ -246,22 +246,21 @@ export const LegalEntityRangeSchema = z.enum([
 
 // Pillar Context Enums
 
-// Expanded planning tools (13 options)
-export const PlanningToolsSchema = z.enum([
+// Systems/tools
+export const SystemsSchema = z.enum([
   'excel',
-  'adaptive_insights',
   'anaplan',
-  'planful',
-  'oracle_pbcs',
-  'sap_analytics',
-  'board',
-  'prophix',
-  'workday_adaptive',
-  'power_bi',
+  'adaptive',
+  'pigment',
+  'sap',
+  'oracle',
+  'powerbi',
   'tableau',
-  'hyperion',
-  'tm1_cognos'
+  'other'
 ]);
+
+// Keep old schema for backward compat
+export const PlanningToolsSchema = SystemsSchema;
 
 // Team size ranges
 export const TeamSizeSchema = z.enum([
@@ -290,17 +289,23 @@ export const BudgetProcessSchema = z.enum([
   'zero_based'
 ]);
 
-// Expanded pain points (8 options)
+// Pain points
 export const PainPointsSchema = z.enum([
-  'forecast_accuracy',
-  'slow_budget_cycles',
-  'limited_business_buyin',
+  'long_cycles',
+  'data_accuracy',
   'manual_consolidation',
-  'disconnected_tools',
-  'lack_driver_models',
-  'poor_scenario_planning',
-  'weak_business_partnering'
+  'lack_insights',
+  'business_partnership',
+  'tool_limitations',
+  'headcount'
 ]);
+
+// Complexity schema
+export const ComplexitySchema = z.object({
+  business_units: z.number().min(1).max(50).default(1),
+  currencies: z.number().min(1).max(20).default(1),
+  legal_entities: z.number().min(1).max(50).default(1)
+});
 
 // User roles
 export const UserRoleSchema = z.enum([
@@ -314,40 +319,28 @@ export const UserRoleSchema = z.enum([
 
 // Company Context Object
 export const CompanyContextSchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().min(1, 'Company name required'),
   industry: IndustrySchema,
   revenue_range: RevenueRangeSchema,
-  employee_count: EmployeeCountSchema,
-  finance_ftes: FinanceFTERangeSchema.optional(),
-  legal_entities: LegalEntityRangeSchema.optional(),
-  finance_structure: FinanceStructureSchema,
-  ownership_structure: OwnershipStructureSchema,
+  employee_count: EmployeeCountSchema.optional(),
+  finance_structure: FinanceStructureSchema.optional(),
   change_appetite: ChangeAppetiteSchema
 });
 
 // Pillar Context Object (FP&A Specific)
 export const PillarContextSchema = z.object({
-  // Tools & Technology
-  tools: z.array(PlanningToolsSchema).min(1).max(13),
-  other_tool: z.string().max(100).optional(),
-  // Team & Process
-  team_size: TeamSizeSchema.optional(),
-  forecast_frequency: ForecastFrequencySchema.optional(),
-  budget_process: z.array(BudgetProcessSchema).max(3).optional(), // Array: 1 base + up to 2 modifiers
-  // Pain Points
-  pain_points: z.array(PainPointsSchema).max(5).optional(),
-  other_pain_point: z.string().max(100).optional(),
-  // Additional Context
-  user_role: UserRoleSchema.optional(),
-  other_role: z.string().max(100).optional(),
-  additional_context: z.string().max(500).optional()
+  ftes: z.number().min(0).max(100),
+  systems: z.array(SystemsSchema).optional(),
+  complexity: ComplexitySchema.optional(),
+  pain_points: z.array(PainPointsSchema).max(3).optional(),
+  ongoing_projects: z.string().max(200).optional()
 });
 
 // Full Context v1 Schema
 export const DiagnosticContextV1Schema = z.object({
   version: z.literal('v1'),
-  company: CompanyContextSchema,
-  pillar: PillarContextSchema
+  company: CompanyContextSchema.optional(),
+  pillar: PillarContextSchema.optional()
 });
 
 // Legacy Context Schema (pre-v1)
@@ -371,6 +364,7 @@ export type OwnershipStructure = z.infer<typeof OwnershipStructureSchema>;
 export type ChangeAppetite = z.infer<typeof ChangeAppetiteSchema>;
 export type FinanceFTERange = z.infer<typeof FinanceFTERangeSchema>;
 export type LegalEntityRange = z.infer<typeof LegalEntityRangeSchema>;
+export type Systems = z.infer<typeof SystemsSchema>;
 export type PlanningTools = z.infer<typeof PlanningToolsSchema>;
 export type TeamSize = z.infer<typeof TeamSizeSchema>;
 export type ForecastFrequency = z.infer<typeof ForecastFrequencySchema>;
@@ -387,20 +381,20 @@ export type DiagnosticContext = z.infer<typeof DiagnosticContextSchema>;
 export const INDUSTRY_LABELS: Record<Industry, string> = {
   saas: 'SaaS',
   manufacturing: 'Manufacturing',
-  retail_ecom: 'Retail / E-commerce',
-  professional_services: 'Professional Services',
+  retail: 'Retail',
+  services: 'Professional Services',
   fintech: 'Fintech',
   healthcare: 'Healthcare',
+  media: 'Media',
   other: 'Other'
 };
 
-// EUR-based revenue labels
+// Revenue labels
 export const REVENUE_RANGE_LABELS: Record<RevenueRange, string> = {
-  '0_50m': '0 - 50m€',
-  '50m_100m': '50 - 100m€',
-  '100m_250m': '100 - 250m€',
-  '250m_500m': '250 - 500m€',
-  over_500m: '500m€+'
+  under_10m: 'Under $10M',
+  '10m_50m': '$10M - $50M',
+  '50m_250m': '$50M - $250M',
+  over_250m: 'Over $250M'
 };
 
 export const EMPLOYEE_COUNT_LABELS: Record<EmployeeCount, string> = {
@@ -444,21 +438,20 @@ export const LEGAL_ENTITY_LABELS: Record<LegalEntityRange, string> = {
   over_25: '25+'
 };
 
-export const PLANNING_TOOLS_LABELS: Record<PlanningTools, string> = {
-  excel: 'Excel (primary)',
-  adaptive_insights: 'Adaptive Insights',
+// Systems labels (also exported as PLANNING_TOOLS_LABELS for backward compat)
+export const SYSTEMS_LABELS: Record<Systems, string> = {
+  excel: 'Excel',
   anaplan: 'Anaplan',
-  planful: 'Planful',
-  oracle_pbcs: 'Oracle PBCS/EPBCS',
-  sap_analytics: 'SAP Analytics Cloud',
-  board: 'Board',
-  prophix: 'Prophix',
-  workday_adaptive: 'Workday Adaptive Planning',
-  power_bi: 'Power BI',
+  adaptive: 'Adaptive Insights',
+  pigment: 'Pigment',
+  sap: 'SAP',
+  oracle: 'Oracle',
+  powerbi: 'Power BI',
   tableau: 'Tableau',
-  hyperion: 'Hyperion',
-  tm1_cognos: 'TM1/Cognos'
+  other: 'Other'
 };
+
+export const PLANNING_TOOLS_LABELS = SYSTEMS_LABELS;
 
 export const TEAM_SIZE_LABELS: Record<TeamSize, string> = {
   '1_3': '1 - 3',
@@ -485,14 +478,13 @@ export const BUDGET_PROCESS_LABELS: Record<BudgetProcess, string> = {
 };
 
 export const PAIN_POINTS_LABELS: Record<PainPoints, string> = {
-  forecast_accuracy: 'Forecast accuracy issues',
-  slow_budget_cycles: 'Slow budget cycles',
-  limited_business_buyin: 'Limited business buy-in',
+  long_cycles: 'Long budget/forecast cycles',
+  data_accuracy: 'Data accuracy issues',
   manual_consolidation: 'Manual consolidation',
-  disconnected_tools: 'Disconnected planning tools',
-  lack_driver_models: 'Lack of driver-based models',
-  poor_scenario_planning: 'Poor scenario planning',
-  weak_business_partnering: 'Weak business partnering'
+  lack_insights: 'Lack of actionable insights',
+  business_partnership: 'Weak business partnership',
+  tool_limitations: 'Tool limitations',
+  headcount: 'Headcount constraints'
 };
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {

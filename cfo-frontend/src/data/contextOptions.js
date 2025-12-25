@@ -5,20 +5,19 @@
 export const INDUSTRIES = [
   { value: 'saas', label: 'SaaS' },
   { value: 'manufacturing', label: 'Manufacturing' },
-  { value: 'retail_ecom', label: 'Retail / E-commerce' },
-  { value: 'professional_services', label: 'Professional Services' },
+  { value: 'retail', label: 'Retail' },
+  { value: 'services', label: 'Professional Services' },
   { value: 'fintech', label: 'Fintech' },
   { value: 'healthcare', label: 'Healthcare' },
+  { value: 'media', label: 'Media' },
   { value: 'other', label: 'Other' }
 ];
 
-// EUR-based revenue ranges
 export const REVENUE_RANGES = [
-  { value: '0_50m', label: '0 - 50m€' },
-  { value: '50m_100m', label: '50 - 100m€' },
-  { value: '100m_250m', label: '100 - 250m€' },
-  { value: '250m_500m', label: '250 - 500m€' },
-  { value: 'over_500m', label: '500m€+' }
+  { value: 'under_10m', label: 'Under $10M' },
+  { value: '10m_50m', label: '$10M - $50M' },
+  { value: '50m_250m', label: '$50M - $250M' },
+  { value: 'over_250m', label: 'Over $250M' }
 ];
 
 export const EMPLOYEE_COUNTS = [
@@ -64,21 +63,17 @@ export const CHANGE_APPETITES = [
 
 // === FP&A PILLAR OPTIONS ===
 
-// Expanded tools list
+// Systems/Tools
 export const PLANNING_TOOLS = [
-  { value: 'excel', label: 'Excel (primary)', category: 'Spreadsheet' },
-  { value: 'adaptive_insights', label: 'Adaptive Insights', category: 'Modern CPM' },
-  { value: 'anaplan', label: 'Anaplan', category: 'Modern CPM' },
-  { value: 'planful', label: 'Planful', category: 'Modern CPM' },
-  { value: 'oracle_pbcs', label: 'Oracle PBCS/EPBCS', category: 'Enterprise' },
-  { value: 'sap_analytics', label: 'SAP Analytics Cloud', category: 'Enterprise' },
-  { value: 'board', label: 'Board', category: 'Modern CPM' },
-  { value: 'prophix', label: 'Prophix', category: 'Mid-Market' },
-  { value: 'workday_adaptive', label: 'Workday Adaptive Planning', category: 'Modern CPM' },
-  { value: 'power_bi', label: 'Power BI', category: 'BI Tools' },
-  { value: 'tableau', label: 'Tableau', category: 'BI Tools' },
-  { value: 'hyperion', label: 'Hyperion', category: 'Legacy' },
-  { value: 'tm1_cognos', label: 'TM1/Cognos', category: 'Legacy' }
+  { value: 'excel', label: 'Excel' },
+  { value: 'anaplan', label: 'Anaplan' },
+  { value: 'adaptive', label: 'Adaptive Insights' },
+  { value: 'pigment', label: 'Pigment' },
+  { value: 'sap', label: 'SAP' },
+  { value: 'oracle', label: 'Oracle' },
+  { value: 'powerbi', label: 'Power BI' },
+  { value: 'tableau', label: 'Tableau' },
+  { value: 'other', label: 'Other' }
 ];
 
 // Team size ranges (chips)
@@ -121,16 +116,15 @@ export const BUDGET_PROCESSES = [
   { value: 'zero_based', label: 'Zero-based budgeting' }
 ];
 
-// Expanded pain points
+// Pain points
 export const PAIN_POINTS = [
-  { value: 'forecast_accuracy', label: 'Forecast accuracy issues' },
-  { value: 'slow_budget_cycles', label: 'Slow budget cycles' },
-  { value: 'limited_business_buyin', label: 'Limited business buy-in' },
+  { value: 'long_cycles', label: 'Long budget/forecast cycles' },
+  { value: 'data_accuracy', label: 'Data accuracy issues' },
   { value: 'manual_consolidation', label: 'Manual consolidation' },
-  { value: 'disconnected_tools', label: 'Disconnected planning tools' },
-  { value: 'lack_driver_models', label: 'Lack of driver-based models' },
-  { value: 'poor_scenario_planning', label: 'Poor scenario planning' },
-  { value: 'weak_business_partnering', label: 'Weak business partnering' }
+  { value: 'lack_insights', label: 'Lack of actionable insights' },
+  { value: 'business_partnership', label: 'Weak business partnership' },
+  { value: 'tool_limitations', label: 'Tool limitations' },
+  { value: 'headcount', label: 'Headcount constraints' }
 ];
 
 // User roles
