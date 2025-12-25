@@ -146,7 +146,7 @@ function normalizePillar(raw: unknown): NormalizedPillar {
 
   const p = raw as Record<string, unknown>;
   return {
-    tools: asStringArray(p.tools) || [],
+    tools: asStringArray(p.tools) || asStringArray(p.systems) || [],
     other_tool: asString(p.other_tool),
     team_size: asString(p.team_size),
     forecast_frequency: asString(p.forecast_frequency),
