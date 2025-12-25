@@ -323,16 +323,33 @@ export const CompanyContextSchema = z.object({
   industry: IndustrySchema,
   revenue_range: RevenueRangeSchema,
   employee_count: EmployeeCountSchema.optional(),
+  finance_ftes: FinanceFTERangeSchema.optional(),
+  legal_entities: LegalEntityRangeSchema.optional(),
   finance_structure: FinanceStructureSchema.optional(),
+  ownership_structure: OwnershipStructureSchema.optional(),
   change_appetite: ChangeAppetiteSchema
 });
 
 // Pillar Context Object (FP&A Specific)
 export const PillarContextSchema = z.object({
-  ftes: z.number().min(0).max(100),
+  // Tools & Technology
+  tools: z.array(SystemsSchema).optional(),
+  other_tool: z.string().max(100).optional(),
+  // Team & Process
+  team_size: TeamSizeSchema.optional(),
+  forecast_frequency: ForecastFrequencySchema.optional(),
+  budget_process: z.array(BudgetProcessSchema).optional(),
+  // Pain Points
+  pain_points: z.array(PainPointsSchema).max(5).optional(),
+  other_pain_point: z.string().max(200).optional(),
+  // Additional Context
+  user_role: UserRoleSchema.optional(),
+  other_role: z.string().max(100).optional(),
+  additional_context: z.string().max(500).optional(),
+  // Legacy fields (backward compat)
+  ftes: z.number().min(0).max(100).optional(),
   systems: z.array(SystemsSchema).optional(),
   complexity: ComplexitySchema.optional(),
-  pain_points: z.array(PainPointsSchema).max(3).optional(),
   ongoing_projects: z.string().max(200).optional()
 });
 
