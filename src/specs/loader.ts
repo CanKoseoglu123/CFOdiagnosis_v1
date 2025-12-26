@@ -118,10 +118,10 @@ export function validateCrossReferences(): void {
   const initiativeIds = new Set(initiatives.map(i => i.id));
   const themeIds = new Set(themes.map(t => t.id));
 
-  // Every question must reference valid objective and initiative
+  // v2.9.0: Every question must reference valid practice and initiative
   for (const q of questions) {
-    if (!objectiveIds.has(q.objective_id)) {
-      throw new Error(`Question ${q.id} references invalid objective: ${q.objective_id}`);
+    if (!practiceIds.has(q.practice_id)) {
+      throw new Error(`Question ${q.id} references invalid practice: ${q.practice_id}`);
     }
     if (!initiativeIds.has(q.initiative_id)) {
       throw new Error(`Question ${q.id} references invalid initiative: ${q.initiative_id}`);
@@ -183,18 +183,22 @@ export function getQuestionsByInitiative(initiativeId: string): Question[] {
   return loadQuestions().filter(q => q.initiative_id === initiativeId);
 }
 
+// v2.9.0: Get questions by objective via practice_id → practice.objective_id lookup
 export function getQuestionsByObjective(objectiveId: string): Question[] {
-  return loadQuestions().filter(q => q.objective_id === objectiveId);
+  const practices = loadPractices();
+  const practiceIdsForObjective = new Set(
+    practices.filter(p => p.objective_id === objectiveId).map(p => p.id)
+  );
+  return loadQuestions().filter(q => practiceIdsForObjective.has(q.practice_id));
 }
 
-// VS-26: Practices no longer have level - use getPracticesByObjective instead
+// v2.9.0: Get practices by level via question.practice_id
 export function getPracticesByLevel(level: 1 | 2 | 3 | 4): Practice[] {
-  // Derive level from questions that link to this practice's objective
   const questions = loadQuestions();
   const practices = loadPractices();
   const levelQuestions = questions.filter(q => q.maturity_level === level);
-  const levelObjectiveIds = new Set(levelQuestions.map(q => q.objective_id));
-  return practices.filter(p => levelObjectiveIds.has(p.objective_id));
+  const levelPracticeIds = new Set(levelQuestions.map(q => q.practice_id));
+  return practices.filter(p => levelPracticeIds.has(p.id));
 }
 
 export function getObjectiveById(id: string): Objective | undefined {
@@ -332,9 +336,14 @@ const THEME_ORDER_MAP: Record<string, number> = {
   'obj_operational_excellence': 9
 };
 
-// VS-26: Derive objective level from questions
-function getObjectiveLevel(objectiveId: string, questions: Question[]): 1 | 2 | 3 | 4 {
-  const objQuestions = questions.filter(q => q.objective_id === objectiveId);
+// v2.9.0: Derive objective level from questions via practice_id
+function getObjectiveLevel(objectiveId: string, questions: Question[], practices: Practice[]): 1 | 2 | 3 | 4 {
+  // Get practices for this objective
+  const objPracticeIds = new Set(
+    practices.filter(p => p.objective_id === objectiveId).map(p => p.id)
+  );
+  // Get questions that link to these practices
+  const objQuestions = questions.filter(q => objPracticeIds.has(q.practice_id));
   if (objQuestions.length === 0) return 1;
   // Use the most common level among questions
   const levelCounts = objQuestions.reduce((acc: Record<number, number>, q) => {
@@ -350,21 +359,31 @@ function getObjectiveLevel(objectiveId: string, questions: Question[]): 1 | 2 | 
 
 /**
  * Build a complete Spec from JSON content files
+ * v2.9.0: Now uses practice_id → practice.objective_id to derive objective
  */
 export function buildSpecFromContent(): Spec {
   const questions = loadQuestions();
+  const practices = loadPractices();
   const objectives = loadObjectives();
   const initiatives = loadInitiatives();
   const gates = loadGates();
 
+  // v2.9.0: Build practice_id → objective_id lookup
+  const practiceToObjective: Record<string, string> = {};
+  for (const p of practices) {
+    practiceToObjective[p.id] = p.objective_id;
+  }
+
   // Transform questions to SpecQuestion format
+  // v2.9.0: Derive objective_id from practice_id
   const specQuestions: SpecQuestion[] = questions.map(q => ({
     id: q.id,
     pillar: 'fpa',
     weight: q.is_critical ? 2 : 1,
     text: q.text,
     is_critical: q.is_critical,
-    objective_id: q.objective_id,
+    objective_id: practiceToObjective[q.practice_id] || '',  // v2.9.0: Derived from practice
+    practice_id: q.practice_id,  // v2.9.0: Include practice_id in spec
     level: q.maturity_level,
     levelLabel: LEVEL_LABELS[q.maturity_level],
     help: q.help,
@@ -374,14 +393,14 @@ export function buildSpecFromContent(): Spec {
     expert_action: q.expert_action
   }));
 
-  // VS-26: Transform objectives to SpecObjective format with derived level
+  // v2.9.0: Transform objectives with practices lookup for level derivation
   const specObjectives: SpecObjective[] = objectives.map(o => {
-    const level = getObjectiveLevel(o.id, questions);
+    const level = getObjectiveLevel(o.id, questions, practices);
     return {
       id: o.id,
-      pillar_id: 'fpa',  // VS-26: Hardcoded for now, single-pillar
+      pillar_id: 'fpa',  // Hardcoded for now, single-pillar
       level,
-      name: o.title,  // VS-26: 'title' in new schema
+      name: o.title,  // 'title' in new schema
       purpose: PURPOSE_MAP[o.id] || o.description,
       description: o.description,
       action_id: o.id.replace('obj_', 'act_'),
@@ -429,7 +448,7 @@ export function buildSpecFromContent(): Spec {
   ];
 
   return {
-    version: 'v2.8.1',
+    version: 'v2.9.0',  // v2.9.0: practice_id schema
     pillars: PILLARS,
     questions: specQuestions,
     objectives: specObjectives,
@@ -441,6 +460,12 @@ export function buildSpecFromContent(): Spec {
       description: i.description,
       theme_id: i.theme_id as ThemeCode,
       objective_id: i.objective_id
+    })),
+    practices: practices.map(p => ({
+      id: p.id,
+      objective_id: p.objective_id,
+      title: p.title,
+      capability_tags: p.capability_tags || []
     }))
   };
 }

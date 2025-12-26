@@ -2,23 +2,24 @@ import { SPEC as SPEC_264 } from "./v2.6.4";
 import { Spec } from "./types";
 import { buildSpecFromContent, buildSpecWithThemes } from "./loader";
 
-export type SpecVersion = "v2.6.4" | "v2.7.0" | "v2.8.1";
+export type SpecVersion = "v2.6.4" | "v2.7.0" | "v2.8.1" | "v2.9.0";
 
-export const DEFAULT_SPEC_VERSION: SpecVersion = "v2.8.1";
+export const DEFAULT_SPEC_VERSION: SpecVersion = "v2.9.0";
 
-// Lazy-load v2.8.1 spec from JSON content
-let _spec281: Spec | null = null;
-function getSpec281(): Spec {
-  if (!_spec281) {
-    _spec281 = buildSpecFromContent();
+// Lazy-load v2.9.0 spec from JSON content
+let _spec290: Spec | null = null;
+function getSpec290(): Spec {
+  if (!_spec290) {
+    _spec290 = buildSpecFromContent();
   }
-  return _spec281;
+  return _spec290;
 }
 
 const REGISTRY: Record<SpecVersion, () => Spec> = {
   "v2.6.4": () => SPEC_264,
-  "v2.7.0": () => getSpec281(), // v2.7.0 now aliases to v2.8.1
-  "v2.8.1": () => getSpec281(),
+  "v2.7.0": () => getSpec290(), // v2.7.0+ now aliases to v2.9.0
+  "v2.8.1": () => getSpec290(), // v2.8.1 aliases to v2.9.0
+  "v2.9.0": () => getSpec290(),
 };
 
 export const SpecRegistry = {
@@ -36,7 +37,7 @@ export const SpecRegistry = {
 
   // Returns spec with themes for API responses
   getWithThemes(version: string = DEFAULT_SPEC_VERSION) {
-    if (version === "v2.7.0" || version === "v2.8.1") {
+    if (version === "v2.7.0" || version === "v2.8.1" || version === "v2.9.0") {
       return buildSpecWithThemes();
     }
     return this.get(version);

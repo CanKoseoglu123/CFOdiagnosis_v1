@@ -1,17 +1,16 @@
 /**
  * CFO Diagnostic Platform - Type Definitions
- * Version: v2.7.0
+ * Version: v2.9.0
  *
- * Schema changes from v2.6.4:
- * - Added `theme` field to SpecObjective
- * - Added `purpose` field to SpecObjective
- * - Added `theme_order` field to SpecObjective
- * - Added ThemeMetadata and THEMES constant
+ * Schema changes from v2.8.1:
+ * - v2.9.0: Questions now link to practices via `practice_id`
+ * - v2.9.0: Added SpecPractice interface
+ * - v2.9.0: Added `practices` to Spec interface
+ * - v2.9.0: objective_id is now derived from practice → objective relationship
  *
  * Backward Compatibility:
- * - Spec interface preserved for v2.6.4
- * - MaturityGateSpec preserved for v2.6.4
- * - ActionDefinition preserved for v2.6.4
+ * - objective_id is still included on SpecQuestion (derived at runtime)
+ * - All existing v2.8.x APIs remain compatible
  */
 
 // =============================================================================
@@ -100,6 +99,17 @@ export interface Initiative {
 }
 
 // =============================================================================
+// PRACTICE TYPES (v2.9.0)
+// =============================================================================
+
+export interface SpecPractice {
+  id: string;
+  objective_id: string;
+  title: string;
+  capability_tags?: string[];
+}
+
+// =============================================================================
 // QUESTION TYPES
 // =============================================================================
 
@@ -110,7 +120,8 @@ export interface SpecQuestion {
   text: string;
   is_critical?: boolean;
   trigger_action_id?: string;  // DEPRECATED: use objective.action_id
-  objective_id?: string;
+  objective_id?: string;       // v2.9.0: Now derived from practice → objective
+  practice_id?: string;        // v2.9.0: Direct link to practice
   level?: number;
   levelLabel?: string;
   help?: string;
@@ -171,7 +182,7 @@ export interface SpecAction {
 // AGGREGATE SPEC TYPES
 // =============================================================================
 
-// v2.6.4 compatibility
+// v2.9.0 Spec interface
 export interface Spec {
   version: string;
   questions: SpecQuestion[];
@@ -180,6 +191,7 @@ export interface Spec {
   maturityGates: MaturityGateSpec[];
   actions: ActionDefinition[];
   initiatives?: Initiative[];  // V2.1 Initiative Engine
+  practices?: SpecPractice[];  // v2.9.0: question → practice → objective
 }
 
 // v2.7.0 style

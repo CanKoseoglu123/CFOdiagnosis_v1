@@ -45,7 +45,7 @@ export const QuestionSchema = z.object({
   help: z.string().min(10).max(500),
   maturity_level: MaturityLevelSchema,
   is_critical: z.boolean(),
-  objective_id: z.string().regex(/^obj_/, 'Must start with obj_'),  // VS-26: Simplified ID format
+  practice_id: z.string().regex(/^prac_/, 'Must start with prac_'),  // v2.9.0: Links to practice, not objective
   initiative_id: z.string().regex(/^init_/, 'Must start with init_'),
   impact: z.number().int().min(1).max(5),
   complexity: z.number().int().min(1).max(5),
@@ -56,8 +56,8 @@ export const QuestionsFileSchema = z.object({
   version: z.string(),
   pillar: z.literal('fpa'),
   questions: z.array(QuestionSchema)
-    .min(48)
-    .max(48)
+    .min(60)
+    .max(60)
     .refine((items) => {
       const ids = items.map(i => i.id);
       return new Set(ids).size === ids.length;

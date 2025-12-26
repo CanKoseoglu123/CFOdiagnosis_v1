@@ -142,13 +142,34 @@ export default function AssessThemePage({ themeId }) {
     fetchData();
   }, [runId, navigate]);
 
+  // Build practice_id → objective_id lookup (v2.9.0 schema)
+  const practiceToObjective = useMemo(() => {
+    if (!spec?.practices) return {};
+    const lookup = {};
+    spec.practices.forEach(p => {
+      lookup[p.id] = p.objective_id;
+    });
+    return lookup;
+  }, [spec]);
+
+  // Helper: get objective_id for a question (supports both old and new schema)
+  const getQuestionObjective = useCallback((q) => {
+    // v2.9.0 schema: question.practice_id → practice.objective_id
+    if (q.practice_id && practiceToObjective[q.practice_id]) {
+      return practiceToObjective[q.practice_id];
+    }
+    // Fallback for old schema: question.objective_id
+    return q.objective_id;
+  }, [practiceToObjective]);
+
   // Get questions for this theme
   const themeQuestions = useMemo(() => {
     if (!spec?.questions) return [];
-    return spec.questions.filter(q =>
-      themeMeta.objectives.includes(q.objective_id)
-    );
-  }, [spec, themeMeta]);
+    return spec.questions.filter(q => {
+      const objId = getQuestionObjective(q);
+      return themeMeta.objectives.includes(objId);
+    });
+  }, [spec, themeMeta, getQuestionObjective]);
 
   // Get all questions for overall progress
   const allQuestions = useMemo(() => spec?.questions || [], [spec]);
@@ -157,22 +178,30 @@ export default function AssessThemePage({ themeId }) {
   const questionsByObjective = useMemo(() => {
     const grouped = {};
     themeMeta.objectives.forEach(objId => {
-      grouped[objId] = themeQuestions.filter(q => q.objective_id === objId);
+      grouped[objId] = themeQuestions.filter(q => getQuestionObjective(q) === objId);
     });
     return grouped;
-  }, [themeQuestions, themeMeta]);
+  }, [themeQuestions, themeMeta, getQuestionObjective]);
 
   // Calculate progress for ALL themes (for sidebar)
   const allThemesProgress = useMemo(() => {
     if (!spec?.questions) return {};
 
+    // Helper inline since getQuestionObjective is a callback
+    const getObjId = (q) => {
+      if (q.practice_id && practiceToObjective[q.practice_id]) {
+        return practiceToObjective[q.practice_id];
+      }
+      return q.objective_id;
+    };
+
     const progress = {};
     Object.entries(THEME_META).forEach(([tId, tMeta]) => {
-      const tQuestions = spec.questions.filter(q => tMeta.objectives.includes(q.objective_id));
+      const tQuestions = spec.questions.filter(q => tMeta.objectives.includes(getObjId(q)));
       const tAnswered = tQuestions.filter(q => answers[q.id] !== undefined).length;
 
       const objectives = tMeta.objectives.map(objId => {
-        const objQuestions = tQuestions.filter(q => q.objective_id === objId);
+        const objQuestions = tQuestions.filter(q => getObjId(q) === objId);
         const objAnswered = objQuestions.filter(q => answers[q.id] !== undefined).length;
         return {
           id: objId,
@@ -190,7 +219,7 @@ export default function AssessThemePage({ themeId }) {
     });
 
     return progress;
-  }, [spec, answers]);
+  }, [spec, answers, practiceToObjective]);
 
   // Current theme progress (for local use)
   const themeProgress = useMemo(() => {
@@ -357,7 +386,12 @@ export default function AssessThemePage({ themeId }) {
       ) : (
         <button
           onClick={handleNext}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded"
+          disabled={themeProgress.answered !== themeProgress.total}
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded ${
+            themeProgress.answered === themeProgress.total
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-200 text-slate-400'
+          }`}
         >
           Next Theme
           <ArrowRight className="w-4 h-4" />
@@ -491,9 +525,16 @@ export default function AssessThemePage({ themeId }) {
             ) : (
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded hover:bg-blue-700"
+                disabled={themeProgress.answered !== themeProgress.total}
+                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded transition-colors ${
+                  themeProgress.answered === themeProgress.total
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
               >
-                Next Theme
+                {themeProgress.answered === themeProgress.total
+                  ? 'Next Theme'
+                  : `${themeProgress.total - themeProgress.answered} questions remaining`}
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}

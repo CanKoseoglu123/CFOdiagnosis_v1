@@ -127,6 +127,7 @@ app.get("/api/spec", (_req, res) => {
     actions: spec.actions || [],
     themes: (spec as any).themes || [],
     initiatives: spec.initiatives || [],  // V2.1 Initiative Engine
+    practices: spec.practices || [],  // v2.9.0: question → practice → objective
   });
 });
 

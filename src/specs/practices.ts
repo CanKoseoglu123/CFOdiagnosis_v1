@@ -25,7 +25,7 @@ export interface Practice {
 
 // Cache for derived data
 let _objectiveMap: Map<string, Objective> | null = null;
-let _questionsByObjective: Map<string, Question[]> | null = null;
+let _questionsByPractice: Map<string, Question[]> | null = null;
 
 function getObjectiveMap(): Map<string, Objective> {
   if (!_objectiveMap) {
@@ -34,29 +34,31 @@ function getObjectiveMap(): Map<string, Objective> {
   return _objectiveMap;
 }
 
-function getQuestionsByObjective(): Map<string, Question[]> {
-  if (!_questionsByObjective) {
-    _questionsByObjective = new Map();
+// v2.9.0: Questions now link to practices via practice_id
+function getQuestionsByPractice(): Map<string, Question[]> {
+  if (!_questionsByPractice) {
+    _questionsByPractice = new Map();
     for (const q of loadQuestions()) {
-      const existing = _questionsByObjective.get(q.objective_id) || [];
+      const existing = _questionsByPractice.get(q.practice_id) || [];
       existing.push(q);
-      _questionsByObjective.set(q.objective_id, existing);
+      _questionsByPractice.set(q.practice_id, existing);
     }
   }
-  return _questionsByObjective;
+  return _questionsByPractice;
 }
 
-// VS-26: Transform simplified JSON practice to legacy interface
+// VS-26/v2.9.0: Transform simplified JSON practice to legacy interface
 function transformPractice(p: JsonPractice): Practice {
   const objectiveMap = getObjectiveMap();
-  const questionsByObj = getQuestionsByObjective();
+  const questionsByPrac = getQuestionsByPractice();
 
   const objective = objectiveMap.get(p.objective_id);
-  const objQuestions = questionsByObj.get(p.objective_id) || [];
+  // v2.9.0: Get questions linked directly to this practice
+  const practiceQuestions = questionsByPrac.get(p.id) || [];
 
-  // Derive level from questions in this objective
+  // Derive level from questions in this practice
   const levelCounts: Record<number, number> = {};
-  for (const q of objQuestions) {
+  for (const q of practiceQuestions) {
     levelCounts[q.maturity_level] = (levelCounts[q.maturity_level] || 0) + 1;
   }
   const level = Object.entries(levelCounts).reduce(
@@ -71,7 +73,7 @@ function transformPractice(p: JsonPractice): Practice {
     objective_id: p.objective_id,
     theme_id: (objective?.theme_id || 'foundation') as ThemeId,
     maturity_level: level,
-    question_ids: objQuestions.map(q => q.id),  // Derived from objective's questions
+    question_ids: practiceQuestions.map(q => q.id),  // v2.9.0: Derived from practice's questions
     capability_tags: p.capability_tags || []
   };
 }
@@ -148,9 +150,9 @@ export function validatePracticeQuestionCoverage(): void {
   const allQuestionIds = practices.flatMap(p => p.question_ids);
   const uniqueQuestionIds = [...new Set(allQuestionIds)];
 
-  // VS-25: Updated to support 48-57 questions
-  if (uniqueQuestionIds.length < 48) {
-    console.warn(`Practice catalog has ${uniqueQuestionIds.length} questions, expected at least 48`);
+  // v2.9.0: Updated to support 60 questions
+  if (uniqueQuestionIds.length < 60) {
+    console.warn(`Practice catalog has ${uniqueQuestionIds.length} questions, expected at least 60`);
   }
 
   _validated = true;
