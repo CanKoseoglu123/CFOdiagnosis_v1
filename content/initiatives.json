@@ -35,6 +35,13 @@
     "description": "Connect finance models to strategy. Track leading indicators, monitor value-creation initiatives, and stress-test the plan. Know where you're going, not just where you've been."
   },
   {
+    "id": "init_scenario_modeling",
+    "theme_id": "future",
+    "objective_id": "obj_scenario_modeling",
+    "title": "Build Scenario Agility",
+    "description": "When markets shift, can you model the impact in hours, not weeks? Scenario agility means instant what-if analysis, pre-defined trigger responses, and stress-tested assumptions. This is how Finance stays ahead of surprises."
+  },
+  {
     "id": "init_seat_at_table",
     "theme_id": "intelligence",
     "objective_id": "obj_strategic_influence",

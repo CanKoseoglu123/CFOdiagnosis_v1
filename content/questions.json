@@ -505,7 +505,7 @@
       "help": "Speed is essential for agility. If scenario analysis takes days, the opportunity to react may pass. Rapid modeling allows for real-time strategic discussions.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_scenario_modeling",
       "impact": 5,
       "complexity": 4,
       "expert_action": {
@@ -521,7 +521,7 @@
       "help": "Sensitivity analysis highlights risk. Showing how outcomes change with different assumptions prepares leadership for volatility and helps manage expectations.",
       "maturity_level": 4,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_scenario_modeling",
       "impact": 3,
       "complexity": 2,
       "expert_action": {
@@ -537,7 +537,7 @@
       "help": "The future is uncertain. Maintaining multiple scenarios ensures the business is prepared for different outcomes and has thought through response plans.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
@@ -553,7 +553,7 @@
       "help": "Easy scenario switching empowers decision-makers to compare outcomes instantly. Without it, scenario analysis becomes a back-office exercise rather than a boardroom tool.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_scenario_modeling",
       "impact": 3,
       "complexity": 3,
       "expert_action": {
@@ -569,7 +569,7 @@
       "help": "Stress testing identifies breaking points. Knowing how much volume can drop before cash runs out allows for proactive risk management.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 4,
       "expert_action": {
@@ -585,7 +585,7 @@
       "help": "Pre-agreed triggers remove emotion from crisis decision-making. Knowing exactly what actions to take when a threshold is breached enables faster response.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_scenario_modeling",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
