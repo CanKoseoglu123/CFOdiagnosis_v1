@@ -37,7 +37,7 @@ CFOdiagnosis_v1/
 │   │   ├── types.ts              # Spec interface definitions
 │   │   ├── schemas.ts            # Zod validation schemas
 │   │   ├── loader.ts             # JSON content loaders
-│   │   └── registry.ts           # Spec version registry (default: v2.8.1)
+│   │   └── registry.ts           # Spec version registry (default: v2.9.0)
 │   ├── scoring/                  # Scoring engine (pure functions)
 │   ├── results/                  # Score aggregation
 │   ├── maturity/                 # Maturity evaluation + footprint
@@ -47,11 +47,11 @@ CFOdiagnosis_v1/
 │   ├── interpretation/           # AI interpretation layer (VS-25)
 │   └── tests/                    # QA test suites
 │
-├── content/                      # JSON content catalog (VS-24)
-│   ├── questions.json            # 48 FP&A questions
-│   ├── practices.json            # 21 practices
+├── content/                      # JSON content catalog (v2.9.0)
+│   ├── questions.json            # 60 FP&A questions (practice_id linkage)
+│   ├── practices.json            # 28 practices
 │   ├── initiatives.json          # 9 initiatives
-│   ├── objectives.json           # 8 objectives
+│   ├── objectives.json           # 9 objectives
 │   └── gates.json                # Maturity gates
 │
 ├── cfo-frontend/                 # Frontend application
@@ -81,7 +81,7 @@ CFOdiagnosis_v1/
 
 ## Key Principles (DO NOT VIOLATE)
 
-1. **Current spec is v2.8.1** — JSON content catalog with Zod validation
+1. **Current spec is v2.9.0** — Question → Practice → Objective schema
 2. **Scoring is pure functions** — No side effects, deterministic
 3. **Missing answers = 0 score** — Conservative scoring
 4. **Gates are sequential** — Must pass all previous levels
@@ -161,15 +161,15 @@ CFOdiagnosis_v1/
 
 ---
 
-## Question Distribution (v2.8.1)
+## Question Distribution (v2.9.0)
 
-| Level | Questions | Critical | Objectives |
-|-------|-----------|----------|------------|
-| L1 Emerging | 9 | 4 | Budget Foundation, Financial Controls |
-| L2 Defined | 14 | 4 | Variance Analysis, Forecasting |
-| L3 Managed | 15 | 0 | Driver-Based Planning, Scenario Modeling |
-| L4 Optimized | 10 | 0 | Integrated Planning, Predictive Analytics |
-| **Total** | **48** | **8** | **8** |
+| Level | Questions | Critical | Practices | Objectives |
+|-------|-----------|----------|-----------|------------|
+| L1 Emerging | 9 | 4 | 6 | Budget Foundation, Financial Controls |
+| L2 Defined | 15 | 4 | 7 | Variance Analysis, Forecasting |
+| L3 Managed | 21 | 0 | 9 | Driver-Based Planning, Scenario Modeling |
+| L4 Optimized | 15 | 0 | 6 | Integrated Planning, Predictive Analytics |
+| **Total** | **60** | **8** | **28** | **9** |
 
 ---
 
@@ -272,7 +272,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 
 ---
 
-## Content Architecture (VS-24)
+## Content Architecture (v2.9.0)
 
 ```
 content/*.json (Source of Truth)
@@ -284,6 +284,10 @@ src/specs/loader.ts (Load + Transform)
 src/specs/registry.ts (Version Registry)
        ↓
 API / Reports / Tests
+
+Schema Relationships (v2.9.0):
+  question.practice_id → practice.objective_id → objective.theme_id
+  (3-level hierarchy: Question → Practice → Objective)
 ```
 
 ---
