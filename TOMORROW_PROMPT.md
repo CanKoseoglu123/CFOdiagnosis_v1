@@ -1,4 +1,4 @@
-# Session Start Prompt — December 26, 2025
+# Session Start Prompt — December 27, 2025
 
 Copy and paste this entire prompt to start your session:
 
@@ -37,59 +37,52 @@ You have FULL AUTONOMY to:
 
 ---
 
-## Session Completed Yesterday (Dec 25)
+## Session Completed Yesterday (Dec 26)
 
-1. ✅ VS-28 Action Planning & Simulator — Full war room with gap selection, timelines, projections
-2. ✅ VS-29 Global Sidebar Layout — AppShell + WorkflowSidebar pattern
-3. ✅ ActionSidebar inside Action Planning content (interactive, not global)
-4. ✅ Fixed React hooks violation (useMemo before early returns)
-5. ✅ Three-tab report structure: Overview | Maturity Footprint | Action Planning
+1. **VS-30 Theme-Based Assessment Pages** — Complete
+   - Created `QuestionCard.jsx` with Action Planning design (level badges, help toggle, Yes/No buttons)
+   - Created `AssessmentSidebar.jsx` for progress HUD with theme/objective breakdown
+   - Created `AssessThemePage.jsx` reusable base component
+   - Created 3 theme pages: `AssessFoundation.jsx`, `AssessFuture.jsx`, `AssessIntelligence.jsx`
+   - Routes: `/assess/foundation`, `/assess/future`, `/assess/intelligence`
+   - Updated `IntroPage.jsx` to link to new flow
+   - Deployed to production
+
+2. **Theme Mapping (from objectives.json)**
+   - Foundation: Budget Discipline, Financial Controls, Performance Monitoring
+   - Future: Forecasting Agility, Driver-Based Planning, Scenario Modeling
+   - Intelligence: Strategic Influence, Decision Support, Operational Excellence
 
 ---
 
 ## Today's Priority Tasks
 
-### 1. MCQ Page Separation (HIGH PRIORITY) — VS-30
+### 1. End-to-End QA Testing (HIGH PRIORITY)
 
-**Goal:** Separate the 48 questions into 3 theme-based pages with improved UI quality.
+**Goal:** Verify the complete user flow works correctly in production.
 
-**Current State:**
-- All questions on single `/assess` page
-- Basic list format, not visually polished
+**Test Flow:**
+1. Sign in at https://cfodiagnosisv1.vercel.app
+2. Create new diagnostic run → Company Setup → Pillar Setup → Intro
+3. Complete Foundation assessment (/assess/foundation)
+4. Complete Future assessment (/assess/future)
+5. Complete Intelligence assessment (/assess/intelligence)
+6. Calibration page (/run/:id/calibrate)
+7. Report page (/report/:id) — all 3 tabs
 
-**Target State:**
-- **Page 1: Foundation** — L1/L2 questions (Budget, Controls, Variance, Forecasting)
-- **Page 2: Future** — L3 questions (Driver-Based Planning, Scenario Modeling)
-- **Page 3: Intelligence** — L4 questions (Strategic Influence, Predictive Analytics)
-
-**UI Requirements:**
-- Individual card per question (like Action Planning cards)
-- Clear typography (question title prominent, help text secondary)
-- Yes/No/Unsure toggle buttons (not basic checkboxes)
-- Progress indicator showing theme completion
-- Consistent with Action Planning design quality
-
-**Files to Create/Modify:**
-- `cfo-frontend/src/pages/AssessFoundation.jsx` — Theme 1 questions
-- `cfo-frontend/src/pages/AssessFuture.jsx` — Theme 2 questions
-- `cfo-frontend/src/pages/AssessIntelligence.jsx` — Theme 3 questions
-- `cfo-frontend/src/components/QuestionCard.jsx` — Reusable question card
-- `cfo-frontend/src/App.jsx` — Add routes
-
-**Theme Mapping:**
-```javascript
-const THEME_OBJECTIVES = {
-  foundation: ['obj_budget_discipline', 'obj_financial_controls', 'obj_performance_monitoring', 'obj_forecasting_agility'],
-  future: ['obj_driver_based_planning', 'obj_scenario_modeling'],
-  intelligence: ['obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence']
-};
-```
+**Verify:**
+- Questions load correctly per theme
+- Answers save (debounced)
+- Progress indicators update
+- Navigation between themes works
+- Report shows correct scores
+- Action Planning tab functions
 
 ---
 
-### 2. Maturity Ladder Completion (HIGH PRIORITY)
+### 2. Maturity Ladder Visualization (HIGH PRIORITY)
 
-**Goal:** Finalize the maturity ladder visualization that shows progression L1 → L2 → L3 → L4.
+**Goal:** Finalize the maturity ladder visualization showing L1 → L2 → L3 → L4 progression.
 
 **Current State:**
 - MaturityFootprintGrid shows practices grid
@@ -101,7 +94,7 @@ const THEME_OBJECTIVES = {
 - Gates between levels (locked/unlocked based on critical questions)
 - Current position highlighted
 
-**Possible Component:**
+**File to Create:**
 - `cfo-frontend/src/components/report/MaturityLadder.jsx`
 
 ---
@@ -124,17 +117,17 @@ AUTH_TOKEN="<token>" node scripts/test-interpretation.js
 
 ---
 
-### 4. Printable Report Foundation (MEDIUM PRIORITY) — VS-32
+### 4. Printable Report (HIGH PRIORITY) — VS-32
 
-**Goal:** Set up the foundation for final printable PDF report.
+**Goal:** Create print-optimized report for PDF export.
 
 **Requirements:**
 - Print-optimized CSS (hide nav, fix widths)
 - Executive summary one-pager
 - Full report with all sections
-- Browser print or jsPDF integration
+- Browser print functionality
 
-**Files to Consider:**
+**Files to Create:**
 - `cfo-frontend/src/pages/PrintableReport.jsx`
 - `cfo-frontend/src/styles/print.css`
 
@@ -168,34 +161,19 @@ AUTH_TOKEN="<token>" node scripts/test-interpretation.js
 </div>
 ```
 
-**Button Styles:**
-```jsx
-// Primary
-className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700"
-
-// Secondary
-className="px-4 py-2 bg-white text-slate-600 text-sm font-medium rounded border border-slate-300 hover:bg-slate-50"
-
-// Toggle (selected)
-className="px-4 py-2 bg-slate-800 text-white text-sm font-medium"
-
-// Toggle (unselected)
-className="px-4 py-2 bg-white text-slate-600 text-sm font-medium hover:bg-slate-50"
-```
-
 ---
 
 ## Key Files Reference
 
 | Purpose | File |
 |---------|------|
-| Current Assessment Page | `cfo-frontend/src/pages/DiagnosticInput.jsx` |
+| Assessment Theme Page | `cfo-frontend/src/components/assessment/AssessThemePage.jsx` |
+| Question Card | `cfo-frontend/src/components/assessment/QuestionCard.jsx` |
+| Assessment Sidebar | `cfo-frontend/src/components/assessment/AssessmentSidebar.jsx` |
 | Report Page | `cfo-frontend/src/pages/PillarReport.jsx` |
 | Action Planning Tab | `cfo-frontend/src/components/report/ActionPlanTab.jsx` |
-| Question Card Reference | `cfo-frontend/src/components/report/CommandCenter.jsx` |
 | Global Sidebar | `cfo-frontend/src/components/WorkflowSidebar.jsx` |
 | App Routes | `cfo-frontend/src/App.jsx` |
-| Design System | `DESIGN_SYSTEM.md` |
 
 ---
 
@@ -203,7 +181,7 @@ className="px-4 py-2 bg-white text-slate-600 text-sm font-medium hover:bg-slate-
 
 | Entity | Count | JSON File |
 |--------|-------|-----------|
-| Objectives | 8 | `content/objectives.json` |
+| Objectives | 9 | `content/objectives.json` |
 | Practices | 21 | `content/practices.json` |
 | Questions | 48 | `content/questions.json` |
 | Initiatives | 9 | `content/initiatives.json` |
@@ -231,24 +209,21 @@ npm run test:all
 ## End Goal for V1.0 Completion
 
 After today's work:
-1. ✅ 3-page MCQ flow with polished UI
-2. ✅ Maturity ladder visualization complete
-3. ✅ AI interpretations fine-tuned
-4. ✅ Foundation for printable report
+1. Full E2E test of new 3-page assessment flow
+2. Maturity ladder visualization complete
+3. Printable report ready
+4. Any polish/bug fixes discovered during QA
 
-**Next Session (Dec 27):**
-- Finalize printable report
-- End-to-end QA testing
-- Polish any remaining UI issues
+**V1.0 Feature Complete Target:** December 27, 2025
 
 ---
 
 ## Start Working
 
-1. Review the current `/assess` page to understand question structure
-2. Create theme-based assessment pages with card-based UI
-3. Add progress indicators and navigation between themes
-4. Implement maturity ladder component for report
-5. Test full flow: Setup → Assess (3 pages) → Calibrate → Report
+1. Run through the complete user flow in production
+2. Note any bugs or issues
+3. Create maturity ladder component
+4. Build printable report page
+5. Fine-tune AI interpretations if time permits
 
 GO!
