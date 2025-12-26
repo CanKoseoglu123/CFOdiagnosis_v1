@@ -169,11 +169,12 @@ app.post("/diagnostic-runs", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS18 — Get diagnostic run details
+// VS18 — Get diagnostic run details (includes inputs for resume)
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id", async (req, res) => {
   const runId = req.params.id;
 
+  // Fetch run details
   const { data: run, error } = await req.supabase
     .from("diagnostic_runs")
     .select("id, status, spec_version, context, setup_completed_at, created_at")
@@ -184,10 +185,17 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
+  // Fetch inputs (answers) for the run - allows frontend to restore progress
+  const { data: inputs } = await req.supabase
+    .from("diagnostic_inputs")
+    .select("question_id, value")
+    .eq("run_id", runId);
+
   // Normalize context to v1 format for backward compatibility
   res.json({
     ...run,
-    context: normalizeContext(run.context)
+    context: normalizeContext(run.context),
+    inputs: inputs || []
   });
 });
 
