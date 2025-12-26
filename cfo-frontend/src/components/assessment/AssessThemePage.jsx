@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { ChevronDown, ChevronRight, Loader, AlertTriangle, ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import AppShell from '../AppShell';
+import EnterpriseCanvas from '../EnterpriseCanvas';
 import AssessmentSidebar from './AssessmentSidebar';
 import QuestionCard from './QuestionCard';
 
@@ -405,7 +406,7 @@ export default function AssessThemePage({ themeId }) {
       <div className="min-h-screen bg-slate-50">
         {/* Theme Header */}
         <div className="bg-slate-700 text-white py-5">
-          <div className="max-w-4xl mx-auto px-4">
+          <EnterpriseCanvas mode="assessment">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
               Theme {currentIndex + 1} of 3
             </div>
@@ -413,11 +414,11 @@ export default function AssessThemePage({ themeId }) {
             <p className="text-sm text-slate-300">
               {themeMeta.description}
             </p>
-          </div>
+          </EnterpriseCanvas>
         </div>
 
         {/* Main Content */}
-        <main className="max-w-4xl mx-auto px-4 py-6">
+        <EnterpriseCanvas mode="assessment" className="py-6">
           {/* Error Alert */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-sm flex items-center gap-2">
@@ -539,7 +540,7 @@ export default function AssessThemePage({ themeId }) {
               </button>
             )}
           </div>
-        </main>
+        </EnterpriseCanvas>
       </div>
     </AppShell>
   );

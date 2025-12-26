@@ -10,6 +10,7 @@ import {
   ArrowRight, ArrowLeft, Loader, Check, MessageSquare
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
+import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import {
@@ -316,13 +317,13 @@ export default function PillarSetupPage() {
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-slate-800 text-white py-6">
-          <div className="max-w-2xl mx-auto px-5">
+          <EnterpriseCanvas mode="setup">
             <div className="text-xs tracking-widest text-blue-300 mb-1">FINANCE DIAGNOSTIC</div>
             <h1 className="text-xl font-bold text-white">FP&A Context</h1>
-          </div>
+          </EnterpriseCanvas>
         </div>
 
-        <main className="max-w-2xl mx-auto px-5 py-8">
+        <EnterpriseCanvas mode="setup" className="py-8">
           <SetupProgress currentStep="pillar" />
 
           {error && (
@@ -500,7 +501,7 @@ export default function PillarSetupPage() {
               )}
             </button>
           </div>
-        </main>
+        </EnterpriseCanvas>
       </div>
     </AppShell>
   );

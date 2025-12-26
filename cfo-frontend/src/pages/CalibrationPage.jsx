@@ -6,6 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Lock, AlertTriangle, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
+import EnterpriseCanvas from '../components/EnterpriseCanvas';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -284,7 +285,7 @@ export default function CalibrationPage() {
 
   return (
     <AppShell sidebarContent={sidebar}>
-      <div className="max-w-3xl mx-auto py-8 px-6">
+      <EnterpriseCanvas mode="assessment" className="py-8">
         <h1 className="text-2xl font-bold text-navy mb-2">
           Calibrate Priorities
         </h1>
@@ -334,7 +335,7 @@ export default function CalibrationPage() {
             Skip (use defaults)
           </button>
         </div>
-      </div>
+      </EnterpriseCanvas>
     </AppShell>
   );
 }

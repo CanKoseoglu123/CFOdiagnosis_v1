@@ -7,6 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
+import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import WorkflowSidebar, { ReportOverviewContent, FootprintContent } from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
@@ -17,6 +18,7 @@ import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
+import ExecutiveSpine from '../components/report/ExecutiveSpine';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -300,8 +302,8 @@ export default function PillarReport() {
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* HEADER */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        <header className="bg-white border-b border-slate-300">
-          <div className="max-w-5xl mx-auto px-4 py-4">
+        <header className="bg-white border-b border-slate-300 py-4">
+          <EnterpriseCanvas mode="report">
             <h1 className="text-xl font-bold text-slate-800 text-center">
               FP&A Diagnostic Report
             </h1>
@@ -311,14 +313,14 @@ export default function PillarReport() {
                 {industry && ` - ${industry}`}
               </p>
             )}
-          </div>
+          </EnterpriseCanvas>
         </header>
 
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* METRICS BAR */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        <div className="bg-white border-b border-slate-300">
-          <div className="max-w-5xl mx-auto px-4 py-3 space-y-3">
+        <div className="bg-white border-b border-slate-300 py-3">
+          <EnterpriseCanvas mode="report" className="space-y-3">
             {/* Metric Boxes */}
             <div className="grid grid-cols-4 gap-3">
               {/* Execution Score */}
@@ -369,14 +371,14 @@ export default function PillarReport() {
               actual_level={actualLevel}
               capped_by={cappedBy}
             />
-          </div>
+          </EnterpriseCanvas>
         </div>
 
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* NAVIGATION TABS */}
         {/* ─────────────────────────────────────────────────────────────────── */}
         <div className="bg-white border-b border-slate-200">
-          <div className="max-w-5xl mx-auto px-4">
+          <EnterpriseCanvas mode="report">
             <div className="flex gap-6">
               <button
                 onClick={() => setActiveTab('overview')}
@@ -409,42 +411,54 @@ export default function PillarReport() {
                 Action Planning
               </button>
             </div>
-          </div>
+          </EnterpriseCanvas>
         </div>
 
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* MAIN CONTENT */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        <div className={`mx-auto p-4 space-y-4 ${activeTab === 'footprint' ? 'max-w-6xl' : activeTab === 'actions' ? 'max-w-none' : 'max-w-5xl'}`}>
+        <EnterpriseCanvas mode="report" className="py-4 space-y-4">
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
-            <>
-              {/* VS22-v3: Executive Summary (3-column cards) */}
-              <ExecutiveSummary
-                execution_score={executionScore}
-                actual_level={actualLevel}
-                level_name={levelName}
-                questions_total={48}
-                questions_answered={questionsAnswered}
-                critical_count={8}
-                failed_critical_count={criticalRisks.length}
+            <div className="flex gap-6">
+              {/* Executive Spine - fixed-width narrative anchor */}
+              <ExecutiveSpine
+                actualLevel={actualLevel}
+                levelName={levelName}
+                executionScore={executionScore}
+                criticalCount={criticalRisks.length}
+                cappedBy={cappedBy}
               />
 
-              {/* VS-25: AI Interpretation Section */}
-              <InterpretationSection runId={runId} />
+              {/* Main Overview Content */}
+              <div className="flex-1 space-y-4">
+                {/* VS22-v3: Executive Summary (3-column cards) */}
+                <ExecutiveSummary
+                  execution_score={executionScore}
+                  actual_level={actualLevel}
+                  level_name={levelName}
+                  questions_total={48}
+                  questions_answered={questionsAnswered}
+                  critical_count={8}
+                  failed_critical_count={criticalRisks.length}
+                />
 
-              {/* Summary Table */}
-              <SummaryTable objectives={objectives} />
+                {/* VS-25: AI Interpretation Section */}
+                <InterpretationSection runId={runId} />
 
-              {/* Strengths Bar (only shows if objectives >= 70% exist) */}
-              <StrengthsBar objectives={objectives} />
+                {/* Summary Table */}
+                <SummaryTable objectives={objectives} />
 
-              {/* Two Column: Critical Risks + High Value */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <CriticalRisksCard risks={criticalRisks} />
-                <HighValueCard initiatives={initiatives} />
+                {/* Strengths Bar (only shows if objectives >= 70% exist) */}
+                <StrengthsBar objectives={objectives} />
+
+                {/* Two Column: Critical Risks + High Value */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CriticalRisksCard risks={criticalRisks} />
+                  <HighValueCard initiatives={initiatives} />
+                </div>
               </div>
-            </>
+            </div>
           )}
 
           {/* MATURITY FOOTPRINT TAB */}
@@ -475,14 +489,14 @@ export default function PillarReport() {
               </div>
             )
           )}
-        </div>
+        </EnterpriseCanvas>
 
         {/* Footer */}
         <footer className="border-t border-slate-200 bg-white py-4 mt-8">
-          <div className="max-w-5xl mx-auto px-4 flex justify-between text-xs text-slate-500">
+          <EnterpriseCanvas mode="report" className="flex justify-between text-xs text-slate-500">
             <span>Finance Diagnostic Platform</span>
             <span>{new Date().toLocaleDateString()}</span>
-          </div>
+          </EnterpriseCanvas>
         </footer>
       </div>
     </AppShell>
