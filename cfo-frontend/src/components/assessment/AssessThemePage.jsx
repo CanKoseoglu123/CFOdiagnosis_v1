@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { ChevronDown, ChevronRight, Loader, AlertTriangle, ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import AppShell from '../AppShell';
 import EnterpriseCanvas from '../EnterpriseCanvas';
+import ChapterHeader from '../ChapterHeader';
 import AssessmentSidebar from './AssessmentSidebar';
 import QuestionCard from './QuestionCard';
 
@@ -404,18 +405,13 @@ export default function AssessThemePage({ themeId }) {
   return (
     <AppShell sidebarContent={sidebarContent} mobileBottomNav={mobileBottomNav}>
       <div className="min-h-screen bg-slate-50">
-        {/* Theme Header */}
-        <div className="bg-slate-700 text-white py-5">
-          <EnterpriseCanvas mode="assessment">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-              Theme {currentIndex + 1} of 3
-            </div>
-            <h1 className="text-xl font-bold mb-1">{themeMeta.title}</h1>
-            <p className="text-sm text-slate-300">
-              {themeMeta.description}
-            </p>
-          </EnterpriseCanvas>
-        </div>
+        {/* Chapter Header */}
+        <ChapterHeader
+          label={`Theme ${currentIndex + 1} of 3`}
+          title={themeMeta.title}
+          description={themeMeta.description}
+          mode="assessment"
+        />
 
         {/* Main Content */}
         <EnterpriseCanvas mode="assessment" className="py-6">

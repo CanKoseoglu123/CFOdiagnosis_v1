@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
+import ChapterHeader from '../components/ChapterHeader';
 import WorkflowSidebar, { ReportOverviewContent, FootprintContent } from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
@@ -296,128 +297,116 @@ export default function PillarReport() {
     </WorkflowSidebar>
   );
 
+  // Build description for ChapterHeader
+  const headerDescription = companyName
+    ? `${companyName}${industry ? ` · ${industry}` : ''}`
+    : null;
+
   return (
     <AppShell sidebarContent={sidebarContent}>
       <div className="min-h-screen bg-slate-100">
         {/* ─────────────────────────────────────────────────────────────────── */}
-        {/* HEADER */}
+        {/* CHAPTER HEADER */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        <header className="bg-white border-b border-slate-300 py-4">
-          <EnterpriseCanvas mode="report">
-            <h1 className="text-xl font-bold text-slate-800 text-center">
-              FP&A Diagnostic Report
-            </h1>
-            {companyName && (
-              <p className="text-base text-slate-600 text-center mt-1">
-                {companyName}
-                {industry && ` - ${industry}`}
-              </p>
-            )}
-          </EnterpriseCanvas>
-        </header>
-
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        {/* METRICS BAR */}
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        <div className="bg-white border-b border-slate-300 py-3">
-          <EnterpriseCanvas mode="report" className="space-y-3">
-            {/* Metric Boxes */}
-            <div className="grid grid-cols-4 gap-3">
-              {/* Execution Score */}
-              <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-                <div className="text-2xl font-bold text-slate-800">
-                  {executionScore}%
-                </div>
-                <div className="text-xs font-semibold text-slate-500 uppercase">
-                  Execution
-                </div>
-              </div>
-
-              {/* Maturity Level */}
-              <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
-                <div className="text-2xl font-bold text-blue-700">
-                  L{actualLevel}
-                </div>
-                <div className="text-xs font-semibold text-slate-500 uppercase">
-                  {levelName}
-                </div>
-              </div>
-
-              {/* Critical Count */}
-              <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-                <div className={`text-2xl font-bold ${criticalRisks.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                  {criticalRisks.length}
-                </div>
-                <div className="text-xs font-semibold text-slate-500 uppercase">
-                  Critical
-                </div>
-              </div>
-
-              {/* Action Count */}
-              <div className="text-center p-2 bg-slate-50 rounded border border-slate-200">
-                <div className="text-2xl font-bold text-slate-800">
-                  {totalActions}
-                </div>
-                <div className="text-xs font-semibold text-slate-500 uppercase">
-                  Actions
-                </div>
-              </div>
-            </div>
-
-            {/* Maturity Banner */}
-            <MaturityBanner
-              execution_score={executionScore}
-              potential_level={potentialLevel}
-              actual_level={actualLevel}
-              capped_by={cappedBy}
-            />
-          </EnterpriseCanvas>
-        </div>
-
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        {/* NAVIGATION TABS */}
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        <div className="bg-white border-b border-slate-200">
-          <EnterpriseCanvas mode="report">
-            <div className="flex gap-6">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                  activeTab === 'overview'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('footprint')}
-                className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                  activeTab === 'footprint'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Maturity Footprint
-              </button>
-              <button
-                onClick={() => setActiveTab('actions')}
-                className={`pb-3 pt-3 text-sm font-semibold transition-colors ${
-                  activeTab === 'actions'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Action Planning
-              </button>
-            </div>
-          </EnterpriseCanvas>
-        </div>
+        <ChapterHeader
+          label="FP&A DIAGNOSTIC"
+          title="Diagnostic Report"
+          description={headerDescription}
+          mode="report"
+        />
 
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* MAIN CONTENT */}
         {/* ─────────────────────────────────────────────────────────────────── */}
         <EnterpriseCanvas mode="report" className="py-4 space-y-4">
+          {/* ─────────────────────────────────────────────────────────────── */}
+          {/* KPI TILES (relocated from header) */}
+          {/* ─────────────────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-4 gap-3">
+            {/* Execution Score */}
+            <div className="text-center p-2 bg-white rounded border border-slate-200">
+              <div className="text-2xl font-bold text-slate-800">
+                {executionScore}%
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                Execution
+              </div>
+            </div>
+
+            {/* Maturity Level */}
+            <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
+              <div className="text-2xl font-bold text-blue-700">
+                L{actualLevel}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                {levelName}
+              </div>
+            </div>
+
+            {/* Critical Count */}
+            <div className="text-center p-2 bg-white rounded border border-slate-200">
+              <div className={`text-2xl font-bold ${criticalRisks.length > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                {criticalRisks.length}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                Critical
+              </div>
+            </div>
+
+            {/* Action Count */}
+            <div className="text-center p-2 bg-white rounded border border-slate-200">
+              <div className="text-2xl font-bold text-slate-800">
+                {totalActions}
+              </div>
+              <div className="text-xs font-semibold text-slate-500 uppercase">
+                Actions
+              </div>
+            </div>
+          </div>
+
+          {/* Maturity Banner */}
+          <MaturityBanner
+            execution_score={executionScore}
+            potential_level={potentialLevel}
+            actual_level={actualLevel}
+            capped_by={cappedBy}
+          />
+
+          {/* ─────────────────────────────────────────────────────────────── */}
+          {/* NAVIGATION TABS (secondary navigation, in body) */}
+          {/* ─────────────────────────────────────────────────────────────── */}
+          <div className="flex gap-6 border-b border-slate-200">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === 'overview'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('footprint')}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === 'footprint'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Maturity Footprint
+            </button>
+            <button
+              onClick={() => setActiveTab('actions')}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === 'actions'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Action Planning
+            </button>
+          </div>
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <div className="flex gap-6">
