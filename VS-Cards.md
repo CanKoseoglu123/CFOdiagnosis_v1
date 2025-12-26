@@ -1,6 +1,6 @@
 # VS-Cards — Version Sprints Roadmap
 
-**Last Updated:** December 25, 2025
+**Last Updated:** December 26, 2025
 **Status:** Active Development
 
 ---
@@ -173,30 +173,53 @@ The diagnostic report provides raw scores and actions but lacks personalized, na
 
 ---
 
-## VS-30: UX Polish & MCQ Separation (NEXT)
+## VS-30: Theme-Based Assessment Pages
 
-**Status:** 📋 Planned
+**Status:** ✅ Complete
 **Priority:** High
-**Sprint:** December 26, 2025
+**Completed:** December 26, 2025
 
 ### Problem Statement
-The assessment questionnaire needs to be separated into 3 pages (one per theme) with improved look and feel matching the Action Planning quality. The maturity ladder visualization needs completion.
+The assessment questionnaire needed to be separated into 3 pages (one per theme) with improved look and feel matching the Action Planning quality.
 
 ### Deliverables
 
-| Component | Description |
-|-----------|-------------|
-| Theme-Based MCQ Pages | Separate assessment into 3 theme pages |
-| Card-Based Question UI | Individual cards per question with clear fonts |
-| Maturity Ladder Completion | Finalize the ladder visualization |
-| Progress Indicators | Clear progress through themes |
-| Consistent Design System | Match Action Planning quality |
+| Component | Status | Description |
+|-----------|--------|-------------|
+| QuestionCard.jsx | ✅ Done | Polished card with level badges, help toggle, Yes/No buttons |
+| AssessmentSidebar.jsx | ✅ Done | Progress HUD with theme/objective breakdown |
+| AssessThemePage.jsx | ✅ Done | Reusable base component for all themes |
+| AssessFoundation.jsx | ✅ Done | Foundation theme page (Budget, Controls, Monitoring) |
+| AssessFuture.jsx | ✅ Done | Future theme page (Forecasting, Driver-Based, Scenarios) |
+| AssessIntelligence.jsx | ✅ Done | Intelligence theme page (Strategic, Decision, Excellence) |
+| Routes | ✅ Done | /assess/foundation, /assess/future, /assess/intelligence |
 
-### Themes for MCQ Pages
+### Technical Implementation
 
-1. **Foundation** — L1/L2 questions (Budget, Controls, Variance, Forecasting)
-2. **Future** — L3 questions (Driver-Based Planning, Scenario Modeling)
-3. **Intelligence** — L4 questions (Strategic Influence, Predictive Analytics)
+**Files Created:**
+- `cfo-frontend/src/components/assessment/QuestionCard.jsx`
+- `cfo-frontend/src/components/assessment/AssessmentSidebar.jsx`
+- `cfo-frontend/src/components/assessment/AssessThemePage.jsx`
+- `cfo-frontend/src/pages/AssessFoundation.jsx`
+- `cfo-frontend/src/pages/AssessFuture.jsx`
+- `cfo-frontend/src/pages/AssessIntelligence.jsx`
+
+### Features
+
+1. **Theme-Based Navigation** — 3 separate pages with prev/next navigation
+2. **Objective Grouping** — Collapsible cards grouping questions by objective
+3. **Real-Time Saving** — Debounced auto-save with visual feedback
+4. **Progress Tracking** — Theme-level and overall progress in sidebar
+5. **Action Planning Design** — Matches enterprise UI patterns
+6. **Mobile Responsive** — AppShell layout with mobile bottom nav
+
+### Theme Mapping
+
+| Theme | Objectives |
+|-------|------------|
+| Foundation | Budget Discipline, Financial Controls, Performance Monitoring |
+| Future | Forecasting Agility, Driver-Based Planning, Scenario Modeling |
+| Intelligence | Strategic Influence, Decision Support, Operational Excellence |
 
 ---
 
@@ -271,3 +294,4 @@ Users need a final, printable PDF report at the end of the pillar assessment tha
 | VS-25 | AI Interpretation | Dec 2025 | GPT-4o/mini pipeline |
 | VS-28 | Action Planning | Dec 25, 2025 | War room simulator |
 | VS-29 | Global Sidebar | Dec 25, 2025 | AppShell layout pattern |
+| VS-30 | Theme Assessment | Dec 26, 2025 | 3-page MCQ with enterprise UI |

@@ -1,54 +1,70 @@
 // src/components/assessment/AssessmentSidebar.jsx
-// VS-30: Assessment progress sidebar with Action Planning design language
+// VS-30: Assessment progress sidebar with workflow steps and all themes
 
-import React from 'react';
-import { CheckCircle, Circle, ArrowRight, ArrowLeft, Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle, Circle, ChevronDown, ChevronRight } from 'lucide-react';
 
-// Theme configuration
+// Theme configuration (neutral styling)
 const THEME_CONFIG = {
   foundation: {
     label: 'Foundation',
-    icon: '🏛️',
-    color: 'amber',
-    bgClass: 'bg-amber-50',
-    textClass: 'text-amber-700',
-    borderClass: 'border-amber-300'
+    objectives: ['obj_budget_discipline', 'obj_financial_controls', 'obj_performance_monitoring']
   },
   future: {
     label: 'Future',
-    icon: '🔮',
-    color: 'blue',
-    bgClass: 'bg-blue-50',
-    textClass: 'text-blue-700',
-    borderClass: 'border-blue-300'
+    objectives: ['obj_forecasting_agility', 'obj_driver_based_planning', 'obj_scenario_modeling']
   },
   intelligence: {
     label: 'Intelligence',
-    icon: '🧠',
-    color: 'indigo',
-    bgClass: 'bg-indigo-50',
-    textClass: 'text-indigo-700',
-    borderClass: 'border-indigo-300'
+    objectives: ['obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence']
   }
 };
 
+// Objective display names
+const OBJECTIVE_NAMES = {
+  'obj_budget_discipline': 'Budget Discipline',
+  'obj_financial_controls': 'Financial Controls',
+  'obj_performance_monitoring': 'Performance Monitoring',
+  'obj_forecasting_agility': 'Forecasting Agility',
+  'obj_driver_based_planning': 'Driver-Based Planning',
+  'obj_scenario_modeling': 'Scenario Modeling',
+  'obj_strategic_influence': 'Strategic Influence',
+  'obj_decision_support': 'Decision Support',
+  'obj_operational_excellence': 'Operational Excellence'
+};
+
+// Workflow steps
+const WORKFLOW_STEPS = [
+  { id: 'setup', label: 'Company Setup', completed: true },
+  { id: 'pillar', label: 'Pillar Setup', completed: true },
+  { id: 'assessment', label: 'Assessment', current: true },
+  { id: 'calibration', label: 'Calibration', completed: false },
+  { id: 'report', label: 'Report', completed: false }
+];
+
 export default function AssessmentSidebar({
   currentTheme,
-  themeProgress,
+  allThemesProgress,
   overallProgress,
-  companyName,
-  onBack,
-  onNext,
-  onSubmit,
-  canSubmit,
-  isFirstTheme,
-  isLastTheme,
-  saving
+  companyName
 }) {
-  const config = THEME_CONFIG[currentTheme] || THEME_CONFIG.foundation;
+  // Track which themes are expanded (current theme expanded by default)
+  const [expandedThemes, setExpandedThemes] = useState(new Set([currentTheme]));
+
+  const toggleTheme = (themeId) => {
+    setExpandedThemes(prev => {
+      const next = new Set(prev);
+      if (next.has(themeId)) {
+        next.delete(themeId);
+      } else {
+        next.add(themeId);
+      }
+      return next;
+    });
+  };
 
   return (
-    <div className="w-64 flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {/* Company Context */}
       {companyName && (
         <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
@@ -65,66 +81,117 @@ export default function AssessmentSidebar({
         </div>
       )}
 
-      {/* Current Theme */}
-      <div className={`bg-white border rounded-sm overflow-hidden ${config.borderClass}`}>
-        <div className={`px-3 py-2 border-b ${config.bgClass} ${config.borderClass}`}>
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{config.icon}</span>
-            <h3 className={`text-xs font-bold uppercase tracking-wide ${config.textClass}`}>
-              {config.label}
-            </h3>
-          </div>
+      {/* Workflow Steps */}
+      <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+        <div className="px-3 py-2 border-b border-slate-200 bg-slate-50">
+          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+            Workflow
+          </h3>
         </div>
-        <div className="p-3">
-          {/* Theme Progress Bar */}
-          <div className="mb-3">
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-medium text-slate-600">Progress</span>
-              <span className="font-bold text-slate-700">
-                {themeProgress.answered}/{themeProgress.total}
+        <div className="p-3 space-y-1.5">
+          {WORKFLOW_STEPS.map((step, idx) => (
+            <div
+              key={step.id}
+              className={`flex items-center gap-2 text-xs ${
+                step.current ? 'font-semibold text-slate-800' : ''
+              }`}
+            >
+              {step.completed ? (
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+              ) : step.current ? (
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-blue-500 flex-shrink-0" />
+              ) : (
+                <Circle className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+              )}
+              <span className={step.completed ? 'text-slate-500' : step.current ? 'text-slate-800' : 'text-slate-400'}>
+                {step.label}
               </span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full transition-all duration-300 ${
-                  themeProgress.answered === themeProgress.total
-                    ? 'bg-emerald-500'
-                    : 'bg-blue-500'
-                }`}
-                style={{
-                  width: `${themeProgress.total > 0
-                    ? (themeProgress.answered / themeProgress.total) * 100
-                    : 0}%`
-                }}
-              />
-            </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          {/* Objectives List */}
-          <div className="space-y-1.5">
-            {themeProgress.objectives?.map((obj) => (
-              <div
-                key={obj.id}
-                className="flex items-center gap-2 text-xs"
-              >
-                {obj.answered === obj.total ? (
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                ) : (
-                  <Circle className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+      {/* Themes Progress */}
+      <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+        <div className="px-3 py-2 border-b border-slate-200 bg-slate-50">
+          <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+            Themes Progress
+          </h3>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {Object.entries(THEME_CONFIG).map(([themeId, config]) => {
+            const themeData = allThemesProgress?.[themeId] || { answered: 0, total: 0, objectives: [] };
+            const isExpanded = expandedThemes.has(themeId);
+            const isCurrent = themeId === currentTheme;
+            const isComplete = themeData.answered === themeData.total && themeData.total > 0;
+
+            return (
+              <div key={themeId}>
+                {/* Theme Header */}
+                <button
+                  onClick={() => toggleTheme(themeId)}
+                  className={`w-full px-3 py-2 flex items-center gap-2 hover:bg-slate-50 transition-colors ${
+                    isCurrent ? 'bg-slate-50' : ''
+                  }`}
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                  )}
+
+                  {isComplete ? (
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  ) : isCurrent ? (
+                    <div className="w-3.5 h-3.5 rounded-full border-2 border-blue-500 flex-shrink-0" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+                  )}
+
+                  <span className={`flex-1 text-left text-xs ${
+                    isCurrent ? 'font-semibold text-slate-800' : 'text-slate-600'
+                  }`}>
+                    {config.label}
+                  </span>
+
+                  <span className={`text-[10px] ${
+                    isComplete ? 'text-emerald-600' : 'text-slate-400'
+                  }`}>
+                    {themeData.answered}/{themeData.total}
+                  </span>
+                </button>
+
+                {/* Objectives (expanded) */}
+                {isExpanded && themeData.objectives?.length > 0 && (
+                  <div className="px-3 pb-2 pl-8 space-y-1">
+                    {themeData.objectives.map((obj) => {
+                      const objComplete = obj.answered === obj.total && obj.total > 0;
+                      return (
+                        <div
+                          key={obj.id}
+                          className="flex items-center gap-2 text-[11px]"
+                        >
+                          {objComplete ? (
+                            <CheckCircle className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                          ) : (
+                            <Circle className="w-3 h-3 text-slate-300 flex-shrink-0" />
+                          )}
+                          <span className={`flex-1 truncate ${
+                            objComplete ? 'text-slate-400' : 'text-slate-600'
+                          }`}>
+                            {OBJECTIVE_NAMES[obj.id] || obj.id}
+                          </span>
+                          <span className="text-slate-400 text-[10px]">
+                            {obj.answered}/{obj.total}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
-                <span className={`flex-1 truncate ${
-                  obj.answered === obj.total
-                    ? 'text-slate-500'
-                    : 'text-slate-700 font-medium'
-                }`}>
-                  {obj.name}
-                </span>
-                <span className="text-slate-400 text-[10px]">
-                  {obj.answered}/{obj.total}
-                </span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
 
@@ -142,12 +209,12 @@ export default function AssessmentSidebar({
               {overallProgress.answered}/{overallProgress.total}
             </span>
           </div>
-          <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 overallProgress.answered === overallProgress.total
                   ? 'bg-emerald-500'
-                  : 'bg-slate-600'
+                  : 'bg-blue-500'
               }`}
               style={{
                 width: `${overallProgress.total > 0
@@ -156,68 +223,7 @@ export default function AssessmentSidebar({
               }}
             />
           </div>
-
-          {/* Theme Mini Indicators */}
-          <div className="mt-3 flex gap-1.5">
-            {Object.entries(THEME_CONFIG).map(([key, cfg]) => {
-              const isActive = key === currentTheme;
-              return (
-                <div
-                  key={key}
-                  className={`flex-1 h-1.5 rounded-full ${
-                    isActive ? cfg.bgClass : 'bg-slate-100'
-                  } ${isActive ? 'ring-1 ring-offset-1 ' + cfg.borderClass : ''}`}
-                  title={cfg.label}
-                />
-              );
-            })}
-          </div>
         </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="bg-white border border-slate-300 rounded-sm p-3 space-y-2">
-        {/* Back Button */}
-        {!isFirstTheme && (
-          <button
-            onClick={onBack}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Previous Theme
-          </button>
-        )}
-
-        {/* Next / Submit Button */}
-        {isLastTheme ? (
-          <button
-            onClick={onSubmit}
-            disabled={!canSubmit}
-            className={`w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold rounded transition-colors ${
-              canSubmit
-                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            <Send className="w-4 h-4" />
-            {canSubmit ? 'Submit Assessment' : `${overallProgress.total - overallProgress.answered} remaining`}
-          </button>
-        ) : (
-          <button
-            onClick={onNext}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            Next Theme
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        )}
-
-        {/* Saving indicator */}
-        {saving && (
-          <div className="text-center text-xs text-slate-400">
-            Saving...
-          </div>
-        )}
       </div>
     </div>
   );

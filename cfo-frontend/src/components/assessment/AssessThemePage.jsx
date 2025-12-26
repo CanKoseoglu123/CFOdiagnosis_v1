@@ -16,21 +16,18 @@ const THEME_META = {
   foundation: {
     title: 'Foundation',
     subtitle: 'Budget Discipline & Financial Controls',
-    icon: '🏛️',
     description: 'Establish the baseline capabilities for financial accountability and data integrity.',
     objectives: ['obj_budget_discipline', 'obj_financial_controls', 'obj_performance_monitoring']
   },
   future: {
     title: 'Future',
     subtitle: 'Forecasting & Scenario Planning',
-    icon: '🔮',
     description: 'Build forward-looking capabilities to anticipate and prepare for what\'s ahead.',
     objectives: ['obj_forecasting_agility', 'obj_driver_based_planning', 'obj_scenario_modeling']
   },
   intelligence: {
     title: 'Intelligence',
     subtitle: 'Strategic Influence & Decision Support',
-    icon: '🧠',
     description: 'Transform finance into a strategic partner that drives business decisions.',
     objectives: ['obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence']
   }
@@ -165,25 +162,40 @@ export default function AssessThemePage({ themeId }) {
     return grouped;
   }, [themeQuestions, themeMeta]);
 
-  // Calculate theme progress
-  const themeProgress = useMemo(() => {
-    const answered = themeQuestions.filter(q => answers[q.id] !== undefined).length;
-    const objectives = themeMeta.objectives.map(objId => {
-      const objQuestions = questionsByObjective[objId] || [];
-      const objAnswered = objQuestions.filter(q => answers[q.id] !== undefined).length;
-      return {
-        id: objId,
-        name: OBJECTIVE_NAMES[objId] || objId,
-        answered: objAnswered,
-        total: objQuestions.length
+  // Calculate progress for ALL themes (for sidebar)
+  const allThemesProgress = useMemo(() => {
+    if (!spec?.questions) return {};
+
+    const progress = {};
+    Object.entries(THEME_META).forEach(([tId, tMeta]) => {
+      const tQuestions = spec.questions.filter(q => tMeta.objectives.includes(q.objective_id));
+      const tAnswered = tQuestions.filter(q => answers[q.id] !== undefined).length;
+
+      const objectives = tMeta.objectives.map(objId => {
+        const objQuestions = tQuestions.filter(q => q.objective_id === objId);
+        const objAnswered = objQuestions.filter(q => answers[q.id] !== undefined).length;
+        return {
+          id: objId,
+          name: OBJECTIVE_NAMES[objId] || objId,
+          answered: objAnswered,
+          total: objQuestions.length
+        };
+      });
+
+      progress[tId] = {
+        answered: tAnswered,
+        total: tQuestions.length,
+        objectives
       };
     });
-    return {
-      answered,
-      total: themeQuestions.length,
-      objectives
-    };
-  }, [themeQuestions, answers, themeMeta, questionsByObjective]);
+
+    return progress;
+  }, [spec, answers]);
+
+  // Current theme progress (for local use)
+  const themeProgress = useMemo(() => {
+    return allThemesProgress[themeId] || { answered: 0, total: 0, objectives: [] };
+  }, [allThemesProgress, themeId]);
 
   // Calculate overall progress
   const overallProgress = useMemo(() => {
@@ -308,16 +320,9 @@ export default function AssessThemePage({ themeId }) {
   const sidebarContent = (
     <AssessmentSidebar
       currentTheme={themeId}
-      themeProgress={themeProgress}
+      allThemesProgress={allThemesProgress}
       overallProgress={overallProgress}
       companyName={runContext?.company?.name || runContext?.company_name}
-      onBack={handleBack}
-      onNext={handleNext}
-      onSubmit={handleSubmit}
-      canSubmit={overallProgress.answered === overallProgress.total}
-      isFirstTheme={isFirstTheme}
-      isLastTheme={isLastTheme}
-      saving={saving}
     />
   );
 
@@ -354,7 +359,7 @@ export default function AssessThemePage({ themeId }) {
           onClick={handleNext}
           className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded"
         >
-          Next
+          Next Theme
           <ArrowRight className="w-4 h-4" />
         </button>
       )}
@@ -365,18 +370,13 @@ export default function AssessThemePage({ themeId }) {
     <AppShell sidebarContent={sidebarContent} mobileBottomNav={mobileBottomNav}>
       <div className="min-h-screen bg-slate-50">
         {/* Theme Header */}
-        <div className="bg-slate-800 text-white py-6">
+        <div className="bg-slate-700 text-white py-5">
           <div className="max-w-4xl mx-auto px-4">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-2xl">{themeMeta.icon}</span>
-              <div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Theme {currentIndex + 1} of 3
-                </div>
-                <h1 className="text-xl font-bold">{themeMeta.title}</h1>
-              </div>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+              Theme {currentIndex + 1} of 3
             </div>
-            <p className="text-sm text-slate-300 ml-10">
+            <h1 className="text-xl font-bold mb-1">{themeMeta.title}</h1>
+            <p className="text-sm text-slate-300">
               {themeMeta.description}
             </p>
           </div>
@@ -467,7 +467,7 @@ export default function AssessThemePage({ themeId }) {
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Previous: {THEME_META[prevTheme]?.title}
+                Previous Theme
               </button>
             ) : (
               <div />
@@ -493,7 +493,7 @@ export default function AssessThemePage({ themeId }) {
                 onClick={handleNext}
                 className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                Next: {THEME_META[nextTheme]?.title}
+                Next Theme
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
