@@ -495,7 +495,7 @@
       "expert_action": {
         "title": "Enable Off-Cycle Adjustments",
         "recommendation": "Create a 'light' forecast version that allows key driver updates (e.g., losing a major client) without triggering a full bottom-up cycle.",
-        "type": "process"
+        "type": "structural"
       }
     },
     {
@@ -550,6 +550,7 @@
       "id": "fpa_l3_q52",
       "practice_id": "prac_multi_scenario_management",
       "text": "Can you switch between scenarios in your reporting package with a single toggle/click?",
+      "help": "Easy scenario switching empowers decision-makers to compare outcomes instantly. Without it, scenario analysis becomes a back-office exercise rather than a boardroom tool.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
@@ -734,7 +735,7 @@
       "expert_action": {
         "title": "Conduct ROI Look-Backs",
         "recommendation": "Schedule a review 6-12 months post-investment. Compare actuals vs. the business case. Learn from the variance.",
-        "type": "process"
+        "type": "governance"
       }
     },
     {
@@ -757,6 +758,7 @@
       "id": "fpa_l4_q44",
       "practice_id": "prac_data_visualization",
       "text": "Can Finance instantly drill down from the P&L to transaction-level detail (customer/SKU) without running a new offline manual report?",
+      "help": "Drill-down capability turns static reports into interactive insights. Without it, answering 'why' questions requires manual queries that slow decision-making.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_decision_support",
