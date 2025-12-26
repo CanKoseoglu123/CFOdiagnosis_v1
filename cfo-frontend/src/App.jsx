@@ -11,6 +11,10 @@ import CalibrationPage from './pages/CalibrationPage'
 import CompanySetupPage from './pages/CompanySetupPage'
 import PillarSetupPage from './pages/PillarSetupPage'
 import IntroPage from './IntroPage'
+// VS-30: Theme-based assessment pages
+import AssessFoundation from './pages/AssessFoundation'
+import AssessFuture from './pages/AssessFuture'
+import AssessIntelligence from './pages/AssessIntelligence'
 import { LogOut } from 'lucide-react'
 import { useState } from 'react'
 
@@ -146,6 +150,23 @@ export default function App() {
               <IntroPage />
             </ProtectedRoute>
           } />
+          {/* VS-30: Theme-based assessment routes */}
+          <Route path="/assess/foundation" element={
+            <ProtectedRoute>
+              <AssessFoundation />
+            </ProtectedRoute>
+          } />
+          <Route path="/assess/future" element={
+            <ProtectedRoute>
+              <AssessFuture />
+            </ProtectedRoute>
+          } />
+          <Route path="/assess/intelligence" element={
+            <ProtectedRoute>
+              <AssessIntelligence />
+            </ProtectedRoute>
+          } />
+          {/* Legacy single-page assessment (still functional) */}
           <Route path="/assess" element={
             <ProtectedRoute>
               <DiagnosticInput />

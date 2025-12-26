@@ -201,7 +201,7 @@ export default function IntroPage() {
 
           {/* CTA */}
           <div style={{ textAlign: 'center' }}>
-            <Link to={`/assess?runId=${runId}`}>
+            <Link to={`/assess/foundation?runId=${runId}`}>
               <button style={{
                 backgroundColor: '#4F46E5',
                 color: 'white',
