@@ -1,0 +1,46 @@
+/* ================================
+   PAGE CONTAINER
+   Gartner Enterprise Design System
+   Option A Centering Pattern
+   ================================ */
+
+.page-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;  /* p-8 = 32px */
+  padding-right: 2rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* Default container: 1152px (6xl equivalent) */
+.page-container--default {
+  max-width: 1152px;
+}
+
+/* Wide container: 1280px (7xl equivalent) */
+.page-container--wide {
+  max-width: 1280px;
+}
+
+/* No vertical padding variant */
+.page-container--flush {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .page-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

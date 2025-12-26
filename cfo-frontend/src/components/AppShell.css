@@ -5,7 +5,7 @@
 .app-shell {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #F4F5F7; /* slate-100 - Gartner Enterprise */
 }
 
 /* ================================
@@ -23,7 +23,7 @@
     width: 280px;
     min-width: 280px;
     background-color: #ffffff;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #DFE1E6; /* slate-300 - Gartner sharp border */
     position: fixed;
     top: 0;
     left: 0;
@@ -34,13 +34,13 @@
 
 .sidebar-logo {
   padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #DFE1E6; /* slate-300 */
 }
 
 .logo-text {
   font-size: 18px;
   font-weight: 700;
-  color: #1f2937;
+  color: #172B4D; /* navy - Gartner headline color */
 }
 
 .sidebar-content {
@@ -51,7 +51,7 @@
 
 .sidebar-footer {
   padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #DFE1E6; /* slate-300 */
 }
 
 .sidebar-user {
@@ -68,9 +68,9 @@
   width: 100%;
   padding: 10px 16px;
   background-color: transparent;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  color: #6b7280;
+  border: 1px solid #DFE1E6; /* slate-300 */
+  border-radius: 2px; /* Sharp Gartner corners */
+  color: #6B778C; /* slate-500 */
   font-size: 14px;
   cursor: pointer;
   display: flex;
@@ -80,8 +80,8 @@
 }
 
 .logout-button:hover {
-  background-color: #f9fafb;
-  color: #1f2937;
+  background-color: #F8F9FA; /* slate-50 */
+  color: #172B4D; /* navy */
 }
 
 /* ================================
@@ -169,9 +169,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #DFE1E6; /* slate-300 */
   font-weight: 600;
-  color: #1f2937;
+  color: #172B4D; /* navy */
 }
 
 .mobile-menu-header button {
@@ -193,7 +193,7 @@
 
 .mobile-menu-footer {
   padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #DFE1E6; /* slate-300 */
 }
 
 /* ================================
@@ -221,7 +221,7 @@
   justify-content: space-around;
   padding: 12px 16px;
   background-color: #ffffff;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #DFE1E6; /* slate-300 */
   position: sticky;
   bottom: 0;
   z-index: 100;
@@ -247,9 +247,9 @@
 }
 
 .mobile-nav-button.primary {
-  background-color: #4f46e5;
+  background-color: #0052CC; /* primary - Gartner Blue */
   color: white;
-  border-radius: 6px;
+  border-radius: 2px; /* Sharp corners */
   padding: 10px 24px;
   font-weight: 600;
 }
@@ -278,16 +278,16 @@
 
 .sidebar-progress-bar {
   height: 8px;
-  background-color: #e5e7eb;
-  border-radius: 4px;
+  background-color: #EBECF0; /* slate-200 */
+  border-radius: 2px; /* Sharp corners */
   overflow: hidden;
   margin-bottom: 8px;
 }
 
 .sidebar-progress-fill {
   height: 100%;
-  background-color: #4f46e5;
-  border-radius: 4px;
+  background-color: #0052CC; /* primary - Gartner Blue */
+  border-radius: 2px; /* Sharp corners */
   transition: width 0.3s ease;
 }
 
@@ -368,7 +368,7 @@
 /* Divider */
 .sidebar-divider {
   height: 1px;
-  background-color: #e5e7eb;
+  background-color: #DFE1E6; /* slate-300 */
   margin: 16px 0;
 }
 
@@ -376,10 +376,10 @@
 .sidebar-action-button {
   width: 100%;
   padding: 12px 16px;
-  background-color: #4f46e5;
+  background-color: #0052CC; /* primary - Gartner Blue */
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 2px; /* Sharp corners */
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -391,7 +391,7 @@
 }
 
 .sidebar-action-button:hover {
-  background-color: #4338ca;
+  background-color: #0747A6; /* primary-700 */
 }
 
 .sidebar-action-button:disabled {
@@ -401,12 +401,12 @@
 
 .sidebar-action-button.secondary {
   background-color: transparent;
-  color: #374151;
-  border: 1px solid #e5e7eb;
+  color: #42526E; /* slate */
+  border: 1px solid #DFE1E6; /* slate-300 */
 }
 
 .sidebar-action-button.secondary:hover {
-  background-color: #f9fafb;
+  background-color: #F8F9FA; /* slate-50 */
 }
 
 /* ================================
