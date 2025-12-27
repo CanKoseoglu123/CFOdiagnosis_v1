@@ -1,7 +1,7 @@
 // src/components/report/ObjectivesPracticesOverview.jsx
 // VS-27: Objectives & Practices Overview Grid
+// VS-35: Added branching connector lines from objectives to practices
 // Shows objectives as columns with practices stacked vertically
-// Compact design to fit on one screen
 
 import React from 'react';
 
@@ -115,11 +115,38 @@ function ObjectiveColumn({ objective, practices, score }) {
         </span>
       </div>
 
-      {/* Practices stack */}
-      <div className="flex flex-col gap-0.5 p-1 flex-1">
-        {practices.map(practice => (
-          <PracticeBox key={practice.id} practice={practice} />
-        ))}
+      {/* VS-35: Practices stack with branching connector lines */}
+      <div className="relative p-1.5 pt-3 flex-1">
+        {/* Vertical connector line from objective to practices */}
+        {practices.length > 0 && (
+          <div
+            className="absolute left-3 bg-slate-300"
+            style={{
+              width: '1px',
+              top: '0',
+              height: 'calc(100% - 24px)'
+            }}
+          />
+        )}
+
+        {/* Practices with horizontal branch connectors */}
+        <div className="flex flex-col gap-1 pl-4">
+          {practices.map((practice) => (
+            <div key={practice.id} className="relative flex items-center">
+              {/* Horizontal branch connector to left-middle of practice */}
+              <div
+                className="absolute bg-slate-300"
+                style={{
+                  left: '-12px',
+                  width: '10px',
+                  height: '1px',
+                  top: '50%'
+                }}
+              />
+              <PracticeBox practice={practice} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
