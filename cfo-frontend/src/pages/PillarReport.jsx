@@ -19,7 +19,6 @@ import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
-import ExecutiveSpine from '../components/report/ExecutiveSpine';
 import FinalReportTab from '../components/report/FinalReportTab';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -451,18 +450,7 @@ export default function PillarReport() {
           </div>
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
-            <div className="flex gap-6">
-              {/* Executive Spine - fixed-width narrative anchor */}
-              <ExecutiveSpine
-                actualLevel={actualLevel}
-                levelName={levelName}
-                executionScore={executionScore}
-                criticalCount={criticalRisks.length}
-                cappedBy={cappedBy}
-              />
-
-              {/* Main Overview Content */}
-              <div className="flex-1 space-y-4">
+            <div className="space-y-4">
                 {/* VS22-v3: Executive Summary (3-column cards) */}
                 <ExecutiveSummary
                   execution_score={executionScore}
@@ -488,7 +476,6 @@ export default function PillarReport() {
                   <CriticalRisksCard risks={criticalRisks} />
                   <HighValueCard initiatives={initiatives} />
                 </div>
-              </div>
             </div>
           )}
 
