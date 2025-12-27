@@ -305,32 +305,11 @@ export default function FinalReportTab({
     <div className="bg-white print:bg-white executive-report-landscape">
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* PAGE 1 — CURRENT STATE → TARGET STATE */}
-      {/* Landscape aspect ratio container: 11:8.5 ≈ 1.29 */}
+      {/* Note: Uses parent ChapterHeader for document identity (no competing header) */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       <div className="print:page-break-after-always min-h-[600px]">
-        {/* Header Band */}
-        <div className="bg-slate-800 text-white px-6 py-4">
-          <div className="text-xs font-medium tracking-widest text-slate-400 uppercase mb-1">
-            Finance Diagnostic Report — FP&A
-          </div>
-          <div className="flex justify-between items-end">
-            <div>
-              <div className="text-xl font-bold">
-                {companyName || 'Company Name'}
-              </div>
-              {industry && (
-                <div className="text-sm text-slate-300">{industry}</div>
-              )}
-            </div>
-            <div className="text-right text-xs text-slate-400">
-              <div>Run ID: {runId?.slice(0, 8)}...</div>
-              <div>{runDate}</div>
-            </div>
-          </div>
-        </div>
-
         {/* Main Content */}
-        <div className="px-6 py-5 space-y-5">
+        <div className="space-y-5">
           {/* ─────────────────────────────────────────────────────────────────── */}
           {/* STATE COMPARISON BLOCK */}
           {/* ─────────────────────────────────────────────────────────────────── */}
@@ -553,29 +532,14 @@ export default function FinalReportTab({
       {/* PAGE 2 — COMMITMENT REGISTER */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       <div className="print:page-break-before-always">
-        {/* Header Band (same as Page 1) */}
-        <div className="bg-slate-800 text-white px-6 py-4">
-          <div className="text-xs font-medium tracking-widest text-slate-400 uppercase mb-1">
-            Finance Diagnostic Report — FP&A
-          </div>
-          <div className="flex justify-between items-end">
-            <div>
-              <div className="text-xl font-bold">
-                {companyName || 'Company Name'} — Commitment Register
-              </div>
-              {industry && (
-                <div className="text-sm text-slate-300">{industry}</div>
-              )}
-            </div>
-            <div className="text-right text-xs text-slate-400">
-              <div>Page 2 of 2</div>
-              <div>{runDate}</div>
-            </div>
-          </div>
+        {/* Page 2 Section Header (inline, not competing with parent ChapterHeader) */}
+        <div className="border-b border-slate-200 pb-3 mb-4">
+          <div className="text-lg font-bold text-slate-800">Commitment Register</div>
+          <div className="text-xs text-slate-500">Page 2 of 2 · {runDate}</div>
         </div>
 
         {/* Register Content */}
-        <div className="px-6 py-5 space-y-4">
+        <div className="space-y-4">
           {commitmentRegister.length > 0 ? (
             <>
               {/* Commitment Table */}
