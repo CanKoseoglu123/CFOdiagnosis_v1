@@ -144,7 +144,7 @@ export default function IntroPage() {
         {/* CTA */}
         <div className="text-center pt-4">
           <Link to={`/assess/foundation?runId=${runId}`}>
-            <button className="bg-primary text-white px-8 py-3 text-sm font-semibold rounded-sm hover:bg-primary-hover transition-colors">
+            <button className="bg-primary text-white px-8 py-3 text-sm font-semibold hover:bg-primary-hover transition-colors">
               Begin Assessment
             </button>
           </Link>
