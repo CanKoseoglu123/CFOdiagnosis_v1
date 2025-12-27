@@ -1,24 +1,26 @@
 // src/components/report/SummaryTable.jsx
 // VS-22 v2: Theme as header rows, score bars (not dots)
+// VS-32: Replaced color badges with importance dots
 
 import React from 'react';
 
-const IMPORTANCE_LABELS = { 1: 'Min', 2: 'Low', 3: 'Med', 4: 'High', 5: 'Crit' };
 const THEMES = ['Foundation', 'Future', 'Intelligence'];
 
-function ImportanceBadge({ level, locked }) {
-  const colors = {
-    5: 'bg-red-100 text-red-700',
-    4: 'bg-orange-100 text-orange-700',
-    3: 'bg-slate-100 text-slate-600',
-    2: 'bg-slate-100 text-slate-500',
-    1: 'bg-slate-50 text-slate-400'
-  };
-
+// Importance dots visualization (●●●○○)
+function ImportanceDots({ level, locked }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${colors[level]}`}>
-      {locked && '🔒 '}
-      {IMPORTANCE_LABELS[level]}
+    <span className="inline-flex items-center gap-1">
+      {locked && <span className="text-xs mr-1">🔒</span>}
+      <span className="inline-flex gap-0.5">
+        {[1, 2, 3, 4, 5].map(i => (
+          <span
+            key={i}
+            className={`w-2 h-2 rounded-full ${
+              i <= level ? 'bg-slate-700' : 'bg-slate-200'
+            }`}
+          />
+        ))}
+      </span>
     </span>
   );
 }
@@ -78,7 +80,7 @@ export default function SummaryTable({ objectives }) {
                         {obj.objective}
                       </td>
                       <td className="px-4 py-2 text-center w-24">
-                        <ImportanceBadge level={obj.importance || 3} locked={obj.locked} />
+                        <ImportanceDots level={obj.importance || 3} locked={obj.locked} />
                       </td>
                       <td className="px-4 py-2 w-40">
                         <ScoreBar score={obj.score} />

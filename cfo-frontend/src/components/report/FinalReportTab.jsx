@@ -62,6 +62,44 @@ function StatusBadge({ status }) {
   );
 }
 
+// Timeline Journey visualization component
+// Shows: Today → 6m → 12m → 24m with progressive bars
+function TimelineJourney({ today, at6m, at12m, at24m }) {
+  // Each milestone bar shows the delta from previous milestone
+  const milestones = [
+    { label: 'Today', value: today, color: 'bg-slate-500' },
+    { label: '6m', value: at6m, color: 'bg-blue-400' },
+    { label: '12m', value: at12m, color: 'bg-blue-500' },
+    { label: '24m', value: at24m, color: 'bg-blue-600' }
+  ];
+
+  return (
+    <div className="flex items-center gap-1">
+      {milestones.map((m, idx) => (
+        <React.Fragment key={m.label}>
+          {/* Score indicator */}
+          <div className="flex flex-col items-center w-11">
+            <div className={`text-xs font-semibold ${m.value >= 80 ? 'text-emerald-600' : m.value < 40 ? 'text-red-600' : 'text-slate-700'}`}>
+              {m.value}%
+            </div>
+            <div className="w-full h-1.5 bg-slate-200 rounded overflow-hidden">
+              <div
+                className={`h-full ${m.color} transition-all`}
+                style={{ width: `${m.value}%` }}
+              />
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">{m.label}</div>
+          </div>
+          {/* Arrow connector */}
+          {idx < milestones.length - 1 && (
+            <div className="text-slate-300 text-xs">→</div>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 export default function FinalReportTab({
   runId,
   report,
@@ -86,7 +124,7 @@ export default function FinalReportTab({
   const criticalRisks = report?.critical_risks || [];
   const failedCriticalCount = criticalRisks.length;
 
-  // Build objective data with scores and status
+  // Build objective data with milestone scores (Today → 6m → 12m → 24m)
   const objectiveData = useMemo(() => {
     const calibration = report?.calibration?.importance_map || {};
 
@@ -101,21 +139,30 @@ export default function FinalReportTab({
       if (score >= 80) status = 'strength';
       else if (score < 40 || criticalRisks.some(r => r.objective_id === objId)) status = 'critical';
 
-      // Calculate target (based on committed actions)
+      // Calculate milestone scores based on committed actions by timeline
       const objQuestions = questions.filter(q => q.objective_id === objId);
-      const committedActions = objQuestions.filter(q => actionPlan[q.id]).length;
-      const additionalScore = objQuestions.length > 0
-        ? Math.round((committedActions / objQuestions.length) * 100)
-        : 0;
-      const targetScore = Math.min(100, score + additionalScore);
+      const totalQuestions = objQuestions.length || 1;
+
+      // Count actions by timeline for this objective
+      const actions6m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '6m').length;
+      const actions12m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '12m').length;
+      const actions24m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '24m').length;
+
+      // Calculate cumulative scores at each milestone
+      const scorePerAction = Math.round(100 / totalQuestions);
+      const score6m = Math.min(100, score + (actions6m * scorePerAction));
+      const score12m = Math.min(100, score6m + (actions12m * scorePerAction));
+      const score24m = Math.min(100, score12m + (actions24m * scorePerAction));
 
       return {
         id: objId,
         name: obj.objective_name || obj.title || obj.name || objId,
         theme,
         importance,
-        currentScore: score,
-        targetScore,
+        today: score,
+        at6m: score6m,
+        at12m: score12m,
+        at24m: score24m,
         status
       };
     });
@@ -191,7 +238,7 @@ export default function FinalReportTab({
   }, [currentLevel, failedCriticalCount]);
 
   // Strengths (objectives >= 80%)
-  const strengths = objectiveData.filter(o => o.currentScore >= 80).slice(0, 3);
+  const strengths = objectiveData.filter(o => o.today >= 80).slice(0, 3);
 
   // Critical fixes (failed criticals)
   const criticalFixes = criticalRisks.slice(0, 5).map(r => ({
@@ -205,7 +252,8 @@ export default function FinalReportTab({
       .filter(o => o.status !== 'strength')
       .map(o => ({
         ...o,
-        upliftScore: o.importance * (o.targetScore - o.currentScore)
+        uplift: o.at24m - o.today,
+        upliftScore: o.importance * (o.at24m - o.today)
       }))
       .sort((a, b) => b.upliftScore - a.upliftScore)
       .slice(0, 3);
@@ -254,11 +302,12 @@ export default function FinalReportTab({
   });
 
   return (
-    <div className="bg-white print:bg-white">
+    <div className="bg-white print:bg-white executive-report-landscape">
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* PAGE 1 — CURRENT STATE → TARGET STATE */}
+      {/* Landscape aspect ratio container: 11:8.5 ≈ 1.29 */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="print:page-break-after-always">
+      <div className="print:page-break-after-always min-h-[600px]">
         {/* Header Band */}
         <div className="bg-slate-800 text-white px-6 py-4">
           <div className="text-xs font-medium tracking-widest text-slate-400 uppercase mb-1">
@@ -374,17 +423,18 @@ export default function FinalReportTab({
           </div>
 
           {/* ─────────────────────────────────────────────────────────────────── */}
-          {/* OBJECTIVE TABLE */}
+          {/* OBJECTIVE TABLE with Timeline Journey */}
           {/* ─────────────────────────────────────────────────────────────────── */}
           <div className="border border-slate-300">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-100 border-b border-slate-300">
                   <th className="text-left px-3 py-2 font-semibold text-slate-700">Objective</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-24">Importance</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Current</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Target</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-24">Status</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Priority</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700" style={{ width: '260px' }}>
+                    Maturity Journey
+                  </th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -392,7 +442,7 @@ export default function FinalReportTab({
                   <React.Fragment key={theme}>
                     {/* Theme Header */}
                     <tr className="bg-slate-50">
-                      <td colSpan={5} className="px-3 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                      <td colSpan={4} className="px-3 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
                         {theme}
                       </td>
                     </tr>
@@ -406,8 +456,14 @@ export default function FinalReportTab({
                         <td className="px-3 py-2 text-center">
                           <ImportanceDots level={obj.importance} />
                         </td>
-                        <td className="px-3 py-2 text-center font-medium text-slate-700">{obj.currentScore}%</td>
-                        <td className="px-3 py-2 text-center font-medium text-slate-700">{obj.targetScore}%</td>
+                        <td className="px-3 py-2">
+                          <TimelineJourney
+                            today={obj.today}
+                            at6m={obj.at6m}
+                            at12m={obj.at12m}
+                            at24m={obj.at24m}
+                          />
+                        </td>
                         <td className="px-3 py-2 text-center">
                           <StatusBadge status={obj.status} />
                         </td>
@@ -431,7 +487,7 @@ export default function FinalReportTab({
               {strengths.length > 0 ? (
                 <ul className="text-xs text-slate-600 space-y-1">
                   {strengths.map(s => (
-                    <li key={s.id}>• {s.name} ({s.currentScore}%)</li>
+                    <li key={s.id}>• {s.name} ({s.today}%)</li>
                   ))}
                 </ul>
               ) : (
@@ -463,7 +519,7 @@ export default function FinalReportTab({
               {topOpportunities.length > 0 ? (
                 <ul className="text-xs text-slate-600 space-y-1">
                   {topOpportunities.map(o => (
-                    <li key={o.id}>• {o.name} (+{o.targetScore - o.currentScore}%)</li>
+                    <li key={o.id}>• {o.name} (+{o.uplift}%)</li>
                   ))}
                 </ul>
               ) : (
@@ -615,18 +671,39 @@ export default function FinalReportTab({
         </div>
       </div>
 
-      {/* Print Styles */}
+      {/* Print Styles + Landscape Visual Hints */}
       <style>{`
+        /* Landscape visual hint for on-screen viewing */
+        .executive-report-landscape {
+          max-width: 1200px;
+          margin: 0 auto;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Print: Force landscape orientation */
         @media print {
+          @page {
+            size: landscape;
+            margin: 0.4in;
+          }
+
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          .executive-report-landscape {
+            max-width: none;
+            border: none;
+            box-shadow: none;
+          }
+
           .print\\:page-break-after-always {
             page-break-after: always;
           }
           .print\\:page-break-before-always {
             page-break-before: always;
-          }
-          @page {
-            size: landscape;
-            margin: 0.5in;
           }
         }
       `}</style>
