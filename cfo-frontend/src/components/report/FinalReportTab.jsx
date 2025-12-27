@@ -106,6 +106,7 @@ export default function FinalReportTab({
   actionPlan = {},
   objectives = [],
   questions = [],
+  practices = [],
   initiatives = [],
   companyName,
   industry
@@ -124,6 +125,17 @@ export default function FinalReportTab({
   const criticalRisks = report?.critical_risks || [];
   const failedCriticalCount = criticalRisks.length;
 
+  // Build practice_id → objective_id map (questions have practice_id, not objective_id)
+  const practiceToObjective = useMemo(() => {
+    const map = {};
+    practices.forEach(p => {
+      if (p.id && p.objective_id) {
+        map[p.id] = p.objective_id;
+      }
+    });
+    return map;
+  }, [practices]);
+
   // Build objective data with milestone scores (Today → 6m → 12m → 24m)
   const objectiveData = useMemo(() => {
     const calibration = report?.calibration?.importance_map || {};
@@ -140,20 +152,15 @@ export default function FinalReportTab({
       if (score >= 80) status = 'strength';
       else if (score < 40 || criticalRisks.some(r => r.objective_id === objId)) status = 'critical';
 
-      // Find questions for this objective - try multiple approaches
-      // 1. Direct objective_id match
-      // 2. Fallback: match via objective name patterns in question id
-      let objQuestions = questions.filter(q => q.objective_id === objId);
-
-      // If no direct matches, try pattern matching on question IDs
-      if (objQuestions.length === 0) {
-        // Extract objective pattern from objId (e.g., 'obj_budget_discipline' -> 'budget')
-        const objPattern = objId.replace('obj_', '').replace('fpa_', '').split('_')[0];
-        objQuestions = questions.filter(q =>
-          q.id?.toLowerCase().includes(objPattern) ||
-          q.practice_id?.toLowerCase().includes(objPattern)
-        );
-      }
+      // Find questions for this objective via practice_id → objective_id mapping
+      // Questions have practice_id, practices have objective_id
+      const objQuestions = questions.filter(q => {
+        // Direct match if question has objective_id
+        if (q.objective_id === objId) return true;
+        // Map via practice_id → objective_id
+        if (q.practice_id && practiceToObjective[q.practice_id] === objId) return true;
+        return false;
+      });
 
       const totalQuestions = obj.questions_total || objQuestions.length || 6; // Use obj data if available
 
@@ -202,7 +209,7 @@ export default function FinalReportTab({
         actionCount: totalActions
       };
     });
-  }, [report, actionPlan, questions, criticalRisks]);
+  }, [report, actionPlan, questions, criticalRisks, practiceToObjective]);
 
   // Group objectives by theme
   const objectivesByTheme = useMemo(() => {
@@ -251,13 +258,15 @@ export default function FinalReportTab({
     const objectivesWithActions = new Set();
     Object.keys(actionPlan).forEach(qId => {
       const q = questions.find(q => q.id === qId);
-      if (q?.objective_id) objectivesWithActions.add(q.objective_id);
+      // Get objective_id via practice_id mapping
+      const objId = q?.objective_id || (q?.practice_id && practiceToObjective[q.practice_id]);
+      if (objId) objectivesWithActions.add(objId);
     });
     const coverage = objectivesWithActions.size / (objectives.length || 1);
     if (coverage >= 0.7) return 'High';
     if (coverage >= 0.4) return 'Medium';
     return 'Low';
-  }, [actionPlan, questions, objectives]);
+  }, [actionPlan, questions, objectives, practiceToObjective]);
 
   // One-line diagnosis
   const diagnosis = useMemo(() => {
@@ -303,7 +312,10 @@ export default function FinalReportTab({
       const question = questions.find(q => q.id === questionId);
       if (!question) return;
 
-      const objId = question.objective_id;
+      // Get objective_id via practice_id mapping (questions have practice_id, not objective_id)
+      const objId = question.objective_id || practiceToObjective[question.practice_id];
+      if (!objId) return; // Skip if we can't determine the objective
+
       const objective = objectives.find(o => o.id === objId);
       const objName = objective?.title || objective?.name || objId;
 
@@ -325,7 +337,7 @@ export default function FinalReportTab({
     });
 
     return Object.values(byObjective);
-  }, [actionPlan, questions, objectives]);
+  }, [actionPlan, questions, objectives, practiceToObjective]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER
