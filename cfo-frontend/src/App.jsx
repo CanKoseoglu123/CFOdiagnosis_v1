@@ -112,11 +112,11 @@ function Home() {
           <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>Finance Diagnostic Platform</h1>
           <p style={{ color: '#64748B', marginBottom: 40 }}>Assess your finance maturity and get actionable recommendations</p>
           {isAuthenticated ? (
-            <Link to="/assess" style={{ background: '#4F46E5', color: '#FFF', padding: '16px 32px', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 16 }}>
+            <Link to="/assess" style={{ background: '#4F46E5', color: '#FFF', padding: '14px 28px', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
               Start Assessment
             </Link>
           ) : (
-            <Link to="/login" style={{ background: '#4F46E5', color: '#FFF', padding: '16px 32px', borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: 16 }}>
+            <Link to="/login" style={{ background: '#4F46E5', color: '#FFF', padding: '14px 28px', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
               Sign In to Start
             </Link>
           )}

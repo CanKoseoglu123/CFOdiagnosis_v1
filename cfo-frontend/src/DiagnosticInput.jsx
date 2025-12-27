@@ -82,7 +82,6 @@ const ObjectiveSection = ({ objective, questions, answers, onAnswer, helpVisible
           padding: "12px 16px",
           background: "#FFF",
           border: `1px solid ${lc.accent}`,
-          borderRadius: 10,
           cursor: "pointer",
           marginBottom: expanded ? 12 : 0,
         }}
@@ -205,7 +204,7 @@ export default function DiagnosticInput() {
 
   const [answers, setAnswers] = useState({});
   const [helpVisible, setHelpVisible] = useState({});
-  const [status, setStatus] = useState(urlRunId ? "answering" : "idle");
+  const [status, setStatus] = useState(urlRunId ? "answering" : "creating");
   const [error, setError] = useState(null);
 
   // Get auth token from Supabase session
@@ -217,6 +216,33 @@ export default function DiagnosticInput() {
       ...(token && { "Authorization": `Bearer ${token}` }),
     };
   };
+
+  // Auto-create run if no runId provided (skip idle state)
+  useEffect(() => {
+    if (!urlRunId && status === "creating") {
+      const autoCreateRun = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
+          const headers = {
+            "Content-Type": "application/json",
+            ...(token && { "Authorization": `Bearer ${token}` }),
+          };
+          const response = await fetch(`${API_BASE_URL}/diagnostic-runs`, {
+            method: "POST",
+            headers,
+          });
+          if (!response.ok) throw new Error("Failed to create diagnostic run");
+          const data = await response.json();
+          navigate(`/run/${data.id}/setup/company`);
+        } catch (err) {
+          setError(err.message);
+          setStatus("idle");
+        }
+      };
+      autoCreateRun();
+    }
+  }, [urlRunId, status, navigate]);
 
   // VS18: Verify run has completed setup if runId provided
   useEffect(() => {
@@ -531,7 +557,7 @@ export default function DiagnosticInput() {
 
         <main style={{ maxWidth: 900, margin: "0 auto", padding: "32px 20px" }}>
           {error && (
-            <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", padding: 16, marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
               <AlertTriangle size={20} color="#DC2626" />
               <div style={{ color: "#991B1B", fontSize: 14 }}>{error}</div>
               <button onClick={() => setError(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#991B1B", cursor: "pointer", fontSize: 18 }}>×</button>
@@ -571,7 +597,7 @@ export default function DiagnosticInput() {
                   })}
                 </div>
               )}
-              <button onClick={createRun} style={{ background: "#4F46E5", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10 }}>
+              <button onClick={createRun} style={{ background: "#4F46E5", color: "#FFF", border: "none", padding: "14px 28px", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
                 <Play size={20} /> Start Assessment
               </button>
             </div>
@@ -598,7 +624,7 @@ export default function DiagnosticInput() {
               {groupedByTheme ? renderThemeView() : renderLegacyView()}
 
               <div style={{ marginTop: 32, textAlign: "center" }}>
-                <button onClick={submitDiagnostic} disabled={!allAnswered} style={{ background: allAnswered ? "#4F46E5" : "#D1D5DB", color: "#FFF", border: "none", borderRadius: 10, padding: "16px 32px", fontSize: 16, fontWeight: 600, cursor: allAnswered ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 10 }}>
+                <button onClick={submitDiagnostic} disabled={!allAnswered} style={{ background: allAnswered ? "#4F46E5" : "#D1D5DB", color: "#FFF", border: "none", padding: "14px 28px", fontSize: 14, fontWeight: 600, cursor: allAnswered ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 8 }}>
                   <Send size={20} /> {allAnswered ? "Submit & View Results" : `Answer ${totalQuestions - answeredCount} more`}
                 </button>
               </div>
