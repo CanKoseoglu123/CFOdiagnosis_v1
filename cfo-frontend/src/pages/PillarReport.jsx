@@ -20,6 +20,7 @@ import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
 import ExecutiveSpine from '../components/report/ExecutiveSpine';
+import FinalReportTab from '../components/report/FinalReportTab';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -52,6 +53,7 @@ export default function PillarReport() {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
+  const [actionPlan, setActionPlan] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -60,6 +62,7 @@ export default function PillarReport() {
     if (runId) {
       fetchReport();
       fetchSpec();
+      fetchActionPlan();
     }
   }, [runId]);
 
@@ -122,6 +125,35 @@ export default function PillarReport() {
       }
     } catch (err) {
       console.error('Failed to fetch spec:', err);
+    }
+  }
+
+  async function fetchActionPlan() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        }
+      });
+
+      if (res.ok) {
+        const items = await res.json();
+        // Convert array to map keyed by question_id
+        const planMap = {};
+        items.forEach(item => {
+          planMap[item.question_id] = {
+            timeline: item.timeline,
+            assigned_owner: item.assigned_owner,
+            status: item.status
+          };
+        });
+        setActionPlan(planMap);
+      }
+    } catch (err) {
+      console.error('Failed to fetch action plan:', err);
     }
   }
 
@@ -406,6 +438,16 @@ export default function PillarReport() {
             >
               Action Planning
             </button>
+            <button
+              onClick={() => setActiveTab('executive')}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === 'executive'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Executive Report
+            </button>
           </div>
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
@@ -475,6 +517,26 @@ export default function PillarReport() {
             ) : (
               <div className="flex items-center justify-center py-12">
                 <div className="text-slate-500">Loading action planning...</div>
+              </div>
+            )
+          )}
+
+          {/* EXECUTIVE REPORT TAB (VS-32) - Print-first 2-page memo */}
+          {activeTab === 'executive' && (
+            spec ? (
+              <FinalReportTab
+                runId={runId}
+                report={report}
+                actionPlan={actionPlan}
+                objectives={spec.objectives || []}
+                questions={spec.questions || []}
+                initiatives={spec.initiatives || []}
+                companyName={companyName}
+                industry={industry}
+              />
+            ) : (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-slate-500">Loading executive report...</div>
               </div>
             )
           )}
