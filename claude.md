@@ -63,6 +63,9 @@ CFOdiagnosis_v1/
 │   │   ├── components/
 │   │   │   ├── AppShell.jsx      # Responsive layout wrapper
 │   │   │   ├── WorkflowSidebar.jsx # Global sidebar (VS-29)
+│   │   │   ├── ChapterHeader.jsx # Unified dark header (VS-30)
+│   │   │   ├── EnterpriseCanvas.jsx # Max-width content wrapper (VS-30)
+│   │   │   ├── ExecutiveSpine.jsx # Report header component (VS-30)
 │   │   │   └── report/           # Report components
 │   │   │       ├── ActionPlanTab.jsx   # Action Planning (VS-28)
 │   │   │       ├── SimulatorHUD.jsx    # Score projections (VS-28)
@@ -143,9 +146,13 @@ CFOdiagnosis_v1/
 | Path | Component | Description |
 |------|-----------|-------------|
 | `/` | Home | Landing page |
-| `/run/:runId/setup` | SetupPage | Company context intake |
-| `/run/:runId/intro` | IntroPage | Methodology explanation |
-| `/assess` | DiagnosticInput | Questionnaire |
+| `/assess` | DiagnosticInput | Auto-creates run, redirects to setup |
+| `/run/:runId/setup/company` | CompanySetupPage | Company context intake |
+| `/run/:runId/setup/pillar` | PillarSetupPage | FP&A context intake |
+| `/run/:runId/intro` | IntroPage | Methodology explanation (VS-31) |
+| `/assess/foundation` | AssessFoundation | Theme-based questions (VS-30) |
+| `/assess/future` | AssessFuture | Theme-based questions (VS-30) |
+| `/assess/intelligence` | AssessIntelligence | Theme-based questions (VS-30) |
 | `/run/:runId/calibrate` | CalibrationPage | Objective importance (VS21) |
 | `/report/:runId` | PillarReport | Main report (V2.8.0) |
 
@@ -153,11 +160,14 @@ CFOdiagnosis_v1/
 
 ## Assessment Flow
 
-1. Create run → `/run/:id/setup`
-2. Enter company context → `/run/:id/intro`
-3. Answer questions → `/assess?runId=:id`
-4. Complete + Score → `/run/:id/calibrate`
-5. Set importance levels → `/report/:runId`
+1. Click "Start Assessment" → `/assess` (auto-creates run)
+2. Redirects to → `/run/:id/setup/company`
+3. Enter company context → `/run/:id/setup/pillar`
+4. Enter FP&A context → `/run/:id/intro`
+5. Read methodology → `/assess/foundation?runId=:id`
+6. Answer questions (3 themes) → Complete + Score
+7. Calibrate importance → `/run/:id/calibrate`
+8. View report → `/report/:runId`
 
 ---
 
@@ -269,6 +279,35 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
 | VS-28: Action Planning | War room for gap selection, timelines, projections |
 | VS-29: Global Sidebar | AppShell + WorkflowSidebar layout pattern |
+| VS-30: Enterprise Layout | ChapterHeader, EnterpriseCanvas, ExecutiveSpine components |
+| VS-31: Page Normalization | Consulting-document paradigm, no rounded buttons |
+
+---
+
+## UI Design Principles (VS-30/31)
+
+### Consulting-Document Paradigm
+Pages read like chapters in a consulting report. No playful UI elements.
+
+### Key Components
+| Component | Purpose |
+|-----------|---------|
+| `ChapterHeader` | Dark slate header with label, title, description |
+| `EnterpriseCanvas` | Max-width (1100px) centered content wrapper |
+| `ExecutiveSpine` | Report header with company name, score, maturity level |
+
+### Styling Conventions
+- **No rounded buttons** — Enterprise style, sharp corners
+- **Neutral colors** — Slate palette, no theme color pills
+- **No sidebar on intro pages** — Distraction-free single column
+- **Auto-redirect** — `/assess` creates run and redirects immediately
+
+### Tailwind Colors (tailwind.config.js)
+```js
+primary: '#1e3a5f'      // Dark blue
+primary-hover: '#2d4a6f'
+accent: '#f59e0b'       // Amber highlights
+```
 
 ---
 
