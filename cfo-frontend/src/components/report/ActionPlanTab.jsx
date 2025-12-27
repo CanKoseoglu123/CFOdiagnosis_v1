@@ -25,9 +25,31 @@ export default function ActionPlanTab({
   questions = [],
   initiatives = [],
   objectives = [],
+  practices = [],
   companyName,
   industry
 }) {
+  // Build practice → objective map for v2.9.0 schema
+  // Questions have practice_id, practices have objective_id
+  const practiceToObjective = useMemo(() => {
+    const map = {};
+    practices.forEach(p => {
+      if (p.id && p.objective_id) {
+        map[p.id] = p.objective_id;
+      }
+    });
+    return map;
+  }, [practices]);
+
+  // Helper to get objective_id for a question (handles both old and new schema)
+  const getQuestionObjectiveId = useCallback((q) => {
+    // v2.9.0: question -> practice -> objective
+    if (q.practice_id && practiceToObjective[q.practice_id]) {
+      return practiceToObjective[q.practice_id];
+    }
+    // Legacy: direct objective_id on question
+    return q.objective_id;
+  }, [practiceToObjective]);
   // View mode: 'actions' or 'initiatives'
   const [viewMode, setViewMode] = useState('actions');
 
@@ -172,7 +194,8 @@ export default function ActionPlanTab({
     const projectedByObj = {};
 
     objectives.forEach(obj => {
-      const objQuestions = questions.filter(q => q.objective_id === obj.id);
+      // v2.9.0: use helper to resolve practice_id -> objective_id
+      const objQuestions = questions.filter(q => getQuestionObjectiveId(q) === obj.id);
       if (objQuestions.length === 0) {
         currentByObj[obj.id] = 0;
         projectedByObj[obj.id] = 0;
@@ -191,7 +214,7 @@ export default function ActionPlanTab({
     });
 
     return { currentScores: currentByObj, projectedScores: projectedByObj };
-  }, [questions, objectives, report, actionPlan]);
+  }, [questions, objectives, report, actionPlan, getQuestionObjectiveId]);
 
   // Calculate projected scores by timeline bucket
   const projectedByTimeline = useMemo(() => {
@@ -207,7 +230,8 @@ export default function ActionPlanTab({
     };
 
     objectives.forEach(obj => {
-      const objQuestions = questions.filter(q => q.objective_id === obj.id);
+      // v2.9.0: use helper to resolve practice_id -> objective_id
+      const objQuestions = questions.filter(q => getQuestionObjectiveId(q) === obj.id);
       if (objQuestions.length === 0) {
         result.current[obj.id] = 0;
         result['6m'][obj.id] = 0;
@@ -242,7 +266,7 @@ export default function ActionPlanTab({
     });
 
     return result;
-  }, [questions, objectives, report, actionPlan]);
+  }, [questions, objectives, report, actionPlan, getQuestionObjectiveId]);
 
   // Calculate overall execution scores
   const executionScores = useMemo(() => {

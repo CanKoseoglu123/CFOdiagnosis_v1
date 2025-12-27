@@ -511,6 +511,7 @@ export default function PillarReport() {
                 questions={spec.questions || []}
                 initiatives={spec.initiatives || []}
                 objectives={spec.objectives || []}
+                practices={spec.practices || []}
                 companyName={companyName}
                 industry={industry}
               />
