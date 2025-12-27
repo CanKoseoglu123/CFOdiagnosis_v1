@@ -309,7 +309,7 @@ export default function FinalReportTab({
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       <div className="print:page-break-after-always min-h-[600px]">
         {/* Main Content */}
-        <div className="space-y-5">
+        <div className="px-6 py-5 space-y-5">
           {/* ─────────────────────────────────────────────────────────────────── */}
           {/* STATE COMPARISON BLOCK */}
           {/* ─────────────────────────────────────────────────────────────────── */}
@@ -531,7 +531,7 @@ export default function FinalReportTab({
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* PAGE 2 — COMMITMENT REGISTER */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="print:page-break-before-always">
+      <div className="print:page-break-before-always px-6 py-5">
         {/* Page 2 Section Header (inline, not competing with parent ChapterHeader) */}
         <div className="border-b border-slate-200 pb-3 mb-4">
           <div className="text-lg font-bold text-slate-800">Commitment Register</div>
