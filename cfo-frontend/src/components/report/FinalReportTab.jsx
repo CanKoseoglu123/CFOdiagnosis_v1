@@ -334,7 +334,7 @@ export default function FinalReportTab({
           {/* ─────────────────────────────────────────────────────────────────── */}
           {/* STATE COMPARISON BLOCK */}
           {/* ─────────────────────────────────────────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-3 gap-4">
             {/* Current State */}
             <div className="border border-slate-300 p-4">
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
@@ -342,22 +342,41 @@ export default function FinalReportTab({
               </div>
               <div className="flex items-baseline gap-4 mb-3">
                 <div>
-                  <div className="text-4xl font-bold text-slate-800">{currentScore}%</div>
-                  <div className="text-xs text-slate-500">Execution Score</div>
+                  <div className="text-3xl font-bold text-slate-800">{currentScore}%</div>
+                  <div className="text-xs text-slate-500">Execution</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-700">L{currentLevel}</div>
+                  <div className="text-xl font-bold text-blue-700">L{currentLevel}</div>
                   <div className="text-xs text-slate-500">{levelName}</div>
                 </div>
                 <div>
-                  <div className={`text-2xl font-bold ${failedCriticalCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                  <div className={`text-xl font-bold ${failedCriticalCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                     {failedCriticalCount}
                   </div>
-                  <div className="text-xs text-slate-500">Failed Criticals</div>
+                  <div className="text-xs text-slate-500">Critical</div>
                 </div>
               </div>
-              <div className="text-sm text-slate-600 border-t border-slate-200 pt-3">
+              <div className="text-xs text-slate-600 border-t border-slate-200 pt-2">
                 {diagnosis}
+              </div>
+            </div>
+
+            {/* Maturity Development - Level Progression */}
+            <div className="border border-slate-300 p-4 bg-blue-50 flex flex-col items-center justify-center">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
+                Maturity Development (24 Months)
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Current Level */}
+                <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center border-2 border-slate-400">
+                  <span className="text-xl font-bold text-slate-700">L{currentLevel}</span>
+                </div>
+                {/* Arrow */}
+                <div className="text-3xl text-blue-500 font-bold px-2">→</div>
+                {/* Target Level */}
+                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center border-2 border-blue-700">
+                  <span className="text-xl font-bold text-white">L{projectedLevel}</span>
+                </div>
               </div>
             </div>
 
@@ -368,18 +387,18 @@ export default function FinalReportTab({
               </div>
               <div className="flex items-baseline gap-4 mb-3">
                 <div>
-                  <div className="text-4xl font-bold text-slate-800">{projectedScore}%</div>
-                  <div className="text-xs text-slate-500">Target Score</div>
+                  <div className="text-3xl font-bold text-slate-800">{projectedScore}%</div>
+                  <div className="text-xs text-slate-500">Execution</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-700">L{projectedLevel}</div>
+                  <div className="text-xl font-bold text-blue-700">L{projectedLevel}</div>
                   <div className="text-xs text-slate-500">
                     {['', 'Emerging', 'Defined', 'Managed', 'Optimized'][projectedLevel]}
                   </div>
                 </div>
               </div>
-              <div className="text-sm text-slate-600 border-t border-slate-200 pt-3">
-                <div>Based on: <strong>{actionCounts.total}</strong> committed actions</div>
+              <div className="text-xs text-slate-600 border-t border-slate-200 pt-2">
+                <div><strong>{actionCounts.total}</strong> committed actions</div>
                 <div>Confidence: <strong>{confidence}</strong></div>
               </div>
             </div>
@@ -432,7 +451,7 @@ export default function FinalReportTab({
                   <th className="text-left px-3 py-2 font-semibold text-slate-700">Objective</th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Priority</th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-700" style={{ width: '260px' }}>
-                    Maturity Journey
+                    Execution Journey
                   </th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Status</th>
                 </tr>
