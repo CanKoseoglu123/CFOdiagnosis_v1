@@ -127,6 +127,7 @@ export default function FinalReportTab({
   // Build objective data with milestone scores (Today → 6m → 12m → 24m)
   const objectiveData = useMemo(() => {
     const calibration = report?.calibration?.importance_map || {};
+    const inputMap = new Map((report?.inputs || []).map(i => [i.question_id, i.value]));
 
     return (report?.objectives || []).map(obj => {
       const objId = obj.id || obj.objective_id;
@@ -139,9 +140,22 @@ export default function FinalReportTab({
       if (score >= 80) status = 'strength';
       else if (score < 40 || criticalRisks.some(r => r.objective_id === objId)) status = 'critical';
 
-      // Calculate milestone scores based on committed actions by timeline
-      const objQuestions = questions.filter(q => q.objective_id === objId);
-      const totalQuestions = objQuestions.length || 1;
+      // Find questions for this objective - try multiple approaches
+      // 1. Direct objective_id match
+      // 2. Fallback: match via objective name patterns in question id
+      let objQuestions = questions.filter(q => q.objective_id === objId);
+
+      // If no direct matches, try pattern matching on question IDs
+      if (objQuestions.length === 0) {
+        // Extract objective pattern from objId (e.g., 'obj_budget_discipline' -> 'budget')
+        const objPattern = objId.replace('obj_', '').replace('fpa_', '').split('_')[0];
+        objQuestions = questions.filter(q =>
+          q.id?.toLowerCase().includes(objPattern) ||
+          q.practice_id?.toLowerCase().includes(objPattern)
+        );
+      }
+
+      const totalQuestions = obj.questions_total || objQuestions.length || 6; // Use obj data if available
 
       // Count actions by timeline for this objective
       const actions6m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '6m').length;
@@ -149,11 +163,18 @@ export default function FinalReportTab({
       const actions24m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '24m').length;
       const totalActions = actions6m + actions12m + actions24m;
 
-      // Calculate cumulative scores at each milestone
-      const scorePerAction = Math.round(100 / totalQuestions);
-      const score6m = Math.min(100, score + (actions6m * scorePerAction));
-      const score12m = Math.min(100, score6m + (actions12m * scorePerAction));
-      const score24m = Math.min(100, score12m + (actions24m * scorePerAction));
+      // Calculate current YES count from inputs for this objective
+      const currentYes = objQuestions.filter(q => inputMap.get(q.id) === true).length;
+
+      // Calculate milestone scores based on committed actions
+      // Score = (passed questions / total questions) * 100
+      const calcScore = (yesCount) => Math.min(100, Math.round((yesCount / totalQuestions) * 100));
+
+      // Use objective's actual score from report, then project forward
+      const todayScore = score; // Use the actual score from report
+      const score6m = Math.min(100, todayScore + Math.round((actions6m / totalQuestions) * 100));
+      const score12m = Math.min(100, score6m + Math.round((actions12m / totalQuestions) * 100));
+      const score24m = Math.min(100, score12m + Math.round((actions24m / totalQuestions) * 100));
 
       // Calculate current and target maturity levels for this objective
       // Based on score thresholds: <40=L1, 40-64=L2, 65-84=L3, 85+=L4
@@ -163,7 +184,7 @@ export default function FinalReportTab({
         if (s >= 40) return 2;
         return 1;
       };
-      const currentObjLevel = scoreToLevel(score);
+      const currentObjLevel = scoreToLevel(todayScore);
       const targetObjLevel = scoreToLevel(score24m);
 
       return {
@@ -171,7 +192,7 @@ export default function FinalReportTab({
         name: obj.objective_name || obj.title || obj.name || objId,
         theme,
         importance,
-        today: score,
+        today: todayScore,
         at6m: score6m,
         at12m: score12m,
         at24m: score24m,
@@ -449,12 +470,12 @@ export default function FinalReportTab({
               <thead>
                 <tr className="bg-slate-100 border-b border-slate-300">
                   <th className="text-left px-3 py-2 font-semibold text-slate-700">Objective</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-16">Level</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-16">Imp.</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-16">Importance</th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-700" style={{ width: '240px' }}>
-                    Journey
+                    Score Journey
                   </th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-14">Acts</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-24">Level Journey</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-14">Actions</th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Status</th>
                 </tr>
               </thead>
@@ -475,26 +496,6 @@ export default function FinalReportTab({
                       >
                         <td className="px-3 py-2 text-slate-700">{obj.name}</td>
                         <td className="px-3 py-2 text-center">
-                          {/* Level progression badges */}
-                          <span className="inline-flex items-center gap-1 text-xs">
-                            <span className={`px-1.5 py-0.5 rounded font-medium ${
-                              obj.currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
-                              obj.currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
-                              'bg-slate-100 text-slate-600'
-                            }`}>
-                              L{obj.currentLevel}
-                            </span>
-                            {obj.targetLevel > obj.currentLevel && (
-                              <>
-                                <span className="text-slate-400">→</span>
-                                <span className="px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700">
-                                  L{obj.targetLevel}
-                                </span>
-                              </>
-                            )}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2 text-center">
                           <ImportanceDots level={obj.importance} />
                         </td>
                         <td className="px-3 py-2">
@@ -504,6 +505,24 @@ export default function FinalReportTab({
                             at12m={obj.at12m}
                             at24m={obj.at24m}
                           />
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          {/* Level Journey: current → target in 24 months */}
+                          <span className="inline-flex items-center gap-1 text-xs">
+                            <span className={`px-1.5 py-0.5 rounded font-medium ${
+                              obj.currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                              obj.currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+                              'bg-slate-100 text-slate-600'
+                            }`}>
+                              L{obj.currentLevel}
+                            </span>
+                            <span className="text-slate-400">→</span>
+                            <span className={`px-1.5 py-0.5 rounded font-medium ${
+                              obj.targetLevel >= 3 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              L{obj.targetLevel}
+                            </span>
+                          </span>
                         </td>
                         <td className="px-3 py-2 text-center">
                           <span className={`text-sm font-semibold ${obj.actionCount > 0 ? 'text-blue-600' : 'text-slate-300'}`}>
