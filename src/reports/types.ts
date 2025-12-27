@@ -122,6 +122,9 @@ export interface FinanceReportDTO {
 
   // VS23: Maturity Footprint Grid (practice-level evidence states)
   maturity_footprint?: MaturityFootprint;
+
+  // VS-32: Raw inputs for frontend calculations (execution scores, spider diagrams)
+  inputs?: { question_id: string; value: unknown }[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

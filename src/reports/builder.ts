@@ -184,6 +184,11 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
     grouped_initiatives: groupedInitiatives,
     // VS23 fields
     maturity_footprint: maturityFootprint,
+    // VS-32: Include inputs for frontend calculations (execution scores, spider diagrams)
+    inputs: inputs.map((i) => ({
+      question_id: i.question_id,
+      value: i.value,
+    })),
   };
 }
 
