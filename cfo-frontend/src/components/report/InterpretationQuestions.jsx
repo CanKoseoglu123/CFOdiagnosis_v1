@@ -52,15 +52,17 @@ export default function InterpretationQuestions({ questions, onSubmit }) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-sm">
-      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
+    <div className="bg-white border border-slate-200 rounded-sm flex flex-col max-h-[600px]">
+      {/* Fixed header */}
+      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
         <h3 className="text-base font-semibold text-navy-900">Help Us Personalize Your Insights</h3>
         <p className="text-sm text-slate-500 mt-1">
           A few quick questions to tailor our recommendations to your situation
         </p>
       </div>
 
-      <div className="divide-y divide-slate-100">
+      {/* Scrollable questions area */}
+      <div className="divide-y divide-slate-100 overflow-y-auto flex-1">
         {questions.map((q, index) => {
           const currentAnswer = answers[q.question_id] || '';
           const isEmpty = !currentAnswer.trim();
@@ -142,11 +144,15 @@ export default function InterpretationQuestions({ questions, onSubmit }) {
         })}
       </div>
 
-      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end">
+      {/* Fixed footer with Continue button - always visible */}
+      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
+        <span className="text-xs text-slate-400">
+          {Object.keys(answers).filter(k => answers[k]?.trim()).length} of {questions.length} answered
+        </span>
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="px-6 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
         >
           {submitting ? (
             <>
