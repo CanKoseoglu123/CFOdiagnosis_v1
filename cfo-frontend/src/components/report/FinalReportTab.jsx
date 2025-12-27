@@ -147,12 +147,24 @@ export default function FinalReportTab({
       const actions6m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '6m').length;
       const actions12m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '12m').length;
       const actions24m = objQuestions.filter(q => actionPlan[q.id]?.timeline === '24m').length;
+      const totalActions = actions6m + actions12m + actions24m;
 
       // Calculate cumulative scores at each milestone
       const scorePerAction = Math.round(100 / totalQuestions);
       const score6m = Math.min(100, score + (actions6m * scorePerAction));
       const score12m = Math.min(100, score6m + (actions12m * scorePerAction));
       const score24m = Math.min(100, score12m + (actions24m * scorePerAction));
+
+      // Calculate current and target maturity levels for this objective
+      // Based on score thresholds: <40=L1, 40-64=L2, 65-84=L3, 85+=L4
+      const scoreToLevel = (s) => {
+        if (s >= 85) return 4;
+        if (s >= 65) return 3;
+        if (s >= 40) return 2;
+        return 1;
+      };
+      const currentObjLevel = scoreToLevel(score);
+      const targetObjLevel = scoreToLevel(score24m);
 
       return {
         id: objId,
@@ -163,7 +175,10 @@ export default function FinalReportTab({
         at6m: score6m,
         at12m: score12m,
         at24m: score24m,
-        status
+        status,
+        currentLevel: currentObjLevel,
+        targetLevel: targetObjLevel,
+        actionCount: totalActions
       };
     });
   }, [report, actionPlan, questions, criticalRisks]);
@@ -340,21 +355,27 @@ export default function FinalReportTab({
               </div>
             </div>
 
-            {/* Maturity Development - Level Progression */}
-            <div className="border border-slate-300 p-4 bg-blue-50 flex flex-col items-center justify-center">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
-                Maturity Development (24 Months)
+            {/* Key Metrics Summary */}
+            <div className="border border-slate-300 p-4 bg-slate-50 flex flex-col justify-center">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                Key Metrics
               </div>
-              <div className="flex items-center gap-2">
-                {/* Current Level */}
-                <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center border-2 border-slate-400">
-                  <span className="text-xl font-bold text-slate-700">L{currentLevel}</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xl font-bold text-slate-700">{objectiveData.filter(o => o.status === 'strength').length}</div>
+                  <div className="text-xs text-slate-500">Strengths</div>
                 </div>
-                {/* Arrow */}
-                <div className="text-3xl text-blue-500 font-bold px-2">→</div>
-                {/* Target Level */}
-                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center border-2 border-blue-700">
-                  <span className="text-xl font-bold text-white">L{projectedLevel}</span>
+                <div>
+                  <div className="text-xl font-bold text-amber-600">{objectiveData.filter(o => o.status === 'opportunity').length}</div>
+                  <div className="text-xs text-slate-500">Opportunities</div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-red-600">{objectiveData.filter(o => o.status === 'critical').length}</div>
+                  <div className="text-xs text-slate-500">Critical</div>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-blue-600">{objectiveData.reduce((sum, o) => sum + o.actionCount, 0)}</div>
+                  <div className="text-xs text-slate-500">Actions</div>
                 </div>
               </div>
             </div>
@@ -428,10 +449,12 @@ export default function FinalReportTab({
               <thead>
                 <tr className="bg-slate-100 border-b border-slate-300">
                   <th className="text-left px-3 py-2 font-semibold text-slate-700">Objective</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Priority</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700" style={{ width: '260px' }}>
-                    Execution Journey
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-16">Level</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-16">Imp.</th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700" style={{ width: '240px' }}>
+                    Journey
                   </th>
+                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-14">Acts</th>
                   <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Status</th>
                 </tr>
               </thead>
@@ -440,7 +463,7 @@ export default function FinalReportTab({
                   <React.Fragment key={theme}>
                     {/* Theme Header */}
                     <tr className="bg-slate-50">
-                      <td colSpan={4} className="px-3 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                      <td colSpan={6} className="px-3 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
                         {theme}
                       </td>
                     </tr>
@@ -452,6 +475,26 @@ export default function FinalReportTab({
                       >
                         <td className="px-3 py-2 text-slate-700">{obj.name}</td>
                         <td className="px-3 py-2 text-center">
+                          {/* Level progression badges */}
+                          <span className="inline-flex items-center gap-1 text-xs">
+                            <span className={`px-1.5 py-0.5 rounded font-medium ${
+                              obj.currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                              obj.currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+                              'bg-slate-100 text-slate-600'
+                            }`}>
+                              L{obj.currentLevel}
+                            </span>
+                            {obj.targetLevel > obj.currentLevel && (
+                              <>
+                                <span className="text-slate-400">→</span>
+                                <span className="px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700">
+                                  L{obj.targetLevel}
+                                </span>
+                              </>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center">
                           <ImportanceDots level={obj.importance} />
                         </td>
                         <td className="px-3 py-2">
@@ -461,6 +504,11 @@ export default function FinalReportTab({
                             at12m={obj.at12m}
                             at24m={obj.at24m}
                           />
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <span className={`text-sm font-semibold ${obj.actionCount > 0 ? 'text-blue-600' : 'text-slate-300'}`}>
+                            {obj.actionCount}
+                          </span>
                         </td>
                         <td className="px-3 py-2 text-center">
                           <StatusBadge status={obj.status} />
