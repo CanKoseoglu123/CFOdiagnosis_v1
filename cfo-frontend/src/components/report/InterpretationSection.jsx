@@ -43,9 +43,17 @@ export default function InterpretationSection({ runId }) {
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
 
+  // VS-32: Double-click prevention
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const lastClickRef = useRef(0);
+  const DEBOUNCE_MS = 1000; // 1 second debounce
+
   // PATCH V2: Timeout tracking
   const pollStartTime = useRef(null);
   const pollTimeoutRef = useRef(null);
+
+  // VS-32: AbortController for request cancellation
+  const abortControllerRef = useRef(null);
 
   // Get auth token helper
   const getToken = async () => {
@@ -68,10 +76,24 @@ export default function InterpretationSection({ runId }) {
 
   // Start interpretation
   const startInterpretation = async () => {
+    // VS-32: Debounce and double-click prevention
+    const now = Date.now();
+    if (now - lastClickRef.current < DEBOUNCE_MS || isSubmitting) {
+      return;
+    }
+    lastClickRef.current = now;
+    setIsSubmitting(true);
+
     setState('loading');
     setError(null);
     // PATCH V2: Reset timeout tracking
     pollStartTime.current = Date.now();
+
+    // VS-32: Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     try {
       const token = await getToken();
@@ -80,7 +102,8 @@ export default function InterpretationSection({ runId }) {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        signal: abortControllerRef.current.signal
       });
 
       if (!res.ok) {
@@ -103,9 +126,13 @@ export default function InterpretationSection({ runId }) {
         pollStatus(data.session_id);
       }
     } catch (err) {
+      // VS-32: Ignore abort errors
+      if (err.name === 'AbortError') return;
       console.error('Start interpretation failed:', err);
       setError(err.message);
       setState('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -189,8 +216,22 @@ export default function InterpretationSection({ runId }) {
 
   // Submit answers
   const handleSubmitAnswers = async (answers) => {
+    // VS-32: Debounce and double-click prevention
+    const now = Date.now();
+    if (now - lastClickRef.current < DEBOUNCE_MS || isSubmitting) {
+      return;
+    }
+    lastClickRef.current = now;
+    setIsSubmitting(true);
+
     setState('loading');
     setStatus('finalizing');
+
+    // VS-32: Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     try {
       const token = await getToken();
@@ -200,7 +241,8 @@ export default function InterpretationSection({ runId }) {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ answers })
+        body: JSON.stringify({ answers }),
+        signal: abortControllerRef.current.signal
       });
 
       if (!res.ok) {
@@ -221,9 +263,13 @@ export default function InterpretationSection({ runId }) {
         pollStatus(sessionId);
       }
     } catch (err) {
+      // VS-32: Ignore abort errors
+      if (err.name === 'AbortError') return;
       console.error('Submit answers failed:', err);
       setError(err.message);
       setState('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -253,10 +299,24 @@ export default function InterpretationSection({ runId }) {
 
   // VS-36: Restart interpretation to get fresh questions
   const handleRestart = async () => {
+    // VS-32: Debounce and double-click prevention
+    const now = Date.now();
+    if (now - lastClickRef.current < DEBOUNCE_MS || isSubmitting) {
+      return;
+    }
+    lastClickRef.current = now;
+    setIsSubmitting(true);
+
     setState('loading');
     setError(null);
     setReport(null);
     pollStartTime.current = Date.now();
+
+    // VS-32: Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     try {
       const token = await getToken();
@@ -266,7 +326,8 @@ export default function InterpretationSection({ runId }) {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ restart: true })
+        body: JSON.stringify({ restart: true }),
+        signal: abortControllerRef.current.signal
       });
 
       if (!res.ok) {
@@ -288,9 +349,13 @@ export default function InterpretationSection({ runId }) {
         pollStatus(data.session_id);
       }
     } catch (err) {
+      // VS-32: Ignore abort errors
+      if (err.name === 'AbortError') return;
       console.error('Restart interpretation failed:', err);
       setError(err.message);
       setState('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -349,10 +414,14 @@ export default function InterpretationSection({ runId }) {
 
     checkExistingSession();
 
-    // PATCH V2: Cleanup on unmount
+    // PATCH V2 + VS-32: Cleanup on unmount
     return () => {
       if (pollTimeoutRef.current) {
         clearTimeout(pollTimeoutRef.current);
+      }
+      // VS-32: Abort any in-flight requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [runId]);
@@ -375,12 +444,17 @@ export default function InterpretationSection({ runId }) {
             </p>
             <button
               onClick={startInterpretation}
-              className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors flex items-center gap-2"
+              disabled={isSubmitting}
+              className={`px-6 py-2.5 text-white text-sm font-medium rounded transition-colors flex items-center gap-2 ${
+                isSubmitting
+                  ? 'bg-blue-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Generate Insights
+              {isSubmitting ? 'Starting...' : 'Generate Insights'}
             </button>
           </div>
         </div>

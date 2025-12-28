@@ -4,9 +4,10 @@
  * Creates and rewrites the report.
  * Follows tonality instructions exactly.
  * Uses OpenAI GPT-4o for best writing quality.
+ *
+ * VS-32: Uses resilience layer for retry/circuit breaker protection.
  */
 
-import OpenAI from 'openai';
 import {
   GeneratorInput,
   RewriteInput,
@@ -21,15 +22,7 @@ import {
   buildGeneratorFinalizePrompt,
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
-
-// Lazy-initialize OpenAI client (avoids crash if key not set at startup)
-let _openai: OpenAI | null = null;
-function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI();
-  }
-  return _openai;
-}
+import { createChatCompletionWithRetry } from '../resilience';
 
 /**
  * Create initial draft with [NEED: x] markers.
@@ -41,17 +34,21 @@ export async function createDraft(
   const prompt = buildGeneratorDraftPrompt(input);
   const startTime = Date.now();
 
-  const response = await getOpenAI().chat.completions.create({
-    model: MODEL_CONFIG.generator.model,
-    max_tokens: MODEL_CONFIG.generator.maxTokens,
-    temperature: MODEL_CONFIG.generator.temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  // VS-32: Use retry wrapper with circuit breaker protection
+  const response = await createChatCompletionWithRetry(
+    {
+      model: MODEL_CONFIG.generator.model,
+      max_tokens: MODEL_CONFIG.generator.maxTokens,
+      temperature: MODEL_CONFIG.generator.temperature,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    },
+    'generator_draft'
+  );
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
@@ -94,17 +91,21 @@ export async function rewriteWithAnswers(
   const prompt = buildGeneratorRewritePrompt(input);
   const startTime = Date.now();
 
-  const response = await getOpenAI().chat.completions.create({
-    model: MODEL_CONFIG.generator.model,
-    max_tokens: MODEL_CONFIG.generator.maxTokens,
-    temperature: MODEL_CONFIG.generator.temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  // VS-32: Use retry wrapper with circuit breaker protection
+  const response = await createChatCompletionWithRetry(
+    {
+      model: MODEL_CONFIG.generator.model,
+      max_tokens: MODEL_CONFIG.generator.maxTokens,
+      temperature: MODEL_CONFIG.generator.temperature,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    },
+    'generator_rewrite'
+  );
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
@@ -172,17 +173,21 @@ export async function finalize(
   const prompt = buildGeneratorFinalizePrompt(draft, feedback);
   const startTime = Date.now();
 
-  const response = await getOpenAI().chat.completions.create({
-    model: MODEL_CONFIG.generator.model,
-    max_tokens: MODEL_CONFIG.generator.maxTokens,
-    temperature: MODEL_CONFIG.generator.temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  // VS-32: Use retry wrapper with circuit breaker protection
+  const response = await createChatCompletionWithRetry(
+    {
+      model: MODEL_CONFIG.generator.model,
+      max_tokens: MODEL_CONFIG.generator.maxTokens,
+      temperature: MODEL_CONFIG.generator.temperature,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    },
+    'generator_finalize'
+  );
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';

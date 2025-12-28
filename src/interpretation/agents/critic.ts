@@ -9,7 +9,6 @@
  * Uses OpenAI GPT-4o-mini for fast, cost-effective assessment.
  */
 
-import OpenAI from 'openai';
 import {
   CriticAssessInput,
   CriticQuestionsInput,
@@ -25,15 +24,7 @@ import {
   buildCriticFinalPrompt,
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
-
-// Lazy-initialize OpenAI client (avoids crash if key not set at startup)
-let _openai: OpenAI | null = null;
-function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI();
-  }
-  return _openai;
-}
+import { createChatCompletionWithRetry } from '../resilience';
 
 /**
  * Assess gaps in draft (Call 1).
@@ -47,17 +38,21 @@ export async function assessGaps(
   const prompt = buildCriticAssessPrompt(input);
   const startTime = Date.now();
 
-  const response = await getOpenAI().chat.completions.create({
-    model: MODEL_CONFIG.critic.model,
-    max_tokens: MODEL_CONFIG.critic.maxTokens,
-    temperature: MODEL_CONFIG.critic.temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  // VS-32: Use retry wrapper with circuit breaker protection
+  const response = await createChatCompletionWithRetry(
+    {
+      model: MODEL_CONFIG.critic.model,
+      max_tokens: MODEL_CONFIG.critic.maxTokens,
+      temperature: MODEL_CONFIG.critic.temperature,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    },
+    'critic_assess'
+  );
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
@@ -100,17 +95,21 @@ export async function generateQuestions(
   const prompt = buildCriticQuestionsPrompt(input);
   const startTime = Date.now();
 
-  const response = await getOpenAI().chat.completions.create({
-    model: MODEL_CONFIG.critic.model,
-    max_tokens: MODEL_CONFIG.critic.maxTokens,
-    temperature: MODEL_CONFIG.critic.temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  // VS-32: Use retry wrapper with circuit breaker protection
+  const response = await createChatCompletionWithRetry(
+    {
+      model: MODEL_CONFIG.critic.model,
+      max_tokens: MODEL_CONFIG.critic.maxTokens,
+      temperature: MODEL_CONFIG.critic.temperature,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    },
+    'critic_questions'
+  );
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
@@ -152,17 +151,21 @@ export async function getFinalFeedback(
   const prompt = buildCriticFinalPrompt(input);
   const startTime = Date.now();
 
-  const response = await getOpenAI().chat.completions.create({
-    model: MODEL_CONFIG.critic.model,
-    max_tokens: MODEL_CONFIG.critic.maxTokens,
-    temperature: MODEL_CONFIG.critic.temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  // VS-32: Use retry wrapper with circuit breaker protection
+  const response = await createChatCompletionWithRetry(
+    {
+      model: MODEL_CONFIG.critic.model,
+      max_tokens: MODEL_CONFIG.critic.maxTokens,
+      temperature: MODEL_CONFIG.critic.temperature,
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+    },
+    'critic_final'
+  );
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';

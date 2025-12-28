@@ -391,6 +391,25 @@ export async function resumePipeline(
     return { status: 'failed', session_id: sessionId, error: 'Session not found' };
   }
 
+  // VS-32: Max rounds circuit breaker - prevent infinite loops
+  if (session.current_round >= LOOP_CONFIG.maxRounds) {
+    console.warn(`[Pipeline] Max rounds reached (${session.current_round}/${LOOP_CONFIG.maxRounds}), forcing finalization`);
+    // Force complete with current draft instead of failing
+    const { data: lastStep } = await supabase
+      .from('interpretation_steps')
+      .select('output')
+      .eq('session_id', sessionId)
+      .in('step_type', ['generator_draft', 'generator_rewrite'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (lastStep?.output) {
+      return await forceFinalize(supabase, session, data, lastStep.output as DraftReport);
+    }
+    return { status: 'failed', session_id: sessionId, error: 'Max interpretation rounds exceeded' };
+  }
+
   // Save answers
   const processedAnswers = await saveAnswers(supabase, sessionId, answers);
 
@@ -505,6 +524,61 @@ async function executeLoop(
 }
 
 /**
+ * VS-32: Force finalization when max rounds exceeded.
+ * Skips critic feedback and directly finalizes the current draft.
+ */
+async function forceFinalize(
+  supabase: SupabaseClient,
+  session: InterpretationSession,
+  data: DiagnosticData,
+  draft: DraftReport
+): Promise<PipelineResult> {
+  console.log(`[Pipeline] Force finalizing session ${session.id} due to max rounds`);
+
+  await updateSessionStatus(supabase, session.id, 'finalizing');
+
+  // Skip critic, use empty feedback
+  const emptyFeedback = { ready: true, edits: [] };
+
+  const { report, log: finalizeLog } = await Generator.finalize(
+    draft,
+    emptyFeedback,
+    session.id
+  );
+  await saveStep(supabase, finalizeLog);
+
+  const finalAssessment = assessHeuristics({ ...report, gaps_marked: [] }, data);
+
+  const { count: questionsAnswered } = await supabase
+    .from('interpretation_questions')
+    .select('*', { count: 'exact', head: true })
+    .eq('session_id', session.id)
+    .not('answer', 'is', null);
+
+  const finalOutput: FinalReportOutput = {
+    session_id: session.id,
+    run_id: data.run_id,
+    report,
+    word_count: countWords({ ...report, gaps_marked: [] }),
+    rounds_used: session.current_round + 1,
+    questions_answered: questionsAnswered || 0,
+    quality_status: finalAssessment.overall,
+    quality_compromised: true, // Mark as compromised since we force-finalized
+    heuristic_warnings: [
+      ...finalAssessment.heuristic_warnings,
+      'max_rounds_exceeded: Report finalized early due to loop limit',
+    ],
+  };
+
+  await saveReport(supabase, finalOutput);
+  await updateSessionStatus(supabase, session.id, 'complete', {
+    completed_at: new Date().toISOString(),
+  });
+
+  return { status: 'complete', session_id: session.id, report: finalOutput };
+}
+
+/**
  * Continue loop from a draft (used after initial and rewrites).
  */
 async function executeLoopFromDraft(
@@ -516,6 +590,12 @@ async function executeLoopFromDraft(
 ): Promise<PipelineResult> {
   let currentDraft = draft;
   let round = session.current_round;
+
+  // VS-32: Secondary circuit breaker check
+  if (round >= LOOP_CONFIG.maxRounds) {
+    console.warn(`[Pipeline] Secondary max rounds check triggered at round ${round}`);
+    return await forceFinalize(supabase, session, data, currentDraft);
+  }
 
   while (round < LOOP_CONFIG.maxRounds) {
     // Step 2: Quality assessment
