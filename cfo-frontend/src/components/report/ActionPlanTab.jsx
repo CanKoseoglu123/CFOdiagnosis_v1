@@ -1,12 +1,14 @@
 // src/components/report/ActionPlanTab.jsx
 // VS-28: Action Planning & Simulator - War Room for maturity improvement
 // Includes ActionSidebar inside content container for interactive metrics
+// VS-32: Now includes PlanningQuestionnaire for context collection before action planning
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
+import PlanningQuestionnaire from './PlanningQuestionnaire';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,6 +52,9 @@ export default function ActionPlanTab({
     // Legacy: direct objective_id on question
     return q.objective_id;
   }, [practiceToObjective]);
+  // VS-32: Planning context state (null = show questionnaire, object = show action planning)
+  const [planningContext, setPlanningContext] = useState(null);
+
   // View mode: 'actions' or 'initiatives'
   const [viewMode, setViewMode] = useState('actions');
 
@@ -176,13 +181,75 @@ export default function ActionPlanTab({
     saveAction(questionId, { ...existing, assigned_owner });
   }
 
-  // Get gaps (questions not answered yes)
+  // Get gaps (questions not answered yes) and prioritize based on planning context
   const gaps = useMemo(() => {
     const inputMap = new Map(
       (report?.inputs || []).map(i => [i.question_id, i.value])
     );
-    return questions.filter(q => inputMap.get(q.id) !== true);
-  }, [questions, report]);
+
+    // Get all gaps first
+    const allGaps = questions.filter(q => inputMap.get(q.id) !== true);
+
+    // If no planning context yet, return raw gaps
+    if (!planningContext) {
+      return allGaps;
+    }
+
+    // VS-32: Prioritize gaps based on planning context
+    // Map focus areas to objective relevance
+    const focusAreaToObjective = {
+      'efficiency': ['obj_financial_controls', 'obj_budget_foundation'],
+      'accuracy': ['obj_financial_controls', 'obj_variance_analysis'],
+      'speed': ['obj_forecasting', 'obj_integrated_planning'],
+      'insights': ['obj_driver_based_planning', 'obj_predictive_analytics'],
+      'automation': ['obj_driver_based_planning', 'obj_integrated_planning'],
+      'integration': ['obj_scenario_modeling', 'obj_integrated_planning']
+    };
+
+    // Get prioritized objective IDs from selected focus areas
+    const prioritizedObjectives = new Set(
+      (planningContext.focus_areas || [])
+        .flatMap(area => focusAreaToObjective[area] || [])
+    );
+
+    // Score each gap
+    const scoredGaps = allGaps.map(q => {
+      const objId = getQuestionObjectiveId(q);
+      let score = 0;
+
+      // Boost if matches focus area
+      if (prioritizedObjectives.has(objId)) {
+        score += 10;
+      }
+
+      // Boost lower-level questions for limited bandwidth
+      if (planningContext.bandwidth === 'minimal' || planningContext.bandwidth === 'limited') {
+        if (q.level === 1) score += 5;
+        if (q.level === 2) score += 3;
+      }
+
+      // Boost critical questions
+      if (q.is_critical) {
+        score += 8;
+      }
+
+      return { ...q, priority_score: score };
+    });
+
+    // Sort by priority score (highest first)
+    scoredGaps.sort((a, b) => b.priority_score - a.priority_score);
+
+    // Limit based on bandwidth
+    const bandwidthLimits = {
+      'minimal': 5,
+      'limited': 10,
+      'moderate': 20,
+      'significant': allGaps.length
+    };
+    const limit = bandwidthLimits[planningContext.bandwidth] || allGaps.length;
+
+    return scoredGaps.slice(0, limit);
+  }, [questions, report, planningContext, getQuestionObjectiveId]);
 
   // Calculate current and projected scores by objective
   const { currentScores, projectedScores } = useMemo(() => {
@@ -316,6 +383,11 @@ export default function ActionPlanTab({
     // Already auto-saving, this is just a manual trigger indication
   }
 
+  // VS-32: Handle planning questionnaire submission
+  function handlePlanningSubmit(formData) {
+    setPlanningContext(formData);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -324,12 +396,78 @@ export default function ActionPlanTab({
     );
   }
 
+  // VS-32: Show planning questionnaire first if no context collected
+  if (!planningContext) {
+    return (
+      <PlanningQuestionnaire
+        onSubmit={handlePlanningSubmit}
+        currentLevel={report?.maturity?.achieved_level || 2}
+      />
+    );
+  }
+
+  // Get all gaps count for context display
+  const allGapsCount = useMemo(() => {
+    const inputMap = new Map(
+      (report?.inputs || []).map(i => [i.question_id, i.value])
+    );
+    return questions.filter(q => inputMap.get(q.id) !== true).length;
+  }, [questions, report]);
+
+  // Format focus areas for display
+  const focusAreaLabels = {
+    'efficiency': 'Operational Efficiency',
+    'accuracy': 'Data Accuracy',
+    'speed': 'Faster Close',
+    'insights': 'Business Insights',
+    'automation': 'Process Automation',
+    'integration': 'System Integration'
+  };
+
   return (
     <div className="flex gap-4">
       {/* ─────────────────────────────────────────────────────────────────────── */}
       {/* MAIN CONTENT - Actions List */}
       {/* ─────────────────────────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 space-y-4">
+        {/* VS-32: Planning Context Summary */}
+        <div className="bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-sm p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div>
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Bandwidth</span>
+                <div className="text-sm font-semibold text-navy-900 capitalize">{planningContext.bandwidth}</div>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Horizon</span>
+                <div className="text-sm font-semibold text-navy-900">{planningContext.time_horizon}</div>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Focus Areas</span>
+                <div className="text-sm font-semibold text-navy-900">
+                  {planningContext.focus_areas?.map(a => focusAreaLabels[a] || a).join(', ') || 'None'}
+                </div>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Showing</span>
+                <div className="text-sm font-semibold text-navy-900">{gaps.length} of {allGapsCount} gaps</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setPlanningContext(null)}
+              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Change Settings
+            </button>
+          </div>
+          {planningContext.constraints && (
+            <div className="mt-3 pt-3 border-t border-blue-100">
+              <span className="text-xs font-medium text-slate-500">Constraints: </span>
+              <span className="text-sm text-slate-600">{planningContext.constraints}</span>
+            </div>
+          )}
+        </div>
+
         {/* Simulator HUD */}
         <SimulatorHUD
           executionScore={executionScores.current}

@@ -739,13 +739,15 @@ async function executeLoopFromDraft(
     }
 
     // VS-32: Generate questions with pillar config and question budget
+    // CRITICAL: Pass context so AI knows what's already answered and doesn't ask redundant questions
     const { output: questionsOutput, log: questionsLog } = await Critic.generateQuestions(
       prioritizedGaps,
       session.id,
       round,
       pillarConfig,
       undefined, // previousQuestions - not tracked yet
-      remainingBudget
+      remainingBudget,
+      data // VS-32 FIX: Pass context to prevent redundant questions
     );
     await saveStep(supabase, questionsLog);
 

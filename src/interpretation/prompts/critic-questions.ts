@@ -5,8 +5,51 @@
  * CRITICAL: Yes/No questions preferred (70%), MCQ when needed, free text as last resort.
  */
 
-import { CriticQuestionsInput, InterpretationQuestion } from '../types';
+import { CriticQuestionsInput, InterpretationQuestion, DiagnosticData } from '../types';
 import { formatExemplarsForPrompt } from '../pillars/fpa/question-exemplars';
+
+/**
+ * Format known context to prevent asking redundant questions.
+ * VS-32 FIX: Expanded to include ALL diagnostic data points that should not be re-asked.
+ */
+function formatKnownContext(context?: DiagnosticData): string {
+  if (!context) {
+    return 'No context available.';
+  }
+  const parts: string[] = [];
+
+  // Company setup data (already collected during company intake)
+  if (context.company_name) parts.push(`- Company Name: ${context.company_name}`);
+  if (context.industry) parts.push(`- Industry: ${context.industry}`);
+
+  // Pillar setup data (already collected during pillar intake)
+  if (context.team_size) parts.push(`- Finance Team Size: ${context.team_size} FTEs`);
+  if (context.systems) parts.push(`- Current Systems: ${typeof context.systems === 'string' ? context.systems : (context.systems as string[]).join(', ')}`);
+  if (context.pain_points?.length) parts.push(`- Pain Points: ${context.pain_points.join(', ')}`);
+
+  // Diagnostic results (from assessment)
+  if (context.execution_score !== undefined) parts.push(`- Execution Score: ${context.execution_score}%`);
+  if (context.maturity_level !== undefined) parts.push(`- Maturity Level: L${context.maturity_level} (${context.level_name || 'Unknown'})`);
+  if (context.capped) parts.push(`- Maturity Capped By: ${context.capped_by_titles?.join(', ') || 'Critical failures'}`);
+
+  // Objective scores (diagnostic results)
+  if (context.objectives?.length) {
+    parts.push(`\n### Objective Performance (DO NOT ask about these):`);
+    context.objectives.forEach((o) => {
+      parts.push(`- ${o.name}: ${o.score}% (importance ${o.importance}/5)${o.has_critical_failure ? ' [CRITICAL FAILURE]' : ''}`);
+    });
+  }
+
+  // Critical risks (identified from diagnostic)
+  if (context.critical_risks?.length) {
+    parts.push(`\n### Critical Risks Already Identified:`);
+    context.critical_risks.forEach((r) => {
+      parts.push(`- ${r.title}`);
+    });
+  }
+
+  return parts.length > 0 ? parts.join('\n') : 'No context available.';
+}
 
 /**
  * Format questions already asked to avoid repetition.
@@ -42,6 +85,9 @@ export function buildCriticQuestionsPrompt(input: CriticQuestionsInput): string 
     ? formatExemplarsForPrompt()
     : '';
 
+  // VS-32: Format known context to prevent redundant questions
+  const knownContext = formatKnownContext(input.context);
+
   return `
 You are generating clarifying questions to fill specific gaps in the report.
 
@@ -66,6 +112,15 @@ CRITICAL QUESTION RULES (MANDATORY)
 
 5. KEEP QUESTIONS SHORT
    Maximum 25 words per question.
+
+6. NEVER ASK ABOUT KNOWN CONTEXT
+   The information below is ALREADY KNOWN. Do NOT ask questions about it.
+
+═══════════════════════════════════════════════════════════════════
+KNOWN CONTEXT (DO NOT ASK ABOUT THIS)
+═══════════════════════════════════════════════════════════════════
+
+${knownContext}
 
 ═══════════════════════════════════════════════════════════════════
 GAPS TO FILL (already prioritized by importance)

@@ -241,6 +241,8 @@ export interface CriticQuestionsInput {
   questions_asked_so_far?: InterpretationQuestion[];
   /** VS-32: Total questions budget remaining */
   questions_budget?: number;
+  /** VS-32: Company context to avoid asking for known information */
+  context?: DiagnosticData;
 }
 
 export interface CriticFinalInput {

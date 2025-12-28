@@ -130,13 +130,15 @@ export async function generateQuestions(
   round: number,
   pillarConfig?: PillarInterpretationConfig,
   previousQuestions?: InterpretationQuestion[],
-  questionsBudget?: number
+  questionsBudget?: number,
+  context?: DiagnosticData
 ): Promise<{ output: CriticQuestionsOutput; log: Partial<StepLog> }> {
   const input: CriticQuestionsInput = {
     prioritized_gaps: prioritizedGaps,
     pillar_config: pillarConfig,
     questions_asked_so_far: previousQuestions,
     questions_budget: questionsBudget,
+    context,
   };
 
   const prompt = buildCriticQuestionsPrompt(input);
