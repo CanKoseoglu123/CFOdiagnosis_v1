@@ -65,9 +65,8 @@ function determineOverallStatus(
 }
 
 /**
- * ACCURATE: Check for score contradictions and fact accuracy.
+ * ACCURATE: Check for score contradictions.
  * Soft-fails on word choice issues, hard-fails on true contradictions.
- * VS-32: Enhanced with numeric, initiative, and maturity fact checking.
  */
 function checkAccurate(draft: DraftReport, data: DiagnosticData): CriterionResult {
   const warnings: string[] = [];
@@ -94,23 +93,11 @@ function checkAccurate(draft: DraftReport, data: DiagnosticData): CriterionResul
     }
   }
 
-  // VS-32: Enhanced fact checking
-  const numericWarnings = checkNumericFacts(draft, data);
-  const initiativeWarnings = checkInitiativeReferences(draft, data);
-  const maturityWarnings = checkMaturityClaims(draft, data);
-
-  warnings.push(...numericWarnings);
-  warnings.push(...initiativeWarnings);
-  warnings.push(...maturityWarnings);
-
   // Only TRUE contradiction (not just word choice) triggers hard fail
   const hasHardContradiction = detectHardContradiction(draft, data);
 
-  // VS-32: Maturity claims that are wrong are also hard contradictions
-  const hasMaturityContradiction = maturityWarnings.length > 0;
-
   return {
-    passed: !hasHardContradiction && !hasMaturityContradiction,
+    passed: !hasHardContradiction,
     warnings,
   };
 }
@@ -154,116 +141,6 @@ function detectHardContradiction(draft: DraftReport, data: DiagnosticData): bool
   }
 
   return false;
-}
-
-/**
- * VS-32: Enhanced fact checking - verify numeric claims match actual data.
- */
-function checkNumericFacts(draft: DraftReport, data: DiagnosticData): string[] {
-  const warnings: string[] = [];
-  const text = JSON.stringify(draft);
-
-  // Extract all percentage claims (e.g., "75%", "at 75 percent")
-  const percentageRegex = /(\d{1,3})(?:\s*%|(?:\s+percent))/gi;
-  const matches = text.matchAll(percentageRegex);
-
-  for (const match of matches) {
-    const claimedPercent = parseInt(match[1], 10);
-
-    // Check if this percentage matches any actual score
-    const validScores = [
-      data.execution_score,
-      ...data.objectives.map((o) => o.score),
-    ];
-
-    // Allow +/- 5% tolerance for rounding
-    const isValid = validScores.some(
-      (score) => Math.abs(score - claimedPercent) <= 5
-    );
-
-    // If percentage doesn't match any score and isn't a generic benchmark
-    const genericBenchmarks = [100, 50, 25, 75, 0]; // Common reference points
-    if (!isValid && !genericBenchmarks.includes(claimedPercent)) {
-      warnings.push(
-        `fact_check: Claimed ${claimedPercent}% doesn't match any actual score`
-      );
-    }
-  }
-
-  return warnings;
-}
-
-/**
- * VS-32: Verify initiative references exist in actual data.
- */
-function checkInitiativeReferences(draft: DraftReport, data: DiagnosticData): string[] {
-  const warnings: string[] = [];
-  const text = JSON.stringify(draft).toLowerCase();
-
-  // Known initiative keywords that should map to actual initiatives
-  const initiativeKeywords = [
-    'driver-based', 'scenario modeling', 'forecasting', 'budgeting',
-    'variance analysis', 'financial close', 'reporting', 'analytics',
-    'planning', 'consolidation', 'cash flow', 'working capital'
-  ];
-
-  // Extract initiative names from actual data
-  const actualInitiatives = data.initiatives.map((i) => i.title.toLowerCase());
-  const actualObjectives = data.objectives.map((o) => o.name.toLowerCase());
-
-  // Check for initiative mentions that don't exist in data
-  for (const keyword of initiativeKeywords) {
-    if (text.includes(keyword)) {
-      const matchesInitiative = actualInitiatives.some((i) => i.includes(keyword));
-      const matchesObjective = actualObjectives.some((o) => o.includes(keyword));
-
-      if (!matchesInitiative && !matchesObjective) {
-        // Check if it's mentioned as a recommendation (acceptable)
-        const isRecommendation = text.includes(`implement ${keyword}`) ||
-          text.includes(`consider ${keyword}`) ||
-          text.includes(`adopt ${keyword}`);
-
-        if (!isRecommendation) {
-          warnings.push(
-            `fact_check: "${keyword}" mentioned but not in actual initiatives/objectives`
-          );
-        }
-      }
-    }
-  }
-
-  return warnings;
-}
-
-/**
- * VS-32: Verify maturity level claims match actual data.
- */
-function checkMaturityClaims(draft: DraftReport, data: DiagnosticData): string[] {
-  const warnings: string[] = [];
-  const text = JSON.stringify(draft).toLowerCase();
-
-  const levelNames = ['emerging', 'defined', 'managed', 'optimized'];
-  const actualLevel = data.maturity_level;
-  const actualLevelName = data.level_name?.toLowerCase() || levelNames[actualLevel - 1] || '';
-
-  // Check if draft claims wrong maturity level
-  for (let i = 0; i < levelNames.length; i++) {
-    const levelName = levelNames[i];
-    const levelNum = i + 1;
-
-    // Look for claims like "at level 3" or "you are managed"
-    const levelClaim = text.includes(`level ${levelNum}`) ||
-      text.includes(`at ${levelName}`) ||
-      text.includes(`you are ${levelName}`);
-
-    if (levelClaim && levelNum !== actualLevel) {
-      warnings.push(
-        `fact_check: Claims Level ${levelNum} (${levelName}) but actual is Level ${actualLevel} (${actualLevelName})`
-      );
-    }
-  }
-
-  return warnings;
 }
 
 /**

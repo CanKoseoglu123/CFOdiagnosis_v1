@@ -1,15 +1,10 @@
 /**
- * VS-32: Prompts Index
- *
- * All prompt builders and their input types for the interpretation pipeline.
+ * VS-25: Prompts Index
  */
 
-// Generator prompts
 export { buildGeneratorDraftPrompt } from './generator-draft';
-export { buildGeneratorRewritePrompt, type RewriteInput } from './generator-rewrite';
-export { buildGeneratorFinalizePrompt, type FinalizeInput } from './generator-finalize';
-
-// Critic prompts
+export { buildGeneratorRewritePrompt } from './generator-rewrite';
+export { buildGeneratorFinalizePrompt } from './generator-finalize';
 export { buildCriticAssessPrompt } from './critic-assess';
 export { buildCriticQuestionsPrompt } from './critic-questions';
-export { buildCriticFinalPrompt, type CriticFinalInput } from './critic-final';
+export { buildCriticFinalPrompt } from './critic-final';

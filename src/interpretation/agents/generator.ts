@@ -1,71 +1,67 @@
 /**
- * VS-32: Generator Agent (AI1)
+ * VS-25: Generator Agent (AI1)
  *
- * Creates and rewrites the report using 5-section OverviewSections structure.
- * Follows tonality instructions and pillar-specific patterns.
+ * Creates and rewrites the report.
+ * Follows tonality instructions exactly.
  * Uses OpenAI GPT-4o for best writing quality.
- *
- * Uses resilience layer for retry/circuit breaker protection.
  */
 
+import OpenAI from 'openai';
 import {
   GeneratorInput,
+  RewriteInput,
   DraftReport,
-  OverviewSections,
   InterpretedReport,
   CriticFinalOutput,
   StepLog,
-  QuestionAnswer,
 } from '../types';
-import { PillarInterpretationConfig } from '../pillars/types';
 import {
   buildGeneratorDraftPrompt,
   buildGeneratorRewritePrompt,
   buildGeneratorFinalizePrompt,
-  RewriteInput,
-  FinalizeInput,
 } from '../prompts';
 import { MODEL_CONFIG, PROMPT_VERSION } from '../config';
-import { createChatCompletionWithRetry } from '../resilience';
+
+// Lazy-initialize OpenAI client (avoids crash if key not set at startup)
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI();
+  }
+  return _openai;
+}
 
 /**
- * Create initial draft with 5-section structure and [NEED: x] markers.
- * VS-32: Now returns OverviewSections instead of legacy DraftReport.
+ * Create initial draft with [NEED: x] markers.
  */
 export async function createDraft(
   input: GeneratorInput,
   sessionId: string
-): Promise<{ draft: OverviewSections; log: Partial<StepLog> }> {
+): Promise<{ draft: DraftReport; log: Partial<StepLog> }> {
   const prompt = buildGeneratorDraftPrompt(input);
   const startTime = Date.now();
 
-  const response = await createChatCompletionWithRetry(
-    {
-      model: MODEL_CONFIG.generator.model,
-      max_tokens: MODEL_CONFIG.generator.maxTokens,
-      temperature: MODEL_CONFIG.generator.temperature,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    },
-    'generator_draft'
-  );
+  const response = await getOpenAI().chat.completions.create({
+    model: MODEL_CONFIG.generator.model,
+    max_tokens: MODEL_CONFIG.generator.maxTokens,
+    temperature: MODEL_CONFIG.generator.temperature,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  });
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
 
-  // Parse as OverviewSections (VS-32 5-section structure)
-  const draft = parseJsonResponse<OverviewSections>(rawResponse);
+  // Parse JSON response
+  const draft = parseJsonResponse<DraftReport>(rawResponse);
 
-  // Ensure required arrays exist
+  // Ensure gaps_marked exists
   if (!draft.gaps_marked) {
     draft.gaps_marked = [];
-  }
-  if (!draft.evidence_ids_used) {
-    draft.evidence_ids_used = [];
   }
 
   return {
@@ -88,52 +84,36 @@ export async function createDraft(
 }
 
 /**
- * Rewrite draft with user answers, incorporating clarifier_ evidence IDs.
- * VS-32: Uses OverviewSections and tracks evidence chain.
+ * Rewrite draft with user answers.
  */
 export async function rewriteWithAnswers(
-  previousDraft: OverviewSections,
-  answers: QuestionAnswer[],
-  roundNumber: number,
+  input: RewriteInput,
   sessionId: string,
-  pillarConfig?: PillarInterpretationConfig
-): Promise<{ draft: OverviewSections; log: Partial<StepLog> }> {
-  const input: RewriteInput = {
-    previous_draft: previousDraft,
-    answers,
-    round_number: roundNumber,
-    pillar_config: pillarConfig,
-  };
-
+  round: number
+): Promise<{ draft: DraftReport; log: Partial<StepLog> }> {
   const prompt = buildGeneratorRewritePrompt(input);
   const startTime = Date.now();
 
-  const response = await createChatCompletionWithRetry(
-    {
-      model: MODEL_CONFIG.generator.model,
-      max_tokens: MODEL_CONFIG.generator.maxTokens,
-      temperature: MODEL_CONFIG.generator.temperature,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    },
-    'generator_rewrite'
-  );
+  const response = await getOpenAI().chat.completions.create({
+    model: MODEL_CONFIG.generator.model,
+    max_tokens: MODEL_CONFIG.generator.maxTokens,
+    temperature: MODEL_CONFIG.generator.temperature,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  });
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
 
-  const draft = parseJsonResponse<OverviewSections>(rawResponse);
+  const draft = parseJsonResponse<DraftReport>(rawResponse);
 
-  // Ensure arrays exist - gaps should be fewer after rewrite
+  // Ensure gaps_marked is empty after rewrite
   if (!draft.gaps_marked) {
     draft.gaps_marked = [];
-  }
-  if (!draft.evidence_ids_used) {
-    draft.evidence_ids_used = [];
   }
 
   return {
@@ -141,14 +121,14 @@ export async function rewriteWithAnswers(
     log: {
       session_id: sessionId,
       step_type: 'generator_rewrite',
-      round_number: roundNumber,
+      round_number: round,
       agent: 'generator',
       prompt_version: PROMPT_VERSION,
       model: MODEL_CONFIG.generator.model,
       prompt_sent: prompt,
       raw_response: rawResponse,
       output: draft,
-      previous_draft: convertToLegacyDraft(previousDraft),
+      previous_draft: input.previous_draft,
       tokens_input: response.usage?.prompt_tokens || 0,
       tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
@@ -159,19 +139,20 @@ export async function rewriteWithAnswers(
 
 /**
  * Finalize draft with critic feedback.
- * VS-32: Produces InterpretedReport with optional overview field.
  */
 export async function finalize(
-  draft: OverviewSections,
+  draft: DraftReport,
   feedback: CriticFinalOutput,
-  sessionId: string,
-  pillarConfig?: PillarInterpretationConfig
+  sessionId: string
 ): Promise<{ report: InterpretedReport; log: Partial<StepLog> }> {
   // If no edits needed, return as-is
   if (feedback.ready && feedback.edits.length === 0) {
-    const report = convertToInterpretedReport(draft);
     return {
-      report,
+      report: {
+        synthesis: draft.synthesis,
+        priority_rationale: draft.priority_rationale,
+        key_insight: draft.key_insight,
+      },
       log: {
         session_id: sessionId,
         step_type: 'generator_final',
@@ -180,7 +161,7 @@ export async function finalize(
         model: MODEL_CONFIG.generator.model,
         prompt_sent: '[NO EDITS NEEDED - PASSTHROUGH]',
         raw_response: JSON.stringify(draft),
-        output: report,
+        output: draft,
         tokens_input: 0,
         tokens_output: 0,
         latency_ms: 0,
@@ -188,35 +169,25 @@ export async function finalize(
     };
   }
 
-  const input: FinalizeInput = {
-    draft,
-    feedback,
-    pillar_config: pillarConfig,
-  };
-
-  const prompt = buildGeneratorFinalizePrompt(input);
+  const prompt = buildGeneratorFinalizePrompt(draft, feedback);
   const startTime = Date.now();
 
-  const response = await createChatCompletionWithRetry(
-    {
-      model: MODEL_CONFIG.generator.model,
-      max_tokens: MODEL_CONFIG.generator.maxTokens,
-      temperature: MODEL_CONFIG.generator.temperature,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    },
-    'generator_finalize'
-  );
+  const response = await getOpenAI().chat.completions.create({
+    model: MODEL_CONFIG.generator.model,
+    max_tokens: MODEL_CONFIG.generator.maxTokens,
+    temperature: MODEL_CONFIG.generator.temperature,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  });
 
   const latencyMs = Date.now() - startTime;
   const rawResponse = response.choices[0]?.message?.content || '';
 
-  const finalDraft = parseJsonResponse<OverviewSections>(rawResponse);
-  const report = convertToInterpretedReport(finalDraft);
+  const report = parseJsonResponse<InterpretedReport>(rawResponse);
 
   return {
     report,
@@ -229,7 +200,7 @@ export async function finalize(
       prompt_sent: prompt,
       raw_response: rawResponse,
       output: report,
-      previous_draft: convertToLegacyDraft(draft),
+      previous_draft: draft,
       tokens_input: response.usage?.prompt_tokens || 0,
       tokens_output: response.usage?.completion_tokens || 0,
       latency_ms: latencyMs,
@@ -239,44 +210,10 @@ export async function finalize(
 }
 
 /**
- * Convert OverviewSections to InterpretedReport for backwards compatibility.
- */
-function convertToInterpretedReport(overview: OverviewSections): InterpretedReport {
-  // Create legacy synthesis by combining exec summary and current state
-  const synthesis = `${overview.executive_summary} ${overview.current_state}`;
-
-  // Create key insight from critical risks or opportunities
-  const keyInsight =
-    overview.critical_risks && overview.critical_risks.length > 10
-      ? overview.critical_risks
-      : overview.opportunities;
-
-  return {
-    synthesis,
-    priority_rationale: overview.priority_rationale,
-    key_insight: keyInsight,
-    // VS-32: Include the full overview structure
-    overview,
-    evidence_ids_used: overview.evidence_ids_used,
-  };
-}
-
-/**
- * Convert OverviewSections to legacy DraftReport for logging.
- */
-function convertToLegacyDraft(overview: OverviewSections): DraftReport {
-  return {
-    synthesis: `${overview.executive_summary} ${overview.current_state}`,
-    priority_rationale: overview.priority_rationale,
-    key_insight: overview.opportunities,
-    gaps_marked: overview.gaps_marked,
-  };
-}
-
-/**
  * Parse JSON response from AI, handling common issues.
  */
 function parseJsonResponse<T>(response: string): T {
+  // Try to extract JSON from response
   let jsonStr = response.trim();
 
   // Remove markdown code blocks if present

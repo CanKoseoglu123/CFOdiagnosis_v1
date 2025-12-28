@@ -1,17 +1,14 @@
 // src/components/report/InterpretationLoader.jsx
 // VS-25: Loading skeleton for interpretation generation
-// VS-32: Updated pipeline stages with critic/question phases
 // PATCH V2: Square indicators per design system (no circles)
 
 import React from 'react';
-import { Brain, Sparkles, CheckCircle2, FileCheck, MessageCircleQuestion, RefreshCw } from 'lucide-react';
+import { Brain, Sparkles, CheckCircle2, FileCheck } from 'lucide-react';
 
 const STEPS = [
   { id: 'analyzing', label: 'Analyzing your assessment data...', icon: Brain },
-  { id: 'generating', label: 'Drafting personalized insights...', icon: Sparkles },
-  { id: 'critiquing', label: 'Quality review and gap identification...', icon: CheckCircle2 },
-  { id: 'awaiting_user', label: 'Gathering additional context...', icon: MessageCircleQuestion },
-  { id: 'refining', label: 'Refining based on your input...', icon: RefreshCw },
+  { id: 'drafting', label: 'Drafting personalized insights...', icon: Sparkles },
+  { id: 'reviewing', label: 'Reviewing quality and accuracy...', icon: CheckCircle2 },
   { id: 'finalizing', label: 'Finalizing your report...', icon: FileCheck }
 ];
 
