@@ -251,6 +251,49 @@ export default function InterpretationSection({ runId }) {
     pollStatus(sessionId);
   };
 
+  // VS-36: Restart interpretation to get fresh questions
+  const handleRestart = async () => {
+    setState('loading');
+    setError(null);
+    setReport(null);
+    pollStartTime.current = Date.now();
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret/start`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ restart: true })
+      });
+
+      if (!res.ok) {
+        const data = await safeJsonParse(res);
+        throw new Error(data.error || 'Failed to restart interpretation');
+      }
+
+      const data = await safeJsonParse(res);
+      setSessionId(data.session_id);
+      setStatus(data.status);
+
+      if (data.status === 'awaiting_user' && data.questions) {
+        setQuestions(data.questions);
+        setState('questions');
+      } else if (data.status === 'complete') {
+        setReport(data.report);
+        setState('complete');
+      } else {
+        pollStatus(data.session_id);
+      }
+    } catch (err) {
+      console.error('Restart interpretation failed:', err);
+      setError(err.message);
+      setState('error');
+    }
+  };
+
   // PATCH V2: Check for existing session on mount - STATUS FIRST, only START if 404
   useEffect(() => {
     const checkExistingSession = async () => {
@@ -371,6 +414,7 @@ export default function InterpretationSection({ runId }) {
       <InterpretedReport
         report={report}
         onFeedback={handleFeedback}
+        onRestart={handleRestart}
       />
     );
   }

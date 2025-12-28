@@ -281,6 +281,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-29: Global Sidebar | AppShell + WorkflowSidebar layout pattern |
 | VS-30: Enterprise Layout | ChapterHeader, EnterpriseCanvas, ExecutiveSpine components |
 | VS-31: Page Normalization | Consulting-document paradigm, no rounded buttons |
+| VS-36: Interpretation Restart | User-friendly warnings + "Provide More Context" button |
 
 ---
 

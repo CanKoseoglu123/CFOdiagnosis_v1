@@ -751,39 +751,60 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
     return res.status(409).json({ error: "Run must be completed before interpretation" });
   }
 
+  // VS-36: Support restart flag to regenerate insights
+  const { restart } = req.body || {};
+
   // Check for existing session - prevent duplicate pipelines
   const existingSession = await getSessionByRunId(req.supabase, runId);
   if (existingSession) {
-    // If complete, return the report
-    if (existingSession.status === "complete") {
-      const report = await getReport(req.supabase, runId);
-      if (report) {
-        return res.json({
+    // VS-36: If restart=true and session is complete, delete it and start fresh
+    if (restart === true && existingSession.status === "complete") {
+      // Delete existing session data to allow fresh start
+      await req.supabase
+        .from("interpretation_reports")
+        .delete()
+        .eq("run_id", runId);
+      await req.supabase
+        .from("interpretation_steps")
+        .delete()
+        .eq("session_id", existingSession.id);
+      await req.supabase
+        .from("interpretation_sessions")
+        .delete()
+        .eq("id", existingSession.id);
+      // Continue to create new session below
+    } else {
+      // If complete (and not restart), return the report
+      if (existingSession.status === "complete") {
+        const report = await getReport(req.supabase, runId);
+        if (report) {
+          return res.json({
+            session_id: existingSession.id,
+            status: "complete",
+            report,
+          });
+        }
+      }
+      // If already in progress, return current status (no duplicate)
+      if (existingSession.status === "pending" || existingSession.status === "generating" || existingSession.status === "finalizing") {
+        return res.status(202).json({
           session_id: existingSession.id,
-          status: "complete",
-          report,
+          status: existingSession.status,
+          message: "Interpretation already in progress",
+          poll_url: `/diagnostic-runs/${runId}/interpret/status`,
         });
       }
+      // If awaiting_user, return questions
+      if (existingSession.status === "awaiting_user") {
+        const questions = await getQuestions(req.supabase, existingSession.id);
+        return res.status(202).json({
+          session_id: existingSession.id,
+          status: "awaiting_user",
+          questions,
+        });
+      }
+      // If failed, allow retry by continuing (will create new session below)
     }
-    // If already in progress, return current status (no duplicate)
-    if (existingSession.status === "pending" || existingSession.status === "generating" || existingSession.status === "finalizing") {
-      return res.status(202).json({
-        session_id: existingSession.id,
-        status: existingSession.status,
-        message: "Interpretation already in progress",
-        poll_url: `/diagnostic-runs/${runId}/interpret/status`,
-      });
-    }
-    // If awaiting_user, return questions
-    if (existingSession.status === "awaiting_user") {
-      const questions = await getQuestions(req.supabase, existingSession.id);
-      return res.status(202).json({
-        session_id: existingSession.id,
-        status: "awaiting_user",
-        questions,
-      });
-    }
-    // If failed, allow retry by continuing (will create new session below)
   }
 
   // Build diagnostic data for interpretation
