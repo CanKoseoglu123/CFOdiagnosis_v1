@@ -1,10 +1,36 @@
 /**
- * VS-25: Critic Assess Prompt (Call 1)
+ * VS-32: Critic Assess Prompt
  *
- * AI2 identifies gaps in the draft. Does NOT generate questions.
+ * AI2 identifies gaps in the draft by checking against golden output patterns.
+ * Validates evidence ID usage and forbidden pattern violations.
  */
 
 import { CriticAssessInput } from '../types';
+import { GoldenOutputPattern } from '../pillars/types';
+
+/**
+ * Format golden output requirements for validation.
+ */
+function formatGoldenOutputRequirements(
+  goldenOutputs?: Record<string, GoldenOutputPattern>
+): string {
+  if (!goldenOutputs) {
+    return 'No specific requirements configured.';
+  }
+
+  return Object.entries(goldenOutputs)
+    .map(([sectionId, pattern]) => {
+      const p = pattern as GoldenOutputPattern;
+      return `
+### ${sectionId.replace(/_/g, ' ').toUpperCase()}
+- Required evidence types: ${p.required_evidence_types.join(', ')}
+- Minimum evidence count: ${p.min_evidence_count}
+- Must use context: ${p.context_weaving?.must_use?.join(', ') || 'None'}
+- Forbidden patterns: ${p.forbidden_patterns?.slice(0, 3).join(', ') || 'None'}
+`;
+    })
+    .join('\n');
+}
 
 export function buildCriticAssessPrompt(input: CriticAssessInput): string {
   const draftJson = JSON.stringify(input.draft, null, 2);
@@ -22,17 +48,24 @@ export function buildCriticAssessPrompt(input: CriticAssessInput): string {
         name: o.name,
         score: o.score,
         has_critical_failure: o.has_critical_failure,
+        importance: o.importance,
       })),
     },
     null,
     2
   );
 
+  const goldenRequirements = formatGoldenOutputRequirements(
+    input.pillar_config?.golden_outputs
+  );
+
+  const forbiddenPatterns = input.pillar_config?.pillar_forbidden_patterns || [];
+
   return `
-You are identifying gaps in a draft report. Focus ONLY on what's missing.
+You are identifying gaps in a draft report. Focus ONLY on what's missing or wrong.
 
 ═══════════════════════════════════════════════════════════════════
-THE DRAFT
+THE DRAFT TO ASSESS
 ═══════════════════════════════════════════════════════════════════
 
 ${draftJson}
@@ -44,21 +77,49 @@ COMPANY CONTEXT AVAILABLE
 ${contextJson}
 
 ═══════════════════════════════════════════════════════════════════
-YOUR TASK
+GOLDEN OUTPUT REQUIREMENTS (CHECK AGAINST THESE)
 ═══════════════════════════════════════════════════════════════════
 
-Identify specific gaps where the draft could be MORE contextual or specific.
+${goldenRequirements}
 
-Look for:
-1. [NEED: x] markers that weren't filled
-2. Generic statements that should reference company specifics
-3. Recommendations that could be more tailored
-4. Missing connections between pain points and findings
+═══════════════════════════════════════════════════════════════════
+FORBIDDEN PATTERNS (FLAG IF FOUND)
+═══════════════════════════════════════════════════════════════════
 
-DO NOT:
-- Judge quality (code does that)
-- Generate questions (separate call)
-- Rewrite anything
+${forbiddenPatterns.length > 0 ? forbiddenPatterns.map(p => `- "${p}"`).join('\n') : 'None configured.'}
+
+═══════════════════════════════════════════════════════════════════
+ASSESSMENT CRITERIA
+═══════════════════════════════════════════════════════════════════
+
+Check for these issues and create gaps for each:
+
+1. EVIDENCE GAPS
+   - Sections missing required evidence types
+   - Claims without evidence IDs
+   - Insufficient evidence count per section
+
+2. CONTEXT GAPS
+   - [NEED: x] markers that weren't filled
+   - Generic statements that should reference company specifics
+   - Missing connections between pain points and findings
+
+3. FORBIDDEN PATTERN VIOLATIONS
+   - Any matches to forbidden patterns above
+   - Hallucinated statistics or benchmarks
+   - Generic industry claims without evidence
+
+4. SPECIFICITY GAPS
+   - Recommendations that could be more tailored
+   - Vague language that lacks precision
+   - Missing objective/practice references
+
+SEVERITY SCALE:
+- 5: Critical - Must fix before publish (forbidden pattern, major gap)
+- 4: High - Strongly recommend fixing (missing key evidence)
+- 3: Medium - Should fix if time permits (weak specificity)
+- 2: Low - Nice to have (minor improvement)
+- 1: Minor - Cosmetic only
 
 ═══════════════════════════════════════════════════════════════════
 OUTPUT FORMAT (JSON only)
@@ -68,13 +129,30 @@ OUTPUT FORMAT (JSON only)
   "gaps": [
     {
       "gap_id": "gap_1",
-      "objective_id": "obj_...",
-      "description": "What specific information is missing",
-      "why_needed": "How this would improve the report"
+      "section": "executive_summary" | "current_state" | "critical_risks" | "opportunities" | "priority_rationale",
+      "objective_id": "obj_..." (if applicable),
+      "description": "What specific information is missing or wrong",
+      "why_needed": "How filling this gap would improve the report",
+      "related_evidence_ids": ["evidence IDs that could help"],
+      "severity": 1-5
     }
-  ]
+  ],
+  "forbidden_violations": [
+    {
+      "pattern": "The matched forbidden pattern",
+      "location": "Where it appears in the draft",
+      "suggestion": "How to fix it"
+    }
+  ],
+  "evidence_coverage": {
+    "executive_summary": { "count": 0, "types": [] },
+    "current_state": { "count": 0, "types": [] },
+    "critical_risks": { "count": 0, "types": [] },
+    "opportunities": { "count": 0, "types": [] },
+    "priority_rationale": { "count": 0, "types": [] }
+  }
 }
 
-If no gaps found, return: { "gaps": [] }
+If no gaps found, return: { "gaps": [], "forbidden_violations": [], "evidence_coverage": {...} }
 `.trim();
 }

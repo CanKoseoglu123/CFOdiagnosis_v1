@@ -15,23 +15,31 @@ const API_URL = import.meta.env.VITE_API_URL;
 const POLL_TIMEOUT_MS = 90000; // 90 seconds max
 const POLL_INTERVAL_MS = 3000; // 3 seconds between polls
 
-// Map status to loader step
+// VS-32: Map status to loader step
 const STATUS_TO_STEP = {
   pending: 'analyzing',
-  generating: 'drafting',
-  awaiting_user: 'drafting',
+  generating: 'generating',
+  critiquing: 'critiquing',
+  awaiting_user: 'awaiting_user',
+  refining: 'refining',
   finalizing: 'finalizing',
   complete: 'finalizing',
-  failed: 'analyzing'
+  completed: 'finalizing',
+  failed: 'analyzing',
+  force_finalized: 'finalizing'
 };
 
 const STATUS_TO_PROGRESS = {
   pending: 10,
-  generating: 50,
+  generating: 35,
+  critiquing: 50,
   awaiting_user: 60,
-  finalizing: 85,
+  refining: 75,
+  finalizing: 90,
   complete: 100,
-  failed: 0
+  completed: 100,
+  failed: 0,
+  force_finalized: 100
 };
 
 export default function InterpretationSection({ runId }) {

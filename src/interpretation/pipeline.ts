@@ -1,8 +1,13 @@
 /**
- * VS-25: Interpretation Pipeline
+ * VS-32: Interpretation Pipeline
  *
  * Orchestrates the iterative refinement loop between Generator and Critic.
  * Handles session state, quality gates, and user question flow.
+ *
+ * Key VS-32 changes:
+ * - Uses OverviewSections instead of legacy DraftReport
+ * - Passes pillar config through all agent calls
+ * - Evidence ID tracking via clarifier_ namespace
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -10,6 +15,7 @@ import {
   InterpretationSession,
   DiagnosticData,
   DraftReport,
+  OverviewSections,
   InterpretedReport,
   QuestionAnswer,
   HeuristicResult,
@@ -17,12 +23,14 @@ import {
   FinalReportOutput,
   StepLog,
   SessionStatus,
+  PillarInterpretationConfig,
 } from './types';
 import { buildTonalityInstructions, getTonalitySummary } from './tonality';
 import { assessHeuristics, countWords } from './validation/quality-assessment';
 import { prioritizeGaps } from './questions/prioritizer';
 import { Generator, Critic } from './agents';
 import { LOOP_CONFIG, FALLBACK_MESSAGE, STEP_ESTIMATES } from './config';
+import { getFPAConfig } from './pillars/fpa';
 
 // ============================================================
 // SESSION MANAGEMENT
@@ -341,11 +349,16 @@ export interface PipelineResult {
 /**
  * Run the interpretation pipeline.
  * This is the main entry point for starting interpretation.
+ * VS-32: Now loads pillar config for the diagnostic pillar.
  */
 export async function runPipeline(
   supabase: SupabaseClient,
-  data: DiagnosticData
+  data: DiagnosticData,
+  pillarId: string = 'fpa'
 ): Promise<PipelineResult> {
+  // VS-32: Get pillar configuration
+  const pillarConfig = getPillarConfig(pillarId);
+
   // Check for existing session
   let session = await getSessionByRunId(supabase, data.run_id);
 
@@ -369,7 +382,7 @@ export async function runPipeline(
 
   try {
     await updateSessionStatus(supabase, session.id, 'generating');
-    return await executeLoop(supabase, session, data);
+    return await executeLoop(supabase, session, data, pillarConfig);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     await updateSessionStatus(supabase, session.id, 'failed');
@@ -378,18 +391,36 @@ export async function runPipeline(
 }
 
 /**
+ * VS-32: Get pillar configuration by ID.
+ * Currently only FP&A is implemented.
+ */
+function getPillarConfig(pillarId: string): PillarInterpretationConfig {
+  if (pillarId === 'fpa') {
+    return getFPAConfig();
+  }
+  // Default to FP&A for now
+  console.warn(`[Pipeline] Unknown pillar '${pillarId}', defaulting to FP&A`);
+  return getFPAConfig();
+}
+
+/**
  * Resume pipeline after user answers questions.
+ * VS-32: Updated to use OverviewSections and pass pillar config.
  */
 export async function resumePipeline(
   supabase: SupabaseClient,
   sessionId: string,
   answers: Array<{ question_id: string; answer: string; time_to_answer_ms: number }>,
-  data: DiagnosticData
+  data: DiagnosticData,
+  pillarId: string = 'fpa'
 ): Promise<PipelineResult> {
   const session = await getSession(supabase, sessionId);
   if (!session) {
     return { status: 'failed', session_id: sessionId, error: 'Session not found' };
   }
+
+  // VS-32: Get pillar configuration
+  const pillarConfig = getPillarConfig(pillarId);
 
   // VS-32: Max rounds circuit breaker - prevent infinite loops
   if (session.current_round >= LOOP_CONFIG.maxRounds) {
@@ -405,7 +436,7 @@ export async function resumePipeline(
       .single();
 
     if (lastStep?.output) {
-      return await forceFinalize(supabase, session, data, lastStep.output as DraftReport);
+      return await forceFinalize(supabase, session, data, lastStep.output as OverviewSections, pillarConfig);
     }
     return { status: 'failed', session_id: sessionId, error: 'Max interpretation rounds exceeded' };
   }
@@ -427,16 +458,19 @@ export async function resumePipeline(
     return { status: 'failed', session_id: sessionId, error: 'No previous draft found' };
   }
 
-  const previousDraft = lastStep.output as DraftReport;
+  // VS-32: Cast to OverviewSections
+  const previousDraft = lastStep.output as OverviewSections;
 
   try {
     await updateSessionStatus(supabase, sessionId, 'generating');
 
-    // Rewrite with answers
+    // VS-32: Rewrite with answers using new function signature
     const { draft, log } = await Generator.rewriteWithAnswers(
-      { previous_draft: previousDraft, answers: processedAnswers, context: data },
+      previousDraft,
+      processedAnswers,
+      session.current_round,
       sessionId,
-      session.current_round
+      pillarConfig
     );
     await saveStep(supabase, log);
 
@@ -450,7 +484,14 @@ export async function resumePipeline(
       .eq('id', sessionId);
 
     // Continue the loop
-    return await executeLoopFromDraft(supabase, { ...session, current_round: session.current_round + 1 }, data, draft);
+    return await executeLoopFromDraft(
+      supabase,
+      { ...session, current_round: session.current_round + 1 },
+      data,
+      draft,
+      2,
+      pillarConfig
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     await updateSessionStatus(supabase, sessionId, 'failed');
@@ -460,18 +501,20 @@ export async function resumePipeline(
 
 /**
  * Execute the main interpretation loop.
+ * VS-32: Now accepts pillar config.
  */
 async function executeLoop(
   supabase: SupabaseClient,
   session: InterpretationSession,
-  data: DiagnosticData
+  data: DiagnosticData,
+  pillarConfig: PillarInterpretationConfig
 ): Promise<PipelineResult> {
   let sequence = 1;
 
   // Build tonality instructions
   const tonalityInstructions = buildTonalityInstructions(data.objectives);
 
-  // Step 1: Initial draft
+  // VS-32: Step 1 - Initial draft with pillar config
   const { draft, log: draftLog } = await Generator.createDraft(
     {
       company_name: data.company_name,
@@ -487,6 +530,7 @@ async function executeLoop(
       objectives: data.objectives,
       top_initiatives: data.initiatives.filter((i) => i.priority === 'P1' || i.priority === 'P2').slice(0, 5),
       tonality_instructions: tonalityInstructions,
+      pillar_config: pillarConfig,
     },
     session.id
   );
@@ -505,6 +549,7 @@ async function executeLoop(
       company_name: data.company_name,
       industry: data.industry,
       objectives_count: data.objectives.length,
+      pillar_id: pillarConfig.pillar_id,
     },
   });
 
@@ -516,11 +561,11 @@ async function executeLoop(
     'draft',
     draftLog.prompt_sent || '',
     draftLog.raw_response || '',
-    { tonality_instructions: tonalityInstructions },
+    { tonality_instructions: tonalityInstructions, pillar_id: pillarConfig.pillar_id },
     draft
   );
 
-  return await executeLoopFromDraft(supabase, session, data, draft, sequence);
+  return await executeLoopFromDraft(supabase, session, data, draft, sequence, pillarConfig);
 }
 
 /**
@@ -531,7 +576,8 @@ async function forceFinalize(
   supabase: SupabaseClient,
   session: InterpretationSession,
   data: DiagnosticData,
-  draft: DraftReport
+  draft: OverviewSections,
+  pillarConfig: PillarInterpretationConfig
 ): Promise<PipelineResult> {
   console.log(`[Pipeline] Force finalizing session ${session.id} due to max rounds`);
 
@@ -540,14 +586,24 @@ async function forceFinalize(
   // Skip critic, use empty feedback
   const emptyFeedback = { ready: true, edits: [] };
 
+  // VS-32: Use new finalize signature with pillar config
   const { report, log: finalizeLog } = await Generator.finalize(
     draft,
     emptyFeedback,
-    session.id
+    session.id,
+    pillarConfig
   );
   await saveStep(supabase, finalizeLog);
 
-  const finalAssessment = assessHeuristics({ ...report, gaps_marked: [] }, data);
+  // Create a DraftReport-like object for heuristic assessment
+  const draftForAssessment = {
+    synthesis: `${draft.executive_summary} ${draft.current_state}`,
+    priority_rationale: draft.priority_rationale,
+    key_insight: draft.opportunities,
+    gaps_marked: draft.gaps_marked || [],
+  };
+
+  const finalAssessment = assessHeuristics(draftForAssessment, data);
 
   const { count: questionsAnswered } = await supabase
     .from('interpretation_questions')
@@ -559,7 +615,7 @@ async function forceFinalize(
     session_id: session.id,
     run_id: data.run_id,
     report,
-    word_count: countWords({ ...report, gaps_marked: [] }),
+    word_count: countWords(draftForAssessment),
     rounds_used: session.current_round + 1,
     questions_answered: questionsAnswered || 0,
     quality_status: finalAssessment.overall,
@@ -580,13 +636,15 @@ async function forceFinalize(
 
 /**
  * Continue loop from a draft (used after initial and rewrites).
+ * VS-32: Updated to use OverviewSections and pass pillar config.
  */
 async function executeLoopFromDraft(
   supabase: SupabaseClient,
   session: InterpretationSession,
   data: DiagnosticData,
-  draft: DraftReport,
-  sequence: number = 2
+  draft: OverviewSections,
+  sequence: number = 2,
+  pillarConfig: PillarInterpretationConfig
 ): Promise<PipelineResult> {
   let currentDraft = draft;
   let round = session.current_round;
@@ -594,12 +652,20 @@ async function executeLoopFromDraft(
   // VS-32: Secondary circuit breaker check
   if (round >= LOOP_CONFIG.maxRounds) {
     console.warn(`[Pipeline] Secondary max rounds check triggered at round ${round}`);
-    return await forceFinalize(supabase, session, data, currentDraft);
+    return await forceFinalize(supabase, session, data, currentDraft, pillarConfig);
   }
 
   while (round < LOOP_CONFIG.maxRounds) {
+    // VS-32: Convert OverviewSections to DraftReport-like for heuristics
+    const draftForAssessment = {
+      synthesis: `${currentDraft.executive_summary} ${currentDraft.current_state}`,
+      priority_rationale: currentDraft.priority_rationale,
+      key_insight: currentDraft.opportunities,
+      gaps_marked: currentDraft.gaps_marked || [],
+    };
+
     // Step 2: Quality assessment
-    const assessment = assessHeuristics(currentDraft, data);
+    const assessment = assessHeuristics(draftForAssessment, data);
     await saveStep(supabase, {
       session_id: session.id,
       step_type: 'quality_check',
@@ -635,11 +701,13 @@ async function executeLoopFromDraft(
       break;
     }
 
-    // Step 3: Critic assesses gaps
+    // VS-32: Step 3 - Critic assesses gaps with pillar config
     const { output: gapsOutput, log: assessLog } = await Critic.assessGaps(
-      { draft: currentDraft, context: data },
+      currentDraft,
+      data,
       session.id,
-      round
+      round,
+      pillarConfig
     );
     await saveStep(supabase, assessLog);
 
@@ -670,10 +738,14 @@ async function executeLoopFromDraft(
       break;
     }
 
+    // VS-32: Generate questions with pillar config and question budget
     const { output: questionsOutput, log: questionsLog } = await Critic.generateQuestions(
-      { prioritized_gaps: prioritizedGaps },
+      prioritizedGaps,
       session.id,
-      round
+      round,
+      pillarConfig,
+      undefined, // previousQuestions - not tracked yet
+      remainingBudget
     );
     await saveStep(supabase, questionsLog);
 
@@ -706,12 +778,13 @@ async function executeLoopFromDraft(
     round++;
   }
 
-  // Step 5: Final polish
+  // VS-32: Step 5 - Final polish with pillar config
   await updateSessionStatus(supabase, session.id, 'finalizing');
 
   const { output: finalFeedback, log: finalLog } = await Critic.getFinalFeedback(
-    { draft: currentDraft },
-    session.id
+    currentDraft,
+    session.id,
+    pillarConfig
   );
   await saveStep(supabase, finalLog);
 
@@ -727,11 +800,12 @@ async function executeLoopFromDraft(
     finalFeedback
   );
 
-  // Step 6: Finalize
+  // VS-32: Step 6 - Finalize with pillar config
   const { report, log: finalizeLog } = await Generator.finalize(
     currentDraft,
     finalFeedback,
-    session.id
+    session.id,
+    pillarConfig
   );
   await saveStep(supabase, finalizeLog);
 
@@ -747,11 +821,15 @@ async function executeLoopFromDraft(
     report
   );
 
-  // Get final assessment for quality metadata
-  const finalAssessment = assessHeuristics(
-    { ...report, gaps_marked: [] },
-    data
-  );
+  // VS-32: Get final assessment for quality metadata
+  // Convert InterpretedReport to DraftReport-like for heuristics
+  const reportForAssessment = {
+    synthesis: report.synthesis,
+    priority_rationale: report.priority_rationale,
+    key_insight: report.key_insight,
+    gaps_marked: [],
+  };
+  const finalAssessment = assessHeuristics(reportForAssessment, data);
 
   // Get answered questions count
   const { count: questionsAnswered } = await supabase
@@ -765,7 +843,7 @@ async function executeLoopFromDraft(
     session_id: session.id,
     run_id: data.run_id,
     report,
-    word_count: countWords({ ...report, gaps_marked: [] }),
+    word_count: countWords(reportForAssessment),
     rounds_used: round + 1,
     questions_answered: questionsAnswered || 0,
     quality_status: finalAssessment.overall,

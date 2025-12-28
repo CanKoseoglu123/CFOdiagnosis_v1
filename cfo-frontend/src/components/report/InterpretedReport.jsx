@@ -1,10 +1,11 @@
 // src/components/report/InterpretedReport.jsx
 // VS-25: Display AI-generated interpretation
+// VS-32: Support OverviewSections 5-section structure
 // VS-36: User-friendly warnings + restart capability
 // PATCH V2: Design system compliance (no circles)
 
 import React, { useState } from 'react';
-import { RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle, Shield, TrendingUp, Lightbulb } from 'lucide-react';
 
 /**
  * VS-36: Transform technical heuristic warnings to user-friendly messages
@@ -108,32 +109,84 @@ export default function InterpretedReport({ report, onFeedback, onRestart }) {
 
       {expanded && (
         <>
-          {/* Synthesis */}
-          {report.report?.synthesis && (
+          {/* VS-32: Executive Summary (from overview or synthesis fallback) */}
+          {(report.report?.overview?.executive_summary || report.report?.synthesis) && (
             <div className="px-6 py-5 border-b border-slate-100">
               <h4 className="text-sm font-semibold text-navy-800 uppercase tracking-wide mb-3">
                 Executive Summary
               </h4>
               <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                {report.report.synthesis}
+                {report.report.overview?.executive_summary || report.report.synthesis}
               </p>
             </div>
           )}
 
-          {/* Priority Rationale */}
-          {report.report?.priority_rationale && (
+          {/* VS-32: Current State */}
+          {report.report?.overview?.current_state && (
             <div className="px-6 py-5 border-b border-slate-100">
-              <h4 className="text-sm font-semibold text-navy-800 uppercase tracking-wide mb-3">
-                Priority Rationale
-              </h4>
-              <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                {report.report.priority_rationale}
-              </p>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-sm bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-4 h-4 text-slate-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-navy-800 mb-2">Current State</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                    {report.report.overview.current_state}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Key Insight */}
-          {report.report?.key_insight && (
+          {/* VS-32: Critical Risks */}
+          {report.report?.overview?.critical_risks && (
+            <div className="px-6 py-5 border-b border-slate-100">
+              <div className="flex items-start gap-3 p-4 bg-red-50 rounded-sm border border-red-100">
+                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-semibold text-red-800 mb-2">Critical Risks</h4>
+                  <p className="text-sm text-red-700 leading-relaxed whitespace-pre-wrap">
+                    {report.report.overview.critical_risks}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VS-32: Opportunities */}
+          {report.report?.overview?.opportunities && (
+            <div className="px-6 py-5 border-b border-slate-100">
+              <div className="flex items-start gap-3 p-4 bg-green-50 rounded-sm border border-green-100">
+                <TrendingUp className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-semibold text-green-800 mb-2">High-Value Opportunities</h4>
+                  <p className="text-sm text-green-700 leading-relaxed whitespace-pre-wrap">
+                    {report.report.overview.opportunities}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VS-32: Priority Rationale */}
+          {(report.report?.overview?.priority_rationale || report.report?.priority_rationale) && (
+            <div className="px-6 py-5 border-b border-slate-100">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-sm bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-4 h-4 text-primary-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-navy-800 mb-2">Priority Rationale</h4>
+                  <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                    {report.report.overview?.priority_rationale || report.report.priority_rationale}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Legacy: Key Insight (fallback for older reports) */}
+          {report.report?.key_insight && !report.report?.overview && (
             <div className="px-6 py-5 border-b border-slate-100">
               <div className="flex items-start gap-3 p-4 bg-primary-50 rounded-sm border border-primary-100">
                 <svg className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,7 +1,15 @@
 /**
- * VS-25: Interpretation Layer Types
- * Version: 5.1
+ * VS-32: Interpretation Layer Types
+ * Version: 6.0
+ *
+ * Updated with pillar-agnostic structures and evidence ID taxonomy.
  */
+
+// Import pillar types for use in this file
+import type { PillarInterpretationConfig } from './pillars/types';
+
+// Re-export pillar types
+export * from './pillars/types';
 
 // ============================================================
 // SESSION TYPES
@@ -74,9 +82,13 @@ export interface DiagnosticData {
 }
 
 // ============================================================
-// DRAFT REPORT (Generator Output)
+// DRAFT REPORT (Generator Output) - VS-32 Updated
 // ============================================================
 
+/**
+ * Legacy DraftReport for backwards compatibility.
+ * @deprecated Use OverviewSections for new implementations.
+ */
 export interface DraftReport {
   synthesis: string;
   priority_rationale: string;
@@ -84,14 +96,34 @@ export interface DraftReport {
   gaps_marked: string[];
 }
 
+/**
+ * VS-32: New 5-section overview structure.
+ */
+export interface OverviewSections {
+  executive_summary: string;
+  current_state: string;
+  critical_risks: string;
+  opportunities: string;
+  priority_rationale: string;
+  evidence_ids_used: string[];
+  gaps_marked: string[];
+}
+
+/**
+ * VS-32: Enhanced interpreted report with evidence tracking.
+ */
 export interface InterpretedReport {
+  // Legacy fields for backwards compatibility
   synthesis: string;
   priority_rationale: string;
   key_insight: string;
+  // New VS-32 fields
+  overview?: OverviewSections;
+  evidence_ids_used?: string[];
 }
 
 // ============================================================
-// GAP & QUESTION TYPES
+// GAP & QUESTION TYPES - VS-32 Updated
 // ============================================================
 
 export interface Gap {
@@ -99,20 +131,34 @@ export interface Gap {
   description: string;
   objective_id: string;
   why_needed?: string;
+  /** VS-32: Evidence IDs related to this gap */
+  related_evidence_ids?: string[];
+  /** VS-32: Severity level for prioritization (1-5) */
+  severity?: number;
 }
 
 export interface PrioritizedGap extends Gap {
   priority_score: number;
 }
 
+/**
+ * VS-32: Question types - Yes/No preferred (70%), MCQ when needed, free text as last resort.
+ */
+export type QuestionType = 'yes_no' | 'mcq' | 'free_text';
+
 export interface InterpretationQuestion {
   question_id: string;
   gap_id: string;
   objective_id: string;
   question: string;
-  type: 'mcq' | 'free_text';
+  /** VS-32: Updated to prefer yes_no questions */
+  type: QuestionType;
   options: string[] | null;
   max_length: number | null;
+  /** VS-32: Explain why this question is being asked */
+  rationale?: string;
+  /** VS-32: Evidence IDs this question will help resolve */
+  resolves_evidence_ids?: string[];
 }
 
 export interface QuestionAnswer {
@@ -147,7 +193,7 @@ export interface HeuristicResult {
 }
 
 // ============================================================
-// AGENT INPUTS
+// AGENT INPUTS - VS-32 Updated with Pillar Support
 // ============================================================
 
 export interface GeneratorInput {
@@ -164,6 +210,12 @@ export interface GeneratorInput {
   objectives: ObjectiveScore[];
   top_initiatives: Initiative[];
   tonality_instructions: string;
+  /** VS-32: Pillar configuration for pillar-agnostic generation */
+  pillar_config?: PillarInterpretationConfig;
+  /** VS-32: Round number for iterative refinement */
+  round_number?: number;
+  /** VS-32: Previous answers from clarifying questions */
+  clarifier_answers?: QuestionAnswer[];
 }
 
 export interface RewriteInput {
@@ -175,14 +227,26 @@ export interface RewriteInput {
 export interface CriticAssessInput {
   draft: DraftReport;
   context: DiagnosticData;
+  /** VS-32: Pillar configuration for validation */
+  pillar_config?: PillarInterpretationConfig;
+  /** VS-32: Round number */
+  round_number?: number;
 }
 
 export interface CriticQuestionsInput {
   prioritized_gaps: PrioritizedGap[];
+  /** VS-32: Pillar configuration for question style */
+  pillar_config?: PillarInterpretationConfig;
+  /** VS-32: Questions already asked (to avoid repetition) */
+  questions_asked_so_far?: InterpretationQuestion[];
+  /** VS-32: Total questions budget remaining */
+  questions_budget?: number;
 }
 
 export interface CriticFinalInput {
   draft: DraftReport;
+  /** VS-32: Pillar configuration for final check */
+  pillar_config?: PillarInterpretationConfig;
 }
 
 // ============================================================

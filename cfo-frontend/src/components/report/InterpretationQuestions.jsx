@@ -1,9 +1,10 @@
 // src/components/report/InterpretationQuestions.jsx
 // VS-25: Question cards for collecting user clarifications
+// VS-32: Yes/No questions (70% preferred), MCQ, and open-ended
 // PATCH V2: Explicit skip semantics, optional badges
 
 import React, { useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Check, X } from 'lucide-react';
 
 export default function InterpretationQuestions({ questions, onSubmit }) {
   const [answers, setAnswers] = useState({});
@@ -91,7 +92,37 @@ export default function InterpretationQuestions({ questions, onSubmit }) {
                     </p>
                   )}
 
-                  {q.type === 'mcq' && q.options ? (
+                  {/* VS-32: Yes/No questions (70% preferred for clarity) */}
+                  {q.type === 'yes_no' ? (
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleAnswerChange(q.question_id, 'yes')}
+                        onFocus={() => handleFocus(q.question_id)}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-sm border text-sm font-medium transition-colors ${
+                          answers[q.question_id] === 'yes'
+                            ? 'border-green-500 bg-green-50 text-green-700'
+                            : 'border-slate-200 text-slate-600 hover:border-green-300 hover:bg-green-50/50'
+                        }`}
+                      >
+                        <Check className="w-4 h-4" />
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAnswerChange(q.question_id, 'no')}
+                        onFocus={() => handleFocus(q.question_id)}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-sm border text-sm font-medium transition-colors ${
+                          answers[q.question_id] === 'no'
+                            ? 'border-red-500 bg-red-50 text-red-700'
+                            : 'border-slate-200 text-slate-600 hover:border-red-300 hover:bg-red-50/50'
+                        }`}
+                      >
+                        <X className="w-4 h-4" />
+                        No
+                      </button>
+                    </div>
+                  ) : q.type === 'mcq' && q.options ? (
                     <div className="space-y-2">
                       {q.options.map((option, optIndex) => (
                         <label
