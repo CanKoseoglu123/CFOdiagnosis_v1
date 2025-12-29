@@ -9,6 +9,9 @@ dist/
 .env.local
 .env.*.local
 
+# Claude Code local settings (contains auth tokens - NEVER commit)
+.claude/settings.local.json
+
 # IDE
 .idea/
 .vscode/

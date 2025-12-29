@@ -1,0 +1,52 @@
+# ==============================================
+# Claude Code Context Exclusions
+# ==============================================
+# These files are excluded from Claude Code context
+# to reduce context usage and improve performance.
+# This does NOT delete files - they remain in your repo.
+
+# Lock files (auto-generated, large, not useful for context)
+package-lock.json
+cfo-frontend/package-lock.json
+
+# Local settings (should not be in repo - contains secrets!)
+.claude/settings.local.json
+
+# Development & Testing scripts (rarely needed in context)
+scripts/
+
+# Test files (exclude unless actively working on tests)
+src/tests/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Build output & dependencies
+node_modules/
+dist/
+build/
+coverage/
+.next/
+
+# IDE & editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (security)
+.env
+.env.local
+.env.*.local
