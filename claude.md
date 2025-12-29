@@ -277,6 +277,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-23: Maturity Footprint | 21 practices grid with evidence states |
 | VS-24: JSON Content Catalog | Zod-validated content in `content/*.json` |
 | VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
+| VS-32: Interpretation v2.1 | Structured overview format with pillar architecture |
 | VS-28: Action Planning | War room for gap selection, timelines, projections |
 | VS-29: Global Sidebar | AppShell + WorkflowSidebar layout pattern |
 | VS-30: Enterprise Layout | ChapterHeader, EnterpriseCanvas, ExecutiveSpine components |

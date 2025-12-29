@@ -272,7 +272,7 @@ export interface StepLog {
   tokens_output: number;
   latency_ms: number;
   temperature?: number;
-  previous_draft?: DraftReport;
+  previous_draft?: DraftReport | OverviewSection[];
   quality_gate_result?: HeuristicResult;
 }
 
@@ -305,4 +305,214 @@ export interface FinalReportOutput {
   quality_status: QualityStatus;
   quality_compromised: boolean;
   heuristic_warnings: string[];
+}
+
+// ============================================================
+// VS-32a: GENERATOR-ONLY INTERPRETATION
+// ============================================================
+
+export interface AIInterpretationInput {
+  run_id: string;
+  pillar_id: string;
+  pillar_name: string;
+  company_name: string;
+  industry: string;
+  finance_team_size: number | null;
+  pain_points: string[] | null;
+
+  // VS-32c: Optional diagnostic answers for critic context
+  diagnostic_answers?: Array<{
+    question_id: string;
+    question_text: string;
+    answer: string;
+  }>;
+
+  execution_score: number;
+  maturity_level: 1 | 2 | 3 | 4;
+  level_name: string;
+  capped: boolean;
+  capped_by: string[];
+
+  objectives: Array<{
+    id: string;
+    name: string;
+    score: number;
+    importance: 1 | 2 | 3 | 4 | 5;
+    has_critical_failure: boolean;
+  }>;
+
+  failed_gates: Array<{
+    level: number;
+    blocking_questions: Array<{ id: string; title: string }>;
+  }>;
+
+  critical_failures: Array<{
+    question_id: string;
+    question_title: string;
+    objective_name: string;
+  }>;
+
+  priority_misalignments: Array<{
+    objective_name: string;
+    importance: number;
+    score: number;
+  }>;
+
+  top_strengths: Array<{ objective_name: string; score: number }>;
+  top_weaknesses: Array<{ objective_name: string; score: number }>;
+
+  available_evidence: string[];
+}
+
+export type OverviewSectionId =
+  | 'execution_snapshot'
+  | 'priority_alignment'
+  | 'strengths_weaknesses'
+  | 'next_level_unlock'
+  | 'capacity_check';
+
+export interface OverviewSection {
+  id: OverviewSectionId;
+  title: string;
+  content: string;
+  format: 'prose' | 'bullets';
+  bullets?: string[];
+  evidence_ids: string[];
+}
+
+export type InterpretationReportStatus = 'pending' | 'generating' | 'completed' | 'failed';
+
+export interface InterpretationReportRecord {
+  id: string;
+  run_id: string;
+  version: number;
+  status: InterpretationReportStatus;
+  overview_sections: OverviewSection[] | null;
+  error_message: string | null;
+  model_used: string | null;
+  tokens_used: number | null;
+  heuristics_result: VS32bHeuristicResult | null;
+  generation_attempts: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================
+// VS-32b: QUALITY HEURISTICS LAYER
+// ============================================================
+
+export type VS32bHeuristicSeverity = 'red' | 'yellow';
+
+export interface VS32bHeuristicViolation {
+  section_id: string | null;
+  rule: string;
+  message: string;
+  severity: VS32bHeuristicSeverity;
+}
+
+export interface VS32bHeuristicResult {
+  passed: boolean;
+  violations: VS32bHeuristicViolation[];
+  red_count: number;
+  yellow_count: number;
+}
+
+export interface GeneratorOverviewResult {
+  sections: OverviewSection[];
+  tokensUsed: number;
+  heuristics: VS32bHeuristicResult;
+  attempts: number;
+}
+
+// ============================================================
+// VS-32c: CRITIC & CLARIFYING QUESTIONS
+// ============================================================
+
+export type VS32cPipelineStage =
+  | 'pending'
+  | 'generating'
+  | 'heuristics'
+  | 'critic'
+  | 'awaiting_answers'
+  | 'rewriting'
+  | 'completed'
+  | 'failed';
+
+export interface VS32cGeneratedQuestion {
+  question_id: string;
+  gap_id: string;
+  question_text: string;
+  question_type: 'yes_no' | 'mcq';
+  options?: string[];
+  context_field: string;
+  rationale: string;
+  related_diagnostic_questions: string[];
+  why_not_covered: string;
+}
+
+export interface VS32cClarifierAnswer {
+  question_id: string;
+  question_text: string;
+  answer: boolean | string;
+  evidence_id: string;
+  answered_at: string;
+}
+
+export interface VS32cGap {
+  gap_id: string;
+  section_id: string;
+  gap_type: 'structural' | 'quality' | 'context';
+  description: string;
+  fixable_by: 'rewrite' | 'clarifying_question';
+}
+
+export interface VS32cCriticAssessment {
+  gaps: VS32cGap[];
+  overall_quality: 'green' | 'yellow' | 'red';
+  rewrite_instructions: string[];
+  generated_questions: VS32cGeneratedQuestion[];
+}
+
+export interface VS32cPipelineState {
+  run_id: string;
+  session_id: string;
+  current_stage: VS32cPipelineStage;
+  loop_round: number;
+  total_questions_asked: number;
+  overview_sections: OverviewSection[] | null;
+  pending_questions: VS32cGeneratedQuestion[] | null;
+  clarifier_answers: VS32cClarifierAnswer[];
+  quality_status: 'green' | 'yellow' | 'red';
+  heuristics_result: VS32bHeuristicResult | null;
+  error_message?: string;
+}
+
+export interface VS32cDiagnosticAnswer {
+  question_id: string;
+  question_text: string;
+  answer: string;
+}
+
+export interface VS32cAIInterpretationInput extends AIInterpretationInput {
+  diagnostic_answers: VS32cDiagnosticAnswer[];
+  clarifier_answers?: VS32cClarifierAnswer[];
+}
+
+export interface GoldenOutputPattern {
+  section_id: string;
+  required_evidence_types: string[];
+  min_evidence_count: number;
+  exemplar_insights: string[];
+  anti_patterns: string[];
+  context_requirements: string[];
+}
+
+export interface QuestionExemplar {
+  context_type: string;
+  yes_no_example: string;
+  mcq_example?: {
+    question: string;
+    options: string[];
+  };
+  when_to_ask: string;
 }

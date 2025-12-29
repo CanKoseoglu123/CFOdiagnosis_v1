@@ -18,7 +18,16 @@ import {
   DiagnosticData,
   ObjectiveScore,
   Initiative,
+  precomputeInput,
+  generateOverview,
 } from "./interpretation";
+import {
+  runVS32cPipeline,
+  submitAnswersAndContinue,
+  getVS32cStatus,
+  getVS32cReport,
+} from "./interpretation/pipeline-vs32c";
+import { AIInterpretationInput, VS32cClarifierAnswer } from "./interpretation/types";
 import { deriveCriticalRisks } from "./risks";
 import { calculateMaturityV2 } from "./maturity/engine";
 import {
@@ -731,7 +740,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS25 — Start interpretation (returns 202, async processing)
+// VS-32c — Start interpretation (Critic + Clarifying Questions pipeline)
 // ------------------------------------------------------------------
 app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
   const runId = req.params.id;
@@ -739,7 +748,7 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
   // Verify run exists and is completed
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context")
+    .select("id, status")
     .eq("id", runId)
     .single();
 
@@ -754,191 +763,94 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
   // VS-36: Support restart flag to regenerate insights
   const { restart } = req.body || {};
 
-  // Check for existing session - prevent duplicate pipelines
-  const existingSession = await getSessionByRunId(req.supabase, runId);
-  if (existingSession) {
-    // VS-36: If restart=true and session is complete, delete it and start fresh
-    if (restart === true && existingSession.status === "complete") {
-      // Delete existing session data to allow fresh start
+  // Check for existing VS-32c pipeline state
+  const existingStatus = await getVS32cStatus(req.supabase, runId);
+  if (existingStatus) {
+    const { status, progress, pending_questions } = existingStatus;
+
+    // VS-36: If restart=true and completed, clear and start fresh
+    if (restart === true && status === "completed") {
       await req.supabase
         .from("interpretation_reports")
         .delete()
         .eq("run_id", runId);
       await req.supabase
-        .from("interpretation_steps")
-        .delete()
-        .eq("session_id", existingSession.id);
-      await req.supabase
         .from("interpretation_sessions")
         .delete()
-        .eq("id", existingSession.id);
+        .eq("run_id", runId);
       // Continue to create new session below
     } else {
-      // If complete (and not restart), return the report
-      if (existingSession.status === "complete") {
-        const report = await getReport(req.supabase, runId);
-        if (report) {
-          return res.json({
-            session_id: existingSession.id,
-            status: "complete",
-            report,
-          });
-        }
+      // If completed, return the report
+      if (status === "completed") {
+        const report = await getVS32cReport(req.supabase, runId);
+        return res.json({
+          session_id: runId,
+          status: "completed",
+          overview_sections: report?.sections || [],
+          quality_status: report?.quality_status || "green",
+          rounds_used: report?.rounds_used || 1,
+          heuristic_warnings: report?.heuristic_warnings || [],
+        });
       }
-      // If already in progress, return current status (no duplicate)
-      if (existingSession.status === "pending" || existingSession.status === "generating" || existingSession.status === "finalizing") {
+
+      // If in progress, return current status
+      if (["pending", "generating", "heuristics", "critic", "rewriting"].includes(status)) {
         return res.status(202).json({
-          session_id: existingSession.id,
-          status: existingSession.status,
-          message: "Interpretation already in progress",
+          session_id: runId,
+          status,
+          loop_round: progress?.current_round || 1,
+          message: "Interpretation in progress",
           poll_url: `/diagnostic-runs/${runId}/interpret/status`,
         });
       }
-      // If awaiting_user, return questions
-      if (existingSession.status === "awaiting_user") {
-        const questions = await getQuestions(req.supabase, existingSession.id);
+
+      // If awaiting_answers, return pending questions
+      if (status === "awaiting_answers" && pending_questions) {
         return res.status(202).json({
-          session_id: existingSession.id,
-          status: "awaiting_user",
-          questions,
+          session_id: runId,
+          status: "awaiting_answers",
+          pending_questions,
+          loop_round: progress?.current_round || 1,
         });
       }
-      // If failed, allow retry by continuing (will create new session below)
+
+      // If failed, allow retry
     }
   }
 
-  // Build diagnostic data for interpretation
-  let spec;
+  // Build VS-32c input using precompute helper
   try {
-    spec = SpecRegistry.get(run.spec_version);
-  } catch (err) {
-    return res.status(500).json({ error: String(err) });
-  }
+    const input = await precomputeInput(req.supabase, runId);
 
-  const { data: scores } = await req.supabase
-    .from("diagnostic_scores")
-    .select("question_id, score")
-    .eq("run_id", runId);
+    // Run VS-32c pipeline
+    const result = await runVS32cPipeline(req.supabase, input);
 
-  const { data: inputs } = await req.supabase
-    .from("diagnostic_inputs")
-    .select("question_id, value")
-    .eq("run_id", runId);
-
-  const { data: calibration } = await req.supabase
-    .from("diagnostic_runs")
-    .select("calibration")
-    .eq("id", runId)
-    .single();
-
-  const aggregateSpec = toAggregateSpec(spec);
-  const aggregateResult = aggregateResults(aggregateSpec, scores || []);
-
-  // Calculate maturity level
-  const maturityResult = calculateMaturityV2({
-    answers: (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
-    questions: spec.questions.map((q: any) => ({ id: q.id, text: q.text, level: q.level })),
-  });
-
-  // Build objective scores
-  const objectiveScores: ObjectiveScore[] = (spec.objectives || []).map((obj: any) => {
-    const objQuestions = spec.questions.filter((q: any) => q.objective_id === obj.id);
-    const objScores = (scores || []).filter((s: any) =>
-      objQuestions.some((q: any) => q.id === s.question_id)
-    );
-    const avgScore = objScores.length > 0
-      ? objScores.reduce((sum: number, s: any) => sum + s.score, 0) / objScores.length * 100
-      : 0;
-    const hasCritical = objQuestions.some((q: any) => {
-      if (!q.is_critical) return false;
-      const input = (inputs || []).find((i: any) => i.question_id === q.id);
-      return input?.value !== true;
-    });
-    const importance = calibration?.calibration?.importance_map?.[obj.id] || 3;
-
-    return {
-      id: obj.id,
-      name: obj.name,
-      score: Math.round(avgScore),
-      has_critical_failure: hasCritical,
-      importance,
-      level: obj.level,
-    };
-  });
-
-  // Build initiatives
-  const initiatives: Initiative[] = (spec.initiatives || []).map((init: any) => {
-    const obj = objectiveScores.find((o) => o.id === init.objective_id);
-    let priority: "P1" | "P2" | "P3" = "P3";
-    if (obj?.has_critical_failure || (obj?.score || 0) < 50) {
-      priority = "P1";
-    } else if ((obj?.score || 0) < 80) {
-      priority = "P2";
-    }
-    return {
-      id: init.id,
-      title: init.title,
-      recommendation: init.description || "",
-      priority,
-      objective_id: init.objective_id,
-    };
-  });
-
-  // Get critical risks for capping info
-  const criticalRisks = deriveCriticalRisks(
-    (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
-    spec
-  );
-
-  // Normalize context for backward compatibility
-  const normalizedCtx = normalizeContext(run.context);
-
-  const diagnosticData: DiagnosticData = {
-    run_id: runId,
-    company_name: normalizedCtx.company.name,
-    industry: normalizedCtx.company.industry || "Unknown Industry",
-    team_size: normalizedCtx.pillar?.team_size || undefined,
-    pain_points: normalizedCtx.pillar?.pain_points || undefined,
-    systems: normalizedCtx.pillar?.tools?.join(", ") || undefined,
-    execution_score: maturityResult.execution_score,
-    maturity_level: maturityResult.actual_level,
-    level_name: maturityResult.actual_label,
-    capped: maturityResult.capped,
-    capped_by_titles: criticalRisks.map((r) => r.pillarName),
-    objectives: objectiveScores,
-    initiatives,
-    critical_risks: criticalRisks.map((r) => ({
-      id: r.questionId,
-      title: r.questionText,
-      objective_id: spec.questions.find((q: any) => q.id === r.questionId)?.objective_id || "",
-    })),
-  };
-
-  // Run pipeline (synchronous for now, can be made async with job queue later)
-  try {
-    const result = await runPipeline(req.supabase, diagnosticData);
-
-    if (result.status === "awaiting_user") {
+    // Map result to VS-32c response format
+    if (result.status === "awaiting_answers") {
       return res.status(202).json({
         session_id: result.session_id,
-        status: "awaiting_user",
-        questions: result.questions,
+        status: "awaiting_answers",
+        pending_questions: result.pending_questions || [],
+        loop_round: result.loop_round || 1,
         poll_url: `/diagnostic-runs/${runId}/interpret/status`,
       });
     }
 
-    if (result.status === "complete") {
+    if (result.status === "completed") {
       return res.json({
         session_id: result.session_id,
-        status: "complete",
-        report: result.report,
+        status: "completed",
+        overview_sections: result.overview_sections || [],
+        quality_status: result.quality_status || "green",
+        rounds_used: result.loop_round || 1,
+        heuristics_result: result.heuristics_result || null,
       });
     }
 
     return res.status(500).json({
       session_id: result.session_id,
       status: "failed",
-      error: result.error,
+      error: result.error_message || "Pipeline failed",
     });
   } catch (error) {
     return res.status(500).json({
@@ -948,54 +860,63 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS25 — Get interpretation status
+// VS-32c — Get interpretation status
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id/interpret/status", async (req, res) => {
   const runId = req.params.id;
 
-  const session = await getSessionByRunId(req.supabase, runId);
-  if (!session) {
+  const pipelineStatus = await getVS32cStatus(req.supabase, runId);
+  if (!pipelineStatus) {
     return res.status(404).json({ error: "No interpretation session found" });
   }
 
-  if (session.status === "complete") {
-    const report = await getReport(req.supabase, runId);
+  const { status, progress, pending_questions } = pipelineStatus;
+
+  // Completed - include overview sections
+  if (status === "completed") {
+    const report = await getVS32cReport(req.supabase, runId);
     return res.json({
-      session_id: session.id,
-      status: "complete",
-      report,
+      session_id: runId,
+      status: "completed",
+      overview_sections: report?.sections || [],
+      quality_status: report?.quality_status || "green",
+      rounds_used: report?.rounds_used || 1,
+      heuristics_result: report?.heuristics_result || null,
+      total_questions_asked: progress?.total_questions_asked || 0,
     });
   }
 
-  if (session.status === "awaiting_user") {
-    const questions = await getQuestions(req.supabase, session.id);
+  // Awaiting user answers - include questions
+  if (status === "awaiting_answers") {
     return res.json({
-      session_id: session.id,
-      status: "awaiting_user",
-      questions,
+      session_id: runId,
+      status: "awaiting_answers",
+      pending_questions: pending_questions || [],
+      loop_round: progress?.current_round || 1,
+      total_questions_asked: progress?.total_questions_asked || 0,
     });
   }
 
-  if (session.status === "failed") {
+  // Failed state
+  if (status === "failed") {
     return res.json({
-      session_id: session.id,
+      session_id: runId,
       status: "failed",
+      error_message: "Pipeline failed",
     });
   }
 
-  // Still processing
+  // Still processing (generating, heuristics, critic, rewriting)
   return res.json({
-    session_id: session.id,
-    status: session.status,
-    progress: {
-      current_round: session.current_round,
-      total_questions_asked: session.total_questions_asked,
-    },
+    session_id: runId,
+    status,
+    loop_round: progress?.current_round || 1,
+    total_questions_asked: progress?.total_questions_asked || 0,
   });
 });
 
 // ------------------------------------------------------------------
-// VS25 — Submit interpretation answers
+// VS-32c — Submit interpretation answers (clarifying questions)
 // ------------------------------------------------------------------
 app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
   const runId = req.params.id;
@@ -1005,150 +926,52 @@ app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
     return res.status(400).json({ error: "answers array is required" });
   }
 
-  const session = await getSessionByRunId(req.supabase, runId);
-  if (!session) {
+  // Check pipeline is awaiting answers
+  const pipelineStatus = await getVS32cStatus(req.supabase, runId);
+  if (!pipelineStatus) {
     return res.status(404).json({ error: "No interpretation session found" });
   }
 
-  if (session.status !== "awaiting_user") {
-    return res.status(409).json({ error: "Session is not awaiting answers" });
-  }
-
-  // Get run context for resuming
-  const { data: run } = await req.supabase
-    .from("diagnostic_runs")
-    .select("id, spec_version, context, calibration")
-    .eq("id", runId)
-    .single();
-
-  if (!run) {
-    return res.status(404).json({ error: "Run not found" });
-  }
-
-  // Rebuild diagnostic data (same as start endpoint)
-  let spec;
-  try {
-    spec = SpecRegistry.get(run.spec_version);
-  } catch (err) {
-    return res.status(500).json({ error: String(err) });
-  }
-
-  const { data: scores } = await req.supabase
-    .from("diagnostic_scores")
-    .select("question_id, score")
-    .eq("run_id", runId);
-
-  const { data: inputs } = await req.supabase
-    .from("diagnostic_inputs")
-    .select("question_id, value")
-    .eq("run_id", runId);
-
-  const aggregateSpec = toAggregateSpec(spec);
-  const aggregateResult = aggregateResults(aggregateSpec, scores || []);
-
-  const objectiveScores: ObjectiveScore[] = (spec.objectives || []).map((obj: any) => {
-    const objQuestions = spec.questions.filter((q: any) => q.objective_id === obj.id);
-    const objScores = (scores || []).filter((s: any) =>
-      objQuestions.some((q: any) => q.id === s.question_id)
-    );
-    const avgScore = objScores.length > 0
-      ? objScores.reduce((sum: number, s: any) => sum + s.score, 0) / objScores.length * 100
-      : 0;
-    const hasCritical = objQuestions.some((q: any) => {
-      if (!q.is_critical) return false;
-      const input = (inputs || []).find((i: any) => i.question_id === q.id);
-      return input?.value !== true;
+  if (pipelineStatus.status !== "awaiting_answers") {
+    return res.status(409).json({
+      error: "Session is not awaiting answers",
+      current_status: pipelineStatus.status,
     });
-    const importance = run.calibration?.importance_map?.[obj.id] || 3;
-
-    return {
-      id: obj.id,
-      name: obj.name,
-      score: Math.round(avgScore),
-      has_critical_failure: hasCritical,
-      importance,
-      level: obj.level,
-    };
-  });
-
-  const initiatives: Initiative[] = (spec.initiatives || []).map((init: any) => {
-    const obj = objectiveScores.find((o) => o.id === init.objective_id);
-    let priority: "P1" | "P2" | "P3" = "P3";
-    if (obj?.has_critical_failure || (obj?.score || 0) < 50) {
-      priority = "P1";
-    } else if ((obj?.score || 0) < 80) {
-      priority = "P2";
-    }
-    return {
-      id: init.id,
-      title: init.title,
-      recommendation: init.description || "",
-      priority,
-      objective_id: init.objective_id,
-    };
-  });
-
-  // Get critical risks for capping info (inputs first, then spec)
-  const criticalRisks = deriveCriticalRisks(
-    (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
-    spec
-  );
-
-  // Calculate maturity using maturity engine
-  const maturityResult = calculateMaturityV2({
-    answers: (inputs || []).map((i: any) => ({ question_id: i.question_id, value: i.value })),
-    questions: spec.questions.map((q: any) => ({ id: q.id, text: q.text, level: q.level })),
-  });
-
-  // Normalize context for backward compatibility
-  const normalizedCtx = normalizeContext(run.context);
-
-  const diagnosticData: DiagnosticData = {
-    run_id: runId,
-    company_name: normalizedCtx.company.name,
-    industry: normalizedCtx.company.industry || "Unknown Industry",
-    team_size: normalizedCtx.pillar?.team_size || undefined,
-    pain_points: normalizedCtx.pillar?.pain_points || undefined,
-    systems: normalizedCtx.pillar?.tools?.join(", ") || undefined,
-    execution_score: maturityResult.execution_score,
-    maturity_level: maturityResult.actual_level,
-    level_name: maturityResult.actual_label,
-    capped: maturityResult.capped,
-    capped_by_titles: criticalRisks.map((r) => r.pillarName),
-    objectives: objectiveScores,
-    initiatives,
-    critical_risks: criticalRisks.map((r) => ({
-      id: r.questionId,
-      title: r.questionText,
-      objective_id: spec.questions.find((q: any) => q.id === r.questionId)?.objective_id || "",
-    })),
-  };
+  }
 
   try {
-    const result = await resumePipeline(req.supabase, session.id, answers, diagnosticData);
+    // Build input and submit answers using VS-32c pipeline
+    const input = await precomputeInput(req.supabase, runId);
+    const result = await submitAnswersAndContinue(req.supabase, runId, answers, input);
 
-    if (result.status === "awaiting_user") {
+    if (result.status === "awaiting_answers") {
       return res.status(202).json({
         session_id: result.session_id,
-        status: "awaiting_user",
-        questions: result.questions,
+        status: "awaiting_answers",
+        pending_questions: result.pending_questions || [],
+        loop_round: result.loop_round || 1,
       });
     }
 
-    if (result.status === "complete") {
+    if (result.status === "completed") {
       return res.json({
         session_id: result.session_id,
-        status: "complete",
-        report: result.report,
+        status: "completed",
+        overview_sections: result.overview_sections || [],
+        quality_status: result.quality_status || "green",
+        heuristics_result: result.heuristics_result,
+        loop_round: result.loop_round || 1,
+        total_questions_asked: result.total_questions_asked || 0,
       });
     }
 
     return res.status(500).json({
       session_id: result.session_id,
       status: "failed",
-      error: result.error,
+      error: result.error_message || "Pipeline failed",
     });
   } catch (error) {
+    console.error("VS-32c answer submission failed:", error);
     return res.status(500).json({
       error: error instanceof Error ? error.message : "Unknown error",
     });
@@ -1156,17 +979,26 @@ app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS25 — Get interpretation report
+// VS-32c — Get interpretation report
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id/interpret/report", async (req, res) => {
   const runId = req.params.id;
 
-  const report = await getReport(req.supabase, runId);
+  const report = await getVS32cReport(req.supabase, runId);
   if (!report) {
     return res.status(404).json({ error: "No interpretation report found" });
   }
 
-  res.json(report);
+  // Return VS-32c format
+  res.json({
+    session_id: runId,
+    status: "completed",
+    overview_sections: report.sections || [],
+    quality_status: report.quality_status || "green",
+    heuristics_result: report.heuristics_result,
+    rounds_used: report.rounds_used || 1,
+    total_questions_asked: report.total_questions_asked || 0,
+  });
 });
 
 // ------------------------------------------------------------------
@@ -1198,6 +1030,371 @@ app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
   }
 
   res.json({ success: true });
+});
+
+// ------------------------------------------------------------------
+// VS-32a — Start overview generation (single-call, async)
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/overview/start", async (req, res) => {
+  const runId = req.params.id;
+
+  // Verify run exists and is completed
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed before overview generation" });
+  }
+
+  // Check for existing in-progress generation (prevent race condition)
+  const { data: existing } = await req.supabase
+    .from("interpretation_reports")
+    .select("id, status, overview_sections, version")
+    .eq("run_id", runId)
+    .order("version", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (existing) {
+    // If already generating, return status
+    if (existing.status === "generating") {
+      return res.status(202).json({
+        status: "generating",
+        report_id: existing.id,
+        message: "Generation already in progress",
+      });
+    }
+    // If already completed with overview, return it
+    if (existing.status === "completed" && existing.overview_sections) {
+      return res.json({
+        status: "completed",
+        report_id: existing.id,
+        overview_sections: existing.overview_sections,
+      });
+    }
+  }
+
+  // Create new report record
+  const { data: report, error: insertError } = await req.supabase
+    .from("interpretation_reports")
+    .insert({
+      run_id: runId,
+      status: "generating",
+      version: (existing?.version || 0) + 1,
+    })
+    .select()
+    .single();
+
+  if (insertError || !report) {
+    return res.status(500).json({ error: insertError?.message || "Failed to create report" });
+  }
+
+  // Generate async (don't block response)
+  const supabaseClient = req.supabase;
+  (async () => {
+    try {
+      const input = await precomputeInput(supabaseClient, runId);
+      // VS-32b: Now returns heuristics and attempts
+      const { sections, tokensUsed, heuristics, attempts } = await generateOverview(input);
+
+      await supabaseClient
+        .from("interpretation_reports")
+        .update({
+          status: "completed",
+          overview_sections: sections,
+          model_used: "gpt-4o",
+          tokens_used: tokensUsed,
+          heuristics_result: heuristics,
+          generation_attempts: attempts,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", report.id);
+    } catch (error: any) {
+      console.error("VS-32a generation failed:", error);
+      await supabaseClient
+        .from("interpretation_reports")
+        .update({
+          status: "failed",
+          error_message: error.message,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", report.id);
+    }
+  })();
+
+  return res.status(202).json({
+    status: "generating",
+    report_id: report.id,
+    poll_url: `/diagnostic-runs/${runId}/overview/status`,
+  });
+});
+
+// ------------------------------------------------------------------
+// VS-32a — Get overview status
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/overview/status", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data: report, error } = await req.supabase
+    .from("interpretation_reports")
+    .select("*")
+    .eq("run_id", runId)
+    .order("version", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error || !report) {
+    return res.json({ status: "none", report: null });
+  }
+
+  return res.json({
+    status: report.status,
+    report: {
+      id: report.id,
+      version: report.version,
+      overview_sections: report.overview_sections,
+      error_message: report.error_message,
+      model_used: report.model_used,
+      tokens_used: report.tokens_used,
+      // VS-32b: Include heuristics results
+      heuristics_result: report.heuristics_result,
+      generation_attempts: report.generation_attempts,
+      created_at: report.created_at,
+      updated_at: report.updated_at,
+    },
+  });
+});
+
+// ------------------------------------------------------------------
+// VS-32a — Regenerate overview
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/overview/regenerate", async (req, res) => {
+  const runId = req.params.id;
+
+  // Verify run exists and is completed
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed" });
+  }
+
+  // Get current version
+  const { data: current } = await req.supabase
+    .from("interpretation_reports")
+    .select("version")
+    .eq("run_id", runId)
+    .order("version", { ascending: false })
+    .limit(1)
+    .single();
+
+  const newVersion = (current?.version || 0) + 1;
+
+  // Create new version
+  const { data: report, error: insertError } = await req.supabase
+    .from("interpretation_reports")
+    .insert({
+      run_id: runId,
+      status: "generating",
+      version: newVersion,
+    })
+    .select()
+    .single();
+
+  if (insertError || !report) {
+    return res.status(500).json({ error: insertError?.message || "Failed to create report" });
+  }
+
+  // Generate async
+  const supabaseClient = req.supabase;
+  (async () => {
+    try {
+      const input = await precomputeInput(supabaseClient, runId);
+      // VS-32b: Now returns heuristics and attempts
+      const { sections, tokensUsed, heuristics, attempts } = await generateOverview(input);
+
+      await supabaseClient
+        .from("interpretation_reports")
+        .update({
+          status: "completed",
+          overview_sections: sections,
+          model_used: "gpt-4o",
+          tokens_used: tokensUsed,
+          heuristics_result: heuristics,
+          generation_attempts: attempts,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", report.id);
+    } catch (error: any) {
+      console.error("VS-32a regeneration failed:", error);
+      await supabaseClient
+        .from("interpretation_reports")
+        .update({
+          status: "failed",
+          error_message: error.message,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", report.id);
+    }
+  })();
+
+  return res.status(202).json({
+    status: "generating",
+    report_id: report.id,
+    version: newVersion,
+    poll_url: `/diagnostic-runs/${runId}/overview/status`,
+  });
+});
+
+// ------------------------------------------------------------------
+// VS-32c — Start overview generation with Critic loop
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/overview/vs32c/start", async (req, res) => {
+  const runId = req.params.id;
+
+  // Verify run exists and is completed
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed before overview generation" });
+  }
+
+  // Check for existing in-progress generation
+  const { data: existing } = await req.supabase
+    .from("interpretation_reports")
+    .select("id, status, vs32c_stage")
+    .eq("run_id", runId)
+    .order("version", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (existing && ["generating", "critic", "awaiting_answers", "rewriting"].includes(existing.status)) {
+    const statusResult = await getVS32cStatus(req.supabase, runId);
+    return res.status(202).json(statusResult);
+  }
+
+  // Start VS-32c pipeline asynchronously
+  const supabaseClient = req.supabase;
+  (async () => {
+    try {
+      const input = await precomputeInput(supabaseClient, runId);
+      await runVS32cPipeline(supabaseClient, input);
+    } catch (error: any) {
+      console.error("VS-32c pipeline failed:", error);
+    }
+  })();
+
+  return res.status(202).json({
+    status: "generating",
+    message: "VS-32c pipeline started",
+    poll_url: `/diagnostic-runs/${runId}/overview/vs32c/status`,
+  });
+});
+
+// ------------------------------------------------------------------
+// VS-32c — Get pipeline status (poll endpoint)
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/overview/vs32c/status", async (req, res) => {
+  const runId = req.params.id;
+
+  const statusResult = await getVS32cStatus(req.supabase, runId);
+  return res.json(statusResult);
+});
+
+// ------------------------------------------------------------------
+// VS-32c — Submit clarifier answers
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/overview/vs32c/answer", async (req, res) => {
+  const runId = req.params.id;
+  const { answers } = req.body;
+
+  if (!answers || !Array.isArray(answers)) {
+    return res.status(400).json({ error: "answers array is required" });
+  }
+
+  // Validate answer format
+  for (const answer of answers) {
+    if (!answer.question_id || typeof answer.answer !== "string") {
+      return res.status(400).json({
+        error: "Each answer must have question_id and answer string"
+      });
+    }
+  }
+
+  // Get the current interpretation report
+  const { data: report, error: reportError } = await req.supabase
+    .from("interpretation_reports")
+    .select("id, status, vs32c_stage")
+    .eq("run_id", runId)
+    .order("version", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (reportError || !report) {
+    return res.status(404).json({ error: "No interpretation report found" });
+  }
+
+  if (report.status !== "awaiting_answers" && report.vs32c_stage !== "awaiting_answers") {
+    return res.status(409).json({
+      error: "Pipeline is not awaiting answers",
+      current_status: report.status,
+      current_stage: report.vs32c_stage
+    });
+  }
+
+  // Continue pipeline with answers asynchronously
+  const supabaseClient = req.supabase;
+  (async () => {
+    try {
+      const input = await precomputeInput(supabaseClient, runId);
+      await submitAnswersAndContinue(supabaseClient, runId, answers, input);
+    } catch (error: any) {
+      console.error("VS-32c answer submission failed:", error);
+    }
+  })();
+
+  return res.status(202).json({
+    status: "rewriting",
+    message: "Answers received, continuing pipeline",
+    poll_url: `/diagnostic-runs/${runId}/overview/vs32c/status`,
+  });
+});
+
+// ------------------------------------------------------------------
+// VS-32c — Get final report with heuristics
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/overview/vs32c/report", async (req, res) => {
+  const runId = req.params.id;
+
+  const report = await getVS32cReport(req.supabase, runId);
+
+  if (!report) {
+    return res.status(404).json({ error: "No VS-32c report found" });
+  }
+
+  return res.json(report);
 });
 
 // ------------------------------------------------------------------
