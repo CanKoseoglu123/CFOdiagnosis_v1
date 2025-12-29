@@ -27,7 +27,7 @@ export async function generateActionProposal(
 
   // Load spec from registry
   const { SpecRegistry } = await import('../../specs/registry');
-  const spec = SpecRegistry.get('2.9.0');
+  const spec = SpecRegistry.get('v2.9.0');
 
   // Get diagnostic inputs for objective score calculation
   const { data: runData } = await supabase
