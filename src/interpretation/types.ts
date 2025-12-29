@@ -516,3 +516,77 @@ export interface QuestionExemplar {
   };
   when_to_ask: string;
 }
+
+// ============================================================
+// VS-32d: ACTION PLANNING TAB
+// ============================================================
+
+export interface PlanningContext {
+  target_maturity_level: 1 | 2 | 3 | 4 | null;
+  bandwidth: 'limited' | 'moderate' | 'available' | null;
+  priority_focus: string[];
+  team_size_override: number | null;
+}
+
+export interface CapacityResult {
+  band: 'low' | 'medium' | 'high';
+  max_actions: {
+    '6m': number;
+    '12m': number;
+    '24m': number;
+  };
+  assumed: boolean;
+}
+
+export interface ActionRationale {
+  why_selected: string;
+  why_this_timeline: string;
+  expected_impact: string;
+}
+
+export interface ProposedAction {
+  question_id: string;
+  action_title: string;
+  action_recommendation: string;
+  timeline: '6m' | '12m' | '24m';
+  rationale: ActionRationale;
+  evidence_ids: string[];
+  priority_rank: number;
+  is_critical: boolean;
+  is_gate_blocker: boolean;
+}
+
+export interface ActionNarrative {
+  situation: string;
+  challenge: string;
+  approach: string;
+  expected_outcome: string;
+}
+
+export interface ActionPlanProposal {
+  narrative: ActionNarrative;
+  actions: ProposedAction[];
+  summary: {
+    total_actions: number;
+    by_timeline: { '6m': number; '12m': number; '24m': number };
+    addresses_critical: number;
+    unlocks_gates: number;
+  };
+  generated_at: string;
+  model: string;
+}
+
+export interface CandidateAction {
+  question_id: string;
+  question_title: string;
+  objective_id: string;
+  objective_name: string;
+  objective_score: number;
+  expert_action: {
+    title: string;
+    recommendation: string;
+  };
+  is_critical: boolean;
+  is_gate_blocker: boolean;
+  level: number;
+}

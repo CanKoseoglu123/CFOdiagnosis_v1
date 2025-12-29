@@ -70,3 +70,60 @@ export type ValidatedVS32cGeneratedQuestion = z.infer<typeof VS32cGeneratedQuest
 export type ValidatedVS32cGap = z.infer<typeof VS32cGapSchema>;
 export type ValidatedVS32cCriticAssessment = z.infer<typeof VS32cCriticAssessmentSchema>;
 export type ValidatedVS32cAnswerSubmission = z.infer<typeof VS32cAnswerSubmissionSchema>;
+
+// ============================================================
+// VS-32d: Action Planning Schemas
+// ============================================================
+
+export const PlanningContextSchema = z.object({
+  target_maturity_level: z.number().int().min(1).max(4).nullable(),
+  bandwidth: z.enum(['limited', 'moderate', 'available']).nullable(),
+  priority_focus: z.array(z.string()),
+  team_size_override: z.number().int().min(1).nullable(),
+});
+
+export const ActionRationaleSchema = z.object({
+  why_selected: z.string().max(200),
+  why_this_timeline: z.string().max(150),
+  expected_impact: z.string().max(150),
+});
+
+export const ProposedActionSchema = z.object({
+  question_id: z.string(),
+  action_title: z.string(),
+  action_recommendation: z.string(),
+  timeline: z.enum(['6m', '12m', '24m']),
+  rationale: ActionRationaleSchema,
+  evidence_ids: z.array(z.string()).min(1),
+  priority_rank: z.number().int().min(1),
+  is_critical: z.boolean(),
+  is_gate_blocker: z.boolean(),
+});
+
+export const ActionNarrativeSchema = z.object({
+  situation: z.string().max(400),
+  challenge: z.string().max(400),
+  approach: z.string().max(400),
+  expected_outcome: z.string().max(400),
+});
+
+export const ActionPlanProposalSchema = z.object({
+  narrative: ActionNarrativeSchema,
+  actions: z.array(ProposedActionSchema),
+  summary: z.object({
+    total_actions: z.number(),
+    by_timeline: z.object({
+      '6m': z.number(),
+      '12m': z.number(),
+      '24m': z.number(),
+    }),
+    addresses_critical: z.number(),
+    unlocks_gates: z.number(),
+  }),
+});
+
+export type ValidatedPlanningContext = z.infer<typeof PlanningContextSchema>;
+export type ValidatedActionRationale = z.infer<typeof ActionRationaleSchema>;
+export type ValidatedProposedAction = z.infer<typeof ProposedActionSchema>;
+export type ValidatedActionNarrative = z.infer<typeof ActionNarrativeSchema>;
+export type ValidatedActionPlanProposal = z.infer<typeof ActionPlanProposalSchema>;

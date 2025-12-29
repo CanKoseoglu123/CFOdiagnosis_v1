@@ -1,12 +1,15 @@
 // src/components/report/ActionPlanTab.jsx
-// VS-28: Action Planning & Simulator - War Room for maturity improvement
-// Includes ActionSidebar inside content container for interactive metrics
+// VS-28 + VS-32d: Action Planning with AI-Powered Proposal Generation
+// Modes: idle → wizard → generating → proposal → (manual editing)
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
+import { PlanningWizard } from './PlanningWizard';
+import { ActionNarrative } from './ActionNarrative';
+import { ActionCard } from './ActionCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,6 +53,18 @@ export default function ActionPlanTab({
     // Legacy: direct objective_id on question
     return q.objective_id;
   }, [practiceToObjective]);
+  // VS-32d: Planning mode state
+  // 'idle' = no plan, show start button
+  // 'wizard' = showing planning wizard
+  // 'generating' = AI is generating proposal
+  // 'proposal' = showing AI proposal for review
+  // 'manual' = traditional manual editing mode
+  const [planMode, setPlanMode] = useState('idle');
+
+  // VS-32d: AI-generated proposal
+  const [proposal, setProposal] = useState(null);
+  const [proposalError, setProposalError] = useState(null);
+
   // View mode: 'actions' or 'initiatives'
   const [viewMode, setViewMode] = useState('actions');
 
@@ -91,12 +106,112 @@ export default function ActionPlanTab({
           };
         });
         setActionPlan(planMap);
+        // VS-32d: If there's already a saved plan, go to manual mode
+        if (Object.keys(planMap).length > 0) {
+          setPlanMode('manual');
+        }
       }
     } catch (err) {
       console.error('Failed to fetch action plan:', err);
     } finally {
       setLoading(false);
     }
+  }
+
+  // VS-32d: Generate AI proposal after wizard completion
+  async function handleWizardComplete(planning) {
+    setPlanMode('generating');
+    setProposalError(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ planning })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to generate action plan');
+      }
+
+      const data = await res.json();
+      setProposal(data.proposal);
+      setPlanMode('proposal');
+    } catch (err) {
+      console.error('Failed to generate proposal:', err);
+      setProposalError(err.message);
+      setPlanMode('wizard'); // Go back to wizard on error
+    }
+  }
+
+  // VS-32d: Accept AI proposal and save as action plan
+  async function handleAcceptProposal() {
+    if (!proposal?.actions) return;
+
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      // Save each action from the proposal
+      for (const action of proposal.actions) {
+        await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            question_id: action.question_id,
+            timeline: action.timeline,
+            status: 'planned'
+          })
+        });
+      }
+
+      // Update local state
+      const newPlan = {};
+      proposal.actions.forEach(action => {
+        newPlan[action.question_id] = {
+          timeline: action.timeline,
+          assigned_owner: null,
+          status: 'planned'
+        };
+      });
+      setActionPlan(newPlan);
+      setPlanMode('manual');
+    } catch (err) {
+      console.error('Failed to save proposal:', err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // VS-32d: Update a proposed action's timeline
+  function handleProposalTimelineChange(questionId, newTimeline) {
+    if (!proposal) return;
+    setProposal(prev => ({
+      ...prev,
+      actions: prev.actions.map(a =>
+        a.question_id === questionId ? { ...a, timeline: newTimeline } : a
+      )
+    }));
+  }
+
+  // VS-32d: Remove a proposed action
+  function handleProposalRemove(questionId) {
+    if (!proposal) return;
+    setProposal(prev => ({
+      ...prev,
+      actions: prev.actions.filter(a => a.question_id !== questionId)
+    }));
   }
 
   // Debounced save function
@@ -324,12 +439,194 @@ export default function ActionPlanTab({
     );
   }
 
+  // VS-32d: Show idle state with start button
+  if (planMode === 'idle') {
+    return (
+      <div className="max-w-2xl mx-auto py-12">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+            Create Your Action Plan
+          </h2>
+          <p className="text-slate-600 mb-8">
+            Our AI will analyze your diagnostic results and generate a prioritized action plan
+            tailored to your goals and capacity.
+          </p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setPlanMode('wizard')}
+              className="px-6 py-3 bg-primary text-white font-medium hover:bg-primary-hover"
+            >
+              Start Planning
+            </button>
+            <button
+              onClick={() => setPlanMode('manual')}
+              className="px-6 py-3 border border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              Build Manually
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VS-32d: Show planning wizard
+  if (planMode === 'wizard') {
+    return (
+      <div className="max-w-2xl mx-auto py-8">
+        {proposalError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700">
+            {proposalError}
+          </div>
+        )}
+        <PlanningWizard
+          currentLevel={report?.maturity?.achieved_level || 1}
+          teamSizeKnown={!!report?.context?.pillar?.ftes}
+          onComplete={handleWizardComplete}
+        />
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setPlanMode('idle')}
+            className="text-sm text-slate-500 hover:text-slate-700"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // VS-32d: Show generating state
+  if (planMode === 'generating') {
+    return (
+      <div className="max-w-2xl mx-auto py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-primary mb-4"></div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">
+            Generating Your Action Plan
+          </h2>
+          <p className="text-slate-600">
+            Analyzing your diagnostic results and prioritizing actions...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // VS-32d: Show AI proposal for review
+  if (planMode === 'proposal' && proposal) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">
+              Recommended Action Plan
+            </h2>
+            <p className="text-sm text-slate-600 mt-1">
+              Review and adjust the AI-generated proposal, then accept to save.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setPlanMode('wizard')}
+              className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              Regenerate
+            </button>
+            <button
+              onClick={handleAcceptProposal}
+              disabled={saving || !proposal.actions?.length}
+              className="px-4 py-2 bg-primary text-white font-medium hover:bg-primary-hover disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Accept Plan'}
+            </button>
+          </div>
+        </div>
+
+        {/* Narrative (SCAO format) */}
+        <ActionNarrative narrative={proposal.narrative} />
+
+        {/* Summary stats */}
+        {proposal.summary && (
+          <div className="bg-white border border-slate-200 p-4">
+            <div className="grid grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">
+                  {proposal.summary.total_actions}
+                </div>
+                <div className="text-xs text-slate-500 uppercase">Total Actions</div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold text-amber-600">
+                  {proposal.summary.by_timeline?.['6m'] || 0}
+                </div>
+                <div className="text-xs text-slate-500 uppercase">6 Months</div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold text-blue-600">
+                  {proposal.summary.by_timeline?.['12m'] || 0}
+                </div>
+                <div className="text-xs text-slate-500 uppercase">12 Months</div>
+              </div>
+              <div>
+                <div className="text-2xl font-semibold text-slate-600">
+                  {proposal.summary.by_timeline?.['24m'] || 0}
+                </div>
+                <div className="text-xs text-slate-500 uppercase">24 Months</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Actions list */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
+            Proposed Actions
+          </h3>
+          {proposal.actions?.length === 0 ? (
+            <div className="p-6 bg-slate-50 border border-slate-200 text-center text-slate-500">
+              No actions in the proposal. Your diagnostic shows no significant gaps.
+            </div>
+          ) : (
+            proposal.actions?.map((action) => (
+              <ActionCard
+                key={action.question_id}
+                action={action}
+                onTimelineChange={handleProposalTimelineChange}
+                onRemove={handleProposalRemove}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // VS-28: Manual editing mode (original implementation)
   return (
     <div className="flex gap-4">
       {/* ─────────────────────────────────────────────────────────────────────── */}
       {/* MAIN CONTENT - Actions List */}
       {/* ─────────────────────────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 space-y-4">
+        {/* VS-32d: Option to regenerate with AI */}
+        {planMode === 'manual' && (
+          <div className="bg-slate-50 border border-slate-200 p-4 flex items-center justify-between">
+            <span className="text-sm text-slate-600">
+              {Object.keys(actionPlan).length > 0
+                ? `${Object.keys(actionPlan).length} actions in your plan`
+                : 'Build your action plan manually or use AI'}
+            </span>
+            <button
+              onClick={() => setPlanMode('wizard')}
+              className="text-sm text-primary hover:underline"
+            >
+              Generate with AI
+            </button>
+          </div>
+        )}
+
         {/* Simulator HUD */}
         <SimulatorHUD
           executionScore={executionScores.current}

@@ -27,7 +27,9 @@ import {
   getVS32cStatus,
   getVS32cReport,
 } from "./interpretation/pipeline-vs32c";
-import { AIInterpretationInput, VS32cClarifierAnswer } from "./interpretation/types";
+import { AIInterpretationInput, VS32cClarifierAnswer, PlanningContext } from "./interpretation/types";
+import { generateActionProposal } from "./interpretation/agents/action-planner";
+import { PlanningContextSchema } from "./interpretation/schemas";
 import { deriveCriticalRisks } from "./risks";
 import { calculateMaturityV2 } from "./maturity/engine";
 import {
@@ -1499,6 +1501,204 @@ app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
     .delete()
     .eq("run_id", runId)
     .eq("question_id", questionId);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.status(204).send();
+});
+
+// ------------------------------------------------------------------
+// VS-32d — Get planning context
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/planning-context", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data, error } = await req.supabase
+    .from("planning_context")
+    .select("*")
+    .eq("run_id", runId)
+    .single();
+
+  if (error && error.code !== "PGRST116") {
+    // PGRST116 = no rows found (okay)
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data || null);
+});
+
+// ------------------------------------------------------------------
+// VS-32d — Save planning context
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/planning-context", async (req, res) => {
+  const runId = req.params.id;
+  const planning = req.body;
+
+  // Validate planning context
+  const parsed = PlanningContextSchema.safeParse(planning);
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: "Invalid planning context",
+      details: parsed.error.issues,
+    });
+  }
+
+  // Upsert planning context
+  const { data, error } = await req.supabase
+    .from("planning_context")
+    .upsert(
+      {
+        run_id: runId,
+        target_maturity_level: parsed.data.target_maturity_level,
+        bandwidth: parsed.data.bandwidth,
+        priority_focus: parsed.data.priority_focus,
+        team_size_override: parsed.data.team_size_override,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "run_id" }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
+// ------------------------------------------------------------------
+// VS-32d — Generate AI action proposal
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/action-plan/generate", async (req, res) => {
+  const runId = req.params.id;
+
+  // Get run status
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("status")
+    .eq("id", runId)
+    .single();
+
+  if (runError) {
+    return res.status(500).json({ error: runError.message });
+  }
+
+  if (run.status !== "completed" && run.status !== "locked") {
+    return res.status(400).json({
+      error: "Assessment must be completed before generating action plan.",
+    });
+  }
+
+  // Get planning context from separate table
+  const { data: planningData, error: planningError } = await req.supabase
+    .from("planning_context")
+    .select("*")
+    .eq("run_id", runId)
+    .single();
+
+  if (planningError && planningError.code !== "PGRST116") {
+    return res.status(500).json({ error: planningError.message });
+  }
+
+  if (!planningData) {
+    return res.status(400).json({
+      error: "Planning context required. Complete the planning wizard first.",
+    });
+  }
+
+  // Build PlanningContext from table data
+  const planningContext: PlanningContext = {
+    target_maturity_level: planningData.target_maturity_level,
+    bandwidth: planningData.bandwidth,
+    priority_focus: planningData.priority_focus || [],
+    team_size_override: planningData.team_size_override,
+  };
+
+  try {
+    const { proposal, tokensUsed } = await generateActionProposal(
+      runId,
+      planningContext
+    );
+
+    // Save proposal to database using the atomic RPC function
+    const { error: saveError } = await req.supabase.rpc("save_action_proposal", {
+      p_run_id: runId,
+      p_proposal: proposal,
+    });
+
+    if (saveError) {
+      console.error("Failed to save proposal:", saveError);
+      // Still return the proposal even if save failed
+    }
+
+    res.json({
+      proposal,
+      tokens_used: tokensUsed,
+      generated_at: proposal.generated_at,
+    });
+  } catch (error: any) {
+    console.error("Action plan generation failed:", error);
+    res.status(500).json({
+      error: "Failed to generate action plan",
+      details: error.message,
+    });
+  }
+});
+
+// ------------------------------------------------------------------
+// VS-32d — Get AI-generated proposal
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/action-plan/proposal", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .select("action_proposal, action_proposal_generated_at")
+    .eq("id", runId)
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data?.action_proposal) {
+    return res.status(404).json({ error: "No AI proposal found for this run" });
+  }
+
+  res.json({
+    proposal: data.action_proposal,
+    generated_at: data.action_proposal_generated_at,
+  });
+});
+
+// ------------------------------------------------------------------
+// VS-32d — Delete AI-generated proposal and actions
+// ------------------------------------------------------------------
+app.delete("/diagnostic-runs/:id/action-plan/ai-generated", async (req, res) => {
+  const runId = req.params.id;
+
+  // Delete AI-generated actions from action_plans
+  const { error: actionsError } = await req.supabase
+    .from("action_plans")
+    .delete()
+    .eq("run_id", runId)
+    .eq("ai_generated", true);
+
+  if (actionsError) {
+    console.error("Failed to delete AI actions:", actionsError);
+  }
+
+  // Clear proposal from run
+  const { error } = await req.supabase
+    .from("diagnostic_runs")
+    .update({
+      action_proposal: null,
+      action_proposal_generated_at: null,
+    })
+    .eq("id", runId);
 
   if (error) {
     return res.status(500).json({ error: error.message });
