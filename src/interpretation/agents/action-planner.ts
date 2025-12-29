@@ -127,7 +127,7 @@ function createMaintainProposal(
         situation: `Your FP&A function operates at Level ${input.maturity_level} (${input.level_name}) with no identified gaps.`,
         challenge: 'The primary challenge is maintaining current performance while preparing for future growth.',
         approach: 'Focus on consolidation, documentation, and continuous improvement of existing processes.',
-        expected_outcome: 'Sustained Level ${input.maturity_level} performance with readiness for future advancement.',
+        expected_outcome: `Sustained Level ${input.maturity_level} performance with readiness for future advancement.`,
       },
       actions: [],
       summary: {
