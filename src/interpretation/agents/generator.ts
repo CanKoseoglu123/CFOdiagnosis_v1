@@ -41,6 +41,9 @@ const MAX_GENERATION_ATTEMPTS = 2;
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
   if (!_openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is not set. AI summary generation requires a valid OpenAI API key.');
+    }
     _openai = new OpenAI();
   }
   return _openai;

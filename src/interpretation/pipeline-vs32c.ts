@@ -255,9 +255,13 @@ export async function runVS32cPipeline(
 
   try {
     // Run the pipeline loop
+    console.log('[VS-32c] Starting pipeline for run:', input.run_id);
     return await executePipelineLoop(supabase, state, input);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    const stack = error instanceof Error ? error.stack : '';
+    console.error('[VS-32c] Pipeline failed:', message);
+    console.error('[VS-32c] Stack trace:', stack);
     await updateState(supabase, input.run_id, { current_stage: 'failed' });
     return {
       status: 'failed',
