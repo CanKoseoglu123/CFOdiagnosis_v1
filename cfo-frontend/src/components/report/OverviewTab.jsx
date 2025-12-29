@@ -184,13 +184,25 @@ export default function OverviewTab({ runId }) {
               Get personalized insights based on your diagnostic results.
               Our AI will analyze your data and may ask a few targeted questions to refine the analysis.
             </p>
+            {/* Display error if pipeline failed before starting */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-sm">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm text-red-700 font-medium">Failed to generate analysis</p>
+                    <p className="text-xs text-red-600 mt-1">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <button
               onClick={handleStart}
               disabled={isStarting}
               className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-sm hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4" />
-              {isStarting ? 'Starting...' : 'Generate Analysis'}
+              {isStarting ? 'Starting...' : error ? 'Retry Analysis' : 'Generate Analysis'}
             </button>
           </div>
         </div>

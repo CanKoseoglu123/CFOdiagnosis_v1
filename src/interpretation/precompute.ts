@@ -83,9 +83,11 @@ export async function precomputeInput(
   // 3. Load spec
   let spec;
   try {
+    console.log('[VS-32c Precompute] Loading spec version:', typedRun.spec_version);
     spec = SpecRegistry.get(typedRun.spec_version);
   } catch (err) {
-    throw new Error(`Failed to load spec: ${err}`);
+    console.error('[VS-32c Precompute] Failed to load spec:', typedRun.spec_version, err);
+    throw new Error(`Failed to load spec (version: ${typedRun.spec_version}): ${err}`);
   }
 
   // 4. Calculate maturity using calculateMaturityV2

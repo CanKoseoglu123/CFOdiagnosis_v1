@@ -24,9 +24,15 @@ const REGISTRY: Record<SpecVersion, () => Spec> = {
 
 export const SpecRegistry = {
   get(version: string): Spec {
-    const specFn = REGISTRY[version as SpecVersion];
+    // Normalize version: add 'v' prefix if missing
+    let normalizedVersion = version;
+    if (version && !version.startsWith('v')) {
+      normalizedVersion = `v${version}`;
+    }
+
+    const specFn = REGISTRY[normalizedVersion as SpecVersion];
     if (!specFn) {
-      throw new Error(`Spec version not found: ${version}`);
+      throw new Error(`Spec version not found: ${version} (normalized: ${normalizedVersion})`);
     }
     return specFn();
   },
