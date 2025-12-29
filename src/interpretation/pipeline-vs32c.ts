@@ -104,6 +104,7 @@ async function getOrCreateState(
     loop_round: 0,
     version: 1,
     status: 'pending',
+    report: {}, // Initial empty report (required by NOT NULL constraint)
   });
 
   if (reportError) throw new Error(`Failed to create report: ${reportError.message}`);
