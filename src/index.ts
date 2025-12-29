@@ -768,8 +768,9 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
   if (existingStatus) {
     const { status, progress, pending_questions } = existingStatus;
 
-    // VS-36: If restart=true and completed, clear and start fresh
-    if (restart === true && status === "completed") {
+    // VS-36: If restart=true, clear existing session and start fresh
+    // Supports restarting from completed, failed, or stuck states
+    if (restart === true) {
       await req.supabase
         .from("interpretation_reports")
         .delete()

@@ -523,18 +523,16 @@ export async function getVS32cStatus(
     total_questions_asked: number;
   };
   pending_questions?: VS32cGeneratedQuestion[];
-}> {
+} | null> {
   const { data } = await supabase
     .from('interpretation_reports')
     .select('current_stage, loop_round, pending_questions, clarifier_answers')
     .eq('run_id', runId)
     .single();
 
+  // Return null if no session exists - this allows the API to start a new pipeline
   if (!data) {
-    return {
-      status: 'pending',
-      progress: { current_round: 0, total_questions_asked: 0 },
-    };
+    return null;
   }
 
   return {
