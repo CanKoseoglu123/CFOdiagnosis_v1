@@ -70,6 +70,26 @@ export async function generateActionProposal(
 
   const jsonStr = content.replace(/```json\n?|\n?```/g, '').trim();
   const parsed = JSON.parse(jsonStr);
+
+  // Post-process AI response to add default values for missing fields
+  // GPT sometimes omits evidence_ids and is_gate_blocker even when shown in example
+  if (parsed.actions && Array.isArray(parsed.actions)) {
+    parsed.actions = parsed.actions.map((action: any, index: number) => {
+      const candidate = candidates.find((c: CandidateAction) => c.question_id === action.question_id);
+      return {
+        ...action,
+        evidence_ids: action.evidence_ids || [`gap_${action.question_id}`],
+        is_gate_blocker: typeof action.is_gate_blocker === 'boolean'
+          ? action.is_gate_blocker
+          : (candidate?.is_gate_blocker || false),
+        is_critical: typeof action.is_critical === 'boolean'
+          ? action.is_critical
+          : (candidate?.is_critical || false),
+        priority_rank: action.priority_rank || (index + 1),
+      };
+    });
+  }
+
   const proposal = ActionPlanProposalSchema.parse(parsed);
 
   // Validate all selected question_ids exist in candidates
