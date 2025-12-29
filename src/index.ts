@@ -1619,6 +1619,7 @@ app.post("/diagnostic-runs/:id/action-plan/generate", async (req, res) => {
 
   try {
     const { proposal, tokensUsed } = await generateActionProposal(
+      req.supabase,
       runId,
       planningContext
     );

@@ -5,13 +5,8 @@
  * Sorted by priority: critical first, then gate blockers, then by objective score ascending.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { CandidateAction } from './types';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 interface SpecQuestion {
   id: string;
@@ -44,6 +39,7 @@ interface Spec {
 }
 
 export async function buildCandidateActions(
+  supabase: SupabaseClient,
   runId: string,
   spec: Spec,
   objectiveScores: Record<string, number>

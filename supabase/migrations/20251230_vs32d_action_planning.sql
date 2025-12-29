@@ -3,7 +3,7 @@
 
 -- Planning context table
 CREATE TABLE IF NOT EXISTS planning_context (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   run_id UUID REFERENCES diagnostic_runs(id) ON DELETE CASCADE,
   target_maturity_level INTEGER CHECK (target_maturity_level BETWEEN 1 AND 4),
   bandwidth TEXT CHECK (bandwidth IN ('limited', 'moderate', 'available')),
@@ -41,7 +41,7 @@ CREATE POLICY "Users can view their own planning context"
   ON planning_context FOR SELECT
   USING (
     run_id IN (
-      SELECT id FROM diagnostic_runs WHERE user_id = auth.uid()
+      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
     )
   );
 
@@ -49,7 +49,7 @@ CREATE POLICY "Users can insert their own planning context"
   ON planning_context FOR INSERT
   WITH CHECK (
     run_id IN (
-      SELECT id FROM diagnostic_runs WHERE user_id = auth.uid()
+      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
     )
   );
 
@@ -57,7 +57,7 @@ CREATE POLICY "Users can update their own planning context"
   ON planning_context FOR UPDATE
   USING (
     run_id IN (
-      SELECT id FROM diagnostic_runs WHERE user_id = auth.uid()
+      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
     )
   );
 
@@ -65,7 +65,7 @@ CREATE POLICY "Users can delete their own planning context"
   ON planning_context FOR DELETE
   USING (
     run_id IN (
-      SELECT id FROM diagnostic_runs WHERE user_id = auth.uid()
+      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
     )
   );
 

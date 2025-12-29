@@ -5,24 +5,20 @@
  */
 
 import OpenAI from 'openai';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { buildActionProposalPrompt } from '../prompts/action-proposal';
 import { ActionPlanProposalSchema } from '../schemas';
 import { precomputeInput } from '../precompute';
 import { buildCandidateActions, computeObjectiveScoresFromInputs } from '../action-candidates';
 import { calculateCapacity } from '../capacity';
 import { PlanningContext, ActionPlanProposal, CandidateAction } from '../types';
-import { createClient } from '@supabase/supabase-js';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
-
 export async function generateActionProposal(
+  supabase: SupabaseClient,
   runId: string,
   planning: PlanningContext
 ): Promise<{ proposal: ActionPlanProposal; tokensUsed: number }> {
@@ -44,7 +40,7 @@ export async function generateActionProposal(
   const objectiveScores = computeObjectiveScoresFromInputs(inputs, spec as any);
 
   // Build candidate actions from gaps
-  const candidates = await buildCandidateActions(runId, spec as any, objectiveScores);
+  const candidates = await buildCandidateActions(supabase, runId, spec as any, objectiveScores);
 
   if (candidates.length === 0) {
     // No gaps = create a "maintain" proposal
