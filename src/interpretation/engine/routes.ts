@@ -54,7 +54,7 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
     if (latest) {
       const { data: run } = await userClient
         .from('diagnostic_runs')
-        .select('*, diagnostic_inputs(question_id, answer_option_id, skipped)')
+        .select('*, diagnostic_inputs(question_id, value)')
         .eq('id', runId)
         .single();
 
@@ -172,7 +172,7 @@ router.get('/:id/interpret-v32/status', async (req: Request, res) => {
     if (report.status === 'completed' || report.status === 'failed') {
       const { data: run } = await userClient
         .from('diagnostic_runs')
-        .select('*, diagnostic_inputs(question_id, answer_option_id, skipped)')
+        .select('*, diagnostic_inputs(question_id, value)')
         .eq('id', runId)
         .single();
 

@@ -22,7 +22,7 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
     .from('diagnostic_runs')
     .select(`
       *,
-      diagnostic_inputs(question_id, answer_option_id, skipped)
+      diagnostic_inputs(question_id, value)
     `)
     .eq('id', runId)
     .single();
@@ -35,9 +35,10 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
   const spec = SpecRegistry.getDefault();
 
   // Transform diagnostic_inputs to the format expected by aggregateResults/buildReport
-  const inputs: DiagnosticInput[] = (run.diagnostic_inputs || []).map((di: { question_id: string; answer_option_id: string; skipped: boolean }) => ({
+  // value is boolean: true=yes, false=no, null=skipped
+  const inputs: DiagnosticInput[] = (run.diagnostic_inputs || []).map((di: { question_id: string; value: boolean | null }) => ({
     question_id: di.question_id,
-    value: di.skipped ? null : (di.answer_option_id === 'a' || di.answer_option_id === 'yes'),
+    value: di.value,
   }));
 
   // Use existing scoring logic via aggregateResults + buildReport
@@ -176,7 +177,7 @@ export function computeInputHash(run: any): string {
   const hashInput = {
     answers: (run.diagnostic_inputs || [])
       .sort((a: any, b: any) => a.question_id.localeCompare(b.question_id))
-      .map((i: any) => `${i.question_id}:${i.answer_option_id}:${i.skipped}`),
+      .map((i: any) => `${i.question_id}:${i.value}`),
     calibration: run.calibration,
   };
 
