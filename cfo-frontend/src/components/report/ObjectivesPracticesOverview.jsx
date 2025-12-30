@@ -68,9 +68,8 @@ function getScoreColor(score) {
   return 'bg-red-500';
 }
 
-// Fixed practice box height (in pixels) - for consistent sizing
+// Fixed practice box height
 const PRACTICE_BOX_HEIGHT = 40;
-const PRACTICE_BOX_GAP = 4; // gap-1 = 4px
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PRACTICE BOX - Single activity tile (fixed size, no level badge)
@@ -88,10 +87,37 @@ function PracticeBox({ practice }) {
       `}
       style={{ height: `${PRACTICE_BOX_HEIGHT}px` }}
     >
-      {/* Practice title only - no level badge */}
       <span className="text-[9px] font-medium leading-tight line-clamp-2">
         {practice.title}
       </span>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRACTICE ITEM - Practice box with tree connector lines
+// ═══════════════════════════════════════════════════════════════════════════
+
+function PracticeItem({ practice, isLast }) {
+  return (
+    <div className="flex items-stretch">
+      {/* Connector column - vertical line + horizontal branch */}
+      <div className="relative w-3 flex-shrink-0">
+        {/* Vertical line - full height for non-last items, half for last */}
+        <div
+          className={`absolute left-0 w-px bg-slate-300 ${isLast ? 'h-1/2' : 'h-full'}`}
+          style={{ top: 0 }}
+        />
+        {/* Horizontal branch - from vertical line to practice box */}
+        <div
+          className="absolute left-0 h-px bg-slate-300"
+          style={{ top: '50%', width: '100%' }}
+        />
+      </div>
+      {/* Practice box */}
+      <div className="flex-1">
+        <PracticeBox practice={practice} />
+      </div>
     </div>
   );
 }
@@ -101,16 +127,7 @@ function PracticeBox({ practice }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function ObjectiveColumn({ objective, practices, score }) {
-  // Calculate dynamic vertical line height based on number of practices
-  // Line should end at the center of the last practice box
   const practiceCount = practices.length;
-
-  // Line starts from top of practices area
-  // Ends at center of last practice (halfway through last box)
-  // Total height = (n-1) gaps + (n-0.5) boxes = practices area minus half a box
-  const lineHeight = practiceCount > 0
-    ? (practiceCount - 1) * (PRACTICE_BOX_HEIGHT + PRACTICE_BOX_GAP) + (PRACTICE_BOX_HEIGHT / 2)
-    : 0;
 
   return (
     <div className="flex flex-col flex-1 min-w-[95px] max-w-[130px] border border-slate-300 rounded bg-slate-50 overflow-hidden">
@@ -127,40 +144,30 @@ function ObjectiveColumn({ objective, practices, score }) {
         </span>
       </div>
 
-      {/* Practices stack with branching connector lines */}
-      <div className="relative p-1.5 pt-3 flex-1">
-        {/* Vertical connector line - dynamic height based on practice count */}
-        {practiceCount > 0 && (
-          <div
-            className="absolute bg-slate-300"
-            style={{
-              width: '1px',
-              left: '12px', // 3 * 4px = 12px (left-3)
-              top: '12px', // Start from top of practices area (pt-3 = 12px)
-              height: `${lineHeight}px`
-            }}
-          />
-        )}
-
-        {/* Practices with horizontal branch connectors */}
-        <div className="flex flex-col gap-1 pl-4">
-          {practices.map((practice, index) => (
-            <div key={practice.id} className="relative">
-              {/* Horizontal branch connector - from vertical line to practice box */}
-              <div
-                className="absolute bg-slate-300"
-                style={{
-                  left: '-4px', // Start at vertical line (12px from container = 16px - 4px)
-                  width: '4px', // Span from vertical line (12px) to practice box (16px)
-                  height: '1px',
-                  top: `${PRACTICE_BOX_HEIGHT / 2}px` // Center of practice box
-                }}
-              />
-              <PracticeBox practice={practice} />
+      {/* Practices area with tree structure */}
+      {practiceCount > 0 && (
+        <div className="p-1.5 flex-1">
+          <div className="flex items-stretch">
+            {/* Stem from header - vertical line connecting to first practice */}
+            <div className="relative w-3 flex-shrink-0">
+              {/* Vertical stem line */}
+              <div className="absolute left-0 w-px bg-slate-300 h-1/2" style={{ top: 0 }} />
+              {/* Horizontal connector to tree */}
+              <div className="absolute left-0 h-px bg-slate-300" style={{ top: '50%', width: '100%' }} />
             </div>
-          ))}
+            {/* Practices tree */}
+            <div className="flex-1 flex flex-col gap-1">
+              {practices.map((practice, index) => (
+                <PracticeItem
+                  key={practice.id}
+                  practice={practice}
+                  isLast={index === practiceCount - 1}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
