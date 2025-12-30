@@ -24,15 +24,15 @@ export default function MatrixLegend() {
         </div>
       </div>
 
-      {/* Zone Legend - Amber intensity theme */}
+      {/* Zone Legend - Warm tones theme */}
       <div className="border-l border-slate-300 pl-6 flex items-center gap-4">
         <span className="font-medium text-slate-700">Zones:</span>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-amber-100 border border-amber-300" />
+          <span className="w-3 h-3 rounded bg-amber-50 border border-amber-200" />
           <span>Urgent</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-amber-50 border border-amber-200" />
+          <span className="w-3 h-3 rounded bg-green-50 border border-green-200" />
           <span>Vision</span>
         </div>
         <div className="flex items-center gap-1.5">

@@ -6,8 +6,8 @@ import React from 'react';
 import PracticeCard from './PracticeCard';
 
 const ROWS = [
-  { id: 'strategic', label: 'High Priority', sublabel: '(4-5)' },
-  { id: 'operational', label: 'Low-Medium Priority', sublabel: '(1-3)' },
+  { id: 'strategic', label: 'High', sublabel: '(4-5)' },
+  { id: 'operational', label: 'Low-Medium', sublabel: '(1-3)' },
 ];
 
 // Zone names for each cell position
@@ -24,11 +24,11 @@ const ZONE_NAMES = {
   }
 };
 
-// Zone background colors - warm amber theme that works with navy blue cards
+// Zone background colors - warm tones that work with navy blue cards
 function getZoneBackground(row, colIndex) {
   if (row === 'strategic') {
-    // High priority: Urgent (amber-100) vs Vision (amber-50)
-    return colIndex < 2 ? 'bg-amber-100' : 'bg-amber-50';
+    // High priority: Urgent (amber-50 toned down) vs Vision (green-50 warm)
+    return colIndex < 2 ? 'bg-amber-50' : 'bg-green-50';
   }
   // Low priority: Clean white
   return 'bg-white';
@@ -64,52 +64,87 @@ function MatrixCell({ practices, rowId, colId, colIndex }) {
 export default function MatrixGrid({ columns, gridData }) {
   return (
     <div className="border border-slate-300 rounded overflow-hidden">
-      {/* Column Headers */}
-      <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
-        {/* Empty corner */}
-        <div className="p-3 bg-slate-200" />
-        {columns.map(col => (
-          <div
-            key={col.id}
-            className="p-3 bg-slate-200 border-l border-slate-300 text-center"
-          >
-            <div className="text-sm font-bold text-slate-700">{col.label}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{col.sublabel}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Rows */}
-      {ROWS.map(row => (
-        <div
-          key={row.id}
-          className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300 last:border-b-0"
-        >
-          {/* Row Label - Vertical text, bottom to top */}
-          <div className="bg-slate-200 border-r border-slate-300 flex items-center justify-center">
-            <div
-              className="text-sm font-bold text-slate-700 whitespace-nowrap"
+      <div className="flex">
+        {/* Left Axis Super-Column: PRIORITY LEVEL */}
+        <div className="flex flex-col w-[40px] border-r border-slate-300">
+          {/* Empty corner (intersection) */}
+          <div className="h-[72px] bg-white border-b border-slate-300" />
+          {/* PRIORITY LEVEL vertical text spanning data rows */}
+          <div className="flex-1 bg-slate-100 flex items-center justify-center">
+            <span
+              className="text-[11px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap"
               style={{
                 writingMode: 'vertical-rl',
                 transform: 'rotate(180deg)',
               }}
             >
-              {row.label} <span className="text-xs font-normal text-slate-500">{row.sublabel}</span>
+              Priority Level
+            </span>
+          </div>
+        </div>
+
+        {/* Main Grid Area */}
+        <div className="flex-1">
+          {/* Top Axis Super-Header: MATURITY LEVEL */}
+          <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
+            {/* Empty space above row labels */}
+            <div className="p-2 bg-white" />
+            {/* MATURITY LEVEL spanning 3 columns */}
+            <div className="col-span-3 p-2 bg-slate-100 text-center border-l border-slate-300">
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                Maturity Level
+              </span>
             </div>
           </div>
 
-          {/* Cells */}
-          {columns.map((col, colIndex) => (
-            <MatrixCell
-              key={col.id}
-              practices={gridData[row.id]?.[col.id] || []}
-              rowId={row.id}
-              colId={col.id}
-              colIndex={colIndex}
-            />
+          {/* Column Headers */}
+          <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
+            {/* Empty corner for row labels */}
+            <div className="p-3 bg-slate-200" />
+            {columns.map(col => (
+              <div
+                key={col.id}
+                className="p-3 bg-slate-200 border-l border-slate-300 text-center"
+              >
+                <div className="text-sm font-bold text-slate-700">{col.label}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{col.sublabel}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Data Rows */}
+          {ROWS.map(row => (
+            <div
+              key={row.id}
+              className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300 last:border-b-0"
+            >
+              {/* Row Label - Vertical text */}
+              <div className="bg-slate-200 flex items-center justify-center">
+                <div
+                  className="text-sm font-bold text-slate-700 whitespace-nowrap"
+                  style={{
+                    writingMode: 'vertical-rl',
+                    transform: 'rotate(180deg)',
+                  }}
+                >
+                  {row.label} <span className="text-xs font-normal text-slate-500">{row.sublabel}</span>
+                </div>
+              </div>
+
+              {/* Cells */}
+              {columns.map((col, colIndex) => (
+                <MatrixCell
+                  key={col.id}
+                  practices={gridData[row.id]?.[col.id] || []}
+                  rowId={row.id}
+                  colId={col.id}
+                  colIndex={colIndex}
+                />
+              ))}
+            </div>
           ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
