@@ -34,12 +34,12 @@ function getZoneBackground(row, colIndex) {
   return 'bg-white';
 }
 
-function MatrixCell({ practices, rowId, colId, colIndex, isLastRow, isLastCol }) {
+function MatrixCell({ practices, rowId, colId, colIndex, isFirstRow, isLastRow, isLastCol }) {
   const background = getZoneBackground(rowId, colIndex);
   const zoneName = ZONE_NAMES[rowId]?.[colId] || '';
 
   // Build border classes
-  const borderClasses = `border-l border-slate-300 ${isLastCol ? 'border-r' : ''} ${isLastRow ? 'border-b' : ''}`;
+  const borderClasses = `border-l border-slate-300 ${isFirstRow ? 'border-t' : ''} ${isLastCol ? 'border-r' : ''} ${isLastRow ? 'border-b' : ''}`;
   const cornerClass = isLastRow && isLastCol ? 'rounded-br' : '';
 
   return (
@@ -83,7 +83,7 @@ export default function MatrixGrid({ columns, gridData }) {
             <div className="text-xs mt-0.5 invisible">X</div>
           </div>
           {/* PRIORITY LEVEL vertical text - aligned with High row top */}
-          <div className="flex-1 bg-slate-200 border-t border-r border-slate-300 flex items-center justify-center">
+          <div className="flex-1 bg-slate-200 border border-slate-300 rounded-bl flex items-center justify-center">
             <span
               className="text-[11px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap"
               style={{
@@ -103,7 +103,7 @@ export default function MatrixGrid({ columns, gridData }) {
             {/* Empty space above row labels - part of corner, no borders */}
             <div className="p-2 bg-white" />
             {/* MATURITY LEVEL spanning 3 columns - darker bg */}
-            <div className="col-span-3 p-2 bg-slate-200 text-center border border-slate-300 border-l-0 rounded-tr">
+            <div className="col-span-3 p-2 bg-slate-200 text-center border border-slate-300 rounded-tr">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                 Maturity Level
               </span>
@@ -112,12 +112,12 @@ export default function MatrixGrid({ columns, gridData }) {
 
           {/* Column Headers - lighter bg */}
           <div className="grid grid-cols-[60px_1fr_1fr_1fr]">
-            {/* Empty corner for row labels - part of corner, white */}
-            <div className="p-3 bg-white" />
+            {/* Empty corner for row labels - part of corner, white, but needs top border to connect */}
+            <div className="p-3 bg-white border-t border-slate-300" />
             {columns.map((col, idx) => (
               <div
                 key={col.id}
-                className={`p-3 bg-slate-100 border-t border-b border-l border-slate-300 text-center ${idx === columns.length - 1 ? 'border-r' : ''}`}
+                className={`p-3 bg-slate-100 border-b border-l border-slate-300 text-center ${idx === columns.length - 1 ? 'border-r' : ''}`}
               >
                 <div className="text-sm font-bold text-slate-700">{col.label}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{col.sublabel}</div>
@@ -132,7 +132,7 @@ export default function MatrixGrid({ columns, gridData }) {
               className="grid grid-cols-[60px_1fr_1fr_1fr]"
             >
               {/* Row Label - Vertical text - lighter bg */}
-              <div className={`bg-slate-100 border-l border-r border-slate-300 flex items-center justify-center ${rowIdx === ROWS.length - 1 ? 'border-b rounded-bl' : ''}`}>
+              <div className={`bg-slate-100 border-l border-r border-slate-300 flex items-center justify-center ${rowIdx === 0 ? 'border-t' : ''} ${rowIdx === ROWS.length - 1 ? 'border-b rounded-bl' : ''}`}>
                 <div
                   className="text-sm font-bold text-slate-700 whitespace-nowrap"
                   style={{
@@ -152,6 +152,7 @@ export default function MatrixGrid({ columns, gridData }) {
                   rowId={row.id}
                   colId={col.id}
                   colIndex={colIndex}
+                  isFirstRow={rowIdx === 0}
                   isLastRow={rowIdx === ROWS.length - 1}
                   isLastCol={colIndex === columns.length - 1}
                 />
