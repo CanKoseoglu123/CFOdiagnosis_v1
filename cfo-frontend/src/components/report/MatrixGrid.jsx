@@ -63,14 +63,23 @@ function MatrixCell({ practices, rowId, colId, colIndex }) {
 
 export default function MatrixGrid({ columns, gridData }) {
   return (
-    <div className="border border-slate-300 rounded overflow-hidden">
+    <div className="rounded overflow-hidden">
       <div className="flex">
         {/* Left Axis Super-Column: PRIORITY LEVEL */}
-        <div className="flex flex-col w-[40px] border-r border-slate-300">
-          {/* Empty corner (intersection) */}
-          <div className="h-[72px] bg-white border-b border-slate-300" />
-          {/* PRIORITY LEVEL vertical text spanning data rows */}
-          <div className="flex-1 bg-slate-100 flex items-center justify-center">
+        <div className="flex flex-col w-[40px]">
+          {/* Empty corner (intersection) - no outer borders, only right+bottom */}
+          <div className="p-2 bg-white border-r border-b border-slate-300">
+            {/* Match height of MATURITY LEVEL row */}
+            <span className="text-[11px] invisible">X</span>
+          </div>
+          {/* Spacer for column headers row */}
+          <div className="p-3 bg-white border-r border-b border-slate-300">
+            {/* Match height of column headers */}
+            <div className="text-sm invisible">X</div>
+            <div className="text-xs mt-0.5 invisible">X</div>
+          </div>
+          {/* PRIORITY LEVEL vertical text - aligned with High row top */}
+          <div className="flex-1 bg-slate-200 border-r border-slate-300 flex items-center justify-center">
             <span
               className="text-[11px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap"
               style={{
@@ -84,27 +93,27 @@ export default function MatrixGrid({ columns, gridData }) {
         </div>
 
         {/* Main Grid Area */}
-        <div className="flex-1">
+        <div className="flex-1 border border-slate-300 border-l-0">
           {/* Top Axis Super-Header: MATURITY LEVEL */}
           <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
             {/* Empty space above row labels */}
-            <div className="p-2 bg-white" />
-            {/* MATURITY LEVEL spanning 3 columns */}
-            <div className="col-span-3 p-2 bg-slate-100 text-center border-l border-slate-300">
+            <div className="p-2 bg-white border-r border-slate-300" />
+            {/* MATURITY LEVEL spanning 3 columns - darker bg */}
+            <div className="col-span-3 p-2 bg-slate-200 text-center">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                 Maturity Level
               </span>
             </div>
           </div>
 
-          {/* Column Headers */}
+          {/* Column Headers - lighter bg */}
           <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
             {/* Empty corner for row labels */}
-            <div className="p-3 bg-slate-200" />
+            <div className="p-3 bg-slate-100 border-r border-slate-300" />
             {columns.map(col => (
               <div
                 key={col.id}
-                className="p-3 bg-slate-200 border-l border-slate-300 text-center"
+                className="p-3 bg-slate-100 border-l border-slate-300 text-center"
               >
                 <div className="text-sm font-bold text-slate-700">{col.label}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{col.sublabel}</div>
@@ -118,8 +127,8 @@ export default function MatrixGrid({ columns, gridData }) {
               key={row.id}
               className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300 last:border-b-0"
             >
-              {/* Row Label - Vertical text */}
-              <div className="bg-slate-200 flex items-center justify-center">
+              {/* Row Label - Vertical text - lighter bg */}
+              <div className="bg-slate-100 border-r border-slate-300 flex items-center justify-center">
                 <div
                   className="text-sm font-bold text-slate-700 whitespace-nowrap"
                   style={{
