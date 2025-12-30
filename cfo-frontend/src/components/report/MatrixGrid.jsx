@@ -24,22 +24,22 @@ const ZONE_NAMES = {
   }
 };
 
-// Left-edge stripe colors for zone indication (cleaner than background fills)
-function getZoneStripe(row, colIndex) {
+// Zone background colors - warm amber theme that works with navy blue cards
+function getZoneBackground(row, colIndex) {
   if (row === 'strategic') {
-    // Top row: Zone A (cols 0-1) red stripe, Zone B (col 2) blue stripe
-    return colIndex < 2 ? 'border-l-4 border-red-500' : 'border-l-4 border-blue-500';
+    // High priority: Urgent (amber-100) vs Vision (amber-50)
+    return colIndex < 2 ? 'bg-amber-100' : 'bg-amber-50';
   }
-  // Bottom row: Zone C slate stripe
-  return 'border-l-4 border-slate-400';
+  // Low priority: Clean white
+  return 'bg-white';
 }
 
 function MatrixCell({ practices, rowId, colId, colIndex }) {
-  const zoneStripe = getZoneStripe(rowId, colIndex);
+  const background = getZoneBackground(rowId, colIndex);
   const zoneName = ZONE_NAMES[rowId]?.[colId] || '';
 
   return (
-    <div className={`p-3 min-h-[120px] bg-white ${zoneStripe} relative`}>
+    <div className={`p-3 min-h-[120px] ${background} border-l border-slate-300 relative`}>
       {/* Zone label in top right */}
       <span className="absolute top-1 right-2 text-[10px] font-medium text-slate-500 uppercase tracking-wide">
         {zoneName}
