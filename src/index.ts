@@ -105,6 +105,20 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Debug endpoint to check env vars (remove after debugging)
+app.get("/debug/env", (_req, res) => {
+  const serviceKey = process.env.SUPABASE_SERVICE_KEY;
+  const anonKey = process.env.SUPABASE_ANON_KEY;
+  res.json({
+    service_key_set: !!serviceKey,
+    service_key_length: serviceKey?.length || 0,
+    service_key_prefix: serviceKey?.substring(0, 20) || 'not set',
+    anon_key_length: anonKey?.length || 0,
+    anon_key_prefix: anonKey?.substring(0, 20) || 'not set',
+    keys_are_same: serviceKey === anonKey,
+  });
+});
+
 // ------------------------------------------------------------------
 // Spec endpoints (public - no auth needed)
 // ------------------------------------------------------------------
