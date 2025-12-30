@@ -5,11 +5,9 @@
 import React from 'react';
 import PracticeCard from './PracticeCard';
 
-const MAX_VISIBLE = 8;
-
 const ROWS = [
-  { id: 'strategic', label: 'Strategic Focus', sublabel: 'Importance 4-5' },
-  { id: 'operational', label: 'Operational', sublabel: 'Importance 1-3' },
+  { id: 'strategic', label: 'High Priority', sublabel: '(4-5)' },
+  { id: 'operational', label: 'Low-Medium Priority', sublabel: '(1-3)' },
 ];
 
 // Zone names for each cell position
@@ -37,8 +35,6 @@ function getZoneBackground(row, colIndex) {
 }
 
 function MatrixCell({ practices, rowId, colId, colIndex }) {
-  const visible = practices.slice(0, MAX_VISIBLE);
-  const overflow = practices.length - MAX_VISIBLE;
   const background = getZoneBackground(rowId, colIndex);
   const zoneName = ZONE_NAMES[rowId]?.[colId] || '';
 
@@ -49,18 +45,13 @@ function MatrixCell({ practices, rowId, colId, colIndex }) {
         {zoneName}
       </span>
 
-      {/* Practices */}
+      {/* Practices - show all, auto-expand */}
       <div className="mt-4">
         {practices.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
-            {visible.map(practice => (
+            {practices.map(practice => (
               <PracticeCard key={practice.id} practice={practice} />
             ))}
-            {overflow > 0 && (
-              <span className="text-xs text-slate-500 self-center px-1">
-                +{overflow} more
-              </span>
-            )}
           </div>
         ) : (
           <span className="text-xs text-slate-400 italic">No practices</span>
@@ -74,7 +65,7 @@ export default function MatrixGrid({ columns, gridData }) {
   return (
     <div className="border border-slate-300 rounded overflow-hidden">
       {/* Column Headers */}
-      <div className="grid grid-cols-[140px_1fr_1fr_1fr] border-b border-slate-300">
+      <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
         {/* Empty corner */}
         <div className="p-3 bg-slate-200" />
         {columns.map(col => (
@@ -92,12 +83,19 @@ export default function MatrixGrid({ columns, gridData }) {
       {ROWS.map(row => (
         <div
           key={row.id}
-          className="grid grid-cols-[140px_1fr_1fr_1fr] border-b border-slate-300 last:border-b-0"
+          className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300 last:border-b-0"
         >
-          {/* Row Label */}
-          <div className="p-3 bg-slate-200 border-r border-slate-300 flex flex-col justify-center">
-            <div className="text-sm font-bold text-slate-700">{row.label}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{row.sublabel}</div>
+          {/* Row Label - Vertical text, bottom to top */}
+          <div className="bg-slate-200 border-r border-slate-300 flex items-center justify-center">
+            <div
+              className="text-sm font-bold text-slate-700 whitespace-nowrap"
+              style={{
+                writingMode: 'vertical-rl',
+                transform: 'rotate(180deg)',
+              }}
+            >
+              {row.label} <span className="text-xs font-normal text-slate-500">{row.sublabel}</span>
+            </div>
           </div>
 
           {/* Cells */}
