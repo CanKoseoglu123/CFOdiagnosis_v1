@@ -18,7 +18,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function precompute(runId: string): Promise<InterpretationInput> {
   console.log('[precompute] Starting for run:', runId);
-  console.log('[precompute] Using service key:', supabaseServiceKey ? 'yes (length: ' + supabaseServiceKey.length + ')' : 'NO - MISSING!');
+  console.log('[precompute] Service key set:', process.env.SUPABASE_SERVICE_KEY ? 'YES' : 'NO (using anon key fallback)');
+  console.log('[precompute] Key length:', supabaseServiceKey?.length || 0);
 
   // Fetch run separately (avoids join issues)
   const { data: run, error: runError } = await supabase
