@@ -1,7 +1,7 @@
 // src/components/report/ObjectivesPracticesOverview.jsx
 // VS-27: Objectives & Practices Overview Grid
 // VS-35: Added branching connector lines from objectives to practices
-// Shows objectives as columns with practices stacked vertically
+// VS-37: Fixed connector lines, removed level badges, fixed box sizes
 
 import React from 'react';
 
@@ -68,8 +68,12 @@ function getScoreColor(score) {
   return 'bg-red-500';
 }
 
+// Fixed practice box height (in pixels) - for consistent sizing
+const PRACTICE_BOX_HEIGHT = 40;
+const PRACTICE_BOX_GAP = 4; // gap-1 = 4px
+
 // ═══════════════════════════════════════════════════════════════════════════
-// PRACTICE BOX - Single activity tile (compact)
+// PRACTICE BOX - Single activity tile (fixed size, no level badge)
 // ═══════════════════════════════════════════════════════════════════════════
 
 function PracticeBox({ practice }) {
@@ -78,17 +82,14 @@ function PracticeBox({ practice }) {
   return (
     <div
       className={`
-        ${bgColor} text-white rounded-sm px-1.5 py-1 relative
-        min-h-[36px] flex items-center justify-center text-center
+        ${bgColor} text-white rounded-sm px-1.5 py-1
+        flex items-center justify-center text-center
+        w-full
       `}
+      style={{ height: `${PRACTICE_BOX_HEIGHT}px` }}
     >
-      {/* Maturity level badge - top right */}
-      <span className="absolute top-0.5 right-1 text-[9px] font-bold text-white/60">
-        {practice.level}
-      </span>
-
-      {/* Practice title */}
-      <span className="text-[9px] font-medium leading-tight">
+      {/* Practice title only - no level badge */}
+      <span className="text-[9px] font-medium leading-tight line-clamp-2">
         {practice.title}
       </span>
     </div>
@@ -100,6 +101,17 @@ function PracticeBox({ practice }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function ObjectiveColumn({ objective, practices, score }) {
+  // Calculate dynamic vertical line height based on number of practices
+  // Line should end at the center of the last practice box
+  const practiceCount = practices.length;
+
+  // Line starts from top of practices area
+  // Ends at center of last practice (halfway through last box)
+  // Total height = (n-1) gaps + (n-0.5) boxes = practices area minus half a box
+  const lineHeight = practiceCount > 0
+    ? (practiceCount - 1) * (PRACTICE_BOX_HEIGHT + PRACTICE_BOX_GAP) + (PRACTICE_BOX_HEIGHT / 2)
+    : 0;
+
   return (
     <div className="flex flex-col flex-1 min-w-[95px] max-w-[130px] border border-slate-300 rounded bg-slate-50 overflow-hidden">
       {/* Objective header with score bubble */}
@@ -115,32 +127,33 @@ function ObjectiveColumn({ objective, practices, score }) {
         </span>
       </div>
 
-      {/* VS-35: Practices stack with branching connector lines */}
+      {/* Practices stack with branching connector lines */}
       <div className="relative p-1.5 pt-3 flex-1">
-        {/* Vertical connector line from objective to practices */}
-        {practices.length > 0 && (
+        {/* Vertical connector line - dynamic height based on practice count */}
+        {practiceCount > 0 && (
           <div
-            className="absolute left-3 bg-slate-300"
+            className="absolute bg-slate-300"
             style={{
               width: '1px',
-              top: '0',
-              height: 'calc(100% - 24px)'
+              left: '12px', // 3 * 4px = 12px (left-3)
+              top: '12px', // Start from top of practices area (pt-3 = 12px)
+              height: `${lineHeight}px`
             }}
           />
         )}
 
         {/* Practices with horizontal branch connectors */}
         <div className="flex flex-col gap-1 pl-4">
-          {practices.map((practice) => (
-            <div key={practice.id} className="relative flex items-center">
-              {/* Horizontal branch connector to left-middle of practice */}
+          {practices.map((practice, index) => (
+            <div key={practice.id} className="relative">
+              {/* Horizontal branch connector - positioned precisely */}
               <div
                 className="absolute bg-slate-300"
                 style={{
-                  left: '-12px',
-                  width: '10px',
+                  left: '-16px', // Connect from vertical line
+                  width: '14px', // Stop at edge of practice box
                   height: '1px',
-                  top: '50%'
+                  top: `${PRACTICE_BOX_HEIGHT / 2}px` // Center of practice box
                 }}
               />
               <PracticeBox practice={practice} />
@@ -153,7 +166,7 @@ function ObjectiveColumn({ objective, practices, score }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// LEGEND (compact)
+// LEGEND (compact, without level indicator)
 // ═══════════════════════════════════════════════════════════════════════════
 
 function Legend() {
@@ -170,10 +183,6 @@ function Legend() {
       <div className="flex items-center gap-1">
         <div className="w-3 h-3 bg-[#6699CC] rounded-sm" />
         <span>Gap</span>
-      </div>
-      <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-300">
-        <span className="text-[9px] font-bold text-slate-400">1-4</span>
-        <span>Level</span>
       </div>
     </div>
   );
@@ -215,9 +224,9 @@ export default function ObjectivesPracticesOverview({ levels, objectiveScores = 
 
   return (
     <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+      {/* Header - VS-37: increased title size to match other section titles */}
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
           Objectives & Practices
         </h2>
         <span className="text-[9px] text-slate-400">
