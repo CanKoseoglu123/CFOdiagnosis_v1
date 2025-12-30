@@ -40,13 +40,22 @@ export async function orchestrate(runId: string): Promise<OrchestrationResult> {
     input = await precompute(runId);
     pack = getPillarPack(input.pillar_id);
 
-    // Compute hash for regeneration control
+    // Compute hash for regeneration control - fetch separately to avoid join issues
     const { data: run } = await supabase
       .from('diagnostic_runs')
-      .select('diagnostic_inputs, calibration')
+      .select('calibration')
       .eq('id', runId)
-      .single();
-    input_hash = computeInputHash(run);
+      .maybeSingle();
+
+    const { data: inputs } = await supabase
+      .from('diagnostic_inputs')
+      .select('question_id, value')
+      .eq('run_id', runId);
+
+    input_hash = computeInputHash({
+      diagnostic_inputs: inputs || [],
+      calibration: run?.calibration || null,
+    });
 
   } catch (precomputeError: any) {
     console.error('Precompute failed:', precomputeError);
