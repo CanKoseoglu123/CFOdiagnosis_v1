@@ -24,22 +24,22 @@ const ZONE_NAMES = {
   }
 };
 
-// More visible zone backgrounds
-function getZoneBackground(row, colIndex) {
+// Left-edge stripe colors for zone indication (cleaner than background fills)
+function getZoneStripe(row, colIndex) {
   if (row === 'strategic') {
-    // Top row: Zone A (cols 0-1) red tint, Zone B (col 2) blue tint
-    return colIndex < 2 ? 'bg-red-100' : 'bg-blue-100';
+    // Top row: Zone A (cols 0-1) red stripe, Zone B (col 2) blue stripe
+    return colIndex < 2 ? 'border-l-4 border-red-500' : 'border-l-4 border-blue-500';
   }
-  // Bottom row: Zone C slate tint
-  return 'bg-slate-100';
+  // Bottom row: Zone C slate stripe
+  return 'border-l-4 border-slate-400';
 }
 
 function MatrixCell({ practices, rowId, colId, colIndex }) {
-  const background = getZoneBackground(rowId, colIndex);
+  const zoneStripe = getZoneStripe(rowId, colIndex);
   const zoneName = ZONE_NAMES[rowId]?.[colId] || '';
 
   return (
-    <div className={`p-3 border-l border-slate-300 min-h-[120px] ${background} relative`}>
+    <div className={`p-3 min-h-[120px] bg-white ${zoneStripe} relative`}>
       {/* Zone label in top right */}
       <span className="absolute top-1 right-2 text-[10px] font-medium text-slate-500 uppercase tracking-wide">
         {zoneName}

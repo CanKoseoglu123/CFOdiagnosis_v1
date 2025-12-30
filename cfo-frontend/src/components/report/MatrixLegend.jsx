@@ -24,19 +24,19 @@ export default function MatrixLegend() {
         </div>
       </div>
 
-      {/* Zone Legend */}
+      {/* Zone Legend - Stripe indicators */}
       <div className="border-l border-slate-300 pl-6 flex items-center gap-4">
         <span className="font-medium text-slate-700">Zones:</span>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-red-100 border border-red-300" />
+          <span className="w-4 h-3 bg-white border-l-4 border-red-500" />
           <span>Urgent</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-blue-100 border border-blue-300" />
+          <span className="w-4 h-3 bg-white border-l-4 border-blue-500" />
           <span>Vision</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-slate-100 border border-slate-300" />
+          <span className="w-4 h-3 bg-white border-l-4 border-slate-400" />
           <span>Operational</span>
         </div>
       </div>
