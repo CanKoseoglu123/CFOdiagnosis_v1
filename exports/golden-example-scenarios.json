@@ -1,0 +1,443 @@
+{
+  "_readme": "Use these scenarios to write golden AI summary examples. Each scenario shows the exact data the AI receives.",
+
+  "fintech_startup": {
+    "meta": {
+      "name": "Fintech Startup",
+      "description": "91% score, Level 3 - High performer with some gaps",
+      "overall_tonality": "celebrate"
+    },
+    "input_data": {
+      "company_name": "PayFlow Technologies",
+      "industry": "Financial Technology",
+      "team_size": "4 FP&A analysts",
+      "pain_points": ["Forecasting accuracy", "Board reporting turnaround"],
+      "systems": "Adaptive Planning, Salesforce, NetSuite",
+      "execution_score": 91,
+      "maturity_level": 3,
+      "level_name": "Managed",
+      "capped": false,
+      "capped_by_titles": [],
+      "objectives": [
+        {
+          "id": "obj_budget_discipline",
+          "name": "Budget Discipline",
+          "score": 95,
+          "has_critical_failure": false,
+          "importance": 5,
+          "level": 3
+        },
+        {
+          "id": "obj_financial_controls",
+          "name": "Financial Controls",
+          "score": 88,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 3
+        },
+        {
+          "id": "obj_performance_monitoring",
+          "name": "Performance Monitoring",
+          "score": 92,
+          "has_critical_failure": false,
+          "importance": 5,
+          "level": 3
+        },
+        {
+          "id": "obj_forecasting_agility",
+          "name": "Forecasting Agility",
+          "score": 85,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 3
+        },
+        {
+          "id": "obj_driver_based_planning",
+          "name": "Driver-Based Planning",
+          "score": 78,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 2
+        },
+        {
+          "id": "obj_scenario_modeling",
+          "name": "Scenario Modeling",
+          "score": 90,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 3
+        },
+        {
+          "id": "obj_strategic_influence",
+          "name": "Strategic Influence",
+          "score": 82,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 3
+        }
+      ],
+      "initiatives": [
+        {
+          "id": "init_driver_based",
+          "title": "Operationalize Driver-Based Planning",
+          "recommendation": "Link CRM pipeline stages directly to revenue forecast. Create driver sensitivity dashboard.",
+          "priority": "P1",
+          "objective_id": "obj_driver_based_planning"
+        },
+        {
+          "id": "init_strategic_seat",
+          "title": "Formalize Strategic Partnership",
+          "recommendation": "Establish Finance review checkpoint for pricing and deal terms. Join product launch committee.",
+          "priority": "P2",
+          "objective_id": "obj_strategic_influence"
+        }
+      ],
+      "critical_risks": []
+    },
+    "tonality_instructions": "- Budget Discipline (95%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Financial Controls (88%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Performance Monitoring (92%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Forecasting Agility (85%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Driver-Based Planning (78%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Scenario Modeling (90%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Strategic Influence (82%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.",
+    "golden_example": {
+      "executive_snapshot": "PayFlow Technologies' FP&A function operates at a mature Level 3 (Managed) [[level_3]] standard, executing at 91% effectiveness [[score_overall]]. The function has successfully secured its foundational controls, allowing the focus to shift from 'process stability' to 'strategic optimization'.",
+      "strengths": "The organization demonstrates advanced capability in Budget Discipline [[obj_budget_discipline]] and Performance Monitoring [[obj_performance_monitoring]]. By establishing a rigorous framework for planning and variance management, you have created a reliable platform that can now support more complex, driver-based modeling.",
+      "constraints": "No critical governance constraints are currently limiting maturity [[cap_inactive]]. However, the score is capped by Driver-Based Planning [[obj_driver_based_planning]] at 78%. While not a risk factor, this gap likely limits your ability to explain forecast outcomes through operational levers, relying instead on static accounting variances.",
+      "opportunity_areas": "With Budget Discipline already performing strongly, the analysis points to Driver-Based Planning [[obj_driver_based_planning]] as the highest-value refinement opportunity.\n\n• The Action: Operationalizing driver linkages [[init_driver_based]] tends to strengthen forecast defensibility.\n• The Benefit: This connects financial projections directly to the operational metrics that business leaders control.",
+      "path_forward": "The path is one of optimization, not remediation. Because the primary gap (Driver-Based Planning) complements your existing strengths, closing it serves a dual purpose: it hardens the forecast narrative and explicitly positions Finance as a strategic commercial partner [[obj_strategic_influence]]."
+    }
+  },
+
+  "manufacturing_firm": {
+    "meta": {
+      "name": "Manufacturing Firm",
+      "description": "55% score, Level 2 - Mid-range with clear improvement path",
+      "overall_tonality": "refine"
+    },
+    "input_data": {
+      "company_name": "Precision Components Inc.",
+      "industry": "Manufacturing",
+      "team_size": "2 FP&A staff",
+      "pain_points": ["Manual data consolidation", "Slow month-end close", "No rolling forecast"],
+      "systems": "QuickBooks Enterprise, Excel",
+      "execution_score": 55,
+      "maturity_level": 2,
+      "level_name": "Defined",
+      "capped": false,
+      "capped_by_titles": [],
+      "objectives": [
+        {
+          "id": "obj_budget_discipline",
+          "name": "Budget Discipline",
+          "score": 70,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 2
+        },
+        {
+          "id": "obj_financial_controls",
+          "name": "Financial Controls",
+          "score": 65,
+          "has_critical_failure": false,
+          "importance": 5,
+          "level": 2
+        },
+        {
+          "id": "obj_performance_monitoring",
+          "name": "Performance Monitoring",
+          "score": 60,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 2
+        },
+        {
+          "id": "obj_forecasting_agility",
+          "name": "Forecasting Agility",
+          "score": 35,
+          "has_critical_failure": false,
+          "importance": 5,
+          "level": 1
+        },
+        {
+          "id": "obj_driver_based_planning",
+          "name": "Driver-Based Planning",
+          "score": 40,
+          "has_critical_failure": false,
+          "importance": 2,
+          "level": 1
+        },
+        {
+          "id": "obj_scenario_modeling",
+          "name": "Scenario Modeling",
+          "score": 25,
+          "has_critical_failure": false,
+          "importance": 2,
+          "level": 1
+        },
+        {
+          "id": "obj_strategic_influence",
+          "name": "Strategic Influence",
+          "score": 45,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 2
+        }
+      ],
+      "initiatives": [
+        {
+          "id": "init_forecast",
+          "title": "Establish Rolling Forecast",
+          "recommendation": "Move from annual budget to quarterly reforecast (3+9, 6+6 model). Start with top-line revenue and key cost drivers.",
+          "priority": "P1",
+          "objective_id": "obj_forecasting_agility"
+        },
+        {
+          "id": "init_cash",
+          "title": "Build 13-Week Cash Flow Model",
+          "recommendation": "Create direct method cash flow forecast. Track receipts and payments weekly.",
+          "priority": "P1",
+          "objective_id": "obj_forecasting_agility"
+        },
+        {
+          "id": "init_close",
+          "title": "Accelerate Month-End Close",
+          "recommendation": "Implement close checklist with daily status tracking. Target 5 business day close.",
+          "priority": "P2",
+          "objective_id": "obj_performance_monitoring"
+        }
+      ],
+      "critical_risks": []
+    },
+    "tonality_instructions": "- Budget Discipline (70%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Financial Controls (65%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Performance Monitoring (60%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Forecasting Agility (35%): Significant gaps. Be direct but constructive. Focus on risk mitigation. Do not sugarcoat.\n- Driver-Based Planning (40%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Scenario Modeling (25%): Significant gaps. Be direct but constructive. Focus on risk mitigation. Do not sugarcoat.\n- Strategic Influence (45%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.",
+    "golden_example": {
+      "executive_snapshot": "Precision Components Inc. is currently assessed at Level 2 (Defined) [[level_2]] with an execution score of 55% [[score_overall]]. While core reporting processes appear stable and controlled, the data indicates a structural inability to pivot quickly, limiting the function's forward-looking agility.",
+      "strengths": "You demonstrate a secure foundation in Budget Discipline [[obj_budget_discipline]] and Financial Controls [[obj_financial_controls]]. The organization has effectively locked down cost management and approval frameworks—a necessary prerequisite for the advanced planning capabilities you are aiming to build.",
+      "constraints": "Maturity is strictly limited by Forecasting Agility [[obj_forecasting_agility]] [[cap_active]]. Specifically, the absence of a Rolling Forecast [[fpa_l2_q10]] and Cash Flow Visibility [[fpa_l2_q07]] creates a 'blind spot' in risk management. Until addressed, annual budget processes will likely act as a ceiling on maturity, regardless of improvements elsewhere.",
+      "opportunity_areas": "There is a divergence between intent and capability. Forecasting Agility [[obj_forecasting_agility]] is marked as a top priority, yet it scores 35%—the largest gap in the assessment.\n\n• Recommendation: Prioritize establishing a Rolling Forecast [[init_forecast]].\n• Why: This shifts the cadence from 'event-based' to 'continuous,' directly addressing the agility gap.",
+      "path_forward": "Sequence is critical here. Addressing the Rolling Forecast [[init_forecast]] first establishes the necessary muscle memory for modern planning. Once that cadence is active, adding Cash Flow Visibility [[init_cash]] becomes a natural extension of the new process, rather than a separate, overwhelming initiative."
+    }
+  },
+
+  "critical_l1_miss": {
+    "meta": {
+      "name": "Critical L1 Miss",
+      "description": "86% score but capped at Level 1 due to critical failures",
+      "overall_tonality": "urgent"
+    },
+    "input_data": {
+      "company_name": "GrowthMode SaaS",
+      "industry": "Software / SaaS",
+      "team_size": "3 Finance team members",
+      "pain_points": ["Audit findings", "Revenue recognition issues"],
+      "systems": "NetSuite, Looker, Google Sheets",
+      "execution_score": 86,
+      "maturity_level": 1,
+      "level_name": "Emerging",
+      "capped": true,
+      "capped_by_titles": [
+        "Does the company produce an approved annual budget before the fiscal year begins?",
+        "Does the budget include a full P&L down to Net Income?"
+      ],
+      "objectives": [
+        {
+          "id": "obj_budget_discipline",
+          "name": "Budget Discipline",
+          "score": 60,
+          "has_critical_failure": true,
+          "importance": 5,
+          "level": 1
+        },
+        {
+          "id": "obj_financial_controls",
+          "name": "Financial Controls",
+          "score": 90,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 3
+        },
+        {
+          "id": "obj_performance_monitoring",
+          "name": "Performance Monitoring",
+          "score": 95,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 3
+        },
+        {
+          "id": "obj_forecasting_agility",
+          "name": "Forecasting Agility",
+          "score": 88,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 3
+        },
+        {
+          "id": "obj_driver_based_planning",
+          "name": "Driver-Based Planning",
+          "score": 85,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 3
+        },
+        {
+          "id": "obj_scenario_modeling",
+          "name": "Scenario Modeling",
+          "score": 80,
+          "has_critical_failure": false,
+          "importance": 2,
+          "level": 3
+        },
+        {
+          "id": "obj_strategic_influence",
+          "name": "Strategic Influence",
+          "score": 75,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 2
+        }
+      ],
+      "initiatives": [
+        {
+          "id": "init_budget_cycle",
+          "title": "Implement Annual Budget Cycle",
+          "recommendation": "Establish a formal budget calendar working backwards 3-4 months. Secure explicit leadership sponsorship to enforce deadlines.",
+          "priority": "P1",
+          "objective_id": "obj_budget_discipline"
+        },
+        {
+          "id": "init_full_pl",
+          "title": "Extend Budget to Full P&L",
+          "recommendation": "Add interest expense, tax provision, and below-the-line items to budget template.",
+          "priority": "P1",
+          "objective_id": "obj_budget_discipline"
+        }
+      ],
+      "critical_risks": [
+        {
+          "id": "fpa_l1_q01",
+          "title": "Does the company produce an approved annual budget before the fiscal year begins?",
+          "objective_id": "obj_budget_discipline"
+        },
+        {
+          "id": "fpa_l1_q02",
+          "title": "Does the budget include a full P&L down to Net Income?",
+          "objective_id": "obj_budget_discipline"
+        }
+      ]
+    },
+    "tonality_instructions": "- Budget Discipline (60%): CRITICAL GAP EXISTS. Be direct about risk. Do not minimize or soften. State consequences clearly.\n- Financial Controls (90%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Performance Monitoring (95%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Forecasting Agility (88%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Driver-Based Planning (85%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Scenario Modeling (80%): This is a strength. Validate success briefly. Ask what drives it. Do not dwell — move on.\n- Strategic Influence (75%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.",
+    "golden_example": {
+      "executive_snapshot": "GrowthMode SaaS displays a unique profile: high operational execution (86%) [[score_overall]] constrained by specific foundational blockers that keep the maturity assessment at Level 1 (Emerging) [[level_1]]. The function is performing at a high level, but lacks the specific governance structures required for recognized maturity.",
+      "strengths": "The organization demonstrates sophisticated capabilities in Performance Monitoring [[obj_performance_monitoring]] and Forecasting Agility [[obj_forecasting_agility]]. You have effectively built advanced analytical muscle, often outperforming peers in analysis speed and depth.",
+      "constraints": "Despite these strengths, the maturity score hits a 'glass ceiling' due to Budget Discipline [[obj_budget_discipline]] [[cap_active]]. Specifically, the absence of an Approved Annual Budget [[fpa_l1_q01]] (prior to FY start) and an Incomplete P&L structure [[fpa_l1_q02]] act as critical vetoes. Advanced analytics cannot compensate for these missing governance pillars.",
+      "opportunity_areas": "Budget Discipline [[obj_budget_discipline]] is the singular barrier to advancement.\n\n• The Gap: Missing formal budget approval and P&L completeness.\n• The Fix: These are not incremental improvements but structural requirements. Implementing a formal budget calendar [[init_budget_cycle]] is the non-negotiable next step.",
+      "path_forward": "There is a single unlock required. You have essentially built a 'Level 3 engine on a Level 1 chassis.' By addressing the Annual Budget Cycle [[fpa_l1_q01]] and P&L Structure [[fpa_l1_q02]], you remove the artificial ceiling, likely allowing the maturity score to immediately reflect your actual operational capability."
+    }
+  },
+
+  "saas_company": {
+    "meta": {
+      "name": "SaaS Company",
+      "description": "43% score, Level 1 - Significant gaps, remediation focus",
+      "overall_tonality": "remediate"
+    },
+    "input_data": {
+      "company_name": "CloudMetrics Pro",
+      "industry": "Software / SaaS",
+      "team_size": "1 Controller + part-time bookkeeper",
+      "pain_points": ["No FP&A function", "CEO wants board-ready financials", "Fundraising next quarter"],
+      "systems": "QuickBooks Online, Google Sheets",
+      "execution_score": 43,
+      "maturity_level": 1,
+      "level_name": "Emerging",
+      "capped": false,
+      "capped_by_titles": [],
+      "objectives": [
+        {
+          "id": "obj_budget_discipline",
+          "name": "Budget Discipline",
+          "score": 50,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 1
+        },
+        {
+          "id": "obj_financial_controls",
+          "name": "Financial Controls",
+          "score": 55,
+          "has_critical_failure": false,
+          "importance": 5,
+          "level": 2
+        },
+        {
+          "id": "obj_performance_monitoring",
+          "name": "Performance Monitoring",
+          "score": 40,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 1
+        },
+        {
+          "id": "obj_forecasting_agility",
+          "name": "Forecasting Agility",
+          "score": 25,
+          "has_critical_failure": false,
+          "importance": 5,
+          "level": 1
+        },
+        {
+          "id": "obj_driver_based_planning",
+          "name": "Driver-Based Planning",
+          "score": 30,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 1
+        },
+        {
+          "id": "obj_scenario_modeling",
+          "name": "Scenario Modeling",
+          "score": 20,
+          "has_critical_failure": false,
+          "importance": 4,
+          "level": 1
+        },
+        {
+          "id": "obj_strategic_influence",
+          "name": "Strategic Influence",
+          "score": 35,
+          "has_critical_failure": false,
+          "importance": 3,
+          "level": 1
+        }
+      ],
+      "initiatives": [
+        {
+          "id": "init_forecast_infra",
+          "title": "Build Forecasting Infrastructure",
+          "recommendation": "Implement 13-week cash flow and monthly P&L reforecast. Critical for fundraising credibility.",
+          "priority": "P1",
+          "objective_id": "obj_forecasting_agility"
+        },
+        {
+          "id": "init_scenario",
+          "title": "Develop Scenario Modeling Capability",
+          "recommendation": "Build Base/Bull/Bear scenarios for investor conversations. Show burn rate sensitivities.",
+          "priority": "P1",
+          "objective_id": "obj_scenario_modeling"
+        },
+        {
+          "id": "init_monitoring",
+          "title": "Establish Management Reporting",
+          "recommendation": "Create standard monthly pack: Executive summary, P&L, key SaaS metrics (MRR, churn, CAC).",
+          "priority": "P2",
+          "objective_id": "obj_performance_monitoring"
+        }
+      ],
+      "critical_risks": []
+    },
+    "tonality_instructions": "- Budget Discipline (50%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Financial Controls (55%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Performance Monitoring (40%): Foundation exists but gaps remain. Focus on specific friction points. Be constructive, not alarming.\n- Forecasting Agility (25%): Significant gaps. Be direct but constructive. Focus on risk mitigation. Do not sugarcoat.\n- Driver-Based Planning (30%): Significant gaps. Be direct but constructive. Focus on risk mitigation. Do not sugarcoat.\n- Scenario Modeling (20%): Significant gaps. Be direct but constructive. Focus on risk mitigation. Do not sugarcoat.\n- Strategic Influence (35%): Significant gaps. Be direct but constructive. Focus on risk mitigation. Do not sugarcoat.",
+    "golden_example": {
+      "executive_snapshot": "CloudMetrics Pro is assessed at Level 1 (Emerging) [[level_1]] with an execution score of 43% [[score_overall]]. This indicates that while basic transactional processes are functioning, the organization currently lacks the structural mechanisms required for forward-looking financial steering.",
+      "strengths": "The organization shows developing capability in Financial Controls [[obj_financial_controls]]. By establishing foundational approval workflows and month-end rigor, you have created a stable starting point from which to address the broader planning gaps.",
+      "constraints": "Maturity is actively capped by gaps in Forecasting Agility [[obj_forecasting_agility]] and Scenario Modeling [[obj_scenario_modeling]] [[cap_active]]. The specific absence of Cash Flow Visibility [[fpa_l2_q07]] implies a risk profile where the business may be reacting to liquidity changes rather than anticipating them.",
+      "opportunity_areas": "Your priorities (Forecasting Agility and Scenario Modeling) align directly with your most critical gaps.\n\n• Primary Action: Establish a 13-week cash flow model [[init_forecast_infra]]. This provides immediate visibility for operational decision-making.\n• Secondary Action: Build basic Scenario capability [[init_scenario]] (Base/Bull/Bear) to improve stakeholder communication during volatility.",
+      "path_forward": "The data suggests a 'Dual Mandate.' Because your critical constraints lie exactly within your top priority areas [[obj_forecasting_agility]] [[obj_scenario_modeling]], your roadmap is clear: Fix Cash Flow to protect the downside, and build Scenario Models to capture the upside. This simultaneously resolves risk and advances strategy."
+    }
+  }
+}
