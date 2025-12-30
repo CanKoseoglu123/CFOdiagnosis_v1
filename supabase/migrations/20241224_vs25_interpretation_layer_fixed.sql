@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS interpretation_sessions (
 
   UNIQUE(run_id)
 );
-
 -- ============================================================
 -- INTERPRETATION STEPS (Full AI Interaction Log)
 -- ============================================================
@@ -79,7 +78,6 @@ CREATE TABLE IF NOT EXISTS interpretation_steps (
 
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- ============================================================
 -- AI CONVERSATION FLOW
 -- ============================================================
@@ -104,7 +102,6 @@ CREATE TABLE IF NOT EXISTS interpretation_ai_conversations (
   pruned_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- ============================================================
 -- INTERPRETATION QUESTIONS
 -- ============================================================
@@ -135,7 +132,6 @@ CREATE TABLE IF NOT EXISTS interpretation_questions (
 
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- ============================================================
 -- INTERPRETATION REPORTS
 -- ============================================================
@@ -158,7 +154,6 @@ CREATE TABLE IF NOT EXISTS interpretation_reports (
 
   UNIQUE(run_id)
 );
-
 -- ============================================================
 -- INDEXES
 -- ============================================================
@@ -171,7 +166,6 @@ CREATE INDEX IF NOT EXISTS idx_interpretation_sessions_status ON interpretation_
 CREATE INDEX IF NOT EXISTS idx_interpretation_steps_session ON interpretation_steps(session_id);
 CREATE INDEX IF NOT EXISTS idx_interpretation_questions_session ON interpretation_questions(session_id);
 CREATE INDEX IF NOT EXISTS idx_interpretation_reports_run ON interpretation_reports(run_id);
-
 -- ============================================================
 -- DATA LIFECYCLE FUNCTION
 -- ============================================================
@@ -198,11 +192,10 @@ BEGIN
     AND prompt_sent != '[PRUNED]';
 END;
 $$ LANGUAGE plpgsql;
-
 -- ============================================================
 -- RLS (Disabled for now - relies on API-level auth)
 -- ============================================================
 
 -- RLS is handled at the API level via Supabase auth tokens
 -- The API endpoints already verify user owns the diagnostic_run
--- before allowing access to interpretation data
+-- before allowing access to interpretation data;

@@ -11,10 +11,10 @@ import { SpecRegistry } from '../../specs/registry';
 import { toAggregateSpec } from '../../specs/toAggregateSpec';
 import { Spec } from '../../specs/types';
 
-// Supabase client for direct queries
+// Supabase service client for background operations (bypasses RLS)
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function precompute(runId: string): Promise<InterpretationInput> {
   // Fetch run with answers and calibration

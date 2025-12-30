@@ -16,7 +16,6 @@
 
 ALTER TABLE diagnostic_runs
 ADD COLUMN IF NOT EXISTS calibration JSONB DEFAULT '{}'::jsonb;
-
 -- Add comment for documentation
 COMMENT ON COLUMN diagnostic_runs.calibration IS
 'VS-21: User-declared objective importance (1-5 scale). Contains importance_map and locked array for Safety Valve objectives.';

@@ -15,10 +15,8 @@ CREATE TABLE IF NOT EXISTS action_plans (
   -- Ensure one action per question per run
   CONSTRAINT unique_run_question UNIQUE (run_id, question_id)
 );
-
 -- Index for fast lookups by run_id
 CREATE INDEX IF NOT EXISTS idx_action_plans_run_id ON action_plans(run_id);
-
 -- RLS is handled at the API level via Supabase auth tokens
 -- The API endpoints verify user owns the diagnostic_run before allowing access
 
@@ -30,11 +28,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER action_plans_updated_at
   BEFORE UPDATE ON action_plans
   FOR EACH ROW
   EXECUTE FUNCTION update_action_plans_updated_at();
-
 -- Grant permissions
 GRANT SELECT, INSERT, UPDATE, DELETE ON action_plans TO authenticated;

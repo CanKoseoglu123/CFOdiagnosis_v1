@@ -5,28 +5,29 @@
  * GET  /diagnostic-runs/:id/interpret-v32/status - Get status + report
  */
 
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { orchestrate } from './orchestrator';
 import { computeInputHash } from './precompute';
 
 const router = Router();
 
-// Supabase client
+// Service client for background operations (bypasses RLS)
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!;
+const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
 
 /**
  * POST /diagnostic-runs/:id/interpret
  * Start or regenerate interpretation
  */
-router.post('/:id/interpret-v32', async (req, res) => {
+router.post('/:id/interpret-v32', async (req: Request, res) => {
   const { id: runId } = req.params;
+  const userClient = req.supabase; // Authenticated client from middleware
 
   try {
-    // Check for existing in-progress generation
-    const { data: existing } = await supabase
+    // Check for existing in-progress generation (use service client for reports table)
+    const { data: existing } = await serviceClient
       .from('interpretation_reports')
       .select('id, status')
       .eq('run_id', runId)
@@ -41,7 +42,7 @@ router.post('/:id/interpret-v32', async (req, res) => {
     }
 
     // Get current version
-    const { data: latest } = await supabase
+    const { data: latest } = await serviceClient
       .from('interpretation_reports')
       .select('version, input_hash')
       .eq('run_id', runId)
@@ -49,13 +50,17 @@ router.post('/:id/interpret-v32', async (req, res) => {
       .limit(1)
       .maybeSingle();
 
-    // Check if regeneration allowed (hash changed)
+    // Check if regeneration allowed (hash changed) - use user client for RLS
     if (latest) {
-      const { data: run } = await supabase
+      const { data: run } = await userClient
         .from('diagnostic_runs')
-        .select('diagnostic_inputs, calibration')
+        .select('*, diagnostic_inputs(question_id, answer_option_id, skipped)')
         .eq('id', runId)
         .single();
+
+      if (!run) {
+        return res.status(404).json({ error: 'Run not found' });
+      }
 
       const currentHash = computeInputHash(run);
       if (currentHash === latest.input_hash) {
@@ -68,8 +73,8 @@ router.post('/:id/interpret-v32', async (req, res) => {
 
     const newVersion = (latest?.version || 0) + 1;
 
-    // Create report record
-    const { data: report, error } = await supabase
+    // Create report record (use service client)
+    const { data: report, error } = await serviceClient
       .from('interpretation_reports')
       .insert({
         run_id: runId,
@@ -100,7 +105,7 @@ router.post('/:id/interpret-v32', async (req, res) => {
 });
 
 /**
- * Async generation worker
+ * Async generation worker - uses service client (no request context)
  */
 async function generateAsync(runId: string, reportId: string) {
   const startTime = Date.now();
@@ -108,7 +113,7 @@ async function generateAsync(runId: string, reportId: string) {
   try {
     const result = await orchestrate(runId);
 
-    await supabase
+    await serviceClient
       .from('interpretation_reports')
       .update({
         status: 'completed',
@@ -128,7 +133,7 @@ async function generateAsync(runId: string, reportId: string) {
 
   } catch (error: any) {
     console.error('Generation failed:', error);
-    await supabase
+    await serviceClient
       .from('interpretation_reports')
       .update({
         status: 'failed',
@@ -141,14 +146,16 @@ async function generateAsync(runId: string, reportId: string) {
 }
 
 /**
- * GET /diagnostic-runs/:id/interpret/status
+ * GET /diagnostic-runs/:id/interpret-v32/status
  * Get interpretation status and report
  */
-router.get('/:id/interpret-v32/status', async (req, res) => {
+router.get('/:id/interpret-v32/status', async (req: Request, res) => {
   const { id: runId } = req.params;
+  const userClient = req.supabase; // Authenticated client from middleware
 
   try {
-    const { data: report } = await supabase
+    // Use service client for reports (no RLS on this table)
+    const { data: report } = await serviceClient
       .from('interpretation_reports')
       .select('*')
       .eq('run_id', runId)
@@ -160,17 +167,19 @@ router.get('/:id/interpret-v32/status', async (req, res) => {
       return res.json({ status: 'none', report: null, can_regenerate: true });
     }
 
-    // Check if regeneration allowed
+    // Check if regeneration allowed - use user client for RLS
     let can_regenerate = false;
     if (report.status === 'completed' || report.status === 'failed') {
-      const { data: run } = await supabase
+      const { data: run } = await userClient
         .from('diagnostic_runs')
-        .select('diagnostic_inputs, calibration')
+        .select('*, diagnostic_inputs(question_id, answer_option_id, skipped)')
         .eq('id', runId)
         .single();
 
-      const currentHash = computeInputHash(run);
-      can_regenerate = currentHash !== report.input_hash;
+      if (run) {
+        const currentHash = computeInputHash(run);
+        can_regenerate = currentHash !== report.input_hash;
+      }
     }
 
     return res.json({
