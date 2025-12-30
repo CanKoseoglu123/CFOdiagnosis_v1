@@ -50,17 +50,25 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
       .limit(1)
       .maybeSingle();
 
-    // Check if regeneration allowed (hash changed) - use user client for RLS
+    // Check if regeneration allowed (hash changed) - use service client for consistency
     if (latest) {
-      const { data: run } = await userClient
+      const { data: run } = await serviceClient
         .from('diagnostic_runs')
-        .select('*, diagnostic_inputs(question_id, value)')
+        .select('*')
         .eq('id', runId)
-        .single();
+        .maybeSingle();
 
       if (!run) {
         return res.status(404).json({ error: 'Run not found' });
       }
+
+      // Fetch inputs separately
+      const { data: inputs } = await serviceClient
+        .from('diagnostic_inputs')
+        .select('question_id, value')
+        .eq('run_id', runId);
+
+      run.diagnostic_inputs = inputs || [];
 
       const currentHash = computeInputHash(run);
       if (currentHash === latest.input_hash) {
@@ -151,7 +159,6 @@ async function generateAsync(runId: string, reportId: string) {
  */
 router.get('/:id/interpret-v32/status', async (req: Request, res) => {
   const { id: runId } = req.params;
-  const userClient = req.supabase; // Authenticated client from middleware
 
   try {
     // Use service client for reports (no RLS on this table)
@@ -167,16 +174,24 @@ router.get('/:id/interpret-v32/status', async (req: Request, res) => {
       return res.json({ status: 'none', report: null, can_regenerate: true });
     }
 
-    // Check if regeneration allowed - use user client for RLS
+    // Check if regeneration allowed - use service client for consistency
     let can_regenerate = false;
     if (report.status === 'completed' || report.status === 'failed') {
-      const { data: run } = await userClient
+      const { data: run } = await serviceClient
         .from('diagnostic_runs')
-        .select('*, diagnostic_inputs(question_id, value)')
+        .select('*')
         .eq('id', runId)
-        .single();
+        .maybeSingle();
 
       if (run) {
+        // Fetch inputs separately
+        const { data: inputs } = await serviceClient
+          .from('diagnostic_inputs')
+          .select('question_id, value')
+          .eq('run_id', runId);
+
+        run.diagnostic_inputs = inputs || [];
+
         const currentHash = computeInputHash(run);
         can_regenerate = currentHash !== report.input_hash;
       }

@@ -17,19 +17,42 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPAB
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function precompute(runId: string): Promise<InterpretationInput> {
-  // Fetch run with answers and calibration
-  const { data: run, error } = await supabase
-    .from('diagnostic_runs')
-    .select(`
-      *,
-      diagnostic_inputs(question_id, value)
-    `)
-    .eq('id', runId)
-    .single();
+  console.log('[precompute] Starting for run:', runId);
+  console.log('[precompute] Using service key:', supabaseServiceKey ? 'yes (length: ' + supabaseServiceKey.length + ')' : 'NO - MISSING!');
 
-  if (error || !run) {
-    throw new Error(`Failed to fetch run: ${error?.message}`);
+  // Fetch run separately (avoids join issues)
+  const { data: run, error: runError } = await supabase
+    .from('diagnostic_runs')
+    .select('*')
+    .eq('id', runId)
+    .maybeSingle();
+
+  if (runError) {
+    console.error('[precompute] Run query error:', runError);
+    throw new Error(`Failed to fetch run: ${runError.message}`);
   }
+
+  if (!run) {
+    console.error('[precompute] Run not found for ID:', runId);
+    throw new Error(`Run not found: ${runId}`);
+  }
+
+  console.log('[precompute] Found run, status:', run.status);
+
+  // Fetch inputs separately
+  const { data: diagnosticInputs, error: inputsError } = await supabase
+    .from('diagnostic_inputs')
+    .select('question_id, value')
+    .eq('run_id', runId);
+
+  if (inputsError) {
+    console.error('[precompute] Inputs query error:', inputsError);
+    throw new Error(`Failed to fetch inputs: ${inputsError.message}`);
+  }
+
+  // Attach inputs to run object for compatibility
+  run.diagnostic_inputs = diagnosticInputs || [];
+  console.log('[precompute] Found', run.diagnostic_inputs.length, 'inputs');
 
   const pillarId = run.pillar_id || 'fpa';
   const spec = SpecRegistry.getDefault();
