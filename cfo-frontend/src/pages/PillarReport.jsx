@@ -18,6 +18,7 @@ import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
+import PriorityMatrix from '../components/report/PriorityMatrix';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
 import FinalReportTab from '../components/report/FinalReportTab';
@@ -480,14 +481,26 @@ export default function PillarReport() {
             </div>
           )}
 
-          {/* MATURITY FOOTPRINT TAB */}
+          {/* MATURITY FOOTPRINT TAB - VS-33: Priority Matrix */}
           {activeTab === 'footprint' && (
-            <MaturityFootprintGrid
-              levels={maturityLevels}
-              focusNext={focusNext}
-              summaryText={footprintSummary}
-              objectiveScores={objectiveScores}
-            />
+            <div className="space-y-4">
+              {/* VS-33: Priority Matrix (BCG-style triage) */}
+              <PriorityMatrix
+                footprintLevels={maturityFootprint?.levels}
+                specPractices={spec?.practices}
+                specObjectives={spec?.objectives}
+                calibration={report.calibration}
+                userLevel={actualLevel}
+              />
+
+              {/* Detailed Footprint Grid (kept for reference) */}
+              <MaturityFootprintGrid
+                levels={maturityLevels}
+                focusNext={focusNext}
+                summaryText={footprintSummary}
+                objectiveScores={objectiveScores}
+              />
+            </div>
           )}
 
           {/* ACTION PLANNING TAB (VS-28) - has its own sidebar inside */}
