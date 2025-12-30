@@ -34,12 +34,16 @@ function getZoneBackground(row, colIndex) {
   return 'bg-white';
 }
 
-function MatrixCell({ practices, rowId, colId, colIndex }) {
+function MatrixCell({ practices, rowId, colId, colIndex, isLastRow, isLastCol }) {
   const background = getZoneBackground(rowId, colIndex);
   const zoneName = ZONE_NAMES[rowId]?.[colId] || '';
 
+  // Build border classes
+  const borderClasses = `border-l border-slate-300 ${isLastCol ? 'border-r' : ''} ${isLastRow ? 'border-b' : ''}`;
+  const cornerClass = isLastRow && isLastCol ? 'rounded-br' : '';
+
   return (
-    <div className={`p-3 min-h-[120px] ${background} border-l border-slate-300 relative`}>
+    <div className={`p-3 min-h-[120px] ${background} ${borderClasses} ${cornerClass} relative`}>
       {/* Zone label in top right */}
       <span className="absolute top-1 right-2 text-[10px] font-medium text-slate-500 uppercase tracking-wide">
         {zoneName}
@@ -67,19 +71,19 @@ export default function MatrixGrid({ columns, gridData }) {
       <div className="flex">
         {/* Left Axis Super-Column: PRIORITY LEVEL */}
         <div className="flex flex-col w-[40px]">
-          {/* Empty corner (intersection) - no outer borders, only right+bottom */}
-          <div className="p-2 bg-white border-r border-b border-slate-300">
+          {/* Empty corner (intersection) - no borders at all, just white space */}
+          <div className="p-2 bg-white">
             {/* Match height of MATURITY LEVEL row */}
             <span className="text-[11px] invisible">X</span>
           </div>
-          {/* Spacer for column headers row */}
-          <div className="p-3 bg-white border-r border-b border-slate-300">
+          {/* Spacer for column headers row - still part of corner */}
+          <div className="p-3 bg-white">
             {/* Match height of column headers */}
             <div className="text-sm invisible">X</div>
             <div className="text-xs mt-0.5 invisible">X</div>
           </div>
           {/* PRIORITY LEVEL vertical text - aligned with High row top */}
-          <div className="flex-1 bg-slate-200 border-r border-slate-300 flex items-center justify-center">
+          <div className="flex-1 bg-slate-200 border-t border-r border-slate-300 flex items-center justify-center">
             <span
               className="text-[11px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap"
               style={{
@@ -93,13 +97,13 @@ export default function MatrixGrid({ columns, gridData }) {
         </div>
 
         {/* Main Grid Area */}
-        <div className="flex-1 border border-slate-300 border-l-0">
+        <div className="flex-1">
           {/* Top Axis Super-Header: MATURITY LEVEL */}
-          <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
-            {/* Empty space above row labels */}
-            <div className="p-2 bg-white border-r border-slate-300" />
+          <div className="grid grid-cols-[60px_1fr_1fr_1fr]">
+            {/* Empty space above row labels - part of corner, no borders */}
+            <div className="p-2 bg-white" />
             {/* MATURITY LEVEL spanning 3 columns - darker bg */}
-            <div className="col-span-3 p-2 bg-slate-200 text-center">
+            <div className="col-span-3 p-2 bg-slate-200 text-center border border-slate-300 border-l-0 rounded-tr">
               <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                 Maturity Level
               </span>
@@ -107,13 +111,13 @@ export default function MatrixGrid({ columns, gridData }) {
           </div>
 
           {/* Column Headers - lighter bg */}
-          <div className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300">
-            {/* Empty corner for row labels */}
-            <div className="p-3 bg-slate-100 border-r border-slate-300" />
-            {columns.map(col => (
+          <div className="grid grid-cols-[60px_1fr_1fr_1fr]">
+            {/* Empty corner for row labels - part of corner, white */}
+            <div className="p-3 bg-white" />
+            {columns.map((col, idx) => (
               <div
                 key={col.id}
-                className="p-3 bg-slate-100 border-l border-slate-300 text-center"
+                className={`p-3 bg-slate-100 border-t border-b border-l border-slate-300 text-center ${idx === columns.length - 1 ? 'border-r' : ''}`}
               >
                 <div className="text-sm font-bold text-slate-700">{col.label}</div>
                 <div className="text-xs text-slate-500 mt-0.5">{col.sublabel}</div>
@@ -122,13 +126,13 @@ export default function MatrixGrid({ columns, gridData }) {
           </div>
 
           {/* Data Rows */}
-          {ROWS.map(row => (
+          {ROWS.map((row, rowIdx) => (
             <div
               key={row.id}
-              className="grid grid-cols-[60px_1fr_1fr_1fr] border-b border-slate-300 last:border-b-0"
+              className="grid grid-cols-[60px_1fr_1fr_1fr]"
             >
               {/* Row Label - Vertical text - lighter bg */}
-              <div className="bg-slate-100 border-r border-slate-300 flex items-center justify-center">
+              <div className={`bg-slate-100 border-l border-r border-slate-300 flex items-center justify-center ${rowIdx === ROWS.length - 1 ? 'border-b rounded-bl' : ''}`}>
                 <div
                   className="text-sm font-bold text-slate-700 whitespace-nowrap"
                   style={{
@@ -148,6 +152,8 @@ export default function MatrixGrid({ columns, gridData }) {
                   rowId={row.id}
                   colId={col.id}
                   colIndex={colIndex}
+                  isLastRow={rowIdx === ROWS.length - 1}
+                  isLastCol={colIndex === columns.length - 1}
                 />
               ))}
             </div>
