@@ -146,12 +146,12 @@ function ObjectiveColumn({ objective, practices, score }) {
         <div className="flex flex-col gap-1 pl-4">
           {practices.map((practice, index) => (
             <div key={practice.id} className="relative">
-              {/* Horizontal branch connector - positioned precisely */}
+              {/* Horizontal branch connector - from vertical line to practice box */}
               <div
                 className="absolute bg-slate-300"
                 style={{
-                  left: '-16px', // Connect from vertical line
-                  width: '14px', // Stop at edge of practice box
+                  left: '-4px', // Start at vertical line (12px from container = 16px - 4px)
+                  width: '4px', // Span from vertical line (12px) to practice box (16px)
                   height: '1px',
                   top: `${PRACTICE_BOX_HEIGHT / 2}px` // Center of practice box
                 }}
