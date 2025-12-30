@@ -1,7 +1,6 @@
 // src/components/report/ObjectivesPracticesOverview.jsx
 // VS-27: Objectives & Practices Overview Grid
-// VS-35: Added branching connector lines from objectives to practices
-// VS-37: Fixed connector lines, removed level badges, fixed box sizes
+// VS-37: Simplified - no connector lines, wider boxes
 
 import React from 'react';
 
@@ -9,7 +8,7 @@ import React from 'react';
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Objectives in display order (left to right) - shorter titles for compact view
+// Objectives in display order (left to right)
 const OBJECTIVES = [
   { id: 'obj_budget_discipline', shortTitle: 'Budget Discipline' },
   { id: 'obj_financial_controls', shortTitle: 'Financial Controls' },
@@ -72,7 +71,7 @@ function getScoreColor(score) {
 const PRACTICE_BOX_HEIGHT = 40;
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PRACTICE BOX - Single activity tile (fixed size, no level badge)
+// PRACTICE BOX - Single activity tile (fixed size)
 // ═══════════════════════════════════════════════════════════════════════════
 
 function PracticeBox({ practice }) {
@@ -95,42 +94,12 @@ function PracticeBox({ practice }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PRACTICE ITEM - Practice box with tree connector lines
-// ═══════════════════════════════════════════════════════════════════════════
-
-function PracticeItem({ practice, isLast }) {
-  return (
-    <div className="flex items-stretch">
-      {/* Connector column - vertical line + horizontal branch */}
-      <div className="relative w-3 flex-shrink-0">
-        {/* Vertical line - full height for non-last items, half for last */}
-        <div
-          className={`absolute left-0 w-px bg-slate-300 ${isLast ? 'h-1/2' : 'h-full'}`}
-          style={{ top: 0 }}
-        />
-        {/* Horizontal branch - from vertical line to practice box */}
-        <div
-          className="absolute left-0 h-px bg-slate-300"
-          style={{ top: '50%', width: '100%' }}
-        />
-      </div>
-      {/* Practice box */}
-      <div className="flex-1">
-        <PracticeBox practice={practice} />
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// OBJECTIVE COLUMN - Card with header + practices stack
+// OBJECTIVE COLUMN - Card with header + practices stack (no lines)
 // ═══════════════════════════════════════════════════════════════════════════
 
 function ObjectiveColumn({ objective, practices, score }) {
-  const practiceCount = practices.length;
-
   return (
-    <div className="flex flex-col flex-1 min-w-[95px] max-w-[130px] border border-slate-300 rounded bg-slate-50 overflow-hidden">
+    <div className="flex flex-col flex-1 min-w-[105px] max-w-[143px] border border-slate-300 rounded bg-slate-50 overflow-hidden">
       {/* Objective header with score bubble */}
       <div className="bg-[#001a33] text-white p-1.5 text-center relative min-h-[44px] flex items-center justify-center">
         {/* Score bubble - top right */}
@@ -144,28 +113,12 @@ function ObjectiveColumn({ objective, practices, score }) {
         </span>
       </div>
 
-      {/* Practices area with tree structure */}
-      {practiceCount > 0 && (
-        <div className="p-1.5 flex-1">
-          <div className="flex items-stretch">
-            {/* Stem from header - vertical line connecting to first practice */}
-            <div className="relative w-3 flex-shrink-0">
-              {/* Vertical stem line */}
-              <div className="absolute left-0 w-px bg-slate-300 h-1/2" style={{ top: 0 }} />
-              {/* Horizontal connector to tree */}
-              <div className="absolute left-0 h-px bg-slate-300" style={{ top: '50%', width: '100%' }} />
-            </div>
-            {/* Practices tree */}
-            <div className="flex-1 flex flex-col gap-1">
-              {practices.map((practice, index) => (
-                <PracticeItem
-                  key={practice.id}
-                  practice={practice}
-                  isLast={index === practiceCount - 1}
-                />
-              ))}
-            </div>
-          </div>
+      {/* Practices - simple stack, no connector lines */}
+      {practices.length > 0 && (
+        <div className="p-1.5 flex-1 flex flex-col gap-1">
+          {practices.map((practice) => (
+            <PracticeBox key={practice.id} practice={practice} />
+          ))}
         </div>
       )}
     </div>
