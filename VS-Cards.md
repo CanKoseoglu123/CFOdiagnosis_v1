@@ -1,6 +1,6 @@
 # VS-Cards — Version Sprints Roadmap
 
-**Last Updated:** December 26, 2025
+**Last Updated:** December 30, 2025
 **Status:** Active Development
 
 ---
@@ -225,41 +225,110 @@ The assessment questionnaire needed to be separated into 3 pages (one per theme)
 
 ## VS-31: AI Fine-Tuning & Follow-up Questions
 
-**Status:** 📋 Planned
+**Status:** ✅ Complete (Merged into VS-32)
 **Priority:** High
-**Sprint:** December 26-27, 2025
+**Completed:** December 30, 2025
 
 ### Problem Statement
 The AI interpretation needs fine-tuning for quality and the follow-up question mechanism needs refinement. Questions should meaningfully impact the final summary.
 
-### Deliverables
+### Resolution
+VS-31's goals were addressed as part of VS-32's Simplified AI Interpretation Engine:
 
-| Component | Description |
-|-----------|-------------|
-| Prompt Refinement | Tune prompts for better output quality |
-| Question Impact | Follow-up answers should visibly affect summary |
-| Tonality Calibration | Ensure tone matches score appropriately |
-| Error Handling | Graceful fallbacks for AI failures |
+| Component | Status | Implementation |
+|-----------|--------|----------------|
+| Prompt Refinement | ✅ Done | Tonality-aware prompts in generator.ts |
+| Question Impact | ✅ Done | Evidence-grounded output with [[evidence_ids]] |
+| Tonality Calibration | ✅ Done | Score-based tone selection (celebrate/divergent/remediate) |
+| Error Handling | ✅ Done | Heuristics validation + fallback.ts template system |
 
 ---
 
-## VS-32: Printable Report
+## VS-32: Executive Report & AI Interpretation Engine
 
-**Status:** 📋 Planned
+**Status:** ✅ Complete
 **Priority:** High
-**Sprint:** December 27, 2025
+**Completed:** December 27-30, 2025
 
 ### Problem Statement
-Users need a final, printable PDF report at the end of the pillar assessment that captures all insights, scores, and recommendations.
+Users need a final, printable executive report and a simplified AI interpretation engine that generates evidence-grounded insights without hallucinations.
 
 ### Deliverables
 
-| Component | Description |
-|-----------|-------------|
-| Print-Optimized Layout | CSS print styles for clean export |
-| Executive Summary | One-page overview for executives |
-| Full Report | Complete diagnostic with all sections |
-| PDF Generation | Browser print or server-side PDF |
+| Component | Status | Description |
+|-----------|--------|-------------|
+| Executive Report Tab | ✅ Done | Print-first 2-page layout with current/target state |
+| Timeline Journey | ✅ Done | Today → 6m → 12m → 24m visualization with progress |
+| AI Interpretation Engine | ✅ Done | Single-call GPT-4o architecture with validation |
+| Golden Examples | ✅ Done | 4 production-ready scenarios for AI training |
+| Heuristics Validation | ✅ Done | Evidence tags, word count, forbidden phrases |
+| Fallback System | ✅ Done | Template-based output when AI fails |
+
+### Technical Implementation
+
+**Backend Files Created:**
+- `src/interpretation/engine/precompute.ts` — Builds InterpretationInput from diagnostic run
+- `src/interpretation/engine/generator.ts` — GPT-4o with tonality-aware prompts
+- `src/interpretation/engine/heuristics.ts` — Validates AI output quality
+- `src/interpretation/engine/fallback.ts` — Template-based fallback
+- `src/interpretation/engine/orchestrator.ts` — Coordinates pipeline
+- `src/interpretation/engine/routes.ts` — `/interpret-v32` endpoints
+- `src/interpretation/pillars/fpa/config.ts` — FP&A pillar pack
+
+**Frontend Files Created:**
+- `cfo-frontend/src/components/report/InterpretationTabV32.jsx`
+- `cfo-frontend/src/utils/evidence.js`
+
+**Database Migration:**
+- `supabase/migrations/20241230_vs32_interpretation_simple.sql`
+
+### Executive Report Layout
+
+**Page 1 — Current State → Target State:**
+```
+┌────────────────────────────────────────────────────────┐
+│ Header: Company / Industry                              │
+├────────────────────────────────────────────────────────┤
+│ State Comparison: Current (Today) → Target (24m)       │
+├────────────────────────────────────────────────────────┤
+│ Roadmap Bar: Today → 6m → 12m → 24m                    │
+├────────────────────────────────────────────────────────┤
+│ Objective Table (Foundation / Future / Intelligence)   │
+├────────────────────────────────────────────────────────┤
+│ Bottom Band: Strengths | Critical Fixes | Opportunities│
+└────────────────────────────────────────────────────────┘
+```
+
+**Page 2 — Commitment Register:**
+- Actions grouped by objective with owner/timeline
+- Accountability summary footer
+- Coverage stats for critical gaps
+
+### AI Interpretation Architecture
+
+```
+precompute → generator → heuristics → fallback
+    ↓            ↓            ↓           ↓
+ Build       GPT-4o      Validate    Template
+ Input       Call        Output      Backup
+```
+
+### Golden Example Scenarios
+
+| Scenario | Score | Level | Pattern |
+|----------|-------|-------|---------|
+| Fintech Startup | 91% | L3 | "Celebrate" — Optimization focus |
+| Manufacturing Firm | 55% | L2 | "Divergent Priority" — Intent vs capability gap |
+| Critical L1 Miss | 86% | L1 | "Glass Ceiling" — L3 engine on L1 chassis |
+| SaaS Company | 43% | L1 | "Remediate" — Dual mandate |
+
+### Key Rules Enforced
+
+- No invented facts (team sizes, systems from context)
+- Priorities from OBJECTIVES only (not pain points)
+- All claims grounded in `[[evidence_ids]]`
+- Epistemic humility (appears, suggests, likely)
+- Varied Path Forward language across scenarios
 
 ---
 
@@ -268,11 +337,11 @@ Users need a final, printable PDF report at the end of the pillar assessment tha
 | VS | Name | Priority | Status |
 |----|------|----------|--------|
 | VS-15 | Admin Dashboard | Medium | 📋 Backlog |
-| VS-33 | Multi-Pillar Architecture | High | 📋 Backlog |
-| VS-34 | Benchmarking Engine | Medium | 📋 Backlog |
-| VS-35 | Trend Analysis | Low | 📋 Backlog |
-| VS-36 | Email Reports | Low | 📋 Backlog |
-| VS-37 | SSO Integration | Medium | 📋 Backlog |
+| VS-38 | Multi-Pillar Architecture | High | 📋 Backlog |
+| VS-39 | Benchmarking Engine | Medium | 📋 Backlog |
+| VS-40 | Trend Analysis | Low | 📋 Backlog |
+| VS-41 | Email Reports | Low | 📋 Backlog |
+| VS-42 | SSO Integration | Medium | 📋 Backlog |
 
 ---
 
@@ -295,3 +364,10 @@ Users need a final, printable PDF report at the end of the pillar assessment tha
 | VS-28 | Action Planning | Dec 25, 2025 | War room simulator |
 | VS-29 | Global Sidebar | Dec 25, 2025 | AppShell layout pattern |
 | VS-30 | Theme Assessment | Dec 26, 2025 | 3-page MCQ with enterprise UI |
+| VS-31 | AI Fine-Tuning | Dec 30, 2025 | Merged into VS-32 |
+| VS-32 | Executive Report & AI Engine | Dec 30, 2025 | 2-page exec report + GPT-4o interpretation |
+| VS-33 | Overview Tab Cleanup | Dec 30, 2025 | Summary table updates |
+| VS-34 | Simulator UI Refinements | Dec 30, 2025 | Action Planning polish |
+| VS-35 | Capability Footprint Redesign | Dec 30, 2025 | Connector lines + visual improvements |
+| VS-36 | Interpretation UX | Dec 30, 2025 | Restart + user-friendly warnings |
+| VS-37 | Overview Consolidation | Dec 30, 2025 | Single AI insights card + tree structure |
