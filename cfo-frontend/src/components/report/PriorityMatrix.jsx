@@ -63,17 +63,17 @@ export default function PriorityMatrix({
         </h2>
         <div className="flex items-center gap-4 text-xs text-slate-500">
           <span>
-            <span className="font-semibold text-red-600">{stats.gaps}</span> gaps
+            <span className="font-semibold text-[#6699CC]">{stats.gaps}</span> gaps
           </span>
           <span>
-            <span className="font-semibold text-amber-600">{stats.partial}</span> partial
+            <span className="font-semibold text-[#336699]">{stats.partial}</span> partial
           </span>
           <span>
-            <span className="font-semibold text-emerald-600">{stats.complete}</span> complete
+            <span className="font-semibold text-[#003366]">{stats.complete}</span> proven
           </span>
           {stats.strategicGaps > 0 && (
             <span className="text-red-600 font-medium">
-              {stats.strategicGaps} strategic gaps
+              {stats.strategicGaps} urgent gaps
             </span>
           )}
         </div>

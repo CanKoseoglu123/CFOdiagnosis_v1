@@ -1,12 +1,14 @@
 // src/components/report/PracticeCard.jsx
 // VS-33: Priority Matrix - Individual practice card
+// Colors aligned with ObjectivesPracticesOverview (navy blue theme)
 
 import React from 'react';
 
+// Navy blue color scheme matching ObjectivesPracticesOverview
 const statusStyles = {
-  complete: 'bg-emerald-500 text-white',
-  partial: 'bg-emerald-300 text-emerald-900',
-  gap: 'bg-red-500 text-white',
+  complete: 'bg-[#003366] text-white',      // Dark navy - proven
+  partial: 'bg-[#336699] text-white',       // Medium blue - partial
+  gap: 'bg-[#6699CC] text-white',           // Light blue - gap
 };
 
 export default function PracticeCard({ practice }) {

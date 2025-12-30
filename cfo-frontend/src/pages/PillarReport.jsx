@@ -17,7 +17,7 @@ import SummaryTable from '../components/report/SummaryTable';
 import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
-import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
+import ObjectivesPracticesOverview from '../components/report/ObjectivesPracticesOverview';
 import PriorityMatrix from '../components/report/PriorityMatrix';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
@@ -481,9 +481,15 @@ export default function PillarReport() {
             </div>
           )}
 
-          {/* MATURITY FOOTPRINT TAB - VS-33: Priority Matrix */}
+          {/* MATURITY FOOTPRINT TAB - VS-33: Objectives & Priority Matrix */}
           {activeTab === 'footprint' && (
             <div className="space-y-4">
+              {/* Objectives & Practices Overview */}
+              <ObjectivesPracticesOverview
+                levels={maturityLevels}
+                objectiveScores={objectiveScores}
+              />
+
               {/* VS-33: Priority Matrix (BCG-style triage) */}
               <PriorityMatrix
                 footprintLevels={maturityFootprint?.levels}
@@ -491,14 +497,6 @@ export default function PillarReport() {
                 specObjectives={spec?.objectives}
                 calibration={report.calibration}
                 userLevel={actualLevel}
-              />
-
-              {/* Detailed Footprint Grid (kept for reference) */}
-              <MaturityFootprintGrid
-                levels={maturityLevels}
-                focusNext={focusNext}
-                summaryText={footprintSummary}
-                objectiveScores={objectiveScores}
               />
             </div>
           )}
