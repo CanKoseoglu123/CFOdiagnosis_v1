@@ -15,10 +15,10 @@ import { getPillarPack } from '../pillars/registry';
 
 const MAX_ATTEMPTS = 2;
 
-// Supabase client
+// Supabase service client for background operations (bypasses RLS)
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export interface OrchestrationResult {
   sections: OverviewSection[];
