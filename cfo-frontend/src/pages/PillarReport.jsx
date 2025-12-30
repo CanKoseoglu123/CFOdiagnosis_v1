@@ -2,6 +2,7 @@
 // VS-22 v3: Added ExecutiveSummary, fixed critical_risks to use expert_action.title
 // VS-28: Added Action Planning & Simulator tab
 // VS-29: Global sidebar with WorkflowSidebar + AppShell layout
+// VS-37: Consolidated AI section in Overview tab, removed separate AI Insights tab
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -18,7 +19,6 @@ import CriticalRisksCard from '../components/report/CriticalRisksCard';
 import HighValueCard from '../components/report/HighValueCard';
 import MaturityFootprintGrid from '../components/report/MaturityFootprintGrid';
 import InterpretationSection from '../components/report/InterpretationSection';
-import InterpretationTabV32 from '../components/report/InterpretationTabV32';
 import ActionPlanTab from '../components/report/ActionPlanTab';
 import FinalReportTab from '../components/report/FinalReportTab';
 
@@ -448,16 +448,6 @@ export default function PillarReport() {
             >
               Executive Report
             </button>
-            <button
-              onClick={() => setActiveTab('insights')}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
-                activeTab === 'insights'
-                  ? 'text-violet-600 border-b-2 border-violet-600'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              AI Insights
-            </button>
           </div>
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
@@ -541,10 +531,6 @@ export default function PillarReport() {
             )
           )}
 
-          {/* AI INSIGHTS TAB (VS-32) - Simplified interpretation */}
-          {activeTab === 'insights' && (
-            <InterpretationTabV32 runId={runId} />
-          )}
         </EnterpriseCanvas>
 
         {/* Footer */}
