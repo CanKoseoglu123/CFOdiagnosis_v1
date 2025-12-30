@@ -21,6 +21,7 @@ import {
 } from "./interpretation";
 import { deriveCriticalRisks } from "./risks";
 import { calculateMaturityV2 } from "./maturity/engine";
+import interpretationRoutesV32 from "./interpretation/engine/routes";
 import {
   DiagnosticContextV1Schema,
   CompanyContextSchema,
@@ -1308,6 +1309,11 @@ app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
 
   res.status(204).send();
 });
+
+// ------------------------------------------------------------------
+// VS-32: Simplified Interpretation Routes
+// ------------------------------------------------------------------
+app.use("/diagnostic-runs", interpretationRoutesV32);
 
 // ------------------------------------------------------------------
 // Server
