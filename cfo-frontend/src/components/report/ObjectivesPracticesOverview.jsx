@@ -191,7 +191,7 @@ export default function ObjectivesPracticesOverview({ levels, objectiveScores = 
             Objectives & Practices
           </h2>
           <p className="text-sm text-slate-500 mt-1 mb-1">
-            All practices organized by objective. Scores reflect completion percentage within each objective.
+            All practices organized by objective at a glance. Scores reflect completion percentage within each objective; color codes indicate current state.
           </p>
         </div>
         <span className="text-[9px] text-slate-400 shrink-0">

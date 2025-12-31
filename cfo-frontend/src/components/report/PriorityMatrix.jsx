@@ -63,7 +63,7 @@ export default function PriorityMatrix({
             Priority Matrix
           </h2>
           <p className="text-sm text-slate-500 mt-1 mb-1">
-            Practices grouped by business priority and maturity stage. Focus on the top-left quadrant (urgent gaps in high-priority areas) first.
+            Practices grouped by business priority and maturity stage. Focus on the top-left quadrants first to unblock immediate maturity advancement, then the top-right to build strategic capabilities for the future.
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-500 shrink-0">
