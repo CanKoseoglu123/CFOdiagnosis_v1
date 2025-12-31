@@ -288,6 +288,26 @@ export default function ActionPlanTab({
     };
   }, [questions, report, actionPlan]);
 
+  // Calculate current and projected maturity levels
+  const maturityLevels = useMemo(() => {
+    // Get current level from report
+    const maturityV2 = report?.maturity_v2 || {};
+    const currentLevel = maturityV2.actual_level ?? report?.maturity?.achieved_level ?? 1;
+
+    // Calculate projected level based on projected score
+    // Thresholds: <40=L1, 40-64=L2, 65-84=L3, 85+=L4
+    const scoreToLevel = (score) => {
+      if (score >= 85) return 4;
+      if (score >= 65) return 3;
+      if (score >= 40) return 2;
+      return 1;
+    };
+
+    const projectedLevel = scoreToLevel(executionScores.projected);
+
+    return { current: currentLevel, projected: projectedLevel };
+  }, [report, executionScores.projected]);
+
   // Count selected actions by timeline
   const actionCounts = useMemo(() => {
     const counts = { total: 0, '6m': 0, '12m': 0, '24m': 0, unassigned: 0 };
@@ -334,6 +354,8 @@ export default function ActionPlanTab({
         <SimulatorHUD
           executionScore={executionScores.current}
           projectedScore={executionScores.projected}
+          currentLevel={maturityLevels.current}
+          projectedLevel={maturityLevels.projected}
           objectives={objectives}
           projectedByTimeline={projectedByTimeline}
           actionCounts={actionCounts}
