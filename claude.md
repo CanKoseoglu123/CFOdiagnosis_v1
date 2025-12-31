@@ -70,7 +70,11 @@ CFOdiagnosis_v1/
 │   │   │       ├── ActionPlanTab.jsx   # Action Planning (VS-28)
 │   │   │       ├── SimulatorHUD.jsx    # Score projections (VS-28)
 │   │   │       ├── CommandCenter.jsx   # Gap list with controls (VS-28)
-│   │   │       └── ActionSidebar.jsx   # Interactive sidebar (VS-28)
+│   │   │       ├── ActionSidebar.jsx   # Interactive sidebar (VS-28)
+│   │   │       ├── PriorityMatrix.jsx  # BCG-style triage grid (VS-33)
+│   │   │       └── ObjectivesPracticesOverview.jsx # Objectives grid
+│   │   ├── utils/
+│   │   │   └── matrixUtils.js    # Priority Matrix data derivation (VS-33)
 │   │   └── data/
 │   │       └── spec.js           # Question titles, lookups
 │   └── tailwind.config.js        # Gartner enterprise colors
@@ -127,7 +131,7 @@ CFOdiagnosis_v1/
 **diagnostic_runs**
 - `id`, `user_id`, `status`, `spec_version`
 - `context` (JSONB): `{company_name, industry}`
-- `calibration` (JSONB): `{importance_map, locked}`
+- `calibration` (JSONB): `{importance_map, locked: []}` (locked always empty)
 - `created_at`, `updated_at`
 
 **diagnostic_inputs** — Question answers per run
@@ -273,7 +277,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS18: Context Intake | Company name + industry before assessment |
 | VS19: Critical Risk Engine | "Silence is Risk" — missing criticals = risk |
 | VS20: Dynamic Action Engine | Objective-based actions with runtime priority |
-| VS21: Calibration Layer | User-declared importance (1-5) multiplies scores |
+| VS21: Calibration Layer | User-declared importance (1-5) multiplies scores, full user control |
 | VS-23: Maturity Footprint | 21 practices grid with evidence states |
 | VS-24: JSON Content Catalog | Zod-validated content in `content/*.json` |
 | VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
@@ -281,6 +285,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-29: Global Sidebar | AppShell + WorkflowSidebar layout pattern |
 | VS-30: Enterprise Layout | ChapterHeader, EnterpriseCanvas, ExecutiveSpine components |
 | VS-31: Page Normalization | Consulting-document paradigm, no rounded buttons |
+| VS-33: Priority Matrix | BCG-style triage grid, critical failures forced to Strategic row |
 | VS-36: Interpretation Restart | User-friendly warnings + "Provide More Context" button |
 
 ---
