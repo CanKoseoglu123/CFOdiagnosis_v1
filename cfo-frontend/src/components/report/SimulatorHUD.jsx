@@ -119,41 +119,48 @@ export default function SimulatorHUD({
               </div>
             </div>
 
-            {/* Maturity Level Section - Only show if level progression exists */}
-            {projectedLevel > currentLevel && (
-              <div className="mt-3 pt-3 border-t border-slate-100">
-                <div className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">
-                  Maturity Level
-                </div>
-                <div className="flex items-center gap-4">
-                  {/* Current Level Badge */}
-                  <div className="text-center">
-                    <span className={`inline-block px-3 py-1.5 rounded text-base font-bold ${
-                      currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
-                      currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
-                      'bg-slate-100 text-slate-600'
-                    }`}>
-                      L{currentLevel}
-                    </span>
-                    <div className="text-xs text-slate-400 mt-1">Current</div>
+            {/* Maturity Level Section - Always show current and projected */}
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <div className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">
+                Maturity Level
+              </div>
+              <div className="flex items-center gap-4">
+                {/* Current Level Badge */}
+                <div className="text-center">
+                  <span className={`inline-block px-3 py-1.5 rounded text-base font-bold ${
+                    currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                    currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+                    'bg-slate-100 text-slate-600'
+                  }`}>
+                    L{currentLevel}
+                  </span>
+                  <div className="text-xs text-slate-400 mt-1">
+                    {levelNames[currentLevel] || 'Current'}
                   </div>
+                </div>
 
-                  {/* Arrow */}
-                  <span className="text-slate-400 text-xl font-medium">→</span>
+                {/* Arrow - green if improving, gray if same */}
+                <span className={`text-xl font-medium ${
+                  projectedLevel > currentLevel ? 'text-emerald-500' : 'text-slate-300'
+                }`}>→</span>
 
-                  {/* Projected Level Badge */}
-                  <div className="text-center">
-                    <span className={`inline-block px-3 py-1.5 rounded text-base font-bold ${
-                      projectedLevel >= 3 ? 'bg-blue-100 text-blue-700' :
-                      'bg-slate-100 text-slate-600'
-                    }`}>
-                      L{projectedLevel}
-                    </span>
-                    <div className="text-xs text-slate-400 mt-1">Projected</div>
+                {/* Projected Level Badge */}
+                <div className="text-center">
+                  <span className={`inline-block px-3 py-1.5 rounded text-base font-bold ${
+                    projectedLevel > currentLevel
+                      ? (projectedLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                         projectedLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+                         'bg-blue-100 text-blue-700')
+                      : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    L{projectedLevel}
+                  </span>
+                  <div className="text-xs text-slate-400 mt-1">
+                    {levelNames[projectedLevel] || 'Projected'}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Explanatory line - at the bottom */}
             <p className="text-xs text-slate-500 mt-3 pt-2 border-t border-slate-100">
