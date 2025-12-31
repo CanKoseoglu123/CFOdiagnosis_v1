@@ -3,9 +3,11 @@
 // VS-28: Added Action Planning & Simulator tab
 // VS-29: Global sidebar with WorkflowSidebar + AppShell layout
 // VS-37: Consolidated AI section in Overview tab, removed separate AI Insights tab
+// VS-39: Finalization workflow - locks Executive Report tab until finalized
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -273,6 +275,17 @@ export default function PillarReport() {
   });
 
   // ─────────────────────────────────────────────────────────────────────────
+  // VS-39: FINALIZATION STATE (derived, NOT separate state)
+  // ─────────────────────────────────────────────────────────────────────────
+  const isFinalized = !!report?.finalized_at;
+
+  // VS-39: Callback for ActionPlanTab - refetch report + auto-switch to Executive tab
+  async function handleFinalized() {
+    await fetchReport();
+    setActiveTab('executive');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -440,13 +453,18 @@ export default function PillarReport() {
               Action Planning
             </button>
             <button
-              onClick={() => setActiveTab('executive')}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+              onClick={() => isFinalized && setActiveTab('executive')}
+              disabled={!isFinalized}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
                 activeTab === 'executive'
                   ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-slate-500 hover:text-slate-700'
+                  : !isFinalized
+                    ? 'text-slate-400 cursor-not-allowed'
+                    : 'text-slate-500 hover:text-slate-700'
               }`}
+              title={!isFinalized ? 'Finalize your action plan to unlock' : ''}
             >
+              {!isFinalized && <Lock className="w-3 h-3" />}
               Executive Report
             </button>
           </div>
@@ -513,6 +531,7 @@ export default function PillarReport() {
                 practices={spec.practices || []}
                 companyName={companyName}
                 industry={industry}
+                onFinalized={handleFinalized}  // VS-39: Refetch + switch tab
               />
             ) : (
               <div className="flex items-center justify-center py-12">

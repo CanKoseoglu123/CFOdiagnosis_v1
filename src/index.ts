@@ -178,7 +178,7 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
   // Fetch run details
   const { data: run, error } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, setup_completed_at, created_at")
+    .select("id, status, spec_version, context, setup_completed_at, created_at, finalized_at")
     .eq("id", runId)
     .single();
 
@@ -632,7 +632,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, calibration")
+    .select("id, status, spec_version, context, calibration, finalized_at")
     .eq("id", runId)
     .single();
 
@@ -693,10 +693,12 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   // VS18: Include context in report response (normalized for backward compatibility)
   // VS21: Include calibration in report response
+  // VS39: Include finalized_at for Executive Report tab lock
   res.json({
     ...report,
     context: normalizeContext(run.context),
     calibration: run.calibration || null,
+    finalized_at: run.finalized_at || null,
   });
 });
 
@@ -1277,6 +1279,69 @@ app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
   }
 
   res.status(204).send();
+});
+
+// ------------------------------------------------------------------
+// VS-39 — Finalize action plan (locks selections, enables Executive Report)
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
+  const runId = req.params.id;
+
+  // Verify run exists and get current state
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, finalized_at")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Check if already finalized (irreversible)
+  if (run.finalized_at) {
+    return res.status(409).json({
+      error: "Run already finalized",
+      finalized_at: run.finalized_at
+    });
+  }
+
+  // Run must be completed before finalization
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed before finalization" });
+  }
+
+  // Get current action plan to snapshot
+  const { data: actionPlanItems, error: planError } = await req.supabase
+    .from("action_plans")
+    .select("*")
+    .eq("run_id", runId);
+
+  if (planError) {
+    return res.status(500).json({ error: planError.message });
+  }
+
+  // Create snapshot and set finalized_at
+  const now = new Date().toISOString();
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .update({
+      finalized_at: now,
+      action_plan_snapshot: actionPlanItems || []
+    })
+    .eq("id", runId)
+    .select("id, finalized_at, action_plan_snapshot")
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({
+    success: true,
+    finalized_at: data.finalized_at,
+    action_count: (actionPlanItems || []).length
+  });
 });
 
 // ------------------------------------------------------------------

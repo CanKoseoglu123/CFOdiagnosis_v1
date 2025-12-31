@@ -116,6 +116,7 @@ CFOdiagnosis_v1/
 | GET | `/diagnostic-runs/:id/action-plan` | Get saved action plan (VS28) | Yes |
 | POST | `/diagnostic-runs/:id/action-plan` | Upsert action item (VS28) | Yes |
 | DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action item (VS28) | Yes |
+| POST | `/diagnostic-runs/:id/finalize` | Lock action plan, enable Executive Report (VS39) | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -132,6 +133,8 @@ CFOdiagnosis_v1/
 - `id`, `user_id`, `status`, `spec_version`
 - `context` (JSONB): `{company_name, industry}`
 - `calibration` (JSONB): `{importance_map, locked: []}` (locked always empty)
+- `finalized_at` (TIMESTAMPTZ): When user locked their action plan (VS-39)
+- `action_plan_snapshot` (JSONB): Frozen action plan at finalization (VS-39)
 - `created_at`, `updated_at`
 
 **diagnostic_inputs** — Question answers per run
@@ -289,6 +292,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-36: Interpretation Restart | User-friendly warnings + "Provide More Context" button |
 | VS-38: Simulator Enhancements | Maturity level progression (L2→L3) in Execution Score card |
 | VS-38: Action Sidebar | Removed workflow steps, added AI "Generate Action Plan" placeholder |
+| VS-39: Finalization Workflow | Lock action plan → unlock Executive Report (irreversible) |
 
 ---
 

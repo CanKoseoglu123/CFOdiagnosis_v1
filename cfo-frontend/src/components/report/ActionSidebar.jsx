@@ -1,8 +1,9 @@
 // src/components/report/ActionSidebar.jsx
 // VS-28: Universal sidebar for Action Planning - progress, context, navigation
+// VS-39: Added Finalize Pillar button with disabled safety valve
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Save, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, Sparkles, Lock, CheckCircle } from 'lucide-react';
 
 export default function ActionSidebar({
   companyName,
@@ -19,7 +20,11 @@ export default function ActionSidebar({
   onProceed,
   onSave,
   saving = false,
-  canProceed = true
+  canProceed = true,
+  // VS-39: Finalization
+  isFinalized = false,
+  onRequestFinalize,
+  disabled = false  // Safety valve for loading states
 }) {
   const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
   const assignedPercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
@@ -98,6 +103,33 @@ export default function ActionSidebar({
 
       {/* Navigation Buttons */}
       <div className="px-4 py-3 space-y-3 mt-auto">
+        {/* VS-39: Finalize Pillar Button */}
+        {!isFinalized ? (
+          <div className="pb-3 border-b border-slate-200">
+            <button
+              onClick={onRequestFinalize}
+              disabled={disabled || selectedCount === 0}
+              className="w-full px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm flex items-center justify-center gap-2 hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Finalize Pillar</span>
+            </button>
+            <p className="text-xs text-slate-500 text-center mt-2">
+              Lock your action plan to view Executive Report
+            </p>
+          </div>
+        ) : (
+          <div className="pb-3 border-b border-slate-200">
+            <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-sm">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-medium text-emerald-700">Pillar Finalized</span>
+            </div>
+            <p className="text-xs text-slate-500 text-center mt-2">
+              Executive Report is now available
+            </p>
+          </div>
+        )}
+
         {/* Generate Action Plan - Coming Soon */}
         <div className="pb-3 border-b border-slate-200">
           <div className="flex items-start gap-3 mb-3">
@@ -124,11 +156,11 @@ export default function ActionSidebar({
         {/* Save Button */}
         <button
           onClick={onSave}
-          disabled={saving}
+          disabled={saving || isFinalized}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded border border-slate-300 hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Progress'}
+          {saving ? 'Saving...' : isFinalized ? 'Locked' : 'Save Progress'}
         </button>
 
         {/* Navigation Row */}

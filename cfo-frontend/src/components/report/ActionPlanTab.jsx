@@ -1,5 +1,6 @@
 // src/components/report/ActionPlanTab.jsx
 // VS-28: Action Planning & Simulator - War Room for maturity improvement
+// VS-39: Added finalization modal and API call
 // Includes ActionSidebar inside content container for interactive metrics
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -7,6 +8,7 @@ import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
+import { AlertTriangle } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -27,7 +29,8 @@ export default function ActionPlanTab({
   objectives = [],
   practices = [],
   companyName,
-  industry
+  industry,
+  onFinalized  // VS-39: Callback when finalization completes (parent refetches + switches tab)
 }) {
   // Build practice → objective map for v2.9.0 schema
   // Questions have practice_id, practices have objective_id
@@ -59,6 +62,13 @@ export default function ActionPlanTab({
   // Loading state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // VS-39: Finalization modal state (LOCAL only - no prop drilling)
+  const [showFinalizeModal, setShowFinalizeModal] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
+
+  // VS-39: Derive finalization status from report (NOT separate state)
+  const isFinalized = !!report?.finalized_at;
 
   // Fetch existing action plan on mount
   useEffect(() => {
@@ -174,6 +184,40 @@ export default function ActionPlanTab({
     });
     const existing = actionPlan[questionId] || { status: 'planned', timeline: null };
     saveAction(questionId, { ...existing, assigned_owner });
+  }
+
+  // VS-39: Handle finalization
+  async function handleFinalize() {
+    setFinalizing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/finalize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` })
+        }
+      });
+
+      if (res.ok) {
+        setShowFinalizeModal(false);
+        // Tell parent to refetch report + switch to Executive tab
+        if (onFinalized) {
+          onFinalized();
+        }
+      } else {
+        const err = await res.json();
+        console.error('Finalization failed:', err);
+        alert(err.error || 'Failed to finalize. Please try again.');
+      }
+    } catch (err) {
+      console.error('Finalization error:', err);
+      alert('Failed to finalize. Please try again.');
+    } finally {
+      setFinalizing(false);
+    }
   }
 
   // Get gaps (questions not answered yes)
@@ -425,8 +469,52 @@ export default function ActionPlanTab({
           onSave={handleSidebarSave}
           saving={saving}
           canProceed={actionCounts.total > 0}
+          // VS-39: Finalization props
+          isFinalized={isFinalized}
+          onRequestFinalize={() => setShowFinalizeModal(true)}
+          disabled={loading || !report}
         />
       </div>
+
+      {/* VS-39: Finalization Confirmation Modal */}
+      {showFinalizeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-sm max-w-md border border-slate-300 shadow-xl">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">Finalize Action Plan?</h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  This will lock your {actionCounts.total} selected action{actionCounts.total !== 1 ? 's' : ''} and unlock the Executive Report.
+                </p>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-sm p-3 mb-4">
+              <p className="text-sm text-amber-800">
+                <strong>This action cannot be undone.</strong> Your selections will be saved permanently.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowFinalizeModal(false)}
+                disabled={finalizing}
+                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFinalize}
+                disabled={finalizing}
+                className="flex-1 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:opacity-50"
+              >
+                {finalizing ? 'Finalizing...' : 'Confirm & Lock'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
