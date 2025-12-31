@@ -296,12 +296,15 @@ export default function AssessThemePage({ themeId }) {
         throw new Error('Failed to complete');
       }
 
-      // Score the run (re-scoring is idempotent)
+      // Score the run (409 = scores already exist, which is OK)
       const scoreRes = await fetch(`${API_URL}/diagnostic-runs/${runId}/score`, {
         method: 'POST',
         headers
       });
-      if (!scoreRes.ok) throw new Error('Failed to score');
+      // Allow 409 (scores already exist) - this happens when returning from report
+      if (!scoreRes.ok && scoreRes.status !== 409) {
+        throw new Error('Failed to score');
+      }
 
       // Navigate to calibration
       navigate(`/run/${runId}/calibrate`);
