@@ -220,9 +220,20 @@ export default function PillarSetupPage() {
           return;
         }
 
-        // In review mode, load company from API context
+        // In review mode, load company from API context with defaults for missing fields
         if (isReviewMode && run.context?.company) {
-          setCompany(run.context.company);
+          const apiCompany = run.context.company;
+          setCompany({
+            name: apiCompany.name || '',
+            industry: apiCompany.industry || '',
+            revenue_range: apiCompany.revenue_range || '',
+            employee_count: apiCompany.employee_count || '',
+            finance_ftes: apiCompany.finance_ftes || '',
+            legal_entities: apiCompany.legal_entities || '',
+            finance_structure: apiCompany.finance_structure || '',
+            ownership_structure: apiCompany.ownership_structure || '',
+            change_appetite: apiCompany.change_appetite || ''
+          });
         } else {
           // Normal flow: check localStorage for company data
           const savedCompany = localStorage.getItem(`setup_company_${runId}`);
@@ -236,7 +247,23 @@ export default function PillarSetupPage() {
 
         // Pre-fill if v1 pillar context exists
         if (run.context?.version === 'v1' && run.context.pillar) {
-          setPillar(prev => ({ ...prev, ...run.context.pillar }));
+          const apiPillar = run.context.pillar;
+          setPillar(prev => ({
+            ...prev,
+            // Arrays - default to empty array if null/undefined
+            tools: apiPillar.tools || [],
+            budget_process_modifiers: apiPillar.budget_process_modifiers || [],
+            pain_points: apiPillar.pain_points || [],
+            // Strings - default to empty string if null/undefined
+            other_tool: apiPillar.other_tool || '',
+            team_size: apiPillar.team_size || '',
+            forecast_frequency: apiPillar.forecast_frequency || '',
+            budget_process_base: apiPillar.budget_process_base || '',
+            other_pain_point: apiPillar.other_pain_point || '',
+            user_role: apiPillar.user_role || '',
+            other_role: apiPillar.other_role || '',
+            additional_context: apiPillar.additional_context || ''
+          }));
         }
       } catch (err) {
         setError(`Failed to load: ${err.message}`);
@@ -286,11 +313,32 @@ export default function PillarSetupPage() {
       delete pillarData.budget_process_base;
       delete pillarData.budget_process_modifiers;
 
+      // Clean company data - remove empty/null fields that would fail validation
+      const cleanCompany = Object.fromEntries(
+        Object.entries(company).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+      );
+
+      // Clean pillar data - convert null to empty string for text fields, remove empty optional fields
+      const cleanPillar = {
+        ...pillarData,
+        // Ensure text fields are strings (not null)
+        other_tool: pillarData.other_tool || '',
+        other_pain_point: pillarData.other_pain_point || '',
+        other_role: pillarData.other_role || '',
+        additional_context: pillarData.additional_context || '',
+      };
+      // Remove empty optional string fields that aren't required
+      if (!cleanPillar.team_size) delete cleanPillar.team_size;
+      if (!cleanPillar.forecast_frequency) delete cleanPillar.forecast_frequency;
+      if (!cleanPillar.user_role) delete cleanPillar.user_role;
+      // Remove empty budget_process array
+      if (cleanPillar.budget_process.length === 0) delete cleanPillar.budget_process;
+
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/setup`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ company, pillar: pillarData })
+        body: JSON.stringify({ company: cleanCompany, pillar: cleanPillar })
       });
 
       if (!response.ok) {
