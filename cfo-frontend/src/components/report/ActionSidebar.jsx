@@ -97,18 +97,27 @@ export default function ActionSidebar({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="px-4 py-3 space-y-2 mt-auto">
+      <div className="px-4 py-3 space-y-3 mt-auto">
         {/* Generate Action Plan - Coming Soon */}
-        <div className="bg-slate-100 border border-slate-200 rounded p-3 opacity-60 cursor-not-allowed">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="w-4 h-4 text-slate-500" />
-            <span className="text-sm font-semibold text-slate-600">Generate Action Plan</span>
+        <div className="pb-3 border-b border-slate-200">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-violet-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-semibold text-slate-900">AI-Powered Analysis</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Generate a prioritized action plan</p>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500">AI-powered analysis</span>
-            <span className="bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded">
-              Coming Soon
-            </span>
+          <button
+            disabled
+            className="w-full px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Generate Action Plan</span>
+          </button>
+          <div className="text-center mt-1.5">
+            <span className="text-xs text-slate-400">Coming Soon</span>
           </div>
         </div>
 
