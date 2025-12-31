@@ -57,11 +57,16 @@ export default function PriorityMatrix({
   return (
     <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
-          Priority Matrix
-        </h2>
-        <div className="flex items-center gap-4 text-xs text-slate-500">
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-start justify-between">
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
+            Priority Matrix
+          </h2>
+          <p className="text-sm text-slate-500 mt-1 mb-1">
+            Practices grouped by business priority and maturity stage. Focus on the top-left quadrant (urgent gaps in high-priority areas) first.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-slate-500 shrink-0">
           <span>
             <span className="font-semibold text-[#6699CC]">{stats.gaps}</span> gaps
           </span>

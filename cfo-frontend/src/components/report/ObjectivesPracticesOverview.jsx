@@ -185,11 +185,16 @@ export default function ObjectivesPracticesOverview({ levels, objectiveScores = 
   return (
     <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
       {/* Header - VS-37: increased title size to match other section titles */}
-      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
-          Objectives & Practices
-        </h2>
-        <span className="text-[9px] text-slate-400">
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-start justify-between">
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
+            Objectives & Practices
+          </h2>
+          <p className="text-sm text-slate-500 mt-1 mb-1">
+            All practices organized by objective. Scores reflect completion percentage within each objective.
+          </p>
+        </div>
+        <span className="text-[9px] text-slate-400 shrink-0">
           Score shown in corner
         </span>
       </div>
