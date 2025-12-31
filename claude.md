@@ -58,7 +58,7 @@ CFOdiagnosis_v1/
 │   ├── src/
 │   │   ├── App.jsx               # Routes, auth, navigation
 │   │   ├── pages/
-│   │   │   ├── PillarReport.jsx  # Main report with 3 tabs (VS-28)
+│   │   │   ├── PillarReport.jsx  # Main report with 4 tabs (VS-39)
 │   │   │   └── CalibrationPage.jsx # VS21 importance calibration
 │   │   ├── components/
 │   │   │   ├── AppShell.jsx      # Responsive layout wrapper
@@ -175,6 +175,22 @@ CFOdiagnosis_v1/
 6. Answer questions (3 themes) → Complete + Score
 7. Calibrate importance → `/run/:id/calibrate`
 8. View report → `/report/:runId`
+
+---
+
+## Report Tabs (PillarReport)
+
+| Order | Tab | Status | Description |
+|-------|-----|--------|-------------|
+| 1 | Executive Report | Locked until finalized | Final summary with action plan snapshot |
+| 2 | Overview | Default active | Executive summary, AI insights, risks |
+| 3 | Maturity Footprint | | Objectives grid, Priority Matrix |
+| 4 | Action Planning | | War room for gap selection, timelines, owners |
+
+**Finalization Requirements (VS-40):**
+- All selected actions must have a timeline (6m/12m/24m)
+- All selected actions must have an owner assigned
+- Confirmation modal: "Are you sure you want to finalize?"
 
 ---
 
