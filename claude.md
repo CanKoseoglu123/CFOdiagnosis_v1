@@ -313,6 +313,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-39: Finalization Workflow | Lock action plan → unlock Executive Report (irreversible) |
 | VS-40: Finalization Validation | Require timeline + owner for all actions before finalizing |
 | VS-42: Assessment Sidebar Polish | Matches Report sidebar styling, back button navigation |
+| VS-43: IntroPage Redesign | Marketing-focused, horizontal layout, journey + value props |
 
 ---
 
