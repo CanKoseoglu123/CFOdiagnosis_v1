@@ -359,7 +359,7 @@ export default function AssessThemePage({ themeId }) {
       currentTheme={themeId}
       allThemesProgress={allThemesProgress}
       overallProgress={overallProgress}
-      companyName={runContext?.company?.name || runContext?.company_name}
+      runId={runId}
     />
   );
 
