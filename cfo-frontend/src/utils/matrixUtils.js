@@ -45,8 +45,13 @@ export function derivePracticeData(footprintLevels, specPractices, specObjective
         ?? objective?.default_importance
         ?? 3;
 
-      // Determine priority row based on importance
-      const priorityRow = importance >= 4 ? 'strategic' : 'operational';
+      // Check if practice has critical question(s) that failed (not proven = critical failure)
+      const hasCritical = fp.has_critical || fp.is_critical || false;
+      const isGap = fp.evidence_state === 'not_proven' || fp.evidence_state === 'none';
+      const hasCriticalFailure = hasCritical && isGap;
+
+      // Critical failures force Strategic Focus regardless of importance
+      const priorityRow = (hasCriticalFailure || importance >= 4) ? 'strategic' : 'operational';
 
       // Map evidence state to status
       const status = mapEvidenceToStatus(fp.evidence_state);
@@ -61,7 +66,8 @@ export function derivePracticeData(footprintLevels, specPractices, specObjective
         level: fp.maturity_level || level.level,
         status,
         evidence_state: fp.evidence_state,
-        has_critical: fp.has_critical || fp.is_critical || false
+        has_critical: hasCritical,
+        has_critical_failure: hasCriticalFailure
       });
     });
   });
@@ -109,8 +115,8 @@ export function getColumnConfig(userLevel) {
  */
 export function groupPracticesIntoGrid(practiceData, columns) {
   const grid = {
-    strategic: {},   // Top row (importance 4-5)
-    operational: {}, // Bottom row (importance 1-3)
+    strategic: {},   // Top row (importance 4-5 OR critical failures)
+    operational: {}, // Bottom row (importance 1-3, no critical failures)
   };
 
   // Initialize cells
