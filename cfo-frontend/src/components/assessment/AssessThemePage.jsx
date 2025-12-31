@@ -268,7 +268,10 @@ export default function AssessThemePage({ themeId }) {
 
   // Navigation handlers
   function handleBack() {
-    if (prevTheme) {
+    if (isFirstTheme) {
+      // First theme: go back to methodology/intro page
+      navigate(`/run/${runId}/intro`);
+    } else if (prevTheme) {
       navigate(`/assess/${prevTheme}?runId=${runId}`);
     }
   }
@@ -366,15 +369,13 @@ export default function AssessThemePage({ themeId }) {
   // Mobile bottom navigation
   const mobileBottomNav = (
     <>
-      {!isFirstTheme && (
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-      )}
+      <button
+        onClick={handleBack}
+        className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {isFirstTheme ? 'Methodology' : 'Back'}
+      </button>
       <div className="text-xs text-slate-500">
         {themeProgress.answered}/{themeProgress.total}
       </div>
@@ -382,7 +383,7 @@ export default function AssessThemePage({ themeId }) {
         <button
           onClick={handleSubmit}
           disabled={overallProgress.answered !== overallProgress.total}
-          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded ${
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-sm ${
             overallProgress.answered === overallProgress.total
               ? 'bg-emerald-600 text-white'
               : 'bg-slate-200 text-slate-400'
@@ -395,13 +396,13 @@ export default function AssessThemePage({ themeId }) {
         <button
           onClick={handleNext}
           disabled={themeProgress.answered !== themeProgress.total}
-          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded ${
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-sm ${
             themeProgress.answered === themeProgress.total
               ? 'bg-blue-600 text-white'
               : 'bg-slate-200 text-slate-400'
           }`}
         >
-          Next Theme
+          Next
           <ArrowRight className="w-4 h-4" />
         </button>
       )}
@@ -497,24 +498,20 @@ export default function AssessThemePage({ themeId }) {
           </div>
 
           {/* Bottom Navigation (Desktop) */}
-          <div className="mt-8 flex items-center justify-between">
-            {!isFirstTheme ? (
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-50"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Previous Theme
-              </button>
-            ) : (
-              <div />
-            )}
+          <div className="mt-8 flex items-center justify-between border-t border-slate-200 pt-6">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {isFirstTheme ? 'Back to Methodology' : 'Back to Previous Theme'}
+            </button>
 
             {isLastTheme ? (
               <button
                 onClick={handleSubmit}
                 disabled={overallProgress.answered !== overallProgress.total}
-                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded transition-colors ${
+                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
                   overallProgress.answered === overallProgress.total
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -529,7 +526,7 @@ export default function AssessThemePage({ themeId }) {
               <button
                 onClick={handleNext}
                 disabled={themeProgress.answered !== themeProgress.total}
-                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded transition-colors ${
+                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
                   themeProgress.answered === themeProgress.total
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
