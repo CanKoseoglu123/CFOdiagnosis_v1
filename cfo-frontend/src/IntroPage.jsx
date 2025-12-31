@@ -4,7 +4,7 @@
 
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Target, Bot, ClipboardList, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Target, Bot, ClipboardList, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import ChapterHeader from './components/ChapterHeader';
 import EnterpriseCanvas from './components/EnterpriseCanvas';
 
@@ -215,12 +215,21 @@ export default function IntroPage() {
         </section>
 
         {/* ROW 4: CTA */}
-        <section className="text-center pt-2">
-          <Link to={`/assess/foundation?runId=${runId}`}>
-            <button className="bg-blue-600 text-white px-10 py-3 text-sm font-semibold hover:bg-blue-700 transition-colors rounded-sm">
-              Proceed to Assessment
-            </button>
-          </Link>
+        <section className="pt-2 border-t border-slate-200 mt-2">
+          <div className="flex items-center justify-between">
+            <Link to={`/run/${runId}/setup/pillar`}>
+              <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Setup
+              </button>
+            </Link>
+            <Link to={`/assess/foundation?runId=${runId}`}>
+              <button className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold hover:bg-blue-700 transition-colors rounded-sm">
+                Proceed to Assessment
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </Link>
+          </div>
         </section>
 
       </EnterpriseCanvas>
