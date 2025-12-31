@@ -307,13 +307,17 @@ export default function PillarReport() {
   }
 
   // Build sidebar content based on active tab
-  // VS-39: currentStep changes to 'executive' when on that tab
-  const currentWorkflowStep = activeTab === 'executive' ? 'executive' : 'report';
+  // VS-39: Once finalized, workflow shows Executive Report as current step
+  // and Report Review & Action Planning as completed
+  const currentWorkflowStep = isFinalized ? 'executive' : 'report';
+  const completedWorkflowSteps = isFinalized
+    ? ['setup', 'assess', 'calibrate', 'report']
+    : ['setup', 'assess', 'calibrate'];
 
   const sidebarContent = (
     <WorkflowSidebar
       currentStep={currentWorkflowStep}
-      completedSteps={['setup', 'assess', 'calibrate']}
+      completedSteps={completedWorkflowSteps}
       isFinalized={isFinalized}
       onBack={handleSidebarBack}
       onProceed={handleSidebarProceed}
