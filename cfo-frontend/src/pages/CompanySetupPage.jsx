@@ -222,7 +222,9 @@ export default function CompanySetupPage() {
     try {
       // Save company context to localStorage for pillar page to combine
       localStorage.setItem(`setup_company_${runId}`, JSON.stringify(company));
-      navigate(`/run/${runId}/setup/pillar`);
+      // Pass review=true if we're in review mode so PillarSetupPage doesn't redirect
+      const reviewParam = isReviewMode ? '?review=true' : '';
+      navigate(`/run/${runId}/setup/pillar${reviewParam}`);
     } catch (err) {
       setError(err.message);
       setSaving(false);
