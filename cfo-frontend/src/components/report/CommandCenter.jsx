@@ -1,8 +1,9 @@
 // src/components/report/CommandCenter.jsx
 // VS-28: Command Center - Actions/Initiatives list with controls
+// VS-39: Disabled state when finalized
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle, Lock } from 'lucide-react';
 
 // Timeline options
 const TIMELINE_OPTIONS = [
@@ -33,7 +34,8 @@ export default function CommandCenter({
   actionPlan,
   onActionToggle,
   onTimelineChange,
-  onOwnerChange
+  onOwnerChange,
+  isFinalized = false  // VS-39: Lock controls when finalized
 }) {
   // Expand/collapse state for groups
   const [expandedGroups, setExpandedGroups] = useState(new Set(['all']));
@@ -62,6 +64,7 @@ export default function CommandCenter({
         onActionToggle={onActionToggle}
         onTimelineChange={onTimelineChange}
         onOwnerChange={onOwnerChange}
+        isFinalized={isFinalized}
       />
     );
   }
@@ -76,6 +79,7 @@ export default function CommandCenter({
       onActionToggle={onActionToggle}
       onTimelineChange={onTimelineChange}
       onOwnerChange={onOwnerChange}
+      isFinalized={isFinalized}
     />
   );
 }
@@ -90,7 +94,8 @@ function ActionsView({
   toggleGroup,
   onActionToggle,
   onTimelineChange,
-  onOwnerChange
+  onOwnerChange,
+  isFinalized
 }) {
   // Group gaps by objective
   const gapsByObjective = {};
@@ -103,6 +108,16 @@ function ActionsView({
 
   return (
     <div className="space-y-3">
+      {/* VS-39: Locked Banner */}
+      {isFinalized && (
+        <div className="bg-slate-100 border border-slate-300 rounded-sm px-4 py-3 flex items-center gap-3">
+          <Lock className="w-4 h-4 text-slate-500" />
+          <span className="text-sm text-slate-600">
+            Action plan is locked. Changes are no longer allowed.
+          </span>
+        </div>
+      )}
+
       {/* Header - matches Simulator style */}
       <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
         <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
@@ -129,6 +144,7 @@ function ActionsView({
             onActionToggle={onActionToggle}
             onTimelineChange={onTimelineChange}
             onOwnerChange={onOwnerChange}
+            isFinalized={isFinalized}
           />
         ))
       )}
@@ -144,7 +160,8 @@ function ObjectiveGroup({
   onToggle,
   onActionToggle,
   onTimelineChange,
-  onOwnerChange
+  onOwnerChange,
+  isFinalized
 }) {
   const selectedCount = gaps.filter(g => actionPlan[g.id]).length;
   const objName = OBJECTIVE_NAMES[objective.id] || objective.name || objective.id;
@@ -182,6 +199,7 @@ function ObjectiveGroup({
               onToggle={(selected) => onActionToggle(gap.id, selected)}
               onTimelineChange={(t) => onTimelineChange(gap.id, t)}
               onOwnerChange={(o) => onOwnerChange(gap.id, o)}
+              isFinalized={isFinalized}
             />
           ))}
         </div>
@@ -200,7 +218,8 @@ function InitiativesView({
   toggleGroup,
   onActionToggle,
   onTimelineChange,
-  onOwnerChange
+  onOwnerChange,
+  isFinalized
 }) {
   // Group gaps by initiative
   const gapsByInitiative = {};
@@ -213,6 +232,16 @@ function InitiativesView({
 
   return (
     <div className="space-y-3">
+      {/* VS-39: Locked Banner */}
+      {isFinalized && (
+        <div className="bg-slate-100 border border-slate-300 rounded-sm px-4 py-3 flex items-center gap-3">
+          <Lock className="w-4 h-4 text-slate-500" />
+          <span className="text-sm text-slate-600">
+            Action plan is locked. Changes are no longer allowed.
+          </span>
+        </div>
+      )}
+
       {/* Header - matches Simulator style */}
       <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
         <div className="px-4 py-2 border-b border-slate-200 bg-slate-50">
@@ -239,6 +268,7 @@ function InitiativesView({
             onActionToggle={onActionToggle}
             onTimelineChange={onTimelineChange}
             onOwnerChange={onOwnerChange}
+            isFinalized={isFinalized}
           />
         ))
       )}
@@ -254,7 +284,8 @@ function InitiativeGroup({
   onToggle,
   onActionToggle,
   onTimelineChange,
-  onOwnerChange
+  onOwnerChange,
+  isFinalized
 }) {
   const selectedCount = gaps.filter(g => actionPlan[g.id]).length;
 
@@ -292,6 +323,7 @@ function InitiativeGroup({
               onToggle={(selected) => onActionToggle(gap.id, selected)}
               onTimelineChange={(t) => onTimelineChange(gap.id, t)}
               onOwnerChange={(o) => onOwnerChange(gap.id, o)}
+              isFinalized={isFinalized}
             />
           ))}
         </div>
@@ -309,7 +341,8 @@ function ActionRow({
   owner,
   onToggle,
   onTimelineChange,
-  onOwnerChange
+  onOwnerChange,
+  isFinalized
 }) {
   const [showOwnerInput, setShowOwnerInput] = useState(false);
   const [ownerDraft, setOwnerDraft] = useState(owner || '');
@@ -324,13 +357,14 @@ function ActionRow({
   return (
     <div className={`px-4 py-3 flex items-start gap-3 border-b border-slate-200 last:border-b-0 ${
       isSelected ? 'bg-blue-50' : ''
-    }`}>
+    } ${isFinalized ? 'opacity-75' : ''}`}>
       {/* Checkbox */}
       <input
         type="checkbox"
         checked={isSelected}
         onChange={(e) => onToggle(e.target.checked)}
-        className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+        disabled={isFinalized}
+        className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
       />
 
       {/* Action Content */}
@@ -367,7 +401,8 @@ function ActionRow({
           <select
             value={timeline || ''}
             onChange={(e) => onTimelineChange(e.target.value || null)}
-            className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            disabled={isFinalized}
+            className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {TIMELINE_OPTIONS.map(opt => (
               <option key={opt.value || 'null'} value={opt.value || ''}>
@@ -377,7 +412,7 @@ function ActionRow({
           </select>
 
           {/* Owner Field */}
-          {showOwnerInput ? (
+          {showOwnerInput && !isFinalized ? (
             <input
               type="text"
               value={ownerDraft}
@@ -391,10 +426,13 @@ function ActionRow({
           ) : (
             <button
               onClick={() => {
-                setOwnerDraft(owner || '');
-                setShowOwnerInput(true);
+                if (!isFinalized) {
+                  setOwnerDraft(owner || '');
+                  setShowOwnerInput(true);
+                }
               }}
-              className="text-xs text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 rounded px-2 py-1 min-w-[80px] text-left"
+              disabled={isFinalized}
+              className="text-xs text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 rounded px-2 py-1 min-w-[80px] text-left disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-500"
             >
               {owner || 'Add owner...'}
             </button>

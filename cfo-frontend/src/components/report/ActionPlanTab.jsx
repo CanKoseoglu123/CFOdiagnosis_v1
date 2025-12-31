@@ -449,6 +449,7 @@ export default function ActionPlanTab({
           onActionToggle={handleActionToggle}
           onTimelineChange={handleTimelineChange}
           onOwnerChange={handleOwnerChange}
+          isFinalized={isFinalized}
         />
       </div>
 
