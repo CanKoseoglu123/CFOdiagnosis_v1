@@ -68,12 +68,25 @@ export default function AssessmentSidebar({
     });
   };
 
-  // Back button handler - go to pillar setup
+  // Theme order for navigation
+  const themeOrder = ['foundation', 'future', 'intelligence'];
+  const currentIndex = themeOrder.indexOf(currentTheme);
+  const isFirstTheme = currentIndex === 0;
+  const prevTheme = !isFirstTheme ? themeOrder[currentIndex - 1] : null;
+
+  // Back button handler - matches main content navigation
   const handleBack = () => {
-    if (runId) {
-      navigate(`/run/${runId}/setup/pillar`);
+    if (!runId) return;
+    if (isFirstTheme) {
+      // First theme: go back to methodology/intro page
+      navigate(`/run/${runId}/intro`);
+    } else if (prevTheme) {
+      navigate(`/assess/${prevTheme}?runId=${runId}`);
     }
   };
+
+  // Back button label
+  const backButtonLabel = isFirstTheme ? 'Back to Methodology' : 'Back to Previous Theme';
 
   return (
     <div className="flex flex-col h-full">
@@ -232,7 +245,7 @@ export default function AssessmentSidebar({
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back to Pillar Setup
+          {backButtonLabel}
         </button>
       </div>
     </div>
