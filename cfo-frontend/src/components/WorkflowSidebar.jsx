@@ -1,9 +1,11 @@
 // components/WorkflowSidebar.jsx
 // Global sidebar for workflow navigation and page-specific progress
 // VS-39: Updated workflow to include Executive Report step
+// VS-41: New navigation buttons - Back to Assessment, Back to Calibration, Action Planning/Generate Executive Report
 
-import React from 'react';
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle2, Circle, Lock, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
 // Workflow steps for the diagnostic journey
 // VS-39: Merged Report Review & Action Planning, added Executive Report
@@ -24,14 +26,19 @@ export default function WorkflowSidebar({
   isFinalized = false,
   // Page-specific content slot
   children,
-  // Navigation
-  onBack,
-  onProceed,
-  backLabel = 'Back',
-  proceedLabel = 'Continue',
-  canProceed = true,
-  showNavigation = true
+  // VS-41: Navigation props
+  runId,
+  activeTab = 'overview',
+  onTabChange,
+  // VS-41: Finalization props (for Action Planning tab)
+  onFinalizeRequest,
+  canFinalize = false,
+  incompleteCount = 0,
+  selectedCount = 0
 }) {
+  const navigate = useNavigate();
+  const [showTooltip, setShowTooltip] = useState(false);
+
   // Determine step states
   const getStepState = (step) => {
     // VS-39: Executive step requires finalization to be active/completed
@@ -43,8 +50,43 @@ export default function WorkflowSidebar({
     return 'pending';
   };
 
+  // Navigation handlers
+  function handleBackToAssessment() {
+    navigate(`/assess/foundation?runId=${runId}`);
+  }
+
+  function handleBackToCalibration() {
+    navigate(`/run/${runId}/calibrate`);
+  }
+
+  function handleGoToActionPlanning() {
+    if (onTabChange) {
+      onTabChange('actions');
+    }
+  }
+
+  function handleGenerateExecutiveReport() {
+    if (onFinalizeRequest) {
+      onFinalizeRequest();
+    }
+  }
+
+  // Build tooltip message for disabled Generate Executive Report button
+  const getDisabledReason = () => {
+    if (selectedCount === 0) {
+      return 'Select at least one action to finalize';
+    }
+    if (incompleteCount > 0) {
+      return `${incompleteCount} action${incompleteCount !== 1 ? 's' : ''} missing timeline or owner`;
+    }
+    return '';
+  };
+
+  const isActionPlanningTab = activeTab === 'actions';
+  const showGenerateButton = isActionPlanningTab && !isFinalized;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full">
       {/* Workflow Steps */}
       <div>
         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
@@ -80,46 +122,86 @@ export default function WorkflowSidebar({
       </div>
 
       {/* Divider */}
-      <div className="border-t border-slate-200" />
+      <div className="border-t border-slate-200 my-6" />
 
       {/* Page-specific content slot */}
       {children && (
         <>
           <div>{children}</div>
-          <div className="border-t border-slate-200" />
+          <div className="border-t border-slate-200 my-6" />
         </>
       )}
 
-      {/* Navigation Buttons */}
-      {showNavigation && (
-        <div className="space-y-2">
-          {onProceed && (
+      {/* Spacer to push navigation to bottom */}
+      <div className="flex-1" />
+
+      {/* VS-41: Navigation Buttons */}
+      <div className="space-y-2 mt-6">
+        {/* Back to Assessment */}
+        <button
+          onClick={handleBackToAssessment}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Assessment
+        </button>
+
+        {/* Back to Calibration */}
+        <button
+          onClick={handleBackToCalibration}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Calibration
+        </button>
+
+        {/* Third button: Action Planning OR Generate Executive Report */}
+        {showGenerateButton ? (
+          // Generate Executive Report (Action Planning tab, not finalized)
+          <div
+            className="relative"
+            onMouseEnter={() => !canFinalize && setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+          >
             <button
-              onClick={onProceed}
-              disabled={!canProceed}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
+              onClick={handleGenerateExecutiveReport}
+              disabled={!canFinalize}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed"
             >
-              {proceedLabel}
-              <ChevronRight className="w-4 h-4" />
+              <FileText className="w-4 h-4" />
+              Generate Executive Report
             </button>
-          )}
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-md border border-slate-300 hover:bg-slate-50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              {backLabel}
-            </button>
-          )}
-        </div>
-      )}
+            {/* Tooltip for disabled state */}
+            {showTooltip && !canFinalize && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-10">
+                {getDisabledReason()}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+              </div>
+            )}
+          </div>
+        ) : isFinalized ? (
+          // Already finalized - show completed state
+          <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-sm border border-emerald-200">
+            <CheckCircle2 className="w-4 h-4" />
+            Report Generated
+          </div>
+        ) : (
+          // Go to Action Planning (Overview/Footprint tabs)
+          <button
+            onClick={handleGoToActionPlanning}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-sm hover:bg-blue-700 transition-colors"
+          >
+            Action Planning
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAGE-SPECIFIC SIDEBAR CONTENT COMPONENTS
+// PAGE-SPECIFIC SIDEBAR CONTENT COMPONENTS (kept for potential future use)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Report Overview sidebar content

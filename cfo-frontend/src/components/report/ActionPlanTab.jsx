@@ -30,7 +30,11 @@ export default function ActionPlanTab({
   practices = [],
   companyName,
   industry,
-  onFinalized  // VS-39: Callback when finalization completes (parent refetches + switches tab)
+  onFinalized,  // VS-39: Callback when finalization completes (parent refetches + switches tab)
+  // VS-41: Finalization state reporting to parent (for WorkflowSidebar)
+  onFinalizationStateChange,
+  requestShowModal = false,
+  onModalClosed
 }) {
   // Build practice → objective map for v2.9.0 schema
   // Questions have practice_id, practices have objective_id
@@ -388,19 +392,31 @@ export default function ActionPlanTab({
 
   const canFinalize = actionCounts.total > 0 && incompleteActions.length === 0;
 
-  // Sidebar navigation handlers
-  function handleSidebarBack() {
-    // Could scroll to top or change view
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  // VS-41: Report finalization state to parent (for WorkflowSidebar)
+  useEffect(() => {
+    if (onFinalizationStateChange) {
+      onFinalizationStateChange({
+        canFinalize,
+        incompleteCount: incompleteActions.length,
+        selectedCount: actionCounts.total
+      });
+    }
+  }, [canFinalize, incompleteActions.length, actionCounts.total, onFinalizationStateChange]);
 
-  function handleSidebarProceed() {
-    // Show completion message
-    alert('Action plan saved! Your selections have been automatically saved.');
-  }
+  // VS-41: Respond to parent request to show finalization modal
+  useEffect(() => {
+    if (requestShowModal && !showFinalizeModal) {
+      setShowFinalizeModal(true);
+      // Notify parent that we've handled the request
+      if (onModalClosed) {
+        onModalClosed();
+      }
+    }
+  }, [requestShowModal]);
 
+  // VS-41: Manual save handler for ActionSidebar
   function handleSidebarSave() {
-    // Already auto-saving, this is just a manual trigger indication
+    // Already auto-saving, this is just a manual trigger/feedback
   }
 
   if (loading) {
@@ -484,19 +500,20 @@ export default function ActionPlanTab({
           companyName={companyName}
           industry={industry}
           pillarName="FP&A"
+          // VS-41: Progress tracking props (restored)
+          totalGaps={gaps.length}
           selectedCount={actionCounts.total}
-          onBack={handleSidebarBack}
-          onProceed={handleSidebarProceed}
+          assignedCount={actionCounts.total - actionCounts.unassigned}
+          ownerCount={actionCounts.withOwner}
+          timelineCounts={{
+            '6m': actionCounts['6m'],
+            '12m': actionCounts['12m'],
+            '24m': actionCounts['24m'],
+            unassigned: actionCounts.unassigned
+          }}
           onSave={handleSidebarSave}
           saving={saving}
-          canProceed={actionCounts.total > 0}
-          // VS-39: Finalization props
           isFinalized={isFinalized}
-          onRequestFinalize={() => setShowFinalizeModal(true)}
-          disabled={loading || !report}
-          // VS-40: Validation for finalization
-          canFinalize={canFinalize}
-          incompleteCount={incompleteActions.length}
         />
       </div>
 

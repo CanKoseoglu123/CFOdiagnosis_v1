@@ -61,6 +61,16 @@ export default function PillarReport() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // VS-41: State for finalization validation (reported from ActionPlanTab)
+  const [finalizationState, setFinalizationState] = useState({
+    canFinalize: false,
+    incompleteCount: 0,
+    selectedCount: 0
+  });
+
+  // VS-41: Trigger for showing finalization modal in ActionPlanTab
+  const [requestFinalizeModal, setRequestFinalizeModal] = useState(false);
+
   useEffect(() => {
     if (runId) {
       fetchReport();
@@ -293,19 +303,6 @@ export default function PillarReport() {
   const companyName = report.context?.company_name || report.context?.company?.name;
   const industry = report.context?.industry || report.context?.company?.industry;
 
-  // Sidebar navigation
-  function handleSidebarBack() {
-    navigate(`/run/${runId}/calibrate`);
-  }
-
-  function handleSidebarProceed() {
-    if (activeTab === 'overview') {
-      setActiveTab('footprint');
-    } else if (activeTab === 'footprint') {
-      setActiveTab('actions');
-    }
-  }
-
   // Build sidebar content based on active tab
   // VS-39: Once finalized, all workflow steps show as completed
   const currentWorkflowStep = isFinalized ? null : 'report';
@@ -313,17 +310,29 @@ export default function PillarReport() {
     ? ['setup', 'assess', 'calibrate', 'report', 'executive']
     : ['setup', 'assess', 'calibrate'];
 
+  // VS-41: Handler for finalization request from WorkflowSidebar
+  function handleFinalizeRequest() {
+    setRequestFinalizeModal(true);
+  }
+
+  // VS-41: Handler for tab change from WorkflowSidebar
+  function handleTabChange(tab) {
+    setActiveTab(tab);
+  }
+
   const sidebarContent = (
     <WorkflowSidebar
       currentStep={currentWorkflowStep}
       completedSteps={completedWorkflowSteps}
       isFinalized={isFinalized}
-      onBack={handleSidebarBack}
-      onProceed={handleSidebarProceed}
-      backLabel="Calibration"
-      proceedLabel={activeTab === 'overview' ? 'Footprint' : activeTab === 'footprint' ? 'Action Plan' : 'Complete'}
-      canProceed={activeTab !== 'actions'}
-      showNavigation={activeTab !== 'actions'}
+      // VS-41: New navigation props
+      runId={runId}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      onFinalizeRequest={handleFinalizeRequest}
+      canFinalize={finalizationState.canFinalize}
+      incompleteCount={finalizationState.incompleteCount}
+      selectedCount={finalizationState.selectedCount}
     />
   );
 
@@ -516,6 +525,10 @@ export default function PillarReport() {
                 companyName={companyName}
                 industry={industry}
                 onFinalized={handleFinalized}  // VS-39: Refetch + switch tab
+                // VS-41: Finalization state reporting and modal trigger
+                onFinalizationStateChange={setFinalizationState}
+                requestShowModal={requestFinalizeModal}
+                onModalClosed={() => setRequestFinalizeModal(false)}
               />
             ) : (
               <div className="flex items-center justify-center py-12">
