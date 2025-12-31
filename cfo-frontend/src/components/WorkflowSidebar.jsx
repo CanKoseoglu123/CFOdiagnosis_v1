@@ -1,16 +1,18 @@
 // components/WorkflowSidebar.jsx
 // Global sidebar for workflow navigation and page-specific progress
+// VS-39: Updated workflow to include Executive Report step
 
 import React from 'react';
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 
 // Workflow steps for the diagnostic journey
+// VS-39: Merged Report Review & Action Planning, added Executive Report
 const WORKFLOW_STEPS = [
   { id: 'setup', label: 'Company Setup', path: '/setup' },
   { id: 'assess', label: 'Assessment', path: '/assess' },
-  { id: 'calibrate', label: 'Calibration', path: '/calibrate' },
-  { id: 'report', label: 'Report Review', path: '/report' },
-  { id: 'actions', label: 'Action Planning', path: '/report' }
+  { id: 'calibrate', label: 'Priority Calibration', path: '/calibrate' },
+  { id: 'report', label: 'Report Review & Action Planning', path: '/report' },
+  { id: 'executive', label: 'Executive Report', path: '/report', requiresFinalization: true }
 ];
 
 export default function WorkflowSidebar({
@@ -18,6 +20,8 @@ export default function WorkflowSidebar({
   currentStep = 'report',
   // All steps before currentStep are considered completed
   completedSteps = ['setup', 'assess', 'calibrate'],
+  // VS-39: Whether pillar is finalized (unlocks Executive Report)
+  isFinalized = false,
   // Page-specific content slot
   children,
   // Navigation
@@ -29,9 +33,13 @@ export default function WorkflowSidebar({
   showNavigation = true
 }) {
   // Determine step states
-  const getStepState = (stepId) => {
-    if (stepId === currentStep) return 'active';
-    if (completedSteps.includes(stepId)) return 'completed';
+  const getStepState = (step) => {
+    // VS-39: Executive step requires finalization to be active/completed
+    if (step.requiresFinalization && !isFinalized) {
+      return 'locked';
+    }
+    if (step.id === currentStep) return 'active';
+    if (completedSteps.includes(step.id)) return 'completed';
     return 'pending';
   };
 
@@ -44,13 +52,14 @@ export default function WorkflowSidebar({
         </div>
         <div className="space-y-1">
           {WORKFLOW_STEPS.map((step) => {
-            const state = getStepState(step.id);
+            const state = getStepState(step);
             return (
               <div
                 key={step.id}
                 className={`flex items-center gap-2.5 py-1.5 ${
                   state === 'active' ? 'text-blue-700 font-medium' :
                   state === 'completed' ? 'text-emerald-600' :
+                  state === 'locked' ? 'text-slate-300' :
                   'text-slate-400'
                 }`}
               >
@@ -58,6 +67,8 @@ export default function WorkflowSidebar({
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                 ) : state === 'active' ? (
                   <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
+                ) : state === 'locked' ? (
+                  <Lock className="w-4 h-4 flex-shrink-0" />
                 ) : (
                   <Circle className="w-4 h-4 flex-shrink-0" />
                 )}

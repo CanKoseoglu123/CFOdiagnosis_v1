@@ -307,10 +307,14 @@ export default function PillarReport() {
   }
 
   // Build sidebar content based on active tab
+  // VS-39: currentStep changes to 'executive' when on that tab
+  const currentWorkflowStep = activeTab === 'executive' ? 'executive' : 'report';
+
   const sidebarContent = (
     <WorkflowSidebar
-      currentStep="report"
+      currentStep={currentWorkflowStep}
       completedSteps={['setup', 'assess', 'calibrate']}
+      isFinalized={isFinalized}
       onBack={handleSidebarBack}
       onProceed={handleSidebarProceed}
       backLabel="Calibration"
