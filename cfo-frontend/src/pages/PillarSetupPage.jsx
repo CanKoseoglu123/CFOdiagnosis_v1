@@ -525,19 +525,19 @@ export default function PillarSetupPage() {
             </div>
           </div>
 
-          <div className="flex gap-3 mb-8">
+          <div className="flex justify-between mb-8">
             <button
               onClick={handleBack}
-              className="flex-1 py-3 rounded font-semibold border border-gray-300
+              className="py-3 px-6 rounded font-semibold border border-gray-300
                 text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
             >
               <ArrowLeft size={18} />
-              Back
+              Back to Company Context
             </button>
             <button
               onClick={handleSubmit}
               disabled={!isValid() || saving}
-              className={`flex-1 py-3 rounded font-semibold flex items-center justify-center gap-2
+              className={`py-3 px-6 rounded font-semibold flex items-center justify-center gap-2
                 ${isValid() && !saving
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
