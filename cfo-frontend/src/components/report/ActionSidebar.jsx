@@ -2,7 +2,7 @@
 // VS-28: Universal sidebar for Action Planning - progress, context, navigation
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Save, CheckCircle2, Circle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, Sparkles } from 'lucide-react';
 
 export default function ActionSidebar({
   companyName,
@@ -23,15 +23,6 @@ export default function ActionSidebar({
 }) {
   const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
   const assignedPercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
-
-  // Workflow steps
-  const steps = [
-    { id: 'setup', label: 'Company Setup', completed: true },
-    { id: 'assess', label: 'Assessment', completed: true },
-    { id: 'calibrate', label: 'Calibration', completed: true },
-    { id: 'review', label: 'Report Review', completed: true },
-    { id: 'plan', label: 'Action Planning', completed: false, active: true },
-  ];
 
   return (
     <div className="w-64 bg-white border border-slate-300 rounded-sm flex flex-col h-fit sticky top-4">
@@ -54,32 +45,6 @@ export default function ActionSidebar({
         )}
         <div className="mt-2 inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded">
           {pillarName} Pillar
-        </div>
-      </div>
-
-      {/* Workflow Steps */}
-      <div className="px-4 py-3 border-b border-slate-200">
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-          Workflow
-        </div>
-        <div className="space-y-1.5">
-          {steps.map((step, idx) => (
-            <div key={step.id} className="flex items-center gap-2">
-              {step.completed ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              ) : step.active ? (
-                <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
-              ) : (
-                <Circle className="w-4 h-4 text-slate-300 flex-shrink-0" />
-              )}
-              <span className={`text-xs ${
-                step.active ? 'font-semibold text-blue-700' :
-                step.completed ? 'text-slate-600' : 'text-slate-400'
-              }`}>
-                {step.label}
-              </span>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -133,6 +98,20 @@ export default function ActionSidebar({
 
       {/* Navigation Buttons */}
       <div className="px-4 py-3 space-y-2 mt-auto">
+        {/* Generate Action Plan - Coming Soon */}
+        <div className="bg-slate-100 border border-slate-200 rounded p-3 opacity-60 cursor-not-allowed">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-4 h-4 text-slate-500" />
+            <span className="text-sm font-semibold text-slate-600">Generate Action Plan</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500">AI-powered analysis</span>
+            <span className="bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5 rounded">
+              Coming Soon
+            </span>
+          </div>
+        </div>
+
         {/* Save Button */}
         <button
           onClick={onSave}
