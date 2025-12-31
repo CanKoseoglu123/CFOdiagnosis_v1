@@ -302,7 +302,7 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
     return res.status(409).json({ error: "Run must be completed before calibration" });
   }
 
-  // Get the spec and inputs to determine locked objectives (Safety Valve)
+  // Get the spec for objectives list
   let spec;
   try {
     spec = SpecRegistry.get(run.spec_version);
@@ -310,43 +310,12 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
     return res.status(500).json({ error: String(err) });
   }
 
-  const { data: inputs, error: inputsError } = await req.supabase
-    .from("diagnostic_inputs")
-    .select("question_id, value")
-    .eq("run_id", runId);
-
-  if (inputsError) {
-    return res.status(500).json({ error: inputsError.message });
-  }
-
-  // Find failed critical questions
-  const inputMap = new Map((inputs || []).map((i: any) => [i.question_id, i.value]));
-  const failedCriticals: string[] = [];
-
-  for (const q of spec.questions) {
-    if (q.is_critical && inputMap.get(q.id) !== true) {
-      failedCriticals.push(q.id);
-    }
-  }
-
-  // Find objectives that contain failed criticals (Safety Valve)
-  const lockedObjectives = new Set<string>();
-  for (const criticalId of failedCriticals) {
-    const question = spec.questions.find((q: any) => q.id === criticalId);
-    if (question?.objective_id) {
-      lockedObjectives.add(question.objective_id);
-    }
-  }
-
-  // Build final importance map with Safety Valve applied
+  // Build importance map from user values (no Safety Valve override)
   const finalMap: Record<string, number> = {};
 
-  // Set all objectives to user values or default (3)
   for (const obj of spec.objectives || []) {
     const userValue = importance_map[obj.id];
-    if (lockedObjectives.has(obj.id)) {
-      finalMap[obj.id] = 5;  // Force to Critical
-    } else if (typeof userValue === "number" && userValue >= 1 && userValue <= 5) {
+    if (typeof userValue === "number" && userValue >= 1 && userValue <= 5) {
       finalMap[obj.id] = userValue;
     } else {
       finalMap[obj.id] = 3;  // Default to Medium
@@ -355,7 +324,7 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
 
   const calibrationData = {
     importance_map: finalMap,
-    locked: Array.from(lockedObjectives),
+    locked: [],  // No locked objectives - user has full control
   };
 
   // Save to database

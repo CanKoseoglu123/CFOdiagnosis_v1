@@ -88,7 +88,7 @@ CFOdiagnosis_v1/
 2. **Scoring is pure functions** — No side effects, deterministic
 3. **Missing answers = 0 score** — Conservative scoring
 4. **Gates are sequential** — Must pass all previous levels
-5. **Critical failures lock importance at 5** — Safety Valve
+5. **Critical failures surface in Priority Matrix** — Forced to Strategic Focus row
 
 ---
 
