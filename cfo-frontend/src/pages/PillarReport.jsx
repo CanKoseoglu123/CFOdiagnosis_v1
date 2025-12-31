@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import ChapterHeader from '../components/ChapterHeader';
+import FeedbackButton from '../components/FeedbackButton';
 import WorkflowSidebar from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
@@ -567,6 +568,9 @@ export default function PillarReport() {
             <span>{new Date().toLocaleDateString()}</span>
           </EnterpriseCanvas>
         </footer>
+
+        {/* Feedback Button (Beta Testing) */}
+        <FeedbackButton runId={runId} currentPage={activeTab} />
       </div>
     </AppShell>
   );

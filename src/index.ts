@@ -1345,6 +1345,51 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// Beta Testing: Feedback collection
+// ------------------------------------------------------------------
+app.post("/feedback", async (req, res) => {
+  const { run_id, page, type, message, user_email, user_agent } = req.body;
+
+  if (!message || typeof message !== "string" || message.trim().length === 0) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  // Validate type if provided
+  const validTypes = ["bug", "confusion", "suggestion", "general"];
+  const feedbackType = validTypes.includes(type) ? type : "general";
+
+  const { data, error } = await req.supabase
+    .from("feedback")
+    .insert({
+      run_id: run_id || null,
+      user_id: req.userId || null,
+      user_email: user_email || null,
+      page: page || null,
+      type: feedbackType,
+      message: message.trim(),
+      user_agent: user_agent || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("Failed to save feedback:", error);
+    // Log to console as fallback
+    console.log("FEEDBACK (DB failed):", {
+      run_id,
+      user_id: req.userId,
+      page,
+      type: feedbackType,
+      message: message.trim(),
+    });
+    return res.status(500).json({ error: "Failed to save feedback" });
+  }
+
+  console.log("Feedback received:", { id: data.id, type: feedbackType, page });
+  res.json({ success: true, id: data.id });
+});
+
+// ------------------------------------------------------------------
 // VS-32: Simplified Interpretation Routes
 // ------------------------------------------------------------------
 app.use("/diagnostic-runs", interpretationRoutesV32);
