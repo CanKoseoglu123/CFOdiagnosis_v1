@@ -3,11 +3,11 @@
 // Includes: Company Info, Organisation Scale, Ownership Structure, Transformation Ambition
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Building2, Users, Euro, GitBranch, Zap, Briefcase,
-  ArrowRight, Loader, AlertCircle, Check, Info
+  ArrowRight, ArrowLeft, Loader, AlertCircle, Check, Info
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -119,6 +119,8 @@ function ChangeAppetiteSelector({ value, onChange }) {
 export default function CompanySetupPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isReviewMode = searchParams.get('review') === 'true';
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -158,15 +160,26 @@ export default function CompanySetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed, redirect to questions
-        if (run.setup_completed_at) {
+        // If setup already completed and NOT in review mode, redirect to intro
+        if (run.setup_completed_at && !isReviewMode) {
           navigate(`/run/${runId}/intro`);
           return;
         }
 
         // Pre-fill if v1 context exists
-        if (run.context?.version === 'v1') {
-          setCompany(run.context.company);
+        if (run.context?.version === 'v1' && run.context.company) {
+          const apiCompany = run.context.company;
+          setCompany({
+            name: apiCompany.name || '',
+            industry: apiCompany.industry || '',
+            revenue_range: apiCompany.revenue_range || '',
+            employee_count: apiCompany.employee_count || '',
+            finance_ftes: apiCompany.finance_ftes || '',
+            legal_entities: apiCompany.legal_entities || '',
+            finance_structure: apiCompany.finance_structure || '',
+            ownership_structure: apiCompany.ownership_structure || '',
+            change_appetite: apiCompany.change_appetite || ''
+          });
         } else if (run.context?.company_name) {
           // Legacy context - pre-fill what we have
           setCompany(prev => ({
@@ -187,7 +200,7 @@ export default function CompanySetupPage() {
       setError('No run ID provided');
       setLoading(false);
     }
-  }, [runId, navigate]);
+  }, [runId, navigate, isReviewMode]);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -372,26 +385,39 @@ export default function CompanySetupPage() {
             />
           </div>
 
-          <button
-            onClick={handleContinue}
-            disabled={!isValid() || saving}
-            className={`w-full py-3 rounded font-semibold flex items-center justify-center gap-2 mb-8
-              ${isValid() && !saving
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-          >
-            {saving ? (
-              <>
-                <Loader size={18} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                Continue to FP&A Context
-                <ArrowRight size={18} />
-              </>
+          <div className={`flex mb-8 ${isReviewMode ? 'justify-between' : 'justify-end'}`}>
+            {isReviewMode && (
+              <button
+                onClick={() => navigate(`/run/${runId}/setup/pillar?review=true`)}
+                className="py-3 px-6 rounded font-semibold border border-gray-300
+                  text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
+              >
+                <ArrowLeft size={18} />
+                Back to FP&A Context
+              </button>
             )}
-          </button>
+            <button
+              onClick={handleContinue}
+              disabled={!isValid() || saving}
+              className={`py-3 px-6 rounded font-semibold flex items-center justify-center gap-2
+                ${!isReviewMode ? 'w-full' : ''}
+                ${isValid() && !saving
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            >
+              {saving ? (
+                <>
+                  <Loader size={18} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Continue to FP&A Context
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </div>
         </EnterpriseCanvas>
       </div>
     </AppShell>

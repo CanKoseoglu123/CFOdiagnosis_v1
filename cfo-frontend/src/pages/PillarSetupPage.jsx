@@ -289,7 +289,9 @@ export default function PillarSetupPage() {
   };
 
   const handleBack = () => {
-    navigate(`/run/${runId}/setup/company`);
+    // Pass review=true if we're in review mode so CompanySetupPage doesn't redirect
+    const reviewParam = isReviewMode ? '?review=true' : '';
+    navigate(`/run/${runId}/setup/company${reviewParam}`);
   };
 
   const handleSubmit = async () => {
