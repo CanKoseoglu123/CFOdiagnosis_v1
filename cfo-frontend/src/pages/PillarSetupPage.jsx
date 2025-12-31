@@ -202,17 +202,7 @@ export default function PillarSetupPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // First, check localStorage for company data
-        const savedCompany = localStorage.getItem(`setup_company_${runId}`);
-        if (!savedCompany) {
-          // No company data - redirect back to step 1
-          navigate(`/run/${runId}/setup/company`);
-          return;
-        }
-
-        setCompany(JSON.parse(savedCompany));
-
-        // Check if run exists and hasn't been completed
+        // Check if run exists
         const headers = await getAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}`, { headers });
 
@@ -228,6 +218,20 @@ export default function PillarSetupPage() {
           localStorage.removeItem(`setup_company_${runId}`);
           navigate(`/run/${runId}/intro`);
           return;
+        }
+
+        // In review mode, load company from API context
+        if (isReviewMode && run.context?.company) {
+          setCompany(run.context.company);
+        } else {
+          // Normal flow: check localStorage for company data
+          const savedCompany = localStorage.getItem(`setup_company_${runId}`);
+          if (!savedCompany) {
+            // No company data - redirect back to step 1
+            navigate(`/run/${runId}/setup/company`);
+            return;
+          }
+          setCompany(JSON.parse(savedCompany));
         }
 
         // Pre-fill if v1 pillar context exists
