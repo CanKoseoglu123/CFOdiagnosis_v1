@@ -7,7 +7,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Building2, Users, Euro, GitBranch, Zap, Briefcase,
-  ArrowRight, ArrowLeft, Loader, AlertCircle, Check, Info
+  ArrowRight, Loader, AlertCircle, Check, Info
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -385,39 +385,26 @@ export default function CompanySetupPage() {
             />
           </div>
 
-          <div className={`flex mb-8 ${isReviewMode ? 'justify-between' : 'justify-end'}`}>
-            {isReviewMode && (
-              <button
-                onClick={() => navigate(`/run/${runId}/setup/pillar?review=true`)}
-                className="py-3 px-6 rounded font-semibold border border-gray-300
-                  text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
-              >
-                <ArrowLeft size={18} />
-                Back to FP&A Context
-              </button>
+          <button
+            onClick={handleContinue}
+            disabled={!isValid() || saving}
+            className={`w-full py-3 rounded font-semibold flex items-center justify-center gap-2 mb-8
+              ${isValid() && !saving
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+          >
+            {saving ? (
+              <>
+                <Loader size={18} className="animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                Continue to FP&A Context
+                <ArrowRight size={18} />
+              </>
             )}
-            <button
-              onClick={handleContinue}
-              disabled={!isValid() || saving}
-              className={`py-3 px-6 rounded font-semibold flex items-center justify-center gap-2
-                ${!isReviewMode ? 'w-full' : ''}
-                ${isValid() && !saving
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-            >
-              {saving ? (
-                <>
-                  <Loader size={18} className="animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  Continue to FP&A Context
-                  <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-          </div>
+          </button>
         </EnterpriseCanvas>
       </div>
     </AppShell>

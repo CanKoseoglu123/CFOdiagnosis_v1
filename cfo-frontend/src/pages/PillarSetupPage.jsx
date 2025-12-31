@@ -534,7 +534,7 @@ export default function PillarSetupPage() {
                 text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
             >
               <ArrowLeft size={18} />
-              Back to Company Context
+              Back to Organizational Context
             </button>
             <button
               onClick={handleSubmit}
