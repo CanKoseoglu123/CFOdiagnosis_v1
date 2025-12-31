@@ -38,8 +38,8 @@ function MatrixCell({ practices, rowId, colId, colIndex, isFirstRow, isLastRow, 
   const background = getZoneBackground(rowId, colIndex);
   const zoneName = ZONE_NAMES[rowId]?.[colId] || '';
 
-  // Build border classes
-  const borderClasses = `border-l border-slate-300 ${isFirstRow ? 'border-t' : ''} ${isLastCol ? 'border-r' : ''} ${isLastRow ? 'border-b' : ''}`;
+  // Build border classes - always add border-b for row dividers
+  const borderClasses = `border-l border-b border-slate-300 ${isFirstRow ? 'border-t' : ''} ${isLastCol ? 'border-r' : ''}`;
   const cornerClass = isLastRow && isLastCol ? 'rounded-br' : '';
 
   return (
@@ -112,8 +112,8 @@ export default function MatrixGrid({ columns, gridData }) {
 
           {/* Column Headers - lighter bg */}
           <div className="grid grid-cols-[60px_1fr_1fr_1fr]">
-            {/* Empty corner for row labels - part of corner, white, but needs top border to connect */}
-            <div className="p-3 bg-white border-t border-slate-300" />
+            {/* Empty corner for row labels - clean white, no borders */}
+            <div className="p-3 bg-white" />
             {columns.map((col, idx) => (
               <div
                 key={col.id}
