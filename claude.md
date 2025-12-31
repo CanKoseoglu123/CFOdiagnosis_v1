@@ -68,9 +68,9 @@ CFOdiagnosis_v1/
 │   │   │   ├── ExecutiveSpine.jsx # Report header component (VS-30)
 │   │   │   └── report/           # Report components
 │   │   │       ├── ActionPlanTab.jsx   # Action Planning (VS-28)
-│   │   │       ├── SimulatorHUD.jsx    # Score projections (VS-28)
+│   │   │       ├── SimulatorHUD.jsx    # Score + maturity level projections (VS-38)
 │   │   │       ├── CommandCenter.jsx   # Gap list with controls (VS-28)
-│   │   │       ├── ActionSidebar.jsx   # Interactive sidebar (VS-28)
+│   │   │       ├── ActionSidebar.jsx   # Planning progress + AI placeholder (VS-38)
 │   │   │       ├── PriorityMatrix.jsx  # BCG-style triage grid (VS-33)
 │   │   │       └── ObjectivesPracticesOverview.jsx # Objectives grid
 │   │   ├── utils/
@@ -287,6 +287,8 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-31: Page Normalization | Consulting-document paradigm, no rounded buttons |
 | VS-33: Priority Matrix | BCG-style triage grid, critical failures forced to Strategic row |
 | VS-36: Interpretation Restart | User-friendly warnings + "Provide More Context" button |
+| VS-38: Simulator Enhancements | Maturity level progression (L2→L3) in Execution Score card |
+| VS-38: Action Sidebar | Removed workflow steps, added AI "Generate Action Plan" placeholder |
 
 ---
 
