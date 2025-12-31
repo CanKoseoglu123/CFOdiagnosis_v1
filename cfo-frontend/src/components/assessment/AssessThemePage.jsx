@@ -286,14 +286,17 @@ export default function AssessThemePage({ themeId }) {
       setSaving(true);
       const headers = await getAuthHeaders();
 
-      // Complete the run
+      // Complete the run (409 = already completed, which is OK)
       const completeRes = await fetch(`${API_URL}/diagnostic-runs/${runId}/complete`, {
         method: 'POST',
         headers
       });
-      if (!completeRes.ok) throw new Error('Failed to complete');
+      // Allow 409 (already completed) - this happens when returning from report
+      if (!completeRes.ok && completeRes.status !== 409) {
+        throw new Error('Failed to complete');
+      }
 
-      // Score the run
+      // Score the run (re-scoring is idempotent)
       const scoreRes = await fetch(`${API_URL}/diagnostic-runs/${runId}/score`, {
         method: 'POST',
         headers
