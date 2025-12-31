@@ -293,6 +293,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-38: Simulator Enhancements | Maturity level progression (L2→L3) in Execution Score card |
 | VS-38: Action Sidebar | Removed workflow steps, added AI "Generate Action Plan" placeholder |
 | VS-39: Finalization Workflow | Lock action plan → unlock Executive Report (irreversible) |
+| VS-40: Finalization Validation | Require timeline + owner for all actions before finalizing |
 
 ---
 

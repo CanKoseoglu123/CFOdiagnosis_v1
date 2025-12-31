@@ -352,18 +352,41 @@ export default function ActionPlanTab({
     return { current: currentLevel, projected: projectedLevel };
   }, [report, executionScores.projected]);
 
-  // Count selected actions by timeline
+  // Count selected actions by timeline and owner
   const actionCounts = useMemo(() => {
-    const counts = { total: 0, '6m': 0, '12m': 0, '24m': 0, unassigned: 0 };
+    const counts = { total: 0, '6m': 0, '12m': 0, '24m': 0, unassigned: 0, withOwner: 0 };
     Object.values(actionPlan).forEach(a => {
       counts.total++;
       if (a.timeline === '6m') counts['6m']++;
       else if (a.timeline === '12m') counts['12m']++;
       else if (a.timeline === '24m') counts['24m']++;
       else counts.unassigned++;
+      // VS-40: Count actions with owner assigned
+      if (a.assigned_owner && a.assigned_owner.trim() !== '') {
+        counts.withOwner++;
+      }
     });
     return counts;
   }, [actionPlan]);
+
+  // VS-40: Check if all selected actions have both timeline AND owner
+  const incompleteActions = useMemo(() => {
+    const incomplete = [];
+    Object.entries(actionPlan).forEach(([questionId, data]) => {
+      const hasTimeline = data.timeline && ['6m', '12m', '24m'].includes(data.timeline);
+      const hasOwner = data.assigned_owner && data.assigned_owner.trim() !== '';
+      if (!hasTimeline || !hasOwner) {
+        incomplete.push({
+          questionId,
+          missingTimeline: !hasTimeline,
+          missingOwner: !hasOwner
+        });
+      }
+    });
+    return incomplete;
+  }, [actionPlan]);
+
+  const canFinalize = actionCounts.total > 0 && incompleteActions.length === 0;
 
   // Sidebar navigation handlers
   function handleSidebarBack() {
@@ -464,6 +487,7 @@ export default function ActionPlanTab({
           totalGaps={gaps.length}
           selectedCount={actionCounts.total}
           assignedCount={actionCounts['6m'] + actionCounts['12m'] + actionCounts['24m']}
+          ownerCount={actionCounts.withOwner}
           timelineCounts={actionCounts}
           onBack={handleSidebarBack}
           onProceed={handleSidebarProceed}
@@ -474,10 +498,13 @@ export default function ActionPlanTab({
           isFinalized={isFinalized}
           onRequestFinalize={() => setShowFinalizeModal(true)}
           disabled={loading || !report}
+          // VS-40: Validation for finalization
+          canFinalize={canFinalize}
+          incompleteCount={incompleteActions.length}
         />
       </div>
 
-      {/* VS-39: Finalization Confirmation Modal */}
+      {/* VS-39/40: Finalization Confirmation Modal */}
       {showFinalizeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-sm max-w-md border border-slate-300 shadow-xl">
@@ -486,15 +513,15 @@ export default function ActionPlanTab({
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-800">Finalize Action Plan?</h3>
+                <h3 className="text-lg font-semibold text-slate-800">Are you sure you want to finalize?</h3>
                 <p className="text-sm text-slate-600 mt-1">
-                  This will lock your {actionCounts.total} selected action{actionCounts.total !== 1 ? 's' : ''} and unlock the Executive Report.
+                  You are about to lock your {actionCounts.total} selected action{actionCounts.total !== 1 ? 's' : ''} and unlock the Executive Report.
                 </p>
               </div>
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-sm p-3 mb-4">
               <p className="text-sm text-amber-800">
-                <strong>This action cannot be undone.</strong> Your selections will be saved permanently.
+                <strong>This action cannot be undone.</strong> Once finalized, you will not be able to modify your action plan selections, timelines, or owners.
               </p>
             </div>
             <div className="flex gap-3">
@@ -510,7 +537,7 @@ export default function ActionPlanTab({
                 disabled={finalizing}
                 className="flex-1 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:opacity-50"
               >
-                {finalizing ? 'Finalizing...' : 'Confirm & Lock'}
+                {finalizing ? 'Finalizing...' : 'Yes, Finalize'}
               </button>
             </div>
           </div>

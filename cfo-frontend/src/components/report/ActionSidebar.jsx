@@ -1,9 +1,10 @@
 // src/components/report/ActionSidebar.jsx
 // VS-28: Universal sidebar for Action Planning - progress, context, navigation
 // VS-39: Added Finalize Pillar button with disabled safety valve
+// VS-40: Added validation - require timeline + owner for all selected actions
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Save, Sparkles, Lock, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, Sparkles, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function ActionSidebar({
   companyName,
@@ -13,6 +14,7 @@ export default function ActionSidebar({
   totalGaps,
   selectedCount,
   assignedCount,
+  ownerCount = 0,  // VS-40: Count of actions with owner assigned
   // Timeline breakdown
   timelineCounts,
   // Navigation
@@ -24,10 +26,14 @@ export default function ActionSidebar({
   // VS-39: Finalization
   isFinalized = false,
   onRequestFinalize,
-  disabled = false  // Safety valve for loading states
+  disabled = false,  // Safety valve for loading states
+  // VS-40: Validation for finalization
+  canFinalize = false,
+  incompleteCount = 0
 }) {
   const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
-  const assignedPercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
+  const timelinePercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
+  const ownerPercent = selectedCount > 0 ? Math.round((ownerCount / selectedCount) * 100) : 0;
 
   return (
     <div className="w-64 bg-white border border-slate-300 rounded-sm flex flex-col h-fit sticky top-4">
@@ -74,15 +80,33 @@ export default function ActionSidebar({
         </div>
 
         {/* Timeline Assignment */}
-        <div>
+        <div className="mb-3">
           <div className="flex justify-between text-xs text-slate-600 mb-1">
             <span>Timeline Assigned</span>
-            <span className="font-medium">{assignedCount}/{selectedCount || 0}</span>
+            <span className={`font-medium ${assignedCount === selectedCount && selectedCount > 0 ? 'text-emerald-600' : ''}`}>
+              {assignedCount}/{selectedCount || 0}
+            </span>
           </div>
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 transition-all duration-300"
-              style={{ width: `${assignedPercent}%` }}
+              className={`h-full transition-all duration-300 ${assignedCount === selectedCount && selectedCount > 0 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+              style={{ width: `${timelinePercent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* VS-40: Owner Assignment */}
+        <div>
+          <div className="flex justify-between text-xs text-slate-600 mb-1">
+            <span>Owner Assigned</span>
+            <span className={`font-medium ${ownerCount === selectedCount && selectedCount > 0 ? 'text-emerald-600' : ''}`}>
+              {ownerCount}/{selectedCount || 0}
+            </span>
+          </div>
+          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-300 ${ownerCount === selectedCount && selectedCount > 0 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+              style={{ width: `${ownerPercent}%` }}
             />
           </div>
         </div>
@@ -103,20 +127,34 @@ export default function ActionSidebar({
 
       {/* Navigation Buttons */}
       <div className="px-4 py-3 space-y-3 mt-auto">
-        {/* VS-39: Finalize Pillar Button */}
+        {/* VS-39/40: Finalize Pillar Button with validation */}
         {!isFinalized ? (
           <div className="pb-3 border-b border-slate-200">
             <button
               onClick={onRequestFinalize}
-              disabled={disabled || selectedCount === 0}
+              disabled={disabled || !canFinalize}
               className="w-full px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm flex items-center justify-center gap-2 hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Lock className="w-4 h-4" />
               <span>Finalize Pillar</span>
             </button>
-            <p className="text-xs text-slate-500 text-center mt-2">
-              Lock your action plan to view Executive Report
-            </p>
+            {/* VS-40: Show validation status */}
+            {selectedCount === 0 ? (
+              <p className="text-xs text-slate-500 text-center mt-2">
+                Select at least one action to finalize
+              </p>
+            ) : incompleteCount > 0 ? (
+              <div className="flex items-start gap-1.5 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-sm">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700">
+                  {incompleteCount} action{incompleteCount !== 1 ? 's' : ''} missing timeline or owner
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 text-center mt-2">
+                Lock your action plan to view Executive Report
+              </p>
+            )}
           </div>
         ) : (
           <div className="pb-3 border-b border-slate-200">
