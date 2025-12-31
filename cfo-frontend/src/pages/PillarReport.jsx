@@ -430,6 +430,21 @@ export default function PillarReport() {
           {/* ─────────────────────────────────────────────────────────────── */}
           <div className="flex gap-6 border-b border-slate-200">
             <button
+              onClick={() => isFinalized && setActiveTab('executive')}
+              disabled={!isFinalized}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                activeTab === 'executive'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : !isFinalized
+                    ? 'text-slate-400 cursor-not-allowed'
+                    : 'text-slate-500 hover:text-slate-700'
+              }`}
+              title={!isFinalized ? 'Finalize your action plan to unlock' : ''}
+            >
+              {!isFinalized && <Lock className="w-3 h-3" />}
+              Executive Report
+            </button>
+            <button
               onClick={() => setActiveTab('overview')}
               className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
                 activeTab === 'overview'
@@ -458,21 +473,6 @@ export default function PillarReport() {
               }`}
             >
               Action Planning
-            </button>
-            <button
-              onClick={() => isFinalized && setActiveTab('executive')}
-              disabled={!isFinalized}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'executive'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : !isFinalized
-                    ? 'text-slate-400 cursor-not-allowed'
-                    : 'text-slate-500 hover:text-slate-700'
-              }`}
-              title={!isFinalized ? 'Finalize your action plan to unlock' : ''}
-            >
-              {!isFinalized && <Lock className="w-3 h-3" />}
-              Executive Report
             </button>
           </div>
           {/* OVERVIEW TAB */}
