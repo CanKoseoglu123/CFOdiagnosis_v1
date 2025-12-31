@@ -85,20 +85,15 @@ export default function SimulatorHUD({
 
             {/* Improvement badge - VS-34: Larger text */}
             {improvement > 0 && (
-              <div className="mb-2">
+              <div className="mb-3">
                 <span className="inline-flex items-center px-2.5 py-1 rounded text-sm font-semibold bg-emerald-100 text-emerald-700">
                   +{improvement} points if completed
                 </span>
               </div>
             )}
 
-            {/* VS-34: Explanatory line */}
-            <p className="text-xs text-slate-500 mb-3">
-              Projected score if all planned actions are completed
-            </p>
-
-            {/* Progress bar - VS-34: Larger height */}
-            <div className="relative">
+            {/* Progress bar */}
+            <div className="relative mb-1">
               <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
                 {/* Current score fill */}
                 <div
@@ -126,14 +121,14 @@ export default function SimulatorHUD({
 
             {/* Maturity Level Section - Only show if level progression exists */}
             {projectedLevel > currentLevel && (
-              <div className="mt-4 pt-3 border-t border-slate-100">
-                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              <div className="mt-3 pt-3 border-t border-slate-100">
+                <div className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">
                   Maturity Level
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   {/* Current Level Badge */}
                   <div className="text-center">
-                    <span className={`inline-block px-2 py-1 rounded text-sm font-semibold ${
+                    <span className={`inline-block px-3 py-1.5 rounded text-base font-bold ${
                       currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
                       currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
                       'bg-slate-100 text-slate-600'
@@ -144,11 +139,11 @@ export default function SimulatorHUD({
                   </div>
 
                   {/* Arrow */}
-                  <span className="text-slate-400 text-lg">→</span>
+                  <span className="text-slate-400 text-xl font-medium">→</span>
 
                   {/* Projected Level Badge */}
                   <div className="text-center">
-                    <span className={`inline-block px-2 py-1 rounded text-sm font-semibold ${
+                    <span className={`inline-block px-3 py-1.5 rounded text-base font-bold ${
                       projectedLevel >= 3 ? 'bg-blue-100 text-blue-700' :
                       'bg-slate-100 text-slate-600'
                     }`}>
@@ -159,6 +154,14 @@ export default function SimulatorHUD({
                 </div>
               </div>
             )}
+
+            {/* Explanatory line - at the bottom */}
+            <p className="text-xs text-slate-500 mt-3 pt-2 border-t border-slate-100">
+              {projectedLevel > currentLevel
+                ? 'Projected score and maturity level if all planned actions are completed'
+                : 'Projected score if all planned actions are completed'
+              }
+            </p>
           </div>
 
           {/* Radar Chart (Right - spans 2 columns) - VS-34: Larger chart, legend on right */}
