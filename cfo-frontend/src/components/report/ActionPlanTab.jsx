@@ -477,18 +477,14 @@ export default function ActionPlanTab({
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────────── */}
-      {/* SIDEBAR - Planning Progress (inside content container) */}
+      {/* SIDEBAR - Actions & Finalization */}
       {/* ─────────────────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 hidden lg:block">
         <ActionSidebar
           companyName={companyName}
           industry={industry}
           pillarName="FP&A"
-          totalGaps={gaps.length}
           selectedCount={actionCounts.total}
-          assignedCount={actionCounts['6m'] + actionCounts['12m'] + actionCounts['24m']}
-          ownerCount={actionCounts.withOwner}
-          timelineCounts={actionCounts}
           onBack={handleSidebarBack}
           onProceed={handleSidebarProceed}
           onSave={handleSidebarSave}

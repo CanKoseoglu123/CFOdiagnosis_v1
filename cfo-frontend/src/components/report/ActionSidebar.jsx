@@ -1,5 +1,5 @@
 // src/components/report/ActionSidebar.jsx
-// VS-28: Universal sidebar for Action Planning - progress, context, navigation
+// VS-28: Universal sidebar for Action Planning - context and controls
 // VS-39: Added Finalize Pillar button with disabled safety valve
 // VS-40: Added validation - require timeline + owner for all selected actions
 
@@ -10,13 +10,8 @@ export default function ActionSidebar({
   companyName,
   industry,
   pillarName = 'FP&A',
-  // Progress
-  totalGaps,
-  selectedCount,
-  assignedCount,
-  ownerCount = 0,  // VS-40: Count of actions with owner assigned
-  // Timeline breakdown
-  timelineCounts,
+  // Progress (for validation only)
+  selectedCount = 0,
   // Navigation
   onBack,
   onProceed,
@@ -31,16 +26,12 @@ export default function ActionSidebar({
   canFinalize = false,
   incompleteCount = 0
 }) {
-  const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
-  const timelinePercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
-  const ownerPercent = selectedCount > 0 ? Math.round((ownerCount / selectedCount) * 100) : 0;
-
   return (
     <div className="w-64 bg-white border border-slate-300 rounded-sm flex flex-col h-fit sticky top-4">
       {/* Header */}
       <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
-          Diagnostic Progress
+          Action Planning
         </h3>
       </div>
 
@@ -59,73 +50,7 @@ export default function ActionSidebar({
         </div>
       </div>
 
-      {/* Action Plan Progress */}
-      <div className="px-4 py-3 border-b border-slate-200">
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-          Planning Progress
-        </div>
-
-        {/* Selection Progress */}
-        <div className="mb-3">
-          <div className="flex justify-between text-xs text-slate-600 mb-1">
-            <span>Actions Selected</span>
-            <span className="font-medium">{selectedCount}/{totalGaps}</span>
-          </div>
-          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Timeline Assignment */}
-        <div className="mb-3">
-          <div className="flex justify-between text-xs text-slate-600 mb-1">
-            <span>Timeline Assigned</span>
-            <span className={`font-medium ${assignedCount === selectedCount && selectedCount > 0 ? 'text-emerald-600' : ''}`}>
-              {assignedCount}/{selectedCount || 0}
-            </span>
-          </div>
-          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 ${assignedCount === selectedCount && selectedCount > 0 ? 'bg-emerald-500' : 'bg-amber-500'}`}
-              style={{ width: `${timelinePercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* VS-40: Owner Assignment */}
-        <div>
-          <div className="flex justify-between text-xs text-slate-600 mb-1">
-            <span>Owner Assigned</span>
-            <span className={`font-medium ${ownerCount === selectedCount && selectedCount > 0 ? 'text-emerald-600' : ''}`}>
-              {ownerCount}/{selectedCount || 0}
-            </span>
-          </div>
-          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 ${ownerCount === selectedCount && selectedCount > 0 ? 'bg-emerald-500' : 'bg-amber-500'}`}
-              style={{ width: `${ownerPercent}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Timeline Breakdown */}
-      <div className="px-4 py-3 border-b border-slate-200">
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-          By Timeline
-        </div>
-        <div className="space-y-1.5">
-          <TimelineRow label="6 Months" count={timelineCounts?.['6m'] || 0} color="bg-blue-500" />
-          <TimelineRow label="12 Months" count={timelineCounts?.['12m'] || 0} color="bg-blue-600" />
-          <TimelineRow label="24 Months" count={timelineCounts?.['24m'] || 0} color="bg-blue-700" />
-          <TimelineRow label="Unassigned" count={timelineCounts?.unassigned || 0} color="bg-slate-400" />
-        </div>
-      </div>
-
-      {/* Navigation Buttons */}
+      {/* Actions */}
       <div className="px-4 py-3 space-y-3 mt-auto">
         {/* VS-39/40: Finalize Pillar Button with validation */}
         {!isFinalized ? (
@@ -220,18 +145,6 @@ export default function ActionSidebar({
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function TimelineRow({ label, count, color }) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className={`w-2.5 h-2.5 rounded-sm ${color}`} />
-        <span className="text-xs text-slate-600">{label}</span>
-      </div>
-      <span className="text-xs font-medium text-slate-700">{count}</span>
     </div>
   );
 }

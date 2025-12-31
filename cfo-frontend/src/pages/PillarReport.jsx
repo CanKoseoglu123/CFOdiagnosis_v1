@@ -12,7 +12,7 @@ import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import ChapterHeader from '../components/ChapterHeader';
-import WorkflowSidebar, { ReportOverviewContent, FootprintContent } from '../components/WorkflowSidebar';
+import WorkflowSidebar from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import MaturityBanner from '../components/report/MaturityBanner';
 import SummaryTable from '../components/report/SummaryTable';
@@ -324,30 +324,7 @@ export default function PillarReport() {
       proceedLabel={activeTab === 'overview' ? 'Footprint' : activeTab === 'footprint' ? 'Action Plan' : 'Complete'}
       canProceed={activeTab !== 'actions'}
       showNavigation={activeTab !== 'actions'}
-    >
-      {/* Tab-specific content */}
-      {activeTab === 'overview' && (
-        <ReportOverviewContent
-          executionScore={executionScore}
-          maturityLevel={actualLevel}
-          criticalCount={criticalRisks.length}
-          actionCount={totalActions}
-        />
-      )}
-      {activeTab === 'footprint' && (
-        <FootprintContent
-          totalPractices={footprintStats.totalPractices}
-          evidencedPractices={footprintStats.evidencedPractices}
-          partialPractices={footprintStats.partialPractices}
-          gapPractices={footprintStats.gapPractices}
-        />
-      )}
-      {activeTab === 'actions' && (
-        <div className="text-sm text-slate-600">
-          <p>Use the interactive sidebar in the Action Planning tab to select and schedule improvement actions.</p>
-        </div>
-      )}
-    </WorkflowSidebar>
+    />
   );
 
   // Build description for ChapterHeader
