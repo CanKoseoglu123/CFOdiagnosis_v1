@@ -1,6 +1,6 @@
 # VS-Cards — Version Sprints Roadmap
 
-**Last Updated:** December 26, 2025
+**Last Updated:** December 31, 2025
 **Status:** Active Development
 
 ---
@@ -263,6 +263,572 @@ Users need a final, printable PDF report at the end of the pillar assessment tha
 
 ---
 
+## VS-38: How to Create New Pillars — Developer Guide
+
+**Status:** 📚 Reference Documentation
+**Type:** Developer Guide
+**Last Updated:** December 31, 2025
+
+### Overview
+
+This guide documents the complete process for adding a new diagnostic pillar to the CFO Diagnosis platform. The system currently supports FPA (Financial Planning & Analysis) and is architected to support multiple pillars. Follow these steps in order to add a new pillar (e.g., R2R - Record to Report, Tax, Treasury, etc.).
+
+---
+
+### Architecture Summary
+
+A pillar consists of:
+- **Questions** (48 per pillar, across 4 maturity levels)
+- **Practices** (21 capabilities mapped to questions)
+- **Objectives** (8 strategic objectives grouped into 3 themes)
+- **Initiatives** (9 improvement initiatives)
+- **Interpretation Pack** (AI prompt templates and section configs)
+
+---
+
+### Phase 1: Core Pillar Definition
+
+#### Step 1.1: Add Pillar to Registry
+
+**File:** `src/specs/loader.ts` (Lines 304-311)
+
+```typescript
+const PILLARS: SpecPillar[] = [
+  {
+    id: "fpa",
+    name: "Financial Planning & Analysis",
+    description: "Budget, forecast, variance analysis, and strategic planning capabilities",
+    weight: 1
+  },
+  // ADD NEW PILLAR HERE:
+  {
+    id: "r2r",  // Use lowercase 3-4 char identifier
+    name: "Record to Report",
+    description: "Close process, consolidation, reporting, and compliance capabilities",
+    weight: 1
+  }
+];
+```
+
+#### Step 1.2: Update Schema Validation
+
+**File:** `src/specs/schemas.ts`
+
+Update the pillar literal to accept multiple values:
+
+```typescript
+// Line ~55-65: Change from literal to enum
+export const QuestionsFileSchema = z.object({
+  version: z.string(),
+  pillar: z.enum(['fpa', 'r2r']),  // WAS: z.literal('fpa')
+  questions: z.array(QuestionSchema)
+});
+```
+
+Update question ID regex to accept new prefix:
+
+```typescript
+// Line ~42-53: Update regex pattern
+id: z.string().regex(/^(fpa|r2r)_l[1-4]_q\d{2}$/, 'Invalid question ID format')
+```
+
+#### Step 1.3: Add to Backward-Compatible Specs (Optional)
+
+**File:** `src/specs/v2.6.4.ts` (Lines 24-31)
+
+If supporting older spec versions, add pillar here too:
+
+```typescript
+pillars: [
+  { id: "fpa", name: "Financial Planning & Analysis", ... },
+  { id: "r2r", name: "Record to Report", ... }
+]
+```
+
+---
+
+### Phase 2: Content JSON Files
+
+#### Step 2.1: Create Questions JSON
+
+**Option A (Recommended):** Create separate file per pillar
+
+**File:** `content/questions-r2r.json`
+
+```json
+{
+  "version": "2.9.0",
+  "pillar": "r2r",
+  "questions": [
+    {
+      "id": "r2r_l1_q01",
+      "level": 1,
+      "practice_id": "prac_r2r_close_calendar",
+      "text": "Does your organization have a documented month-end close calendar?",
+      "help_text": "A formal calendar includes deadlines for each close activity...",
+      "critical_risk": {
+        "risk_statement": "Missing close calendar leads to inconsistent reporting...",
+        "business_impact": "financial_reporting",
+        "severity": "high"
+      }
+    }
+    // ... 47 more questions following same pattern
+  ]
+}
+```
+
+**Question ID Pattern:** `{pillar}_l{level}_q{number}`
+- `r2r_l1_q01` through `r2r_l1_q12` (Level 1: 12 questions)
+- `r2r_l2_q01` through `r2r_l2_q12` (Level 2: 12 questions)
+- `r2r_l3_q01` through `r2r_l3_q12` (Level 3: 12 questions)
+- `r2r_l4_q01` through `r2r_l4_q12` (Level 4: 12 questions)
+
+**Option B:** Add to existing `content/questions.json` with pillar field per question
+
+#### Step 2.2: Create Practices JSON
+
+**File:** `content/practices-r2r.json` or add to existing
+
+```json
+{
+  "practices": [
+    {
+      "id": "prac_r2r_close_calendar",
+      "objective_id": "obj_close_efficiency",
+      "title": "Close Calendar Management",
+      "capability_tags": ["close", "planning", "timeline"]
+    }
+    // ... 20 more practices (21 total per pillar)
+  ]
+}
+```
+
+**Practice Distribution by Level:**
+| Level | Count | Example Practices |
+|-------|-------|-------------------|
+| L1 Foundation | 5 | Close Calendar, Trial Balance, Reconciliations |
+| L2 Defined | 6 | Consolidation Process, Intercompany, Adjustments |
+| L3 Managed | 6 | Fast Close, Continuous Accounting, Automation |
+| L4 Optimized | 4 | Predictive Close, AI Reconciliation, Real-time Reporting |
+
+#### Step 2.3: Create Objectives JSON
+
+**File:** `content/objectives-r2r.json` or add to existing
+
+```json
+{
+  "objectives": [
+    {
+      "id": "obj_close_efficiency",
+      "name": "Close Efficiency",
+      "description": "Speed and accuracy of period-end close process",
+      "theme_id": "theme_foundation",
+      "level": 1,
+      "thresholds": { "emerging": 25, "established": 50, "advanced": 75, "leading": 90 }
+    }
+    // ... 7 more objectives (8 total per pillar)
+  ]
+}
+```
+
+**Objective Distribution by Theme:**
+| Theme | Objectives (Example for R2R) |
+|-------|------------------------------|
+| Foundation | Close Efficiency, Data Integrity, Compliance Controls |
+| Future | Automation Maturity, Continuous Close, Predictive Analytics |
+| Intelligence | Reporting Insights, Stakeholder Value, Process Excellence |
+
+#### Step 2.4: Create Initiatives JSON
+
+**File:** `content/initiatives-r2r.json` or add to existing
+
+```json
+{
+  "initiatives": [
+    {
+      "id": "init_r2r_close_automation",
+      "name": "Close Process Automation",
+      "description": "Automate repetitive close tasks and reconciliations",
+      "pillar_id": "r2r"
+    }
+    // ... 8 more initiatives (9 total per pillar)
+  ]
+}
+```
+
+---
+
+### Phase 3: Update Content Loader
+
+**File:** `src/specs/loader.ts`
+
+Modify `buildSpecFromContent()` to load pillar-specific content:
+
+```typescript
+export function buildSpecFromContent(pillarId: string = 'fpa'): Spec {
+  // Load pillar-specific files
+  const questionsFile = pillarId === 'fpa'
+    ? 'questions.json'
+    : `questions-${pillarId}.json`;
+
+  const questions = loadQuestions(questionsFile);
+  const practices = loadPractices(pillarId);
+  const objectives = loadObjectives(pillarId);
+
+  // Map objectives to pillar
+  const specObjectives: SpecObjective[] = objectives.map(o => ({
+    ...o,
+    pillar_id: pillarId,  // Dynamic pillar assignment
+  }));
+
+  // ... rest of spec building
+}
+```
+
+---
+
+### Phase 4: Interpretation Engine Pack
+
+#### Step 4.1: Create Pillar Pack Configuration
+
+**File:** `src/interpretation/pillars/r2r/config.ts` (NEW FILE)
+
+```typescript
+import { PillarPack } from '../types';
+
+export const R2R_PACK: PillarPack = {
+  pillar_id: 'r2r',
+  pillar_name: 'Record to Report',
+
+  // Define 5 interpretation sections
+  sections: [
+    {
+      id: 'summary',
+      title: 'R2R Maturity Overview',
+      guidance: 'Summarize the overall close-to-report maturity...',
+      max_words: 80
+    },
+    {
+      id: 'strengths',
+      title: 'Close Process Strengths',
+      guidance: 'Highlight areas where close process excels...',
+      max_words: 100
+    },
+    {
+      id: 'gaps',
+      title: 'Critical Gaps',
+      guidance: 'Identify urgent close process weaknesses...',
+      max_words: 100
+    },
+    {
+      id: 'recommendations',
+      title: 'Priority Actions',
+      guidance: 'Recommend specific close improvements...',
+      max_words: 120
+    },
+    {
+      id: 'outlook',
+      title: 'Future State Vision',
+      guidance: 'Describe target state for close process...',
+      max_words: 80
+    }
+  ],
+
+  // Phrases to avoid in AI output
+  forbidden_phrases: [
+    'I think',
+    'I believe',
+    'seems like',
+    'might be',
+    'probably',
+    'based on what I see'
+  ],
+
+  // Fallback templates when AI fails
+  fallback_templates: {
+    summary: (input) => ({
+      content: `${input.company_name}'s Record to Report maturity assessment reveals a ${input.overall_score > 60 ? 'solid' : 'developing'} foundation...`,
+      evidence_ids: input.objectives.slice(0, 3).map(o => o.id)
+    }),
+    strengths: (input) => ({
+      content: `Key strengths include ${input.objectives.filter(o => o.score >= 70).map(o => o.name).join(', ') || 'foundational processes'}...`,
+      evidence_ids: []
+    }),
+    // ... templates for each section
+  }
+};
+```
+
+#### Step 4.2: Register Pillar Pack
+
+**File:** `src/interpretation/pillars/registry.ts`
+
+```typescript
+import { FPA_PACK } from './fpa/config';
+import { R2R_PACK } from './r2r/config';  // ADD IMPORT
+
+const PACKS: Record<string, PillarPack> = {
+  fpa: FPA_PACK,
+  r2r: R2R_PACK,  // ADD TO REGISTRY
+};
+
+export function getPillarPack(pillarId: string): PillarPack {
+  const pack = PACKS[pillarId];
+  if (!pack) {
+    throw new Error(`Unknown pillar: ${pillarId}. Available: ${Object.keys(PACKS).join(', ')}`);
+  }
+  return pack;
+}
+```
+
+---
+
+### Phase 5: Database Migration
+
+**File:** `supabase/migrations/20251231_vs38_add_pillar_id.sql` (NEW FILE)
+
+```sql
+-- Add pillar_id column to diagnostic_runs if not present
+ALTER TABLE diagnostic_runs
+ADD COLUMN IF NOT EXISTS pillar_id TEXT DEFAULT 'fpa';
+
+COMMENT ON COLUMN diagnostic_runs.pillar_id IS
+  'Identifies the diagnostic pillar: fpa, r2r, tax, treasury, etc.';
+
+-- Create index for performance
+CREATE INDEX IF NOT EXISTS idx_diagnostic_runs_pillar_id
+ON diagnostic_runs(pillar_id);
+
+-- Optional: Create pillars reference table
+CREATE TABLE IF NOT EXISTS pillars (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  weight NUMERIC DEFAULT 1,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed pillar data
+INSERT INTO pillars (id, name, description) VALUES
+  ('fpa', 'Financial Planning & Analysis', 'Budget, forecast, variance analysis, and strategic planning'),
+  ('r2r', 'Record to Report', 'Close process, consolidation, reporting, and compliance')
+ON CONFLICT (id) DO NOTHING;
+```
+
+---
+
+### Phase 6: Frontend Components
+
+#### Step 6.1: Create Pillar Setup Page (Optional)
+
+If the new pillar needs custom context fields:
+
+**File:** `cfo-frontend/src/pages/R2RSetupPage.jsx` (NEW FILE)
+
+```jsx
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+export default function R2RSetupPage() {
+  const { runId } = useParams();
+
+  // Custom fields for R2R pillar
+  const [closeFrequency, setCloseFrequency] = useState('monthly');
+  const [consolidationEntities, setConsolidationEntities] = useState('');
+
+  return (
+    <div className="setup-page">
+      <h1>R2R Context Setup</h1>
+      {/* Pillar-specific context fields */}
+      <select value={closeFrequency} onChange={e => setCloseFrequency(e.target.value)}>
+        <option value="monthly">Monthly Close</option>
+        <option value="quarterly">Quarterly Close</option>
+      </select>
+      {/* ... more fields */}
+    </div>
+  );
+}
+```
+
+#### Step 6.2: Update Router
+
+**File:** `cfo-frontend/src/App.jsx`
+
+```jsx
+import R2RSetupPage from './pages/R2RSetupPage';
+
+// Add route
+<Route path="/setup/:runId/r2r" element={<R2RSetupPage />} />
+```
+
+#### Step 6.3: Update Objective-Theme Mapping
+
+**File:** `cfo-frontend/src/pages/PillarReport.jsx`
+
+```javascript
+const OBJECTIVE_THEME_MAP = {
+  // FPA objectives
+  'obj_budget_discipline': 'Foundation',
+  'obj_financial_controls': 'Foundation',
+  // ... existing FPA mappings
+
+  // R2R objectives (ADD THESE)
+  'obj_close_efficiency': 'Foundation',
+  'obj_data_integrity': 'Foundation',
+  'obj_compliance_controls': 'Foundation',
+  'obj_automation_maturity': 'Future',
+  'obj_continuous_close': 'Future',
+  'obj_predictive_analytics': 'Future',
+  'obj_reporting_insights': 'Intelligence',
+  'obj_process_excellence': 'Intelligence',
+};
+```
+
+---
+
+### Phase 7: API Endpoint Updates
+
+#### Step 7.1: Run Creation Endpoint
+
+**File:** `src/index.ts`
+
+Ensure pillar_id is captured when creating a run:
+
+```typescript
+app.post('/diagnostic-runs', async (req, res) => {
+  const { pillar_id = 'fpa', ...otherFields } = req.body;
+
+  const { data, error } = await supabase
+    .from('diagnostic_runs')
+    .insert({
+      pillar_id,  // Store pillar selection
+      ...otherFields
+    })
+    .select()
+    .single();
+
+  // ...
+});
+```
+
+#### Step 7.2: Report Generation
+
+**File:** `src/reports/builder.ts`
+
+No changes needed — already iterates over `spec.pillars`:
+
+```typescript
+const pillarReports = spec.pillars.map((pillar) =>
+  buildPillarReport(pillar, spec, aggregateResult, inputMap, gates, calibration, engineRisks)
+);
+```
+
+---
+
+### Phase 8: Calibration Configuration
+
+**File:** `content/calibration.json`
+
+Add pillar-specific calibration settings if needed:
+
+```json
+{
+  "pillars": {
+    "fpa": {
+      "objective_weights": { ... }
+    },
+    "r2r": {
+      "objective_weights": {
+        "obj_close_efficiency": 1.2,
+        "obj_data_integrity": 1.0,
+        "obj_compliance_controls": 1.1
+      }
+    }
+  }
+}
+```
+
+---
+
+### Complete Checklist
+
+#### Phase 1: Core Definition
+- [ ] Add pillar to `PILLARS` array in `src/specs/loader.ts`
+- [ ] Update `z.literal('fpa')` to `z.enum([...])` in `src/specs/schemas.ts`
+- [ ] Update question ID regex pattern
+- [ ] Add pillar to `src/specs/v2.6.4.ts` (if supporting older versions)
+
+#### Phase 2: Content Files
+- [ ] Create `content/questions-{pillar}.json` (48 questions)
+- [ ] Create `content/practices-{pillar}.json` (21 practices)
+- [ ] Create `content/objectives-{pillar}.json` (8 objectives)
+- [ ] Create `content/initiatives-{pillar}.json` (9 initiatives)
+- [ ] Validate all cross-references between files
+
+#### Phase 3: Content Loader
+- [ ] Update `buildSpecFromContent()` to accept pillar parameter
+- [ ] Add pillar-specific file loading logic
+
+#### Phase 4: Interpretation Pack
+- [ ] Create `src/interpretation/pillars/{pillar}/config.ts`
+- [ ] Define 5 sections with titles and guidance
+- [ ] Define forbidden_phrases list
+- [ ] Implement fallback_templates for each section
+- [ ] Register pack in `src/interpretation/pillars/registry.ts`
+
+#### Phase 5: Database
+- [ ] Create migration adding `pillar_id` column
+- [ ] Add index on `pillar_id`
+- [ ] Seed pillars reference table (optional)
+
+#### Phase 6: Frontend
+- [ ] Create pillar-specific setup page (if needed)
+- [ ] Update router with new routes
+- [ ] Add objective-theme mappings to `OBJECTIVE_THEME_MAP`
+- [ ] Test report display with new pillar data
+
+#### Phase 7: API
+- [ ] Ensure run creation captures `pillar_id`
+- [ ] Verify report generation handles multiple pillars
+
+#### Phase 8: Calibration
+- [ ] Add pillar-specific weights (if different from defaults)
+
+---
+
+### Files Summary by Impact Level
+
+| File | Impact | Action |
+|------|--------|--------|
+| `src/specs/loader.ts` | CRITICAL | Add to PILLARS array |
+| `src/specs/schemas.ts` | CRITICAL | Update enum and regex |
+| `src/interpretation/pillars/registry.ts` | CRITICAL | Register new pack |
+| `src/interpretation/pillars/{id}/config.ts` | CRITICAL | NEW FILE — pack config |
+| `content/questions-{pillar}.json` | CRITICAL | NEW FILE — 48 questions |
+| `content/objectives-{pillar}.json` | CRITICAL | NEW FILE — 8 objectives |
+| `content/practices-{pillar}.json` | CRITICAL | NEW FILE — 21 practices |
+| `content/initiatives-{pillar}.json` | HIGH | NEW FILE — 9 initiatives |
+| `supabase/migrations/` | HIGH | Add pillar_id column |
+| `cfo-frontend/src/pages/PillarReport.jsx` | MEDIUM | Update theme map |
+| `src/specs/v2.6.4.ts` | LOW | Backward compat (optional) |
+| `src/reports/builder.ts` | NONE | Already pillar-agnostic |
+| `src/risks/engine.ts` | NONE | Already pillar-agnostic |
+
+---
+
+### Testing Checklist
+
+1. **Spec Loading** — Verify `getSpec()` returns all pillars in `spec.pillars`
+2. **Question Loading** — Verify all 48 questions load with correct IDs
+3. **Scoring** — Run full assessment and verify scores calculate correctly
+4. **Report Generation** — Verify pillar report builds without errors
+5. **Interpretation** — Test AI interpretation generates for new pillar
+6. **Frontend** — Navigate through assessment and report for new pillar
+7. **Database** — Verify `pillar_id` persists and queries work
+
+---
+
 ## VS Backlog
 
 | VS | Name | Priority | Status |
@@ -273,6 +839,7 @@ Users need a final, printable PDF report at the end of the pillar assessment tha
 | VS-35 | Trend Analysis | Low | 📋 Backlog |
 | VS-36 | Email Reports | Low | 📋 Backlog |
 | VS-37 | SSO Integration | Medium | 📋 Backlog |
+| VS-38 | Pillar Creation Guide | 📚 Reference | ✅ Complete |
 
 ---
 
