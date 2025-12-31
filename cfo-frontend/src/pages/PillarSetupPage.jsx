@@ -223,6 +223,7 @@ export default function PillarSetupPage() {
         // In review mode, load company from API context with defaults for missing fields
         if (isReviewMode && run.context?.company) {
           const apiCompany = run.context.company;
+          console.log('[PillarSetupPage] Loading company from API in review mode:', apiCompany);
           setCompany({
             name: apiCompany.name || '',
             industry: apiCompany.industry || '',
@@ -319,6 +320,8 @@ export default function PillarSetupPage() {
       const cleanCompany = Object.fromEntries(
         Object.entries(company).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
       );
+      console.log('[PillarSetupPage] Original company from state:', company);
+      console.log('[PillarSetupPage] Cleaned company being sent to API:', cleanCompany);
 
       // Clean pillar data - convert null to empty string for text fields, remove empty optional fields
       const cleanPillar = {

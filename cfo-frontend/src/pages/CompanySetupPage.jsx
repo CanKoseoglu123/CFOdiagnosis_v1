@@ -169,6 +169,11 @@ export default function CompanySetupPage() {
         // Pre-fill if v1 context exists
         if (run.context?.version === 'v1' && run.context.company) {
           const apiCompany = run.context.company;
+          console.log('[CompanySetupPage] Loading from API:', {
+            ownership_structure: apiCompany.ownership_structure,
+            finance_structure: apiCompany.finance_structure,
+            full_company: apiCompany
+          });
           setCompany({
             name: apiCompany.name || '',
             industry: apiCompany.industry || '',
