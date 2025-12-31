@@ -217,7 +217,7 @@ export default function IntroPage() {
         {/* ROW 4: CTA */}
         <section className="pt-2 border-t border-slate-200 mt-2">
           <div className="flex items-center justify-between">
-            <Link to={`/run/${runId}/setup/pillar`}>
+            <Link to={`/run/${runId}/setup/pillar?review=true`}>
               <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Setup

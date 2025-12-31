@@ -3,7 +3,7 @@
 // Includes: Tools & Technology, Team & Process, Pain Points, Additional Context
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Wrench, Users, Calendar, Target, AlertCircle, User,
@@ -164,6 +164,8 @@ function BudgetProcessSelector({ baseValue, modifiersValue, onBaseChange, onModi
 export default function PillarSetupPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isReviewMode = searchParams.get('review') === 'true';
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -221,8 +223,8 @@ export default function PillarSetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed, redirect to intro
-        if (run.setup_completed_at) {
+        // If setup already completed and not in review mode, redirect to intro
+        if (run.setup_completed_at && !isReviewMode) {
           localStorage.removeItem(`setup_company_${runId}`);
           navigate(`/run/${runId}/intro`);
           return;
@@ -244,7 +246,7 @@ export default function PillarSetupPage() {
       setError('No run ID provided');
       setLoading(false);
     }
-  }, [runId, navigate]);
+  }, [runId, navigate, isReviewMode]);
 
   // Scroll to top on mount
   useEffect(() => {
