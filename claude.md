@@ -62,7 +62,9 @@ CFOdiagnosis_v1/
 │   │   │   └── CalibrationPage.jsx # VS21 importance calibration
 │   │   ├── components/
 │   │   │   ├── AppShell.jsx      # Responsive layout wrapper
-│   │   │   ├── WorkflowSidebar.jsx # Global sidebar (VS-29)
+│   │   │   ├── WorkflowSidebar.jsx # Report sidebar (VS-29)
+│   │   │   ├── assessment/
+│   │   │   │   └── AssessmentSidebar.jsx # Assessment sidebar (VS-42)
 │   │   │   ├── ChapterHeader.jsx # Unified dark header (VS-30)
 │   │   │   ├── EnterpriseCanvas.jsx # Max-width content wrapper (VS-30)
 │   │   │   ├── ExecutiveSpine.jsx # Report header component (VS-30)
@@ -310,6 +312,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-38: Action Sidebar | Removed workflow steps, added AI "Generate Action Plan" placeholder |
 | VS-39: Finalization Workflow | Lock action plan → unlock Executive Report (irreversible) |
 | VS-40: Finalization Validation | Require timeline + owner for all actions before finalizing |
+| VS-42: Assessment Sidebar Polish | Matches Report sidebar styling, back button navigation |
 
 ---
 
