@@ -217,13 +217,10 @@ export default function IntroPage() {
         {/* ROW 4: CTA */}
         <section className="text-center pt-2">
           <Link to={`/assess/foundation?runId=${runId}`}>
-            <button className="bg-slate-800 text-white px-10 py-3 text-sm font-semibold hover:bg-slate-900 transition-colors">
-              Begin Assessment
+            <button className="bg-blue-600 text-white px-10 py-3 text-sm font-semibold hover:bg-blue-700 transition-colors rounded-sm">
+              Proceed to Assessment
             </button>
           </Link>
-          <p className="text-xs text-slate-400 mt-3">
-            ~20 minutes  •  Walk away with a concrete action plan
-          </p>
         </section>
 
       </EnterpriseCanvas>
