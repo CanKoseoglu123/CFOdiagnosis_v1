@@ -17,7 +17,7 @@ const LOGO_VARIANTS = {
   circle: '/Logo verticle circle.png',
 };
 
-// Icon only (uses circular badge version cropped, or vertical for cleaner icon)
+// Icon only (uses circular badge version)
 export function LogoIcon({ size = 40, className = '' }) {
   return (
     <img
@@ -26,6 +26,7 @@ export function LogoIcon({ size = 40, className = '' }) {
       width={size}
       height={size}
       className={`object-contain ${className}`}
+      style={{ imageOrientation: 'none' }}
     />
   );
 }
@@ -48,7 +49,7 @@ export function Logo({ size = 'md', className = '', variant = 'horizontal' }) {
       alt="CFO Lens AI"
       height={s.height}
       className={`object-contain ${className}`}
-      style={{ height: s.height }}
+      style={{ height: s.height, imageOrientation: 'none' }}
     />
   );
 }
