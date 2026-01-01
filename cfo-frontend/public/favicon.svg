@@ -1,7 +1,12 @@
 <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M8 8 L42 8 L42 42 L8 42 Z" fill="none" stroke="#1e3a5f" stroke-width="6"/>
-  <path d="M58 8 L92 8 L92 42 L58 42 Z" fill="none" stroke="#1e3a5f" stroke-width="6"/>
-  <path d="M8 58 L42 58 L42 92 L8 92 Z" fill="none" stroke="#1e3a5f" stroke-width="6"/>
-  <path d="M58 58 L92 58 L92 92 L58 92 Z" fill="none" stroke="#1e3a5f" stroke-width="6"/>
+  <!-- Top-left square with diagonal cut -->
+  <path d="M4 4 L44 4 L44 24 L24 44 L4 44 Z" fill="#1a365d"/>
+  <!-- Top-right square with diagonal cut -->
+  <path d="M96 4 L56 4 L56 24 L76 44 L96 44 Z" fill="#1a365d"/>
+  <!-- Bottom-left square with diagonal cut -->
+  <path d="M4 96 L4 56 L24 56 L44 76 L44 96 Z" fill="#1a365d"/>
+  <!-- Bottom-right square with diagonal cut -->
+  <path d="M96 96 L56 96 L56 76 L76 56 L96 56 Z" fill="#1a365d"/>
+  <!-- Center diamond -->
   <path d="M50 30 L70 50 L50 70 L30 50 Z" fill="#c9a050"/>
 </svg>
