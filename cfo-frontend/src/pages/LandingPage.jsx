@@ -1,10 +1,11 @@
 // src/pages/LandingPage.jsx
 // Modern landing page inspired by Mollie.com
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
+import { supabase } from '../lib/supabase';
 import {
   BarChart3,
   Brain,
@@ -14,11 +15,54 @@ import {
   ArrowRight,
   Sparkles,
   Shield,
-  Zap,
+  ClipboardCheck,
+  X,
+  AlertCircle,
 } from 'lucide-react';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function LandingPage() {
   const { isAuthenticated, user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+  const [checkingRuns, setCheckingRuns] = useState(false);
+
+  // Check if user has a completed run
+  async function handleDashboardClick(e) {
+    e.preventDefault();
+    setCheckingRuns(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        navigate('/login');
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/diagnostic-runs`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (res.ok) {
+        const runs = await res.json();
+        const completedRun = runs.find(r => r.status === 'completed' || r.status === 'locked');
+
+        if (completedRun) {
+          navigate(`/report/${completedRun.id}`);
+        } else {
+          setShowIncompleteModal(true);
+        }
+      } else {
+        setShowIncompleteModal(true);
+      }
+    } catch (err) {
+      console.error('Error checking runs:', err);
+      setShowIncompleteModal(true);
+    } finally {
+      setCheckingRuns(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -43,13 +87,14 @@ export default function LandingPage() {
                 <span className="text-sm text-slate-500 hidden sm:block">
                   {user?.email}
                 </span>
-                <Link
-                  to="/assess"
-                  className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                <button
+                  onClick={handleDashboardClick}
+                  disabled={checkingRuns}
+                  className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-70"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  Dashboard
-                </Link>
+                  {checkingRuns ? 'Loading...' : 'My Reports'}
+                </button>
                 <button
                   onClick={signOut}
                   className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
@@ -103,8 +148,8 @@ export default function LandingPage() {
 
           {/* Subheadline */}
           <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Assess your finance function maturity in minutes. Get AI-powered insights
-            and a personalized roadmap to transform your FP&A capabilities.
+            A structured diagnostic that pinpoints gaps in your finance function
+            and delivers a prioritized action plan you can execute.
           </p>
 
           {/* CTA Buttons */}
@@ -123,17 +168,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="mt-16 pt-8 border-t border-slate-100">
-            <p className="text-xs uppercase tracking-wider text-slate-400 mb-4">
-              Trusted by finance leaders
-            </p>
-            <div className="flex items-center justify-center gap-8 text-slate-300">
-              <span className="text-lg font-semibold">Fortune 500</span>
-              <span className="text-lg font-semibold">PE-Backed</span>
-              <span className="text-lg font-semibold">High-Growth</span>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -169,11 +203,11 @@ export default function LandingPage() {
                 className="text-xl font-semibold mb-3"
                 style={{ color: BRAND_COLORS.navy }}
               >
-                Assess Maturity
+                Comprehensive Assessment
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Answer 48 questions across budgeting, forecasting, and strategic planning
-                to benchmark your current state against industry standards.
+                A structured evaluation across budgeting, forecasting, and strategic
+                planning — designed for clarity, not complexity.
               </p>
             </div>
 
@@ -189,11 +223,11 @@ export default function LandingPage() {
                 className="text-xl font-semibold mb-3"
                 style={{ color: BRAND_COLORS.navy }}
               >
-                AI-Powered Insights
+                AI-Powered Analysis
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Our AI analyzes your responses to identify critical gaps, hidden strengths,
-                and prioritized opportunities tailored to your context.
+                Our AI synthesizes your responses into clear insights — identifying
+                critical gaps and high-impact opportunities specific to your context.
               </p>
             </div>
 
@@ -209,11 +243,11 @@ export default function LandingPage() {
                 className="text-xl font-semibold mb-3"
                 style={{ color: BRAND_COLORS.navy }}
               >
-                Actionable Roadmap
+                Actionable Output
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                Get a prioritized action plan with specific initiatives, timelines, and
-                expected outcomes to guide your transformation journey.
+                Walk away with a prioritized action plan — specific initiatives you
+                can assign, track, and execute immediately.
               </p>
             </div>
           </div>
@@ -232,21 +266,21 @@ export default function LandingPage() {
                 className="text-3xl sm:text-4xl font-bold mb-6"
                 style={{ color: BRAND_COLORS.navy }}
               >
-                Built for Modern
+                Your Time is Valuable.
                 <br />
-                Finance Teams
+                Use It Where It Matters.
               </h2>
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                Whether you're a CFO at a PE-backed company, an FP&A leader at a
-                fast-growing startup, or a finance director at an enterprise, our
-                diagnostic adapts to your unique context.
+                CFOs don't have the bandwidth to deep-dive into every area of finance.
+                Our diagnostic does the heavy lifting — surfacing gaps and translating
+                them into a structured action plan your team can execute.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: Zap, text: 'Complete assessment in under 15 minutes' },
-                  { icon: Shield, text: 'Enterprise-grade security & privacy' },
-                  { icon: TrendingUp, text: 'Benchmarked against 500+ organizations' },
+                  { icon: ClipboardCheck, text: 'Straightforward assessment, no complexity' },
+                  { icon: TrendingUp, text: 'Clear analytics on your maturity gaps' },
+                  { icon: Target, text: 'Prioritized action plan ready to execute' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div
@@ -333,11 +367,11 @@ export default function LandingPage() {
       >
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-            Ready to Transform Your Finance Function?
+            Stop Guessing. Start Executing.
           </h2>
           <p className="text-lg text-slate-300 mb-10">
-            Join hundreds of finance leaders who have used CFO Lens AI to identify
-            gaps and accelerate their transformation journey.
+            Get the clarity you need to prioritize the right initiatives
+            and drive measurable value from your finance function.
           </p>
           <Link
             to={isAuthenticated ? '/assess' : '/login'}
@@ -364,6 +398,63 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* INCOMPLETE DIAGNOSIS MODAL */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {showIncompleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowIncompleteModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                <h3 className="text-lg font-semibold text-slate-800">
+                  No Reports Available
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowIncompleteModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-slate-600 mb-6">
+                You haven't completed a diagnostic assessment yet. Complete the
+                assessment to generate your personalized report and action plan.
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowIncompleteModal(false)}
+                  className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+                >
+                  Cancel
+                </button>
+                <Link
+                  to="/assess"
+                  onClick={() => setShowIncompleteModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  Start Assessment
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
