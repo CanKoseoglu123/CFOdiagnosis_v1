@@ -3,13 +3,15 @@
 // Synced with backend src/specs/schemas.ts
 
 export const INDUSTRIES = [
-  { value: 'saas', label: 'SaaS' },
-  { value: 'manufacturing', label: 'Manufacturing' },
-  { value: 'retail', label: 'Retail' },
-  { value: 'services', label: 'Professional Services' },
+  { value: 'automotive', label: 'Automotive' },
+  { value: 'consumer_goods', label: 'Consumer Goods' },
   { value: 'fintech', label: 'Fintech' },
   { value: 'healthcare', label: 'Healthcare' },
+  { value: 'manufacturing', label: 'Manufacturing' },
   { value: 'media', label: 'Media' },
+  { value: 'services', label: 'Professional Services' },
+  { value: 'retail', label: 'Retail' },
+  { value: 'saas', label: 'SaaS' },
   { value: 'other', label: 'Other' }
 ];
 
