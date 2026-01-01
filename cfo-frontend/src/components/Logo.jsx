@@ -5,12 +5,12 @@ import React from 'react';
 
 // Brand colors extracted from logo
 export const BRAND_COLORS = {
-  navy: '#1e3a5f',
-  gold: '#c9a050',
-  lightBlue: '#7b8fa3',
+  navy: '#1a365d',
+  gold: '#c9a227',
+  lightBlue: '#94a3b8',
 };
 
-// Icon only (the geometric squares with diamond)
+// Icon only (the geometric lens with diamond)
 export function LogoIcon({ size = 40, className = '' }) {
   return (
     <svg
@@ -21,37 +21,49 @@ export function LogoIcon({ size = 40, className = '' }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Top-left square */}
+      {/* Top-left L-bracket */}
       <path
-        d="M8 8 L42 8 L42 42 L8 42 Z"
-        fill="none"
-        stroke={BRAND_COLORS.navy}
-        strokeWidth="6"
+        d="M5 5 L5 40 L15 40 L15 15 L40 15 L40 5 Z"
+        fill={BRAND_COLORS.navy}
       />
-      {/* Top-right square */}
+      {/* Top-right L-bracket */}
       <path
-        d="M58 8 L92 8 L92 42 L58 42 Z"
-        fill="none"
-        stroke={BRAND_COLORS.navy}
-        strokeWidth="6"
+        d="M95 5 L60 5 L60 15 L85 15 L85 40 L95 40 Z"
+        fill={BRAND_COLORS.navy}
       />
-      {/* Bottom-left square */}
+      {/* Bottom-left L-bracket */}
       <path
-        d="M8 58 L42 58 L42 92 L8 92 Z"
-        fill="none"
-        stroke={BRAND_COLORS.navy}
-        strokeWidth="6"
+        d="M5 95 L5 60 L15 60 L15 85 L40 85 L40 95 Z"
+        fill={BRAND_COLORS.navy}
       />
-      {/* Bottom-right square */}
+      {/* Bottom-right L-bracket */}
       <path
-        d="M58 58 L92 58 L92 92 L58 92 Z"
-        fill="none"
-        stroke={BRAND_COLORS.navy}
-        strokeWidth="6"
+        d="M95 95 L60 95 L60 85 L85 85 L85 60 L95 60 Z"
+        fill={BRAND_COLORS.navy}
+      />
+      {/* Inner top-left bracket */}
+      <path
+        d="M25 25 L25 45 L32 45 L32 32 L45 32 L45 25 Z"
+        fill={BRAND_COLORS.navy}
+      />
+      {/* Inner top-right bracket */}
+      <path
+        d="M75 25 L55 25 L55 32 L68 32 L68 45 L75 45 Z"
+        fill={BRAND_COLORS.navy}
+      />
+      {/* Inner bottom-left bracket */}
+      <path
+        d="M25 75 L25 55 L32 55 L32 68 L45 68 L45 75 Z"
+        fill={BRAND_COLORS.navy}
+      />
+      {/* Inner bottom-right bracket */}
+      <path
+        d="M75 75 L55 75 L55 68 L68 68 L68 55 L75 55 Z"
+        fill={BRAND_COLORS.navy}
       />
       {/* Center diamond */}
       <path
-        d="M50 30 L70 50 L50 70 L30 50 Z"
+        d="M50 35 L65 50 L50 65 L35 50 Z"
         fill={BRAND_COLORS.gold}
       />
     </svg>
