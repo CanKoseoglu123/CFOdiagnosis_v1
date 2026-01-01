@@ -123,100 +123,50 @@ export default function LandingPage() {
       </nav>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HERO - Problem Focused */}
+      {/* HERO - Centered */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section className="pt-28 pb-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Problem Statement */}
-            <div>
-              <p
-                className="text-sm font-medium tracking-wide uppercase mb-4"
-                style={{ color: BRAND_COLORS.gold }}
-              >
-                For Finance Leaders at $50M–$500M Companies
-              </p>
+        <div className="max-w-3xl mx-auto text-center">
+          <p
+            className="text-sm font-medium tracking-wide uppercase mb-4"
+            style={{ color: BRAND_COLORS.gold }}
+          >
+            Created for Finance Leaders at $50M–$500M Companies
+          </p>
 
-              <h1
-                className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                You can't fix the function while you're running the function.
-              </h1>
+          <h1
+            className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight"
+            style={{ color: BRAND_COLORS.navy }}
+          >
+            Build the FP&A function your business deserves.
+          </h1>
 
-              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                Variance explanations that take three days. Forecasts nobody trusts.
-                Rolling reforecasts that never roll. The strategic work keeps getting
-                pushed to "next quarter." Every quarter.
-              </p>
+          <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+            Variance explanations that take three days. Forecasts nobody trusts.
+            Rolling reforecasts that never roll. The strategic work keeps getting
+            pushed to "next quarter." Every quarter.
+          </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link
-                  to={isAuthenticated ? '/assess' : '/login'}
-                  className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Start the Diagnostic
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Clock className="w-4 h-4" />
-                  <span>~25 minutes</span>
-                  <span className="text-slate-300">|</span>
-                  <span>No credit card</span>
-                </div>
-              </div>
-            </div>
+          <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+            You already know your FP&A function has gaps. You need a
+            structured way to articulate them clearly, prioritize what to fix,
+            and get it done.
+          </p>
 
-            {/* Right: Visual - The Trap */}
-            <div className="relative">
-              <div
-                className="absolute -inset-4 opacity-5 rounded-sm"
-                style={{ backgroundColor: BRAND_COLORS.navy }}
-              />
-              <div className="relative bg-slate-50 border border-slate-200 p-8">
-                <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-6">
-                  The Typical Path
-                </div>
-
-                {/* Two paths visualization */}
-                <div className="space-y-4">
-                  {/* Path 1: Consultants */}
-                  <div className="flex items-start gap-4 p-4 bg-white border border-slate-200">
-                    <div className="w-10 h-10 flex items-center justify-center bg-slate-100 shrink-0">
-                      <DollarSign className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-slate-700 mb-1">Hire Consultants</div>
-                      <div className="text-sm text-slate-500">
-                        $50k+ and 6 weeks for a PDF and presentation.
-                        Then the real work begins.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* OR divider */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 h-px bg-slate-200" />
-                    <span className="text-xs font-medium text-slate-400">OR</span>
-                    <div className="flex-1 h-px bg-slate-200" />
-                  </div>
-
-                  {/* Path 2: Live with it */}
-                  <div className="flex items-start gap-4 p-4 bg-white border border-slate-200">
-                    <div className="w-10 h-10 flex items-center justify-center bg-slate-100 shrink-0">
-                      <Clock className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-slate-700 mb-1">Live With It</div>
-                      <div className="text-sm text-slate-500">
-                        Hope the dysfunction doesn't blow up.
-                        Push strategic work to next quarter. Again.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              to={isAuthenticated ? '/assess' : '/login'}
+              className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: BRAND_COLORS.navy }}
+            >
+              Start the Diagnostic
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <Clock className="w-4 h-4" />
+              <span>~25 minutes</span>
+              <span className="text-slate-300">|</span>
+              <span>No credit card</span>
             </div>
           </div>
         </div>
@@ -227,228 +177,147 @@ export default function LandingPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
         <div className="max-w-5xl mx-auto">
-          <div className="grid lg:grid-cols-5 gap-12">
-            {/* Left: What it is */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <LogoIcon size={32} />
-                <span
-                  className="text-sm font-medium uppercase tracking-wide"
-                  style={{ color: BRAND_COLORS.gold }}
-                >
-                  What We're Offering
-                </span>
-              </div>
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <LogoIcon size={32} />
+              <span
+                className="text-sm font-medium uppercase tracking-wide"
+                style={{ color: BRAND_COLORS.gold }}
+              >
+                What We're Offering
+              </span>
+            </div>
 
-              <h2
-                className="text-3xl font-bold mb-4"
+            <h2
+              className="text-3xl font-bold mb-4"
+              style={{ color: BRAND_COLORS.navy }}
+            >
+              A Finance Diagnostic Engine
+            </h2>
+
+            <p className="text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              A platform that brings your FP&A function into focus and gives you the
+              framing and action plan to fix it yourself. No consultants required.
+            </p>
+          </div>
+
+          {/* Three outcomes */}
+          <div className="grid sm:grid-cols-3 gap-6">
+            <div className="bg-white border border-slate-200 p-6">
+              <div
+                className="text-5xl font-bold mb-4"
                 style={{ color: BRAND_COLORS.navy }}
               >
-                A Finance Diagnostic Engine
-              </h2>
-
-              <p className="text-slate-600 leading-relaxed">
-                A platform that brings your FP&A function into focus and gives you the
-                framing and action plan to fix it yourself. No consultants required.
+                1
+              </div>
+              <h3 className="font-semibold text-slate-800 mb-2">
+                A clear picture of where your FP&A function stands
+              </h3>
+              <p className="text-sm text-slate-600">
+                60 questions. Maturity scored across the full FP&A landscape.
+                Gaps tagged by root cause: People, Process, Technology, or Data.
               </p>
             </div>
 
-            {/* Right: The two questions */}
-            <div className="lg:col-span-3">
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div className="bg-white border border-slate-200 p-6">
-                  <div
-                    className="text-5xl font-bold mb-4"
-                    style={{ color: BRAND_COLORS.navy }}
-                  >
-                    1
-                  </div>
-                  <h3 className="font-semibold text-slate-800 mb-2">
-                    Where is my FP&A function broken?
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    60 questions. Maturity scored across the full FP&A landscape.
-                    Gaps tagged by root cause: People, Process, Technology, or Data.
-                  </p>
-                </div>
-
-                <div className="bg-white border border-slate-200 p-6">
-                  <div
-                    className="text-5xl font-bold mb-4"
-                    style={{ color: BRAND_COLORS.navy }}
-                  >
-                    2
-                  </div>
-                  <h3 className="font-semibold text-slate-800 mb-2">
-                    What happens if I fix it?
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    Open the Simulator. Toggle an initiative on. Commit to a timeline.
-                    Watch your projected maturity shift in real time.
-                  </p>
-                </div>
+            <div className="bg-white border border-slate-200 p-6">
+              <div
+                className="text-5xl font-bold mb-4"
+                style={{ color: BRAND_COLORS.navy }}
+              >
+                2
               </div>
+              <h3 className="font-semibold text-slate-800 mb-2">
+                A prioritized list of what to fix first
+              </h3>
+              <p className="text-sm text-slate-600">
+                Initiatives ranked by impact and complexity. Know what matters most
+                and what can wait.
+              </p>
+            </div>
+
+            <div className="bg-white border border-slate-200 p-6">
+              <div
+                className="text-5xl font-bold mb-4"
+                style={{ color: BRAND_COLORS.navy }}
+              >
+                3
+              </div>
+              <h3 className="font-semibold text-slate-800 mb-2">
+                A simulator to test different improvement paths
+              </h3>
+              <p className="text-sm text-slate-600">
+                Toggle initiatives on and off. Commit to a timeline. Watch your
+                projected maturity shift in real time.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE SIMULATOR - Key Differentiator */}
+      {/* THE REPORTS - Key Differentiator */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 overflow-hidden">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2
               className="text-3xl font-bold mb-4"
               style={{ color: BRAND_COLORS.navy }}
             >
-              Build the roadmap you'll actually take to the CEO
+              Build the roadmap that will make a difference
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Unlike a consulting report that sits in a drawer, the Simulator stays live.
-              Revisit as conditions change. Reprioritize on the fly.
+              Comprehensive reports and planning tools that help you identify the right actions
+              to improve the maturity of your FP&A function — and track progress over time.
             </p>
           </div>
 
-          {/* Simulator Preview */}
-          <div className="relative">
+          {/* Stacked Report Cards */}
+          <div className="relative h-80 sm:h-96 mx-auto max-w-4xl">
+            {/* Card 1 - Executive Summary (bottom layer) */}
             <div
-              className="absolute -inset-2 opacity-5 rounded-sm"
-              style={{ backgroundColor: BRAND_COLORS.navy }}
-            />
-            <div className="relative bg-white border border-slate-200 overflow-hidden">
-              {/* Header */}
-              <div
-                className="px-6 py-4 border-b border-slate-200 flex items-center justify-between"
-                style={{ backgroundColor: `${BRAND_COLORS.navy}08` }}
-              >
-                <div className="flex items-center gap-3">
-                  <LogoIcon size={24} />
-                  <span className="font-semibold text-slate-700">Action Planning Simulator</span>
-                </div>
-                <span className="text-xs text-slate-400">Interactive Preview</span>
-              </div>
+              className="absolute left-[10%] top-0 w-[55%] aspect-[4/3] rounded-lg shadow-xl overflow-hidden border border-slate-200 z-0"
+              style={{
+                transform: 'rotate(-2deg)',
+                filter: 'blur(1.5px)'
+              }}
+            >
+              <img
+                src="/report-overview.png.png"
+                alt="Executive Summary Report"
+                className="w-full h-full object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-white/10" />
+            </div>
 
-              {/* Simulator Content */}
-              <div className="grid lg:grid-cols-3 divide-x divide-slate-200">
-                {/* Left: Initiative List */}
-                <div className="p-6">
-                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-4">
-                    Prioritized Initiatives
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      { name: 'Driver-Based Forecasting', impact: 'High', complexity: 'Med', selected: true },
-                      { name: 'Rolling Forecast Cadence', impact: 'High', complexity: 'Low', selected: true },
-                      { name: 'Variance Root Cause Analysis', impact: 'Med', complexity: 'Low', selected: false },
-                      { name: 'Scenario Planning Framework', impact: 'High', complexity: 'High', selected: false },
-                    ].map((item, i) => (
-                      <div
-                        key={i}
-                        className={`flex items-center gap-3 p-3 border ${item.selected ? 'border-blue-200 bg-blue-50' : 'border-slate-200'}`}
-                      >
-                        <div
-                          className={`w-5 h-5 border-2 flex items-center justify-center ${item.selected ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`}
-                        >
-                          {item.selected && (
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-slate-700 truncate">{item.name}</div>
-                          <div className="flex gap-2 mt-1">
-                            <span className="text-xs text-slate-400">Impact: {item.impact}</span>
-                            <span className="text-xs text-slate-400">|</span>
-                            <span className="text-xs text-slate-400">Complexity: {item.complexity}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {/* Card 2 - Maturity Footprint (middle layer) */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 top-6 w-[55%] aspect-[4/3] rounded-lg shadow-xl overflow-hidden border border-slate-200 z-10"
+              style={{
+                filter: 'blur(0.75px)'
+              }}
+            >
+              <img
+                src="/report-footprint.png.png"
+                alt="Maturity Footprint Report"
+                className="w-full h-full object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-white/5" />
+            </div>
 
-                {/* Middle: Timeline Selection */}
-                <div className="p-6">
-                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-4">
-                    Commit Timeline
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      { label: '6 months', desc: 'Quick wins', active: true },
-                      { label: '12 months', desc: 'Core improvements', active: true },
-                      { label: '24 months', desc: 'Transformational', active: false },
-                    ].map((item, i) => (
-                      <div
-                        key={i}
-                        className={`p-4 border ${item.active ? 'border-slate-300 bg-slate-50' : 'border-slate-200'}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-slate-700">{item.label}</span>
-                          {item.active && (
-                            <span
-                              className="text-xs font-medium px-2 py-0.5"
-                              style={{ backgroundColor: `${BRAND_COLORS.gold}20`, color: BRAND_COLORS.gold }}
-                            >
-                              {i === 0 ? '2 initiatives' : '2 initiatives'}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1">{item.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right: Projection */}
-                <div className="p-6" style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}>
-                  <div className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-4">
-                    Projected Impact
-                  </div>
-
-                  {/* Maturity Level Shift */}
-                  <div className="text-center mb-6">
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-slate-400">L2</div>
-                        <div className="text-xs text-slate-400">Current</div>
-                      </div>
-                      <ArrowRight className="w-6 h-6 text-slate-300" />
-                      <div className="text-center">
-                        <div
-                          className="text-3xl font-bold"
-                          style={{ color: BRAND_COLORS.gold }}
-                        >
-                          L3
-                        </div>
-                        <div className="text-xs" style={{ color: BRAND_COLORS.gold }}>Projected</div>
-                      </div>
-                    </div>
-                    <div className="text-sm text-slate-600 mt-4">
-                      Managed maturity level achievable in 12 months
-                    </div>
-                  </div>
-
-                  {/* Score Change */}
-                  <div className="bg-white border border-slate-200 p-4">
-                    <div className="flex items-end justify-between mb-2">
-                      <span className="text-sm text-slate-600">Execution Score</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm text-slate-400 line-through">52%</span>
-                        <span className="text-lg font-bold" style={{ color: BRAND_COLORS.navy }}>71%</span>
-                      </div>
-                    </div>
-                    <div className="h-2 bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-500"
-                        style={{ width: '71%', backgroundColor: BRAND_COLORS.navy }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Card 3 - Action Planning Simulator (top layer) */}
+            <div
+              className="absolute right-[10%] top-12 w-[55%] aspect-[4/3] rounded-lg shadow-2xl overflow-hidden border border-slate-200 z-20"
+              style={{
+                transform: 'rotate(2deg)',
+                filter: 'blur(0px)'
+              }}
+            >
+              <img
+                src="/report-simulator.png.png"
+                alt="Action Planning Simulator"
+                className="w-full h-full object-cover object-top"
+              />
             </div>
           </div>
         </div>
@@ -511,15 +380,14 @@ export default function LandingPage() {
             className="text-3xl sm:text-4xl font-bold mb-6"
             style={{ color: BRAND_COLORS.navy }}
           >
-            Consultants give you cover.
+            See clearly. Prioritize confidently.
             <br />
-            <span style={{ color: BRAND_COLORS.gold }}>CFO Lens gives you clarity.</span>
+            <span style={{ color: BRAND_COLORS.gold }}>Act decisively.</span>
           </h2>
 
           <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            You already know your FP&A function has gaps. What you need is a structured way
-            to see them clearly, prioritize them, simulate the path forward, and build a case
-            for investment that leadership will fund.
+            A structured diagnostic that shows you exactly where your FP&A function stands,
+            what to fix first, and how to build a plan that leadership will fund.
           </p>
 
           {/* Comparison */}
@@ -527,17 +395,17 @@ export default function LandingPage() {
             <div className="p-6">
               <Zap className="w-8 h-8 mx-auto mb-3" style={{ color: BRAND_COLORS.gold }} />
               <div className="font-semibold text-slate-800 mb-1">Speed</div>
-              <div className="text-sm text-slate-600">Hours, not weeks</div>
+              <div className="text-sm text-slate-600">Diagnosis in a single session</div>
             </div>
             <div className="p-6">
               <Crosshair className="w-8 h-8 mx-auto mb-3" style={{ color: BRAND_COLORS.gold }} />
               <div className="font-semibold text-slate-800 mb-1">Clarity</div>
-              <div className="text-sm text-slate-600">Structured diagnosis</div>
+              <div className="text-sm text-slate-600">See exactly where you stand</div>
             </div>
             <div className="p-6">
               <GitBranch className="w-8 h-8 mx-auto mb-3" style={{ color: BRAND_COLORS.gold }} />
               <div className="font-semibold text-slate-800 mb-1">A Plan</div>
-              <div className="text-sm text-slate-600">You can actually use</div>
+              <div className="text-sm text-slate-600">Prioritized and ready to execute</div>
             </div>
           </div>
 
