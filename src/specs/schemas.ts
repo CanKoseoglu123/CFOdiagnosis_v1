@@ -315,8 +315,19 @@ export const BudgetProcessSchema = z.enum([
   'zero_based'
 ]);
 
-// Pain points
+// Pain points - VS26: Updated to match frontend with practice mappings
 export const PainPointsSchema = z.enum([
+  // VS26 new values (with practice mappings)
+  'data_wrangling',
+  'forecast_accuracy',
+  'partner_engagement',
+  'budget_cycle',
+  'bandwidth',
+  'tech_fragmentation',
+  'scenario_planning',
+  'communication',
+  'realtime_visibility',
+  // Legacy values (backward compat)
   'long_cycles',
   'data_accuracy',
   'manual_consolidation',
@@ -354,15 +365,6 @@ export const CompanyContextSchema = z.object({
   finance_structure: FinanceStructureSchema.optional(),
   ownership_structure: OwnershipStructureSchema.optional(),
   change_appetite: ChangeAppetiteSchema
-});
-
-// VS26: Tool effectiveness rating
-export const ToolEffectivenessSchema = z.enum(['low', 'medium', 'high']);
-
-// VS26: Tool with effectiveness - new format
-export const ToolWithEffectivenessSchema = z.object({
-  tool: SystemsSchema,
-  effectiveness: ToolEffectivenessSchema
 });
 
 // Pillar Context Object (FP&A Specific)
@@ -559,6 +561,17 @@ export const BUDGET_PROCESS_LABELS: Record<BudgetProcess, string> = {
 };
 
 export const PAIN_POINTS_LABELS: Record<PainPoints, string> = {
+  // VS26 new values
+  data_wrangling: 'Endless manual data gathering',
+  forecast_accuracy: 'Forecasting accuracy & credibility',
+  partner_engagement: "Business partners don't engage",
+  budget_cycle: 'Endless budget process',
+  bandwidth: 'Talent & bandwidth constraints',
+  tech_fragmentation: 'Technology stack fragmentation',
+  scenario_planning: 'Scenario planning gaps',
+  communication: 'Communicating to non-finance execs',
+  realtime_visibility: 'Real-time visibility gaps',
+  // Legacy values
   long_cycles: 'Long budget/forecast cycles',
   data_accuracy: 'Data accuracy issues',
   manual_consolidation: 'Manual consolidation',

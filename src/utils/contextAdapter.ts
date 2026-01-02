@@ -79,24 +79,18 @@ export function normalizeContext(raw: unknown): NormalizedContext {
       ownership_structure: asString(ctx.ownership_structure),
       change_appetite: asString(ctx.change_appetite)
     },
-    pillar: ctx.systems || ctx.tools || ctx.pain_points ? {
-      tools: ctx.tools
-        ? (Array.isArray(ctx.tools) ? ctx.tools.filter((v: unknown): v is string => typeof v === 'string') : [String(ctx.tools)])
-        : ctx.systems
-          ? (Array.isArray(ctx.systems) ? ctx.systems.filter((v: unknown): v is string => typeof v === 'string') : [String(ctx.systems)])
-          : [],
-      other_tool: asString(ctx.other_tool),
-      team_size: asString(ctx.team_size),
-      forecast_frequency: asString(ctx.forecast_frequency),
-      budget_process: asStringArray(ctx.budget_process) || [],
-      pain_points: ctx.pain_points
-        ? (Array.isArray(ctx.pain_points) ? ctx.pain_points.filter((v: unknown): v is string => typeof v === 'string') : [String(ctx.pain_points)])
-        : [],
-      other_pain_point: asString(ctx.other_pain_point),
-      user_role: asString(ctx.user_role),
-      other_role: asString(ctx.other_role),
-      additional_context: asString(ctx.additional_context) || asString(ctx.ongoing_projects)
-    } : null
+    pillar: ctx.systems || ctx.tools || ctx.pain_points ? normalizePillar({
+      tools: ctx.tools || ctx.systems,
+      other_tool: ctx.other_tool,
+      team_size: ctx.team_size,
+      forecast_frequency: ctx.forecast_frequency,
+      budget_process: ctx.budget_process,
+      pain_points: ctx.pain_points,
+      other_pain_point: ctx.other_pain_point,
+      user_role: ctx.user_role,
+      other_role: ctx.other_role,
+      additional_context: ctx.additional_context || ctx.ongoing_projects
+    }) : null
   };
 }
 
