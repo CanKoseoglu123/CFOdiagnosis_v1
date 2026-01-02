@@ -26,6 +26,7 @@ interface Objective {
   title?: string;
   name?: string;
   score?: number;
+  theme_id?: string;
 }
 
 interface Practice {
@@ -107,50 +108,44 @@ const MATURITY_LABELS: Record<number, string> = {
   4: 'Optimized',
 };
 
-// Objective IDs in display order
-const OBJECTIVES_ORDER = [
-  { id: 'obj_budget_discipline', shortTitle: 'Budget Discipline', theme: 'Foundation' },
-  { id: 'obj_financial_controls', shortTitle: 'Financial Controls', theme: 'Foundation' },
-  { id: 'obj_performance_monitoring', shortTitle: 'Performance Monitoring', theme: 'Foundation' },
-  { id: 'obj_forecasting_agility', shortTitle: 'Forecasting Agility', theme: 'Future' },
-  { id: 'obj_driver_based_planning', shortTitle: 'Driver-Based Planning', theme: 'Future' },
-  { id: 'obj_scenario_modeling', shortTitle: 'Scenario Modeling', theme: 'Future' },
-  { id: 'obj_strategic_influence', shortTitle: 'Strategic Influence', theme: 'Intelligence' },
-  { id: 'obj_decision_support', shortTitle: 'Decision Support', theme: 'Intelligence' },
-  { id: 'obj_operational_excellence', shortTitle: 'Operational Excellence', theme: 'Intelligence' },
-];
-
-// Practice to objective mapping
-const PRACTICE_OBJECTIVE_MAP: Record<string, string> = {
-  'prac_annual_budget_cycle': 'obj_budget_discipline',
-  'prac_budget_ownership': 'obj_budget_discipline',
-  'prac_policy_&_governance': 'obj_budget_discipline',
-  'prac_chart_of_accounts': 'obj_financial_controls',
-  'prac_approval_workflows': 'obj_financial_controls',
-  'prac_month_end_rigor': 'obj_financial_controls',
-  'prac_management_reporting': 'obj_performance_monitoring',
-  'prac_budget_vs_actuals': 'obj_performance_monitoring',
-  'prac_variance_investigation': 'obj_performance_monitoring',
-  'prac_rolling_forecast_cadence': 'obj_forecasting_agility',
-  'prac_cash_flow_visibility': 'obj_forecasting_agility',
-  'prac_collaborative_systems': 'obj_forecasting_agility',
-  'prac_operational_drivers': 'obj_driver_based_planning',
-  'prac_dynamic_targets': 'obj_driver_based_planning',
-  'prac_continuous_planning': 'obj_driver_based_planning',
-  'prac_rapid_what_if_capability': 'obj_scenario_modeling',
-  'prac_multi_scenario_management': 'obj_scenario_modeling',
-  'prac_stress_testing': 'obj_scenario_modeling',
-  'prac_commercial_partnership': 'obj_strategic_influence',
-  'prac_strategic_alignment': 'obj_strategic_influence',
-  'prac_board_level_impact': 'obj_strategic_influence',
-  'prac_investment_rigor': 'obj_strategic_influence',
-  'prac_data_visualization': 'obj_decision_support',
-  'prac_self_service_access': 'obj_decision_support',
-  'prac_predictive_analytics': 'obj_decision_support',
-  'prac_process_automation': 'obj_operational_excellence',
-  'prac_shared_services_model': 'obj_operational_excellence',
-  'prac_service_level_agreements': 'obj_operational_excellence',
+// Theme display order and labels
+const THEME_ORDER = ['foundation', 'future', 'intelligence'];
+const THEME_LABELS: Record<string, string> = {
+  'foundation': 'Foundation',
+  'future': 'Future',
+  'intelligence': 'Intelligence',
 };
+
+/**
+ * Build objectives order from spec data
+ */
+function buildObjectivesOrder(specObjectives: Objective[]): Array<{ id: string; shortTitle: string; theme: string }> {
+  // Sort by theme order
+  const sorted = [...specObjectives].sort((a, b) => {
+    const aTheme = a.theme_id || '';
+    const bTheme = b.theme_id || '';
+    return THEME_ORDER.indexOf(aTheme) - THEME_ORDER.indexOf(bTheme);
+  });
+
+  return sorted.map(obj => ({
+    id: obj.id || obj.objective_id || '',
+    shortTitle: obj.title || obj.name || obj.id || '',
+    theme: THEME_LABELS[obj.theme_id || ''] || 'Other',
+  }));
+}
+
+/**
+ * Build practice-to-objective mapping from spec data
+ */
+function buildPracticeObjectiveMap(specPractices: Practice[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  specPractices.forEach(p => {
+    if (p.id && p.objective_id) {
+      map[p.id] = p.objective_id;
+    }
+  });
+  return map;
+}
 
 /**
  * Build cover slide HTML - Premium consultant style
@@ -226,11 +221,16 @@ function buildKeyMessagesSlide(input: GenerateReportInput, slideNumber: string):
 
 /**
  * Build Objectives & Practices slide - 9-column grid
+ * Uses actual spec data instead of hardcoded mappings
  */
 function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: string): string {
-  const { maturityFootprint, objectives = [], timestamp, runId, customizations } = input;
+  const { maturityFootprint, objectives = [], specPractices = [], specObjectives = [], timestamp, runId, customizations } = input;
   const title = customizations?.slide_titles?.objectives_practices || DEFAULT_TITLES.objectives_practices;
   const levels = maturityFootprint?.levels || [];
+
+  // Build dynamic mappings from spec data
+  const objectivesOrder = buildObjectivesOrder(specObjectives);
+  const practiceObjectiveMap = buildPracticeObjectiveMap(specPractices);
 
   // Build objective scores map
   const objectiveScores: Record<string, number> = {};
@@ -239,12 +239,16 @@ function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: 
     objectiveScores[objId] = Math.round(obj.score || 0);
   });
 
-  // Flatten practices and map to objectives
+  // Flatten practices from maturityFootprint (has evidence states) and merge with spec data
   const allPractices: Practice[] = [];
   levels.forEach(level => {
     (level.practices || []).forEach(practice => {
+      // Get additional info from spec practices
+      const specPractice = specPractices.find(sp => sp.id === practice.id);
       allPractices.push({
         ...practice,
+        title: practice.title || specPractice?.title || practice.name || practice.id,
+        objective_id: practice.objective_id || specPractice?.objective_id || practiceObjectiveMap[practice.id || ''],
         maturity_level: practice.maturity_level || level.level,
       });
     });
@@ -252,12 +256,12 @@ function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: 
 
   // Group practices by objective
   const practicesByObjective: Record<string, Practice[]> = {};
-  OBJECTIVES_ORDER.forEach(obj => {
+  objectivesOrder.forEach(obj => {
     practicesByObjective[obj.id] = [];
   });
 
   allPractices.forEach(practice => {
-    const objectiveId = PRACTICE_OBJECTIVE_MAP[practice.id || ''];
+    const objectiveId = practice.objective_id || practiceObjectiveMap[practice.id || ''];
     if (objectiveId && practicesByObjective[objectiveId]) {
       practicesByObjective[objectiveId].push(practice);
     }
@@ -269,7 +273,7 @@ function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: 
   });
 
   // Build grid HTML
-  const columnsHtml = OBJECTIVES_ORDER.map(obj => {
+  const columnsHtml = objectivesOrder.map(obj => {
     const practices = practicesByObjective[obj.id] || [];
     const score = objectiveScores[obj.id];
 
@@ -278,7 +282,7 @@ function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: 
       const colorClass = (state === 'full' || state === 'proven') ? 'practice-proven'
         : state === 'partial' ? 'practice-partial'
         : 'practice-gap';
-      return `<div class="practice-box ${colorClass}" title="${escapeHtml(p.name || p.title || '')}">${escapeHtml(p.title || p.name || '')}</div>`;
+      return `<div class="practice-box ${colorClass}" title="${escapeHtml(p.title || p.name || '')}">${escapeHtml(p.title || p.name || '')}</div>`;
     }).join('');
 
     const scoreClass = score >= 70 ? 'score-high' : score >= 40 ? 'score-medium' : 'score-low';
@@ -319,19 +323,25 @@ function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: 
 
 /**
  * Build Priority Matrix slide - BCG-style quadrant
+ * Uses actual spec data instead of hardcoded mappings
  */
 function buildPriorityMatrixSlide(input: GenerateReportInput, slideNumber: string): string {
-  const { maturityFootprint, maturityLevel, calibration, timestamp, runId, customizations } = input;
+  const { maturityFootprint, maturityLevel, calibration, specPractices = [], timestamp, runId, customizations } = input;
   const title = customizations?.slide_titles?.priority_matrix || DEFAULT_TITLES.priority_matrix;
   const levels = maturityFootprint?.levels || [];
   const importanceMap = calibration?.importance_map || {};
   const userLevel = maturityLevel || 1;
 
+  // Build dynamic mapping from spec data
+  const practiceObjectiveMap = buildPracticeObjectiveMap(specPractices);
+
   // Flatten practices with metadata
   const practices: Array<Practice & { importance: number; priorityRow: string }> = [];
   levels.forEach(level => {
     (level.practices || []).forEach(fp => {
-      const objectiveId = PRACTICE_OBJECTIVE_MAP[fp.id || ''] || fp.objective_id;
+      // Get objective_id from practice data or spec mapping
+      const specPractice = specPractices.find(sp => sp.id === fp.id);
+      const objectiveId = fp.objective_id || specPractice?.objective_id || practiceObjectiveMap[fp.id || ''];
       const importance = importanceMap[objectiveId || ''] || 3;
       const isGap = fp.evidence_state === 'not_proven' || fp.evidence_state === 'none';
       const hasCritical = fp.has_critical || false;
@@ -342,6 +352,8 @@ function buildPriorityMatrixSlide(input: GenerateReportInput, slideNumber: strin
 
       practices.push({
         ...fp,
+        title: fp.title || specPractice?.title || fp.name || fp.id,
+        objective_id: objectiveId,
         importance,
         priorityRow,
         maturity_level: fp.maturity_level || level.level,
@@ -560,29 +572,35 @@ function buildProjectedImpactSlide(input: GenerateReportInput, slideNumber: stri
 
 /**
  * Build Objective Journey slide - Score journey table with milestones
+ * Uses actual spec data instead of hardcoded mappings
  */
 function buildObjectiveJourneySlide(input: GenerateReportInput, slideNumber: string): string {
-  const { objectives = [], actions, criticalRisks = [], calibration, timestamp, runId, customizations } = input;
+  const { objectives = [], actions, criticalRisks = [], calibration, specPractices = [], specObjectives = [], timestamp, runId, customizations } = input;
   const title = customizations?.slide_titles?.objective_journey || DEFAULT_TITLES.objective_journey;
   const importanceMap = calibration?.importance_map || {};
+
+  // Build dynamic mappings from spec data
+  const objectivesOrder = buildObjectivesOrder(specObjectives);
+  const practiceObjectiveMap = buildPracticeObjectiveMap(specPractices);
 
   // Build objective data with journey projections
   const objectiveData = objectives.map(obj => {
     const objId = obj.id || obj.objective_id || '';
     const score = Math.round(obj.score || 0);
     const importance = importanceMap[objId] || 3;
-    const objConfig = OBJECTIVES_ORDER.find(o => o.id === objId);
+    // Get theme from objectivesOrder (derived from specObjectives)
+    const objConfig = objectivesOrder.find(o => o.id === objId);
     const theme = objConfig?.theme || 'Intelligence';
-    const name = obj.objective_name || obj.title || obj.name || objId;
+    const name = obj.objective_name || obj.title || obj.name || objConfig?.shortTitle || objId;
 
     // Determine status
     let status = 'opportunity';
     if (score >= 80) status = 'strength';
     else if (score < 40 || criticalRisks.some(r => r.objective_id === objId)) status = 'critical';
 
-    // Count actions by timeline for this objective
+    // Count actions by timeline for this objective using dynamic mapping
     const objActions = actions.filter(a => {
-      const practiceObjId = PRACTICE_OBJECTIVE_MAP[a.practice_id || ''];
+      const practiceObjId = practiceObjectiveMap[a.practice_id || ''];
       return practiceObjId === objId;
     });
     const actions6m = objActions.filter(a => a.timeline === '6m').length;

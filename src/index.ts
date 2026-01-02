@@ -1586,7 +1586,7 @@ app.post("/diagnostic-runs/:id/report/generate", async (req, res) => {
     // Verify run is finalized
     const { data: run, error: runError } = await req.supabase
       .from("diagnostic_runs")
-      .select("id, finalized_at, action_plan_snapshot, report_customizations, context, spec_version")
+      .select("id, finalized_at, action_plan_snapshot, report_customizations, context, spec_version, calibration")
       .eq("id", runId)
       .single();
 
@@ -1678,6 +1678,18 @@ app.post("/diagnostic-runs/:id/report/generate", async (req, res) => {
         title: r.questionText,
         question_text: r.questionText,
         expert_action: r.expert_action,
+      })),
+      calibration: run.calibration || {},
+      // Spec data for accurate practice/objective mappings
+      specPractices: (spec.practices || []).map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        objective_id: p.objective_id,
+      })),
+      specObjectives: (spec.objectives || []).map((o: any) => ({
+        id: o.id,
+        title: o.title,
+        theme_id: o.theme_id,
       })),
     });
 
