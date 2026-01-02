@@ -32,17 +32,26 @@ import { normalizeContext } from "./utils/contextAdapter";
 
 const app = express();
 
-// CORS: Allow both production domains
+// CORS: Allow production domains and Vercel preview deployments
 const allowedOrigins = [
   "https://cfo-lens.com",
   "https://cfodiagnosisv1.vercel.app",
   "http://localhost:5173", // dev
+  "http://localhost:5174", // dev alternate port
 ];
+
+// Pattern for Vercel preview deployments (git branch previews)
+const vercelPreviewPattern = /^https:\/\/cfodiagnosisv1-git-[a-z0-9-]+(-cans-projects-[a-z0-9]+)?\.vercel\.app$/;
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Allow Vercel preview deployments
+    if (vercelPreviewPattern.test(origin)) {
       return callback(null, true);
     }
     return callback(new Error("Not allowed by CORS"));
