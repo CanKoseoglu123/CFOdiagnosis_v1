@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react'
+import FeedbackButton from '../components/FeedbackButton'
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login')
@@ -277,6 +278,9 @@ export default function AuthPage() {
           }
         `}</style>
       </div>
+
+      {/* Feedback Button */}
+      <FeedbackButton currentPage="auth" />
     </div>
   )
 }

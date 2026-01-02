@@ -13,6 +13,7 @@ import CompanySetupPage from './pages/CompanySetupPage'
 import PillarSetupPage from './pages/PillarSetupPage'
 import IntroPage from './IntroPage'
 import SelectPillarPage from './pages/SelectPillarPage'
+import AdminPage from './pages/AdminPage'
 // VS-30: Theme-based assessment pages
 import AssessFoundation from './pages/AssessFoundation'
 import AssessFuture from './pages/AssessFuture'
@@ -166,6 +167,12 @@ export default function App() {
           <Route path="/report-legacy/:runId" element={
             <ProtectedRoute>
               <FinanceDiagnosticReport />
+            </ProtectedRoute>
+          } />
+          {/* Admin Dashboard */}
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminPage />
             </ProtectedRoute>
           } />
         </Routes>

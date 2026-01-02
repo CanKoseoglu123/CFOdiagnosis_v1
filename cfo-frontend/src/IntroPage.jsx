@@ -7,6 +7,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Target, Bot, ClipboardList, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import ChapterHeader from './components/ChapterHeader';
 import EnterpriseCanvas from './components/EnterpriseCanvas';
+import FeedbackButton from './components/FeedbackButton';
 
 // Journey steps
 const JOURNEY_STEPS = [
@@ -233,6 +234,9 @@ export default function IntroPage() {
         </section>
 
       </EnterpriseCanvas>
+
+      {/* Feedback Button */}
+      <FeedbackButton runId={runId} currentPage="intro" />
     </div>
   );
 }

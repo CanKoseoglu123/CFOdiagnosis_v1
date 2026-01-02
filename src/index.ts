@@ -1409,6 +1409,125 @@ app.post("/feedback", async (req, res) => {
 app.use("/diagnostic-runs", interpretationRoutesV32);
 
 // ------------------------------------------------------------------
+// Admin Routes - Email whitelist protected
+// ------------------------------------------------------------------
+const ADMIN_EMAILS = [
+  "koseoglucan@gmail.com",
+  // Add more admin emails here
+];
+
+// Admin auth middleware
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  // Get user email from Supabase
+  const { data: { user } } = await req.supabase.auth.getUser();
+  if (!user?.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+
+  next();
+}
+
+// GET /admin/sessions - List all diagnostic runs
+app.get("/admin/sessions", requireAdmin, async (req, res) => {
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .select(`
+      id,
+      user_id,
+      status,
+      spec_version,
+      context,
+      calibration,
+      setup_completed_at,
+      finalized_at,
+      created_at,
+      updated_at
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  // Get user emails for each session
+  const userIds = [...new Set(data.map(r => r.user_id).filter(Boolean))];
+  const { data: users } = await req.supabase.auth.admin.listUsers();
+
+  const userMap = new Map();
+  if (users?.users) {
+    users.users.forEach(u => userMap.set(u.id, u.email));
+  }
+
+  // Enrich sessions with user email
+  const enrichedData = data.map(session => ({
+    ...session,
+    user_email: userMap.get(session.user_id) || "unknown",
+    company_name: session.context?.company?.name || null,
+    industry: session.context?.company?.industry || null,
+  }));
+
+  res.json(enrichedData);
+});
+
+// DELETE /admin/sessions/:id - Delete a diagnostic run
+app.delete("/admin/sessions/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  // Delete related data first (cascade doesn't always work with RLS)
+  await req.supabase.from("diagnostic_inputs").delete().eq("run_id", id);
+  await req.supabase.from("diagnostic_scores").delete().eq("run_id", id);
+  await req.supabase.from("interpretation_sessions").delete().eq("run_id", id);
+  await req.supabase.from("interpretation_reports").delete().eq("run_id", id);
+  await req.supabase.from("action_plans").delete().eq("run_id", id);
+
+  // Delete the run itself
+  const { error } = await req.supabase
+    .from("diagnostic_runs")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ success: true, deleted: id });
+});
+
+// GET /admin/feedback - List all feedback
+app.get("/admin/feedback", requireAdmin, async (req, res) => {
+  const { data, error } = await req.supabase
+    .from("feedback")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
+// DELETE /admin/feedback/:id - Delete feedback
+app.delete("/admin/feedback/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await req.supabase
+    .from("feedback")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ success: true, deleted: id });
+});
+
+// ------------------------------------------------------------------
 // Server
 // ------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
