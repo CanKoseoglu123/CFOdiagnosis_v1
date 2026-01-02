@@ -220,7 +220,7 @@ export default function IntroPage() {
             <Link to="/select-pillar">
               <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Pillar Selection
+                Back
               </button>
             </Link>
             <Link to={`/run/${runId}/setup/company`}>
