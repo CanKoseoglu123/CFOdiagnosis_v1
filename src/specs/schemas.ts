@@ -356,6 +356,15 @@ export const CompanyContextSchema = z.object({
   change_appetite: ChangeAppetiteSchema
 });
 
+// VS26: Tool effectiveness rating
+export const ToolEffectivenessSchema = z.enum(['low', 'medium', 'high']);
+
+// VS26: Tool with effectiveness - new format
+export const ToolWithEffectivenessSchema = z.object({
+  tool: SystemsSchema,
+  effectiveness: ToolEffectivenessSchema
+});
+
 // Pillar Context Object (FP&A Specific)
 export const PillarContextSchema = z.object({
   // Tools & Technology - VS26: accepts both old (string[]) and new ({tool, effectiveness}[]) formats

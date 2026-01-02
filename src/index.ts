@@ -703,6 +703,13 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
   const aggregateSpec = toAggregateSpec(spec);
   const aggregateResult = aggregateResults(aggregateSpec, scores);
 
+  // VS26: Extract pillar context for pain point boosting
+  const normalizedCtx = normalizeContext(run.context);
+  const pillarContext = normalizedCtx.pillar ? {
+    pain_points: normalizedCtx.pillar.pain_points || undefined,
+    tools: normalizedCtx.pillar.tools_with_effectiveness || undefined,
+  } : null;
+
   const report = buildReport({
     run_id: runId,
     spec,
@@ -712,6 +719,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
       value: i.value,
     })),
     calibration: run.calibration || null,  // VS21: Pass calibration data
+    pillarContext,  // VS26: Pass pillar context for pain point boosting
   });
 
   // VS18: Include context in report response (normalized for backward compatibility)
@@ -719,7 +727,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
   // VS39: Include finalized_at for Executive Report tab lock
   res.json({
     ...report,
-    context: normalizeContext(run.context),
+    context: normalizedCtx,
     calibration: run.calibration || null,
     finalized_at: run.finalized_at || null,
   });
