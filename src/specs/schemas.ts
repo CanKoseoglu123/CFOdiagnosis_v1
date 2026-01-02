@@ -247,19 +247,33 @@ export const LegalEntityRangeSchema = z.enum([
 
 // Pillar Context Enums
 
-// Systems/tools
+// Systems/tools - VS26: Updated to match frontend categories
 export const SystemsSchema = z.enum([
+  // Spreadsheet
   'excel',
+  // Excel-connected
+  'datarails',
+  'vena',
+  'jirav',
+  'aleph',
+  // Planning platforms
   'anaplan',
   'adaptive',
+  'planful',
   'pigment',
-  'aleph',
-  'datarails',
-  'sap',
-  'oracle',
+  'cube',
+  'onestream',
+  'oracle_epm',
+  'sap_sac',
+  // BI tools
   'powerbi',
   'tableau',
-  'other'
+  'looker',
+  // Other
+  'other',
+  // Legacy values (backward compat)
+  'sap',
+  'oracle'
 ]);
 
 // Keep old schema for backward compat
@@ -333,10 +347,22 @@ export const CompanyContextSchema = z.object({
   change_appetite: ChangeAppetiteSchema
 });
 
+// VS26: Tool effectiveness rating
+export const ToolEffectivenessSchema = z.enum(['low', 'medium', 'high']);
+
+// VS26: Tool with effectiveness - new format
+export const ToolWithEffectivenessSchema = z.object({
+  tool: SystemsSchema,
+  effectiveness: ToolEffectivenessSchema
+});
+
 // Pillar Context Object (FP&A Specific)
 export const PillarContextSchema = z.object({
-  // Tools & Technology
-  tools: z.array(SystemsSchema).optional(),
+  // Tools & Technology - accepts both old (string[]) and new ({tool, effectiveness}[]) formats
+  tools: z.union([
+    z.array(SystemsSchema),
+    z.array(ToolWithEffectivenessSchema)
+  ]).optional(),
   other_tool: z.string().max(100).optional(),
   // Team & Process
   team_size: TeamSizeSchema.optional(),
