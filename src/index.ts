@@ -129,6 +129,93 @@ app.get("/health", (_req, res) => {
 });
 
 // ------------------------------------------------------------------
+// PDF Test endpoint - Validates Puppeteer works on Railway
+// ------------------------------------------------------------------
+app.get("/pdf-test", async (_req, res) => {
+  const startTime = Date.now();
+  let browser = null;
+
+  try {
+    // Dynamic imports for Puppeteer
+    const puppeteer = await import("puppeteer-core");
+    const chromium = await import("@sparticuz/chromium");
+
+    console.log("[PDF-TEST] Starting Puppeteer test...");
+    console.log("[PDF-TEST] chromium.executablePath:", await chromium.default.executablePath());
+
+    browser = await puppeteer.default.launch({
+      args: chromium.default.args,
+      defaultViewport: { width: 1280, height: 720 },
+      executablePath: await chromium.default.executablePath(),
+      headless: true,
+    });
+
+    const page = await browser.newPage();
+
+    // Simple test HTML
+    const testHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; }
+          h1 { color: #1e3a5f; }
+          .box { background: #f0f4f8; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .timestamp { color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <h1>CFO Lens - PDF Generation Test</h1>
+        <div class="box">
+          <p><strong>Status:</strong> Puppeteer is working on Railway!</p>
+          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+          <p><strong>Environment:</strong> ${process.env.NODE_ENV || "development"}</p>
+        </div>
+        <p class="timestamp">This PDF was generated to validate the PDF export pipeline.</p>
+      </body>
+      </html>
+    `;
+
+    await page.setContent(testHtml, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "20mm", bottom: "20mm", left: "15mm", right: "15mm" },
+    });
+
+    await browser.close();
+    browser = null;
+
+    const duration = Date.now() - startTime;
+    console.log(`[PDF-TEST] Success! Generated ${pdfBuffer.length} bytes in ${duration}ms`);
+
+    // Return PDF with proper headers
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "inline; filename=pdf-test.pdf",
+      "Content-Length": pdfBuffer.length,
+    });
+    res.send(pdfBuffer);
+
+  } catch (error: any) {
+    const duration = Date.now() - startTime;
+    console.error(`[PDF-TEST] Failed after ${duration}ms:`, error.message);
+
+    if (browser) {
+      try { await browser.close(); } catch (e) { /* ignore */ }
+    }
+
+    res.status(500).json({
+      error: "PDF generation failed",
+      message: error.message,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      duration: `${duration}ms`,
+    });
+  }
+});
+
+// ------------------------------------------------------------------
 // Spec endpoints (public - no auth needed)
 // ------------------------------------------------------------------
 app.get("/spec/questions", (_req, res) => {
