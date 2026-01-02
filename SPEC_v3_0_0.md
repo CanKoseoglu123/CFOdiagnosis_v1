@@ -24,7 +24,7 @@ To support future scalability (e.g., adding Record-to-Report, Order-to-Cash), we
 To enable cross-functional reporting (e.g., "Show me all Automation maturity"), we add a metadata layer to Practices.
 
 - **Field:** `capability_tags` (Array of Strings)
-- **Standard Values:** `['People', 'Process', 'Technology', 'Data', 'Governance', 'Culture', 'Risk']`
+- **Standard Values:** `['People', 'Process', 'Technology', 'Data', 'Governance', 'Culture', 'Risk', 'Communication']`
 
 ### 1.3 The 3×3×3 Content Hierarchy
 
