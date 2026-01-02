@@ -217,15 +217,15 @@ export default function IntroPage() {
         {/* ROW 4: CTA */}
         <section className="pt-2 border-t border-slate-200 mt-2">
           <div className="flex items-center justify-between">
-            <Link to={`/run/${runId}/setup/pillar?review=true`}>
+            <Link to="/select-pillar">
               <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
-                Back to FP&A Context
+                Back to Pillar Selection
               </button>
             </Link>
-            <Link to={`/assess/foundation?runId=${runId}`}>
+            <Link to={`/run/${runId}/setup/company`}>
               <button className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold hover:bg-blue-700 transition-colors rounded-sm">
-                Proceed to Assessment
+                Continue Setup
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>

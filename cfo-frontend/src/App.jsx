@@ -12,6 +12,7 @@ import CalibrationPage from './pages/CalibrationPage'
 import CompanySetupPage from './pages/CompanySetupPage'
 import PillarSetupPage from './pages/PillarSetupPage'
 import IntroPage from './IntroPage'
+import SelectPillarPage from './pages/SelectPillarPage'
 // VS-30: Theme-based assessment pages
 import AssessFoundation from './pages/AssessFoundation'
 import AssessFuture from './pages/AssessFuture'
@@ -108,6 +109,11 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/select-pillar" element={
+            <ProtectedRoute>
+              <SelectPillarPage />
+            </ProtectedRoute>
+          } />
           {/* Legacy route redirect */}
           <Route path="/run/:runId/setup" element={<Navigate to="company" replace />} />
           <Route path="/run/:runId/setup/company" element={

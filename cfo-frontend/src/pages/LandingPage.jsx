@@ -131,7 +131,7 @@ export default function LandingPage() {
             className="text-sm font-medium tracking-wide uppercase mb-4"
             style={{ color: BRAND_COLORS.gold }}
           >
-            Created for Finance Leaders at $50M–$500M Companies
+            Created for Finance Leaders by Finance Leaders
           </p>
 
           <h1
@@ -155,7 +155,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to={isAuthenticated ? '/assess' : '/login'}
+              to={isAuthenticated ? '/select-pillar' : '/login'}
               className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
@@ -410,7 +410,7 @@ export default function LandingPage() {
           </div>
 
           <Link
-            to={isAuthenticated ? '/assess' : '/login'}
+            to={isAuthenticated ? '/select-pillar' : '/login'}
             className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
             style={{ backgroundColor: BRAND_COLORS.navy }}
           >
@@ -483,7 +483,7 @@ export default function LandingPage() {
                   Cancel
                 </button>
                 <Link
-                  to="/assess"
+                  to="/select-pillar"
                   onClick={() => setShowIncompleteModal(false)}
                   className="px-4 py-2 text-sm font-medium text-white transition-colors"
                   style={{ backgroundColor: BRAND_COLORS.navy }}

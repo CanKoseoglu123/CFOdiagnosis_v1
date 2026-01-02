@@ -213,10 +213,10 @@ export default function PillarSetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed and not in review mode, redirect to intro
+        // If setup already completed and not in review mode, redirect to assessment
         if (run.setup_completed_at && !isReviewMode) {
           localStorage.removeItem(`setup_company_${runId}`);
-          navigate(`/run/${runId}/intro`);
+          navigate(`/assess/foundation?runId=${runId}`);
           return;
         }
 
@@ -351,9 +351,9 @@ export default function PillarSetupPage() {
         throw new Error(data.details?.join(', ') || data.error || 'Failed to save');
       }
 
-      // Clear localStorage and proceed
+      // Clear localStorage and proceed to assessment
       localStorage.removeItem(`setup_company_${runId}`);
-      navigate(`/run/${runId}/intro`);
+      navigate(`/assess/foundation?runId=${runId}`);
     } catch (err) {
       setError(err.message);
       setSaving(false);
