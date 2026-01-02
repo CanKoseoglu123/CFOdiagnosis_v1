@@ -1,0 +1,28 @@
+[phases.setup]
+nixPkgs = [
+  "chromium",
+  "libuuid",
+  "libxshmfence",
+  "libdrm",
+  "mesa",
+  "nss",
+  "nspr",
+  "at-spi2-core",
+  "cups",
+  "libxkbcommon",
+  "pango",
+  "cairo",
+  "glib",
+  "gtk3",
+  "dbus",
+  "expat",
+  "libxdamage",
+  "libxcomposite",
+  "libxrandr",
+  "libxfixes",
+  "libxcursor"
+]
+
+[variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PUPPETEER_EXECUTABLE_PATH = "/nix/var/nix/profiles/default/bin/chromium"

@@ -138,15 +138,40 @@ app.get("/pdf-test", async (_req, res) => {
   try {
     // Dynamic imports for Puppeteer
     const puppeteer = await import("puppeteer-core");
-    const chromium = await import("@sparticuz/chromium");
+
+    // Determine chromium path: use system chromium on Railway, @sparticuz/chromium on Lambda
+    let executablePath: string;
+    let args: string[];
+
+    const systemChromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (systemChromiumPath) {
+      // Railway with nixpacks - use system Chromium
+      console.log("[PDF-TEST] Using system Chromium:", systemChromiumPath);
+      executablePath = systemChromiumPath;
+      args = [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+      ];
+    } else {
+      // Lambda or local - use @sparticuz/chromium
+      console.log("[PDF-TEST] Using @sparticuz/chromium");
+      const chromium = await import("@sparticuz/chromium");
+      executablePath = await chromium.default.executablePath();
+      args = chromium.default.args;
+    }
 
     console.log("[PDF-TEST] Starting Puppeteer test...");
-    console.log("[PDF-TEST] chromium.executablePath:", await chromium.default.executablePath());
+    console.log("[PDF-TEST] executablePath:", executablePath);
 
     browser = await puppeteer.default.launch({
-      args: chromium.default.args,
+      args,
       defaultViewport: { width: 1280, height: 720 },
-      executablePath: await chromium.default.executablePath(),
+      executablePath,
       headless: true,
     });
 
