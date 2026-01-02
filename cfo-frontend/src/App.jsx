@@ -21,13 +21,11 @@ import AssessIntelligence from './pages/AssessIntelligence'
 import { useState } from 'react'
 
 function LoginPage() {
-  const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const { signIn, signUp } = useAuth()
+  const { signIn } = useAuth()
   const navigate = useNavigate()
 
   // Brand colors
@@ -39,11 +37,7 @@ function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      if (mode === 'login') {
-        await signIn(email, password)
-      } else {
-        await signUp(email, password, fullName)
-      }
+      await signIn(email, password)
       navigate('/')
     } catch (err) {
       setError(err.message)
@@ -71,32 +65,24 @@ function LoginPage() {
         </div>
 
         <h1 style={{ fontSize: 24, fontWeight: 600, textAlign: 'center', marginBottom: 24, color: NAVY }}>
-          {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+          Sign In
         </h1>
 
         {error && <div style={{ background: '#FEE2E2', color: '#991B1B', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 14 }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          {mode === 'signup' && (
-            <input type="text" placeholder="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} required
-              style={{ width: '100%', padding: 14, border: '1px solid #E5E7EB', borderRadius: 8, marginBottom: 12, fontSize: 15, boxSizing: 'border-box', outline: 'none' }} />
-          )}
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
             style={{ width: '100%', padding: 14, border: '1px solid #E5E7EB', borderRadius: 8, marginBottom: 12, fontSize: 15, boxSizing: 'border-box', outline: 'none' }} />
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
             style={{ width: '100%', padding: 14, border: '1px solid #E5E7EB', borderRadius: 8, marginBottom: 20, fontSize: 15, boxSizing: 'border-box', outline: 'none' }} />
           <button type="submit" disabled={loading}
             style={{ width: '100%', padding: 14, background: NAVY, color: '#FFF', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Please wait...' : (mode === 'login' ? 'Sign In' : 'Create Account')}
+            {loading ? 'Please wait...' : 'Sign In'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#6B7280' }}>
-          {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-            style={{ background: 'none', border: 'none', color: NAVY, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
-            {mode === 'login' ? 'Sign Up' : 'Sign In'}
-          </button>
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#9CA3AF' }}>
+          Invite-only access. Contact admin for an account.
         </p>
       </div>
     </div>
