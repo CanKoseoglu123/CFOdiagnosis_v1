@@ -10,6 +10,7 @@ import { aggregateResults, Spec as AggSpec } from '../../results/aggregate';
 import { SpecRegistry } from '../../specs/registry';
 import { toAggregateSpec } from '../../specs/toAggregateSpec';
 import { Spec } from '../../specs/types';
+import { normalizeContext } from '../../utils/contextAdapter';  // VS26
 
 // Supabase service client for background operations (bypasses RLS)
 const supabaseUrl = process.env.SUPABASE_URL!;
@@ -71,12 +72,21 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
     question_id: i.question_id,
     score: i.value === true ? 1 : 0,
   })));
+
+  // VS26: Extract pillar context for pain point boosting
+  const normalizedCtx = normalizeContext(run.context);
+  const pillarContext = normalizedCtx.pillar ? {
+    pain_points: normalizedCtx.pillar.pain_points || undefined,
+    tools: normalizedCtx.pillar.tools?.map((t: string) => ({ tool: t, effectiveness: 'medium' as const })) || undefined,
+  } : null;
+
   const report = buildReport({
     run_id: runId,
     spec,
     aggregateResult,
     inputs,
     calibration: run.calibration || null,
+    pillarContext,  // VS26: Pass pillar context for pain point boosting
   });
 
   // Extract objectives with their importance from calibration

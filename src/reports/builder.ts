@@ -3,6 +3,7 @@
 // Includes maturity calculation (VS7), actions derivation (VS8), and critical risks (VS19)
 // V2: Added execution score, cap logic, objective scoring, P0/P1/P2 actions
 // V2.1: Added P1/P2/P3 labels, 2x critical multiplier, initiative grouping
+// VS26: Added pain point context boosting for action prioritization
 
 import { Spec } from "../specs/types";
 import {
@@ -17,7 +18,7 @@ import {
 import { AggregateResult } from "../results/aggregate";
 import { evaluateMaturity, calculateMaturityV2, Answer } from "../maturity";
 import { deriveActions, deriveActionsFromObjectives, prioritizeActions, groupActionsByInitiative } from "../actions";
-import { CalibrationData } from "../actions/types";  // VS21: Import calibration type
+import { CalibrationData, PillarContext } from "../actions/types";  // VS21: Calibration, VS26: PillarContext
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 import { calculateObjectiveScores } from "../scoring/objectiveScoring";
 import { buildMaturityFootprint } from "../maturity/footprint";  // VS23: Maturity Footprint
@@ -37,6 +38,7 @@ export interface BuildReportInput {
   aggregateResult: AggregateResult; // From VS5
   inputs: DiagnosticInput[];        // Raw user answers
   calibration?: CalibrationData | null;  // VS21: Optional calibration data
+  pillarContext?: PillarContext | null;  // VS26: Optional pillar context for pain point boosting
 }
 
 // ------------------------------------------------------------------
@@ -44,7 +46,7 @@ export interface BuildReportInput {
 // ------------------------------------------------------------------
 
 export function buildReport(input: BuildReportInput): FinanceReportDTO {
-  const { run_id, spec, aggregateResult, inputs, calibration } = input;
+  const { run_id, spec, aggregateResult, inputs, calibration, pillarContext } = input;
 
   // Build input lookup map
   const inputMap = new Map<string, unknown>(
@@ -126,11 +128,13 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
 
   // V2.1: Calculate prioritized actions (P1/P2/P3) with score calculation
   // VS21: Pass calibration for importance multipliers
+  // VS26: Pass pillar context for pain point boosting
   const prioritizedActions = prioritizeActions(
     maturityV2Result,
     inputs,
     spec.questions,
-    calibration
+    calibration,
+    pillarContext
   );
 
   // V2.1: Group actions by initiative
