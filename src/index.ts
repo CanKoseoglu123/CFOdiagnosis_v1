@@ -197,7 +197,7 @@ app.get("/pdf-test", async (_req, res) => {
           name: "pdf-test.pdf",
           document_type: "pdf",
           document_content: testHtml,
-          test: process.env.NODE_ENV !== "production", // Free test mode in dev
+          test: process.env.DOCRAPTOR_TEST_MODE === "true" || process.env.NODE_ENV !== "production", // Free test mode
           prince_options: {
             media: "print",
             baseurl: "https://cfo-lens.com",
