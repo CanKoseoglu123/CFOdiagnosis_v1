@@ -871,6 +871,7 @@ export async function generatePdf(input: GenerateReportInput): Promise<Buffer> {
         prince_options: {
           media: 'print',
           baseurl: 'https://cfo-lens.com',
+          page_size: 'A4 landscape',
         },
       },
     }),
