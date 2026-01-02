@@ -334,6 +334,369 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       top: 50%;
       transform: rotate(-90deg) translateX(-50%);
     }
+
+    /* Cover slide badges */
+    .cover-badges {
+      display: flex;
+      gap: 8mm;
+      margin-top: 10mm;
+    }
+
+    .badge-level {
+      background: ${colors.primary};
+      color: white;
+      padding: 3mm 6mm;
+      font-size: ${fonts.sizeMedium};
+      font-weight: 600;
+    }
+
+    .badge-score {
+      background: ${colors.accent};
+      color: white;
+      padding: 3mm 6mm;
+      font-size: ${fonts.sizeMedium};
+      font-weight: 600;
+    }
+
+    /* Executive Summary - Objectives list */
+    .objectives-list {
+      margin-top: 8mm;
+    }
+
+    .objective-row {
+      display: flex;
+      align-items: center;
+      padding: 3mm 0;
+      border-bottom: 1px solid ${colors.border};
+    }
+
+    .objective-name {
+      width: 50%;
+      font-size: ${fonts.sizeNormal};
+      color: ${colors.text};
+    }
+
+    .objective-bar {
+      flex: 1;
+      height: 12px;
+      background: ${colors.border};
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 0 4mm;
+    }
+
+    .objective-fill {
+      height: 100%;
+      background: ${colors.primary};
+      border-radius: 6px;
+    }
+
+    .objective-score {
+      width: 12mm;
+      text-align: right;
+      font-size: ${fonts.sizeNormal};
+      font-weight: 600;
+      color: ${colors.primary};
+    }
+
+    /* Maturity Footprint Grid */
+    .footprint-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4mm;
+      margin-bottom: 6mm;
+    }
+
+    .footprint-level {
+      background: ${colors.bgLight};
+      padding: 4mm;
+      border: 1px solid ${colors.border};
+    }
+
+    .level-label {
+      font-size: ${fonts.sizeMedium};
+      font-weight: 600;
+      color: ${colors.header};
+      margin-bottom: 3mm;
+      text-align: center;
+      padding-bottom: 2mm;
+      border-bottom: 2px solid ${colors.primary};
+    }
+
+    .level-practices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2mm;
+      margin-bottom: 3mm;
+    }
+
+    .practice-box {
+      width: 8mm;
+      height: 8mm;
+      border-radius: 1mm;
+    }
+
+    .practice-box.proven {
+      background: ${colors.proven};
+    }
+
+    .practice-box.partial {
+      background: ${colors.partial};
+    }
+
+    .practice-box.gap {
+      background: ${colors.gap};
+    }
+
+    .level-counts {
+      font-size: ${fonts.sizeSmall};
+      color: ${colors.textLight};
+      text-align: center;
+    }
+
+    .footprint-legend {
+      display: flex;
+      justify-content: center;
+      gap: 8mm;
+      padding: 4mm;
+      background: ${colors.bgCard};
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      font-size: ${fonts.sizeSmall};
+      color: ${colors.text};
+    }
+
+    .legend-box {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .legend-box.proven {
+      background: ${colors.proven};
+    }
+
+    .legend-box.partial {
+      background: ${colors.partial};
+    }
+
+    .legend-box.gap {
+      background: ${colors.gap};
+    }
+
+    /* Strengths & Gaps slide */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6mm;
+    }
+
+    .insights-section {
+      background: ${colors.bgLight};
+      padding: 5mm;
+      border: 1px solid ${colors.border};
+    }
+
+    .section-title {
+      font-size: ${fonts.sizeMedium};
+      font-weight: 600;
+      color: ${colors.header};
+      margin-bottom: 4mm;
+      padding-bottom: 2mm;
+      border-bottom: 2px solid ${colors.strength};
+    }
+
+    .section-title.improvements {
+      border-bottom-color: ${colors.opportunity};
+    }
+
+    .section-title.critical {
+      border-bottom-color: ${colors.criticalFix};
+    }
+
+    .strengths-list, .improvements-list, .risks-list {
+      list-style: none;
+    }
+
+    .strength-item, .improvement-item, .risk-item {
+      padding: 2mm 0;
+      font-size: ${fonts.sizeNormal};
+      color: ${colors.text};
+      border-bottom: 1px solid ${colors.border};
+    }
+
+    .strength-item:last-child, .improvement-item:last-child, .risk-item:last-child {
+      border-bottom: none;
+    }
+
+    .strength-item::before {
+      content: "\\2713 ";
+      color: ${colors.strength};
+      font-weight: bold;
+    }
+
+    .improvement-item::before {
+      content: "\\25B2 ";
+      color: ${colors.opportunity};
+    }
+
+    .risk-item::before {
+      content: "\\26A0 ";
+      color: ${colors.criticalFix};
+    }
+
+    .critical-section {
+      grid-column: 1 / -1;
+      background: #fef2f2;
+      border-color: ${colors.criticalFix};
+    }
+
+    /* Projected Impact slide */
+    .projection-hero {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20mm;
+      padding: 15mm 0;
+    }
+
+    .projection-current, .projection-target {
+      text-align: center;
+    }
+
+    .projection-value {
+      font-size: 48pt;
+      font-weight: 700;
+    }
+
+    .projection-current .projection-value {
+      color: ${colors.textLight};
+    }
+
+    .projection-target .projection-value {
+      color: ${colors.strength};
+    }
+
+    .projection-label {
+      font-size: ${fonts.sizeMedium};
+      color: ${colors.textLight};
+      margin-top: 2mm;
+    }
+
+    .projection-arrow {
+      font-size: 36pt;
+      color: ${colors.primary};
+    }
+
+    .progress-bar-large {
+      height: 24px;
+      background: ${colors.border};
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 10mm 0;
+      position: relative;
+    }
+
+    .progress-current {
+      height: 100%;
+      background: ${colors.textLight};
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .progress-improvement {
+      height: 100%;
+      background: ${colors.strength};
+      position: absolute;
+      top: 0;
+    }
+
+    .timeline-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5mm;
+      margin-top: 8mm;
+    }
+
+    .timeline-card {
+      background: ${colors.bgCard};
+      padding: 4mm;
+      text-align: center;
+    }
+
+    .timeline-period {
+      font-size: ${fonts.sizeMedium};
+      font-weight: 600;
+      color: ${colors.header};
+    }
+
+    .timeline-count {
+      font-size: ${fonts.sizeLarge};
+      font-weight: 700;
+      color: ${colors.primary};
+      margin: 2mm 0;
+    }
+
+    .timeline-label {
+      font-size: ${fonts.sizeSmall};
+      color: ${colors.textLight};
+    }
+
+    /* Action items header */
+    .action-header {
+      display: flex;
+      background: ${colors.header};
+      color: white;
+      font-weight: 600;
+      font-size: ${fonts.sizeSmall};
+    }
+
+    .action-header-text {
+      flex: 1;
+      padding: 3mm 4mm;
+    }
+
+    .action-header-timeline {
+      width: 15mm;
+      padding: 3mm;
+      text-align: center;
+    }
+
+    .action-header-owner {
+      width: 35mm;
+      padding: 3mm 4mm;
+      text-align: right;
+    }
+
+    /* Action priority badge */
+    .action-priority {
+      display: inline-block;
+      padding: 1mm 2mm;
+      font-size: 8pt;
+      font-weight: 600;
+      border-radius: 2px;
+      margin-right: 2mm;
+    }
+
+    .priority-high {
+      background: ${colors.criticalFix};
+      color: white;
+    }
+
+    .priority-medium {
+      background: ${colors.opportunity};
+      color: white;
+    }
+
+    .priority-low {
+      background: ${colors.textLight};
+      color: white;
+    }
   </style>
 </head>
 <body>

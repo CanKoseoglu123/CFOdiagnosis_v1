@@ -21,6 +21,7 @@ import {
 } from "./interpretation";
 import { deriveCriticalRisks } from "./risks";
 import { calculateMaturityV2 } from "./maturity/engine";
+import { buildMaturityFootprint } from "./maturity/footprint";
 import interpretationRoutesV32 from "./interpretation/engine/routes";
 import {
   DiagnosticContextV1Schema,
@@ -1585,7 +1586,7 @@ app.post("/diagnostic-runs/:id/report/generate", async (req, res) => {
     // Verify run is finalized
     const { data: run, error: runError } = await req.supabase
       .from("diagnostic_runs")
-      .select("id, finalized_at, action_plan_snapshot, report_customizations, context")
+      .select("id, finalized_at, action_plan_snapshot, report_customizations, context, spec_version")
       .eq("id", runId)
       .single();
 
@@ -1602,11 +1603,59 @@ app.post("/diagnostic-runs/:id/report/generate", async (req, res) => {
     // Get scores from the latest report
     const { data: scores } = await req.supabase
       .from("diagnostic_scores")
-      .select("overall_score, maturity_level")
+      .select("question_id, score, overall_score, maturity_level")
       .eq("run_id", runId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+      .order("created_at", { ascending: false });
+
+    // Get inputs for objectives and footprint
+    const { data: inputs } = await req.supabase
+      .from("diagnostic_inputs")
+      .select("question_id, value")
+      .eq("run_id", runId);
+
+    // Get spec for objectives
+    let spec;
+    try {
+      spec = SpecRegistry.get(run.spec_version || DEFAULT_SPEC_VERSION);
+    } catch (err) {
+      spec = SpecRegistry.get(DEFAULT_SPEC_VERSION);
+    }
+
+    // Calculate objective scores
+    const objectiveScores = (spec.objectives || []).map((obj: any) => {
+      const objQuestions = spec.questions.filter((q: any) => q.objective_id === obj.id);
+      const objScores = (scores || []).filter((s: any) =>
+        objQuestions.some((q: any) => q.id === s.question_id)
+      );
+      const avgScore = objScores.length > 0
+        ? objScores.reduce((sum: number, s: any) => sum + s.score, 0) / objScores.length * 100
+        : 0;
+      return {
+        id: obj.id,
+        objective_id: obj.id,
+        objective_name: obj.name,
+        name: obj.name,
+        score: Math.round(avgScore),
+      };
+    });
+
+    // Build maturity footprint
+    const footprintAnswers = (inputs || []).map((i: any) => ({
+      question_id: i.question_id,
+      value: i.value as boolean | string | null,
+    }));
+    const footprintQuestions = spec.questions.map((q: any) => ({
+      id: q.id,
+      is_critical: q.is_critical,
+    }));
+    const maturityFootprint = buildMaturityFootprint(footprintAnswers, footprintQuestions);
+
+    // Derive critical risks
+    const criticalRisks = deriveCriticalRisks(inputs || [], spec);
+
+    // Get overall score from first scores row
+    const overallScore = scores?.[0]?.overall_score || 0;
+    const maturityLevel = scores?.[0]?.maturity_level || 1;
 
     const timestamp = new Date().toISOString();
 
@@ -1615,11 +1664,21 @@ app.post("/diagnostic-runs/:id/report/generate", async (req, res) => {
       runId,
       companyName: run.context?.company?.name || "Company",
       industry: run.context?.company?.industry,
-      overallScore: scores?.overall_score || 0,
-      maturityLevel: scores?.maturity_level || 1,
+      overallScore,
+      maturityLevel,
       customizations: run.report_customizations || {},
       actions: run.action_plan_snapshot || [],
       timestamp,
+      // Extended report data
+      objectives: objectiveScores,
+      maturityFootprint: maturityFootprint,
+      criticalRisks: criticalRisks.map((r) => ({
+        question_id: r.questionId,
+        evidence_id: r.questionId,
+        title: r.questionText,
+        question_text: r.questionText,
+        expert_action: r.expert_action,
+      })),
     });
 
     // Store PDF in Supabase Storage
