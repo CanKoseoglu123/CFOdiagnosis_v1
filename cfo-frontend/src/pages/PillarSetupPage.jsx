@@ -557,8 +557,8 @@ export default function PillarSetupPage() {
             <ToolWithEffectivenessSelector
               selectedTools={pillar.tools}
               effectiveness={pillar.tool_effectiveness}
-              onToolsChange={(v) => setPillar({ ...pillar, tools: v })}
-              onEffectivenessChange={(v) => setPillar({ ...pillar, tool_effectiveness: v })}
+              onToolsChange={(v) => setPillar(prev => ({ ...prev, tools: v }))}
+              onEffectivenessChange={(v) => setPillar(prev => ({ ...prev, tool_effectiveness: v }))}
               options={PLANNING_TOOLS}
             />
 
