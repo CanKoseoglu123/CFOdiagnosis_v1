@@ -144,6 +144,7 @@ app.get("/pdf-test", async (_req, res) => {
     let args: string[];
 
     const systemChromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    console.log("[PDF-TEST] PUPPETEER_EXECUTABLE_PATH env:", systemChromiumPath || "(not set)");
     if (systemChromiumPath) {
       // Railway with nixpacks - use system Chromium
       console.log("[PDF-TEST] Using system Chromium:", systemChromiumPath);
