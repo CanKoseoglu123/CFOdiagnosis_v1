@@ -15,7 +15,8 @@ import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import {
   PLANNING_TOOLS, TEAM_SIZES, FORECAST_FREQUENCIES,
-  BUDGET_PROCESS_BASE, BUDGET_PROCESS_MODIFIERS, PAIN_POINTS, USER_ROLES
+  BUDGET_PROCESS_BASE, BUDGET_PROCESS_MODIFIERS, PAIN_POINTS, USER_ROLES,
+  TOOL_EFFECTIVENESS, TOOL_EFFECTIVENESS_LEGEND
 } from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -99,6 +100,130 @@ function MultiChipSelector({ label, icon: Icon, value, onChange, options, maxSel
   );
 }
 
+// VS26: Tool selector with effectiveness rating
+function ToolWithEffectivenessSelector({
+  selectedTools,
+  effectiveness,
+  onToolsChange,
+  onEffectivenessChange,
+  options
+}) {
+  const toggleTool = (toolValue) => {
+    if (selectedTools.includes(toolValue)) {
+      // Remove tool and its effectiveness
+      onToolsChange(selectedTools.filter(t => t !== toolValue));
+      const newEff = { ...effectiveness };
+      delete newEff[toolValue];
+      onEffectivenessChange(newEff);
+    } else {
+      // Add tool with default 'medium' effectiveness
+      onToolsChange([...selectedTools, toolValue]);
+      onEffectivenessChange({ ...effectiveness, [toolValue]: 'medium' });
+    }
+  };
+
+  const setEffectiveness = (toolValue, level) => {
+    onEffectivenessChange({ ...effectiveness, [toolValue]: level });
+  };
+
+  // Group tools by category
+  const toolsByCategory = options.reduce((acc, tool) => {
+    const cat = tool.category || 'other';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(tool);
+    return acc;
+  }, {});
+
+  const categoryLabels = {
+    spreadsheet: 'Spreadsheet',
+    excel_connected: 'Excel-Connected',
+    planning_platform: 'Planning Platforms',
+    bi_tool: 'BI / Reporting',
+    other: 'Other'
+  };
+
+  return (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <span className="flex items-center gap-2">
+          <Wrench size={16} className="text-gray-500" />
+          Planning Tools
+          <span className="text-red-500">*</span>
+          <span className="text-xs text-gray-400 font-normal ml-2">(Select all that apply)</span>
+        </span>
+      </label>
+
+      {/* Tool selection by category */}
+      {Object.entries(toolsByCategory).map(([category, tools]) => (
+        <div key={category} className="mb-3">
+          <p className="text-xs text-gray-500 mb-1.5">{categoryLabels[category] || category}</p>
+          <div className="flex flex-wrap gap-2">
+            {tools.map((tool) => {
+              const isSelected = selectedTools.includes(tool.value);
+              return (
+                <button
+                  key={tool.value}
+                  type="button"
+                  onClick={() => toggleTool(tool.value)}
+                  className={`px-4 py-2 rounded border text-sm font-medium transition-all flex items-center gap-2
+                    ${isSelected
+                      ? 'border-blue-600 bg-blue-50 text-blue-700 border-2'
+                      : 'border-gray-300 hover:border-gray-400 text-gray-600'}`}
+                >
+                  {isSelected && <Check size={14} />}
+                  {tool.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {/* Effectiveness ratings for selected tools */}
+      {selectedTools.length > 0 && (
+        <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-200">
+          <p className="text-sm font-medium text-gray-700 mb-1">How effectively are these tools being used?</p>
+          <p className="text-xs text-gray-500 mb-3">
+            {TOOL_EFFECTIVENESS_LEGEND.low} → {TOOL_EFFECTIVENESS_LEGEND.high}
+          </p>
+          <div className="space-y-2">
+            {selectedTools.map((toolValue) => {
+              const tool = options.find(t => t.value === toolValue);
+              const currentEff = effectiveness[toolValue] || 'medium';
+              return (
+                <div key={toolValue} className="flex items-center gap-3">
+                  <span className="text-sm text-gray-700 w-40 truncate" title={tool?.label}>
+                    {tool?.label || toolValue}
+                  </span>
+                  <div className="flex gap-1">
+                    {TOOL_EFFECTIVENESS.map((eff) => (
+                      <button
+                        key={eff.value}
+                        type="button"
+                        onClick={() => setEffectiveness(toolValue, eff.value)}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-all
+                          ${currentEff === eff.value
+                            ? eff.value === 'high'
+                              ? 'bg-green-100 text-green-700 border-2 border-green-500'
+                              : eff.value === 'medium'
+                                ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-500'
+                                : 'bg-red-100 text-red-700 border-2 border-red-500'
+                            : 'bg-white border border-gray-300 text-gray-600 hover:border-gray-400'}`}
+                      >
+                        {eff.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Budget process selector with base (mutually exclusive) + modifiers (additive)
 function BudgetProcessSelector({ baseValue, modifiersValue, onBaseChange, onModifiersChange }) {
   const toggleModifier = (mod) => {
@@ -175,6 +300,7 @@ export default function PillarSetupPage() {
   const [pillar, setPillar] = useState({
     // Tools & Technology
     tools: [],
+    tool_effectiveness: {},       // VS26: { tool_value: 'low'|'medium'|'high' }
     other_tool: '',
     // Team & Process
     team_size: '',
@@ -249,10 +375,29 @@ export default function PillarSetupPage() {
         // Pre-fill if v1 pillar context exists
         if (run.context?.version === 'v1' && run.context.pillar) {
           const apiPillar = run.context.pillar;
+          // VS26: Convert tools array to effectiveness map if it contains objects
+          let toolEffectiveness = {};
+          let toolsArray = [];
+          if (Array.isArray(apiPillar.tools)) {
+            if (apiPillar.tools.length > 0 && typeof apiPillar.tools[0] === 'object') {
+              // New format: [{tool: 'excel', effectiveness: 'medium'}, ...]
+              toolsArray = apiPillar.tools.map(t => t.tool);
+              toolEffectiveness = Object.fromEntries(
+                apiPillar.tools.map(t => [t.tool, t.effectiveness || 'medium'])
+              );
+            } else {
+              // Old format: ['excel', 'datarails', ...]
+              toolsArray = apiPillar.tools;
+              toolEffectiveness = Object.fromEntries(
+                apiPillar.tools.map(t => [t, 'medium'])
+              );
+            }
+          }
           setPillar(prev => ({
             ...prev,
             // Arrays - default to empty array if null/undefined
-            tools: apiPillar.tools || [],
+            tools: toolsArray,
+            tool_effectiveness: toolEffectiveness,
             budget_process_modifiers: apiPillar.budget_process_modifiers || [],
             pain_points: apiPillar.pain_points || [],
             // Strings - default to empty string if null/undefined
@@ -308,13 +453,21 @@ export default function PillarSetupPage() {
         ...pillar.budget_process_modifiers
       ];
 
+      // VS26: Convert tools to array with effectiveness ratings
+      const toolsWithEffectiveness = pillar.tools.map(toolValue => ({
+        tool: toolValue,
+        effectiveness: pillar.tool_effectiveness[toolValue] || 'medium'
+      }));
+
       const pillarData = {
         ...pillar,
+        tools: toolsWithEffectiveness, // VS26: Array of {tool, effectiveness} objects
         budget_process, // Combined array
       };
       // Remove the separate fields before sending
       delete pillarData.budget_process_base;
       delete pillarData.budget_process_modifiers;
+      delete pillarData.tool_effectiveness;
 
       // Clean company data - remove empty/null fields that would fail validation
       const cleanCompany = Object.fromEntries(
@@ -400,14 +553,12 @@ export default function PillarSetupPage() {
               <p className="text-sm text-gray-500">Which planning and reporting tools do you use?</p>
             </div>
 
-            <MultiChipSelector
-              label="Planning Tools"
-              icon={Wrench}
-              value={pillar.tools}
-              onChange={(v) => setPillar({ ...pillar, tools: v })}
+            <ToolWithEffectivenessSelector
+              selectedTools={pillar.tools}
+              effectiveness={pillar.tool_effectiveness}
+              onToolsChange={(v) => setPillar({ ...pillar, tools: v })}
+              onEffectivenessChange={(v) => setPillar({ ...pillar, tool_effectiveness: v })}
               options={PLANNING_TOOLS}
-              required
-              hint="(Select all that apply)"
             />
 
             <div className="mb-5">

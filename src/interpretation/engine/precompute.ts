@@ -77,7 +77,7 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
   const normalizedCtx = normalizeContext(run.context);
   const pillarContext = normalizedCtx.pillar ? {
     pain_points: normalizedCtx.pillar.pain_points || undefined,
-    tools: normalizedCtx.pillar.tools?.map((t: string) => ({ tool: t, effectiveness: 'medium' as const })) || undefined,
+    tools: normalizedCtx.pillar.tools_with_effectiveness || undefined,
   } : null;
 
   const report = buildReport({

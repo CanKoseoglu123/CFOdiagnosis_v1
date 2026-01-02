@@ -1,6 +1,7 @@
 // src/data/contextOptions.js
-// VS25: Context Intake Options - Rich Content Version
-// Synced with backend src/specs/schemas.ts
+// VS26: Context Intake Options - Enhanced with Practice Mappings
+// Pain points now map to practices for recommendation boosting
+// Tools now have categories and effectiveness ratings
 
 export const INDUSTRIES = [
   { value: 'automotive', label: 'Automotive' },
@@ -65,20 +66,72 @@ export const CHANGE_APPETITES = [
 
 // === FP&A PILLAR OPTIONS ===
 
-// Systems/Tools
+// Tool Categories
+export const TOOL_CATEGORIES = {
+  spreadsheet: {
+    label: 'Spreadsheet',
+    description: 'File-based, manual version control'
+  },
+  excel_connected: {
+    label: 'Excel-Connected',
+    description: 'Excel interface with cloud backend'
+  },
+  planning_platform: {
+    label: 'Planning Platform',
+    description: 'Dedicated planning and forecasting tools'
+  },
+  bi_tool: {
+    label: 'BI / Reporting',
+    description: 'Visualization and dashboards'
+  },
+  other: {
+    label: 'Other',
+    description: 'User-specified tool'
+  }
+};
+
+// Systems/Tools with categories
 export const PLANNING_TOOLS = [
-  { value: 'excel', label: 'Excel' },
-  { value: 'anaplan', label: 'Anaplan' },
-  { value: 'adaptive', label: 'Adaptive Insights' },
-  { value: 'pigment', label: 'Pigment' },
-  { value: 'aleph', label: 'Aleph' },
-  { value: 'datarails', label: 'Datarails' },
-  { value: 'sap', label: 'SAP' },
-  { value: 'oracle', label: 'Oracle' },
-  { value: 'powerbi', label: 'Power BI' },
-  { value: 'tableau', label: 'Tableau' },
-  { value: 'other', label: 'Other' }
+  // Spreadsheet
+  { value: 'excel', label: 'Excel / Google Sheets', category: 'spreadsheet' },
+
+  // Excel-connected
+  { value: 'datarails', label: 'Datarails', category: 'excel_connected' },
+  { value: 'vena', label: 'Vena', category: 'excel_connected' },
+  { value: 'jirav', label: 'Jirav', category: 'excel_connected' },
+  { value: 'aleph', label: 'Aleph', category: 'excel_connected' },
+
+  // Planning platforms
+  { value: 'anaplan', label: 'Anaplan', category: 'planning_platform' },
+  { value: 'adaptive', label: 'Workday Adaptive', category: 'planning_platform' },
+  { value: 'planful', label: 'Planful', category: 'planning_platform' },
+  { value: 'pigment', label: 'Pigment', category: 'planning_platform' },
+  { value: 'cube', label: 'Cube', category: 'planning_platform' },
+  { value: 'onestream', label: 'OneStream', category: 'planning_platform' },
+  { value: 'oracle_epm', label: 'Oracle EPM Cloud', category: 'planning_platform' },
+  { value: 'sap_sac', label: 'SAP BPC / SAC', category: 'planning_platform' },
+
+  // BI tools
+  { value: 'powerbi', label: 'Power BI', category: 'bi_tool' },
+  { value: 'tableau', label: 'Tableau', category: 'bi_tool' },
+  { value: 'looker', label: 'Looker', category: 'bi_tool' },
+
+  // Other
+  { value: 'other', label: 'Other', category: 'other' }
 ];
+
+// Tool effectiveness ratings
+export const TOOL_EFFECTIVENESS = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' }
+];
+
+export const TOOL_EFFECTIVENESS_LEGEND = {
+  low: 'Basic usage, significant gaps',
+  medium: 'Regular usage, not full potential',
+  high: 'Fully adopted, getting real value'
+};
 
 // Team size ranges (chips)
 export const TEAM_SIZES = [
@@ -120,15 +173,92 @@ export const BUDGET_PROCESSES = [
   { value: 'zero_based', label: 'Zero-based budgeting' }
 ];
 
-// Pain points
+// Pain points with practice mappings for recommendation boosting
 export const PAIN_POINTS = [
-  { value: 'long_cycles', label: 'Long budget/forecast cycles' },
-  { value: 'data_accuracy', label: 'Data accuracy issues' },
-  { value: 'manual_consolidation', label: 'Manual consolidation' },
-  { value: 'lack_insights', label: 'Lack of actionable insights' },
-  { value: 'business_partnership', label: 'Weak business partnership' },
-  { value: 'tool_limitations', label: 'Tool limitations' },
-  { value: 'headcount', label: 'Headcount constraints' }
+  {
+    value: 'data_wrangling',
+    label: 'Endless manual data gathering',
+    related_practices: [
+      'prac_collaborative_systems',
+      'prac_process_automation',
+      'prac_chart_of_accounts'
+    ]
+  },
+  {
+    value: 'forecast_accuracy',
+    label: 'Forecasting accuracy & credibility',
+    related_practices: [
+      'prac_rolling_forecast_cadence',
+      'prac_operational_drivers',
+      'prac_dynamic_targets',
+      'prac_predictive_analytics'
+    ]
+  },
+  {
+    value: 'partner_engagement',
+    label: 'Business partners don\'t engage',
+    related_practices: [
+      'prac_commercial_partnership',
+      'prac_strategic_alignment',
+      'prac_variance_investigation',
+      'prac_data_visualization'
+    ]
+  },
+  {
+    value: 'budget_cycle',
+    label: 'Endless budget process',
+    related_practices: [
+      'prac_annual_budget_cycle',
+      'prac_continuous_planning',
+      'prac_rolling_forecast_cadence',
+      'prac_process_automation'
+    ]
+  },
+  {
+    value: 'bandwidth',
+    label: 'Talent & bandwidth constraints',
+    related_practices: [
+      'prac_process_automation',
+      'prac_shared_services_model',
+      'prac_service_level_agreements'
+    ]
+  },
+  {
+    value: 'tech_fragmentation',
+    label: 'Technology stack fragmentation',
+    related_practices: [
+      'prac_collaborative_systems',
+      'prac_chart_of_accounts',
+      'prac_process_automation'
+    ]
+  },
+  {
+    value: 'scenario_planning',
+    label: 'Scenario planning gaps',
+    related_practices: [
+      'prac_rapid_what_if_capability',
+      'prac_multi_scenario_management',
+      'prac_stress_testing'
+    ]
+  },
+  {
+    value: 'communication',
+    label: 'Communicating to non-finance execs',
+    related_practices: [
+      'prac_data_visualization',
+      'prac_board_level_impact',
+      'prac_operational_drivers'
+    ]
+  },
+  {
+    value: 'realtime_visibility',
+    label: 'Real-time visibility gaps',
+    related_practices: [
+      'prac_month_end_rigor',
+      'prac_self_service_access',
+      'prac_management_reporting'
+    ]
+  }
 ];
 
 // User roles

@@ -18,8 +18,15 @@ export interface NormalizedCompany {
   change_appetite: string | null;
 }
 
+// VS26: Tool with effectiveness rating
+export interface ToolWithEffectiveness {
+  tool: string;
+  effectiveness: 'low' | 'medium' | 'high';
+}
+
 export interface NormalizedPillar {
-  tools: string[];
+  tools: string[];                          // Legacy: tool names only
+  tools_with_effectiveness: ToolWithEffectiveness[];  // VS26: full tool data
   other_tool: string | null;
   team_size: string | null;
   forecast_frequency: string | null;
@@ -127,11 +134,13 @@ function normalizeCompany(raw: unknown): NormalizedCompany {
 
 /**
  * Normalize pillar object with null safety
+ * VS26: Handles both old (string[]) and new ({tool, effectiveness}[]) tool formats
  */
 function normalizePillar(raw: unknown): NormalizedPillar {
   if (!raw || typeof raw !== 'object') {
     return {
       tools: [],
+      tools_with_effectiveness: [],
       other_tool: null,
       team_size: null,
       forecast_frequency: null,
@@ -145,8 +154,34 @@ function normalizePillar(raw: unknown): NormalizedPillar {
   }
 
   const p = raw as Record<string, unknown>;
+
+  // VS26: Parse tools - handle both formats
+  const rawTools = p.tools || p.systems;
+  let tools: string[] = [];
+  let toolsWithEffectiveness: ToolWithEffectiveness[] = [];
+
+  if (Array.isArray(rawTools) && rawTools.length > 0) {
+    if (typeof rawTools[0] === 'object' && rawTools[0] !== null && 'tool' in rawTools[0]) {
+      // New format: [{tool: 'excel', effectiveness: 'medium'}, ...]
+      toolsWithEffectiveness = rawTools
+        .filter((t): t is { tool: string; effectiveness?: string } =>
+          typeof t === 'object' && t !== null && typeof t.tool === 'string'
+        )
+        .map(t => ({
+          tool: t.tool,
+          effectiveness: (t.effectiveness === 'low' || t.effectiveness === 'high' ? t.effectiveness : 'medium') as 'low' | 'medium' | 'high'
+        }));
+      tools = toolsWithEffectiveness.map(t => t.tool);
+    } else {
+      // Old format: ['excel', 'datarails', ...]
+      tools = rawTools.filter((v): v is string => typeof v === 'string');
+      toolsWithEffectiveness = tools.map(t => ({ tool: t, effectiveness: 'medium' as const }));
+    }
+  }
+
   return {
-    tools: asStringArray(p.tools) || asStringArray(p.systems) || [],
+    tools,
+    tools_with_effectiveness: toolsWithEffectiveness,
     other_tool: asString(p.other_tool),
     team_size: asString(p.team_size),
     forecast_frequency: asString(p.forecast_frequency),
