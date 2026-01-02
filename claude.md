@@ -387,10 +387,27 @@ Schema Relationships (v2.9.0):
 
 1. **TypeScript strict mode** — Map callbacks need explicit type annotations
 2. **erasableSyntaxOnly** — Frontend cannot use `enum`, use `const` objects
+3. **Review mode field population** — Some optional fields (ownership_structure, finance_ftes) may not repopulate when navigating back to setup pages (#60)
 
 ---
 
-## Roadmap
+## MVP Polish (Pre-Launch)
+
+| Task | Priority | Issue |
+|------|----------|-------|
+| Domain QA (cfo-lens.com) | High | #62 |
+| Move Intro page before Company Setup | High | #63 |
+| Post-completion flow (return to landing) | High | #64 |
+| PDF export for reports | High | #65 |
+| Executive Report comprehensive export (PPTX-like) | Medium | #66 |
+| Review diagnostic questions | Medium | #67 |
+| Review AI report generation | Medium | #68 |
+| Logo on all pages | High | #69 |
+| Implement code/Supabase audit findings | High | #70 |
+
+---
+
+## Roadmap (Post-MVP)
 
 | Feature | Priority |
 |---------|----------|
