@@ -26,7 +26,7 @@ const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
   data_wrangling: [
     'prac_collaborative_systems',
     'prac_process_automation',
-    'prac_chart_of_accounts'
+    'prac_self_service_analytics'  // Fixed: CoA is accounting policy, not data pipeline
   ],
   forecast_accuracy: [
     'prac_rolling_forecast_cadence',
@@ -137,11 +137,14 @@ function wasBoostedByContext(
 
 /**
  * Calculates the action score using the V2.2 formula with VS21 calibration and VS26 context.
- * Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor × ContextModifier
+ * Score = (Impact² / Complexity) × CriticalBoost × CombinedMultiplier
+ *
+ * where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
  *
  * The 2x critical multiplier ensures criticals rank above high-ROI governance tasks.
  * The ImportanceFactor (0.5x to 1.5x) allows users to adjust priority based on organizational needs.
  * The ContextModifier (1.0x to 2.0x) boosts actions that address stated pain points.
+ * The CombinedMultiplier is capped at 2.0x to prevent "Double Jeopardy" score inflation.
  *
  * @param question - The question/action being scored
  * @param calibration - Optional calibration data with importance_map
@@ -163,17 +166,22 @@ function calculateScore(
     score = score * 2;
   }
 
-  // VS21: ImportanceFactor from calibration
+  // VS21: ImportanceFactor from calibration (default 1.0)
+  let importanceFactor = 1.0;
   if (calibration?.importance_map && question.objective_id) {
     const importance = calibration.importance_map[question.objective_id] as ImportanceLevel | undefined;
     if (importance && IMPORTANCE_MULTIPLIERS[importance]) {
-      score = score * IMPORTANCE_MULTIPLIERS[importance];
+      importanceFactor = IMPORTANCE_MULTIPLIERS[importance];
     }
   }
 
   // VS26: ContextModifier from pain points
   const contextModifier = calculateContextModifier(question, context);
-  score = score * contextModifier;
+
+  // Combined Multiplier Cap: Prevent "Double Jeopardy" score inflation
+  // Cap at 2.0x to ensure trivial L1 gaps don't outrank strategic L3 gaps
+  const combinedMultiplier = Math.min(2.0, importanceFactor * contextModifier);
+  score = score * combinedMultiplier;
 
   return Math.round(score * 10) / 10; // Round to 1 decimal
 }

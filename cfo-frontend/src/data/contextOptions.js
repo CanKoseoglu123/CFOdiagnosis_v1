@@ -181,7 +181,7 @@ export const PAIN_POINTS = [
     related_practices: [
       'prac_collaborative_systems',
       'prac_process_automation',
-      'prac_chart_of_accounts'
+      'prac_self_service_analytics'  // Fixed: CoA is accounting policy, not data pipeline
     ]
   },
   {
