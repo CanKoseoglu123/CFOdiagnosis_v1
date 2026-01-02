@@ -109,6 +109,7 @@ function ToolWithEffectivenessSelector({
   options
 }) {
   const toggleTool = (toolValue) => {
+    console.log('[ToolSelector] Toggle tool clicked:', toolValue, 'Current tools:', selectedTools);
     if (selectedTools.includes(toolValue)) {
       // Remove tool and its effectiveness
       onToolsChange(selectedTools.filter(t => t !== toolValue));
