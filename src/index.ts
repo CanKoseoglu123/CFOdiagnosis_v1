@@ -129,54 +129,21 @@ app.get("/health", (_req, res) => {
 });
 
 // ------------------------------------------------------------------
-// PDF Test endpoint - Validates Puppeteer works on Railway
+// PDF Test endpoint - Validates DocRaptor Cloud PDF API
 // ------------------------------------------------------------------
 app.get("/pdf-test", async (_req, res) => {
   const startTime = Date.now();
-  let browser = null;
 
   try {
-    // Dynamic imports for Puppeteer
-    const puppeteer = await import("puppeteer-core");
-
-    // Determine chromium path: use system chromium on Railway, @sparticuz/chromium on Lambda
-    let executablePath: string;
-    let args: string[];
-
-    const systemChromiumPath = process.env.PUPPETEER_EXECUTABLE_PATH;
-    console.log("[PDF-TEST] PUPPETEER_EXECUTABLE_PATH env:", systemChromiumPath || "(not set)");
-    if (systemChromiumPath) {
-      // Railway with nixpacks - use system Chromium
-      console.log("[PDF-TEST] Using system Chromium:", systemChromiumPath);
-      executablePath = systemChromiumPath;
-      args = [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process",
-      ];
-    } else {
-      // Lambda or local - use @sparticuz/chromium
-      console.log("[PDF-TEST] Using @sparticuz/chromium");
-      const chromium = await import("@sparticuz/chromium");
-      executablePath = await chromium.default.executablePath();
-      args = chromium.default.args;
+    const apiKey = process.env.DOCRAPTOR_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "PDF generation not configured",
+        message: "DOCRAPTOR_API_KEY environment variable not set",
+      });
     }
 
-    console.log("[PDF-TEST] Starting Puppeteer test...");
-    console.log("[PDF-TEST] executablePath:", executablePath);
-
-    browser = await puppeteer.default.launch({
-      args,
-      defaultViewport: { width: 1280, height: 720 },
-      executablePath,
-      headless: true,
-    });
-
-    const page = await browser.newPage();
+    console.log("[PDF-TEST] Starting DocRaptor PDF generation...");
 
     // Simple test HTML
     const testHtml = `
@@ -184,34 +151,67 @@ app.get("/pdf-test", async (_req, res) => {
       <html>
       <head>
         <style>
-          body { font-family: Arial, sans-serif; padding: 40px; }
-          h1 { color: #1e3a5f; }
-          .box { background: #f0f4f8; padding: 20px; border-radius: 8px; margin: 20px 0; }
-          .timestamp { color: #666; font-size: 12px; }
+          @page { size: A4; margin: 20mm; }
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 0; color: #1e293b; }
+          h1 { color: #1e3a5f; margin-bottom: 24px; }
+          .box { background: #f0f4f8; padding: 24px; margin: 24px 0; }
+          .stat { display: inline-block; margin-right: 40px; }
+          .stat-value { font-size: 32px; font-weight: bold; color: #1e3a5f; }
+          .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; }
+          .timestamp { color: #94a3b8; font-size: 11px; margin-top: 40px; }
         </style>
       </head>
       <body>
-        <h1>CFO Lens - PDF Generation Test</h1>
+        <h1>CFO Lens - Executive Report</h1>
         <div class="box">
-          <p><strong>Status:</strong> Puppeteer is working on Railway!</p>
-          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <p><strong>Environment:</strong> ${process.env.NODE_ENV || "development"}</p>
+          <div class="stat">
+            <div class="stat-value">78</div>
+            <div class="stat-label">Overall Score</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">L3</div>
+            <div class="stat-label">Maturity Level</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">12</div>
+            <div class="stat-label">Actions Planned</div>
+          </div>
         </div>
-        <p class="timestamp">This PDF was generated to validate the PDF export pipeline.</p>
+        <p><strong>Status:</strong> DocRaptor Cloud PDF API is working!</p>
+        <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+        <p><strong>Environment:</strong> ${process.env.NODE_ENV || "development"}</p>
+        <p class="timestamp">This PDF was generated using DocRaptor Cloud PDF API to validate the Executive Report export pipeline.</p>
       </body>
       </html>
     `;
 
-    await page.setContent(testHtml, { waitUntil: "networkidle0" });
-
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "20mm", bottom: "20mm", left: "15mm", right: "15mm" },
+    // Call DocRaptor API
+    const response = await fetch("https://api.docraptor.com/docs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_credentials: apiKey,
+        doc: {
+          name: "pdf-test.pdf",
+          document_type: "pdf",
+          document_content: testHtml,
+          test: process.env.NODE_ENV !== "production", // Free test mode in dev
+          prince_options: {
+            media: "print",
+            baseurl: "https://cfo-lens.com",
+          },
+        },
+      }),
     });
 
-    await browser.close();
-    browser = null;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`DocRaptor API error: ${response.status} - ${errorText}`);
+    }
+
+    const pdfBuffer = Buffer.from(await response.arrayBuffer());
 
     const duration = Date.now() - startTime;
     console.log(`[PDF-TEST] Success! Generated ${pdfBuffer.length} bytes in ${duration}ms`);
@@ -228,14 +228,9 @@ app.get("/pdf-test", async (_req, res) => {
     const duration = Date.now() - startTime;
     console.error(`[PDF-TEST] Failed after ${duration}ms:`, error.message);
 
-    if (browser) {
-      try { await browser.close(); } catch (e) { /* ignore */ }
-    }
-
     res.status(500).json({
       error: "PDF generation failed",
       message: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       duration: `${duration}ms`,
     });
   }

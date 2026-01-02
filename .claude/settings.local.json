@@ -135,7 +135,9 @@
       "Bash(AUTH_TOKEN=\"eyJhbGciOiJIUzI1NiIsImtpZCI6Im9XTFJlL3lEWkJZdmxqVXMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL29jeXhsb25ncWN5anBmcW9kZ2lkLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIyN2E5N2RmNC0xMzIzLTQ4YzAtYjAyNi05ZTcxNDkwYjkwNmUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzY3MTIwMDUxLCJpYXQiOjE3NjcxMTY0NTEsImVtYWlsIjoia29zZW9nbHVjYW5AZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6Imtvc2VvZ2x1Y2FuQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJDYW4iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6IjI3YTk3ZGY0LTEzMjMtNDhjMC1iMDI2LTllNzE0OTBiOTA2ZSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzY3MTE2NDUxfV0sInNlc3Npb25faWQiOiJjZGU2NGUwMS1mN2NkLTRhNjMtYTQxMi1iMGE5YmMzNWNkMTIiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.O_88Ibp9m3FzOITGK9Ac4YZsMm97dvimAK_XKwahYBc\" node scripts/test-vs32-interpretation.js)",
       "Bash(git fetch:*)",
       "WebFetch(domain:www.mollie.com)",
-      "Bash(copy \"C:\\\\Users\\\\koseo\\\\Desktop\\\\Claude dumpster\\\\CFO LENS AI LOGO.png\" \"C:\\\\Users\\\\koseo\\\\cfodiagnosis_v1\\\\cfo-frontend\\\\public\\\\logo-variations.png\")"
+      "Bash(copy \"C:\\\\Users\\\\koseo\\\\Desktop\\\\Claude dumpster\\\\CFO LENS AI LOGO.png\" \"C:\\\\Users\\\\koseo\\\\cfodiagnosis_v1\\\\cfo-frontend\\\\public\\\\logo-variations.png\")",
+      "Bash(npm uninstall:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
