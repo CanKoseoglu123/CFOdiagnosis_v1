@@ -3,6 +3,7 @@
 // VS20 — Dynamic Action Engine (DerivedAction)
 // V2.1 — PrioritizedAction with P1/P2/P3 and Initiative grouping
 // VS21 — Objective Importance Matrix (Calibration Layer)
+// VS26 — Pain Point Context Boosting
 
 import type { ActionType } from "../specs/types";
 
@@ -71,10 +72,11 @@ export interface PrioritizedAction {
   impact: string;                    // Why this matters
   effort: 'low' | 'medium' | 'high';
   level: number;                     // Maturity level of the question
-  score: number;                     // Calculated score: (Impact² / Complexity) × 2 if Critical × ImportanceFactor
+  score: number;                     // Calculated score: (Impact² / Complexity) × 2 if Critical × ImportanceFactor × ContextModifier
   is_critical: boolean;              // Whether this is a critical question
   initiative_id?: string;            // Initiative this belongs to
   importance?: ImportanceLevel;      // VS21: Calibrated importance (1-5), default 3
+  boosted_by_context?: boolean;      // VS26: Was this action boosted by pain points?
 }
 
 // V2.1: Grouped actions by initiative
@@ -86,4 +88,14 @@ export interface PrioritizedInitiative {
   priority: 'P1' | 'P2' | 'P3';      // Highest priority among contained actions
   total_score: number;               // Sum of action scores
   actions: PrioritizedAction[];      // Actions within this initiative
+  boosted_by_context?: boolean;      // VS26: Does this initiative contain boosted actions?
+}
+
+// VS26: Pillar context for pain point boosting
+export interface PillarContext {
+  pain_points?: string[];
+  tools?: Array<{
+    tool: string;
+    effectiveness: 'low' | 'medium' | 'high';
+  }>;
 }

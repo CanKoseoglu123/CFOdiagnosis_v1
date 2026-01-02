@@ -3,8 +3,9 @@
 // Fixes "High Performance Purgatory" - P2 uses potential_level, not actual_level
 // Adds 2x critical multiplier and score calculation
 // VS21: Adds ImportanceFactor multiplier from calibration data
+// VS26: Adds pain point context boosting
 
-import { PrioritizedAction, PrioritizedInitiative, CalibrationData, ImportanceLevel, IMPORTANCE_MULTIPLIERS } from "./types";
+import { PrioritizedAction, PrioritizedInitiative, CalibrationData, ImportanceLevel, IMPORTANCE_MULTIPLIERS, PillarContext } from "./types";
 import { MaturityResultV2 } from "../maturity/types";
 import { Spec, SpecQuestion, Initiative } from "../specs/types";
 
@@ -18,21 +19,140 @@ interface DiagnosticInput {
 }
 
 // =============================================================================
+// PAIN POINT PRACTICE MAP (mirrors frontend contextOptions.js)
+// =============================================================================
+
+const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
+  data_wrangling: [
+    'prac_collaborative_systems',
+    'prac_process_automation',
+    'prac_chart_of_accounts'
+  ],
+  forecast_accuracy: [
+    'prac_rolling_forecast_cadence',
+    'prac_operational_drivers',
+    'prac_dynamic_targets',
+    'prac_predictive_analytics'
+  ],
+  partner_engagement: [
+    'prac_commercial_partnership',
+    'prac_strategic_alignment',
+    'prac_variance_investigation',
+    'prac_data_visualization'
+  ],
+  budget_cycle: [
+    'prac_annual_budget_cycle',
+    'prac_continuous_planning',
+    'prac_rolling_forecast_cadence',
+    'prac_process_automation'
+  ],
+  bandwidth: [
+    'prac_process_automation',
+    'prac_shared_services_model',
+    'prac_service_level_agreements'
+  ],
+  tech_fragmentation: [
+    'prac_collaborative_systems',
+    'prac_chart_of_accounts',
+    'prac_process_automation'
+  ],
+  scenario_planning: [
+    'prac_rapid_what_if_capability',
+    'prac_multi_scenario_management',
+    'prac_stress_testing'
+  ],
+  communication: [
+    'prac_data_visualization',
+    'prac_board_level_impact',
+    'prac_operational_drivers'
+  ],
+  realtime_visibility: [
+    'prac_month_end_rigor',
+    'prac_self_service_access',
+    'prac_management_reporting'
+  ]
+};
+
+// =============================================================================
+// CONTEXT MODIFIER
+// =============================================================================
+
+/**
+ * VS26: Calculates a context-based score modifier based on pain points.
+ *
+ * If the user selected a pain point that relates to this question's practice,
+ * the action gets boosted because it directly addresses their stated pain.
+ *
+ * @param question - The question being scored
+ * @param context - Pillar context with pain points and tools
+ * @returns Multiplier (1.0 = no change, >1.0 = boosted)
+ */
+function calculateContextModifier(
+  question: SpecQuestion,
+  context?: PillarContext | null
+): number {
+  if (!context) return 1.0;
+
+  let modifier = 1.0;
+  const practiceId = question.practice_id;
+
+  if (!practiceId) return modifier;
+
+  // Pain point boosting
+  if (context.pain_points && context.pain_points.length > 0) {
+    for (const painPoint of context.pain_points) {
+      const relatedPractices = PAIN_POINT_PRACTICE_MAP[painPoint];
+      if (relatedPractices && relatedPractices.includes(practiceId)) {
+        // Boost by 1.5x for each matching pain point
+        // Cap at 2.0x to avoid runaway scores if multiple pain points match
+        modifier = Math.min(modifier * 1.5, 2.0);
+      }
+    }
+  }
+
+  return modifier;
+}
+
+/**
+ * VS26: Check if a question was boosted by pain points.
+ */
+function wasBoostedByContext(
+  question: SpecQuestion,
+  context?: PillarContext | null
+): boolean {
+  if (!context?.pain_points || !question.practice_id) return false;
+
+  for (const painPoint of context.pain_points) {
+    const relatedPractices = PAIN_POINT_PRACTICE_MAP[painPoint];
+    if (relatedPractices && relatedPractices.includes(question.practice_id)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
 
 /**
- * Calculates the action score using the V2.1 formula with VS21 calibration.
- * Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
+ * Calculates the action score using the V2.2 formula with VS21 calibration and VS26 context.
+ * Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor × ContextModifier
  *
  * The 2x critical multiplier ensures criticals rank above high-ROI governance tasks.
  * The ImportanceFactor (0.5x to 1.5x) allows users to adjust priority based on organizational needs.
+ * The ContextModifier (1.0x to 2.0x) boosts actions that address stated pain points.
  *
  * @param question - The question/action being scored
  * @param calibration - Optional calibration data with importance_map
+ * @param context - Optional VS26 pillar context for pain point boosting
  * @returns Calculated score (rounded to 1 decimal)
  */
-function calculateScore(question: SpecQuestion, calibration?: CalibrationData | null): number {
+function calculateScore(
+  question: SpecQuestion,
+  calibration?: CalibrationData | null,
+  context?: PillarContext | null
+): number {
   const impact = question.impact ?? 3;
   const complexity = question.complexity ?? 3;
 
@@ -50,6 +170,10 @@ function calculateScore(question: SpecQuestion, calibration?: CalibrationData | 
       score = score * IMPORTANCE_MULTIPLIERS[importance];
     }
   }
+
+  // VS26: ContextModifier from pain points
+  const contextModifier = calculateContextModifier(question, context);
+  score = score * contextModifier;
 
   return Math.round(score * 10) / 10; // Round to 1 decimal
 }
@@ -142,7 +266,7 @@ function getFailedQuestionsAtLevel(
 // =============================================================================
 
 /**
- * Prioritizes actions using P1/P2/P3 logic.
+ * Prioritizes actions using P1/P2/P3 logic with context modifiers.
  *
  * P1 (Unlock): Failed criticals causing the cap
  * P2 (Optimize): Failed questions up to POTENTIAL level (not actual)
@@ -151,19 +275,23 @@ function getFailedQuestionsAtLevel(
  * Key Insight: Use potential_level for P2 to avoid "High Performance Purgatory"
  * A 90% scorer capped at L1 should see L1, L2, AND L3 gaps in P2.
  *
- * Score Formula: (Impact² / Complexity) × CriticalBoost × ImportanceFactor
+ * VS26: Pain points boost actions in related practices by 1.5x (capped at 2.0x)
+ *
+ * Score Formula: (Impact² / Complexity) × CriticalBoost × ImportanceFactor × ContextModifier
  *
  * @param maturity - V2 maturity result with potential_level
  * @param inputs - User answers
  * @param questions - All questions from spec
  * @param calibration - Optional VS21 calibration data for importance multipliers
+ * @param context - Optional VS26 pillar context for pain point boosting
  * @returns Sorted array of PrioritizedAction
  */
 export function prioritizeActions(
   maturity: MaturityResultV2,
   inputs: DiagnosticInput[],
   questions: SpecQuestion[],
-  calibration?: CalibrationData | null
+  calibration?: CalibrationData | null,
+  context?: PillarContext | null
 ): PrioritizedAction[] {
   const actions: PrioritizedAction[] = [];
   const { actual_level, potential_level, capped_by } = maturity;
@@ -193,10 +321,11 @@ export function prioritizeActions(
         impact: 'Unlocks next maturity level',
         effort: estimateEffort(q),
         level: q.level ?? 1,
-        score: calculateScore(q, calibration),
+        score: calculateScore(q, calibration, context),
         is_critical: q.is_critical ?? false,
         initiative_id: q.initiative_id,
         importance: getImportance(q),
+        boosted_by_context: wasBoostedByContext(q, context),
       });
     }
   }
@@ -225,10 +354,11 @@ export function prioritizeActions(
             : 'Advances toward potential',
         effort: estimateEffort(q),
         level: qLevel,
-        score: calculateScore(q, calibration),
+        score: calculateScore(q, calibration, context),
         is_critical: q.is_critical ?? false,
         initiative_id: q.initiative_id,
         importance: getImportance(q),
+        boosted_by_context: wasBoostedByContext(q, context),
       });
     }
   }
@@ -252,10 +382,11 @@ export function prioritizeActions(
         impact: 'Prepares for next level',
         effort: estimateEffort(q),
         level: q.level ?? 1,
-        score: calculateScore(q, calibration),
+        score: calculateScore(q, calibration, context),
         is_critical: q.is_critical ?? false,
         initiative_id: q.initiative_id,
         importance: getImportance(q),
+        boosted_by_context: wasBoostedByContext(q, context),
       });
     }
   }
@@ -316,6 +447,9 @@ export function groupActionsByInitiative(
     // Calculate total score
     const totalScore = groupedActions.reduce((sum, a) => sum + a.score, 0);
 
+    // VS26: Check if any action in initiative was boosted
+    const hasBoostedActions = groupedActions.some(a => a.boosted_by_context);
+
     result.push({
       initiative_id: initId,
       initiative_title: initiative?.title ?? 'Other Actions',
@@ -324,6 +458,7 @@ export function groupActionsByInitiative(
       priority: highestPriority,
       total_score: Math.round(totalScore * 10) / 10,
       actions: groupedActions,
+      boosted_by_context: hasBoostedActions,
     });
   }
 
