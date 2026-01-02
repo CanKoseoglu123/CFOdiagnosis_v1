@@ -24,6 +24,7 @@ import PriorityMatrix from '../components/report/PriorityMatrix';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
 import FinalReportTab from '../components/report/FinalReportTab';
+import ExecutiveReport from '../components/ExecutiveReport';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -416,10 +417,10 @@ export default function PillarReport() {
           {/* ─────────────────────────────────────────────────────────────── */}
           <div className="flex gap-6 border-b border-slate-200">
             <button
-              onClick={() => isFinalized && setActiveTab('executive')}
+              onClick={() => isFinalized && setActiveTab('committed')}
               disabled={!isFinalized}
               className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'executive'
+                activeTab === 'committed'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : !isFinalized
                     ? 'text-slate-400 cursor-not-allowed'
@@ -428,7 +429,7 @@ export default function PillarReport() {
               title={!isFinalized ? 'Finalize your action plan to unlock' : ''}
             >
               {!isFinalized && <Lock className="w-3 h-3" />}
-              Executive Report
+              Committed Action Plan
             </button>
             <button
               onClick={() => setActiveTab('overview')}
@@ -459,6 +460,21 @@ export default function PillarReport() {
               }`}
             >
               Action Planning
+            </button>
+            <button
+              onClick={() => isFinalized && setActiveTab('executive-report')}
+              disabled={!isFinalized}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                activeTab === 'executive-report'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : !isFinalized
+                    ? 'text-slate-400 cursor-not-allowed'
+                    : 'text-slate-500 hover:text-slate-700'
+              }`}
+              title={!isFinalized ? 'Finalize your action plan to unlock' : ''}
+            >
+              {!isFinalized && <Lock className="w-3 h-3" />}
+              Executive Report
             </button>
           </div>
           {/* OVERVIEW TAB */}
@@ -537,8 +553,8 @@ export default function PillarReport() {
             )
           )}
 
-          {/* EXECUTIVE REPORT TAB (VS-32) - Print-first 2-page memo */}
-          {activeTab === 'executive' && (
+          {/* COMMITTED ACTION PLAN TAB (formerly Executive Report, VS-32) */}
+          {activeTab === 'committed' && (
             spec ? (
               <FinalReportTab
                 runId={runId}
@@ -556,6 +572,17 @@ export default function PillarReport() {
                 <div className="text-slate-500">Loading executive report...</div>
               </div>
             )
+          )}
+
+          {/* EXECUTIVE REPORT TAB - PDF Export (VS-44) */}
+          {activeTab === 'executive-report' && (
+            <ExecutiveReport
+              runId={runId}
+              report={report}
+              actionPlan={Object.values(actionPlan || {})}
+              isFinalized={isFinalized}
+              companyName={companyName}
+            />
           )}
 
         </EnterpriseCanvas>

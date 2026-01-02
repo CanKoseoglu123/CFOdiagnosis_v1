@@ -29,6 +29,7 @@ import {
   DiagnosticContextV1
 } from "./specs/schemas";
 import { normalizeContext } from "./utils/contextAdapter";
+import { generatePdf } from "./pdfGenerator";
 
 const app = express();
 
@@ -1481,6 +1482,257 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
     finalized_at: data.finalized_at,
     action_count: (actionPlanItems || []).length
   });
+});
+
+// ------------------------------------------------------------------
+// VS-44 — Executive Report: Customizations
+// ------------------------------------------------------------------
+
+// GET /diagnostic-runs/:id/report-customizations
+app.get("/diagnostic-runs/:id/report-customizations", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data: run, error } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, report_customizations, finalized_at")
+    .eq("id", runId)
+    .single();
+
+  if (error || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Check if run has actions
+  const { count: actionCount } = await req.supabase
+    .from("action_plans")
+    .select("*", { count: "exact", head: true })
+    .eq("run_id", runId);
+
+  res.json({
+    customizations: run.report_customizations || null,
+    is_finalized: Boolean(run.finalized_at),
+    has_actions: (actionCount || 0) > 0
+  });
+});
+
+// POST /diagnostic-runs/:id/report-customizations
+app.post("/diagnostic-runs/:id/report-customizations", async (req, res) => {
+  const runId = req.params.id;
+  const { customizations } = req.body;
+
+  if (!customizations || typeof customizations !== "object") {
+    return res.status(400).json({ error: "Invalid customizations object" });
+  }
+
+  // Verify run exists and is not finalized
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, finalized_at")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify customizations after finalization"
+    });
+  }
+
+  // Validate customizations structure
+  const validatedCustomizations = {
+    slide_titles: customizations.slide_titles || {},
+    slide_visibility: customizations.slide_visibility || {},
+    key_messages: customizations.key_messages || null,
+    action_labels: customizations.action_labels || {}
+  };
+
+  // Validate title lengths (max 100 chars)
+  for (const [key, title] of Object.entries(validatedCustomizations.slide_titles)) {
+    if (typeof title === "string" && title.length > 100) {
+      return res.status(400).json({
+        error: `Title for ${key} exceeds 100 characters`
+      });
+    }
+  }
+
+  // Update customizations
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .update({ report_customizations: validatedCustomizations })
+    .eq("id", runId)
+    .select("report_customizations")
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({
+    success: true,
+    customizations: data.report_customizations
+  });
+});
+
+// POST /diagnostic-runs/:id/report/generate
+app.post("/diagnostic-runs/:id/report/generate", async (req, res) => {
+  const runId = req.params.id;
+  const startTime = Date.now();
+
+  try {
+    // Verify run is finalized
+    const { data: run, error: runError } = await req.supabase
+      .from("diagnostic_runs")
+      .select("id, finalized_at, action_plan_snapshot, report_customizations, context")
+      .eq("id", runId)
+      .single();
+
+    if (runError || !run) {
+      return res.status(404).json({ error: "Run not found" });
+    }
+
+    if (!run.finalized_at) {
+      return res.status(400).json({
+        error: "Run must be finalized before generating PDF"
+      });
+    }
+
+    // Get scores from the latest report
+    const { data: scores } = await req.supabase
+      .from("diagnostic_scores")
+      .select("overall_score, maturity_level")
+      .eq("run_id", runId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    const timestamp = new Date().toISOString();
+
+    // Generate PDF using DocRaptor
+    const pdfBuffer = await generatePdf({
+      runId,
+      companyName: run.context?.company?.name || "Company",
+      industry: run.context?.company?.industry,
+      overallScore: scores?.overall_score || 0,
+      maturityLevel: scores?.maturity_level || 1,
+      customizations: run.report_customizations || {},
+      actions: run.action_plan_snapshot || [],
+      timestamp,
+    });
+
+    // Store PDF in Supabase Storage
+    const pdfPath = `${req.userId}/${runId}/executive_report_${timestamp.replace(/[-:T]/g, "").slice(0, 15)}.pdf`;
+
+    const { error: uploadError } = await req.supabase.storage
+      .from("reports")
+      .upload(pdfPath, pdfBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("[PDF] Storage upload failed:", uploadError.message);
+      // Continue anyway - we can still serve the PDF directly
+    }
+
+    // Update run with PDF path
+    const { error: updateError } = await req.supabase
+      .from("diagnostic_runs")
+      .update({
+        report_pdf_path: pdfPath,
+        report_generated_at: timestamp,
+      })
+      .eq("id", runId);
+
+    if (updateError) {
+      console.error("[PDF] Failed to update run:", updateError.message);
+    }
+
+    const duration = Date.now() - startTime;
+    console.log(`[PDF] Generated Executive Report for ${runId.slice(0, 8)} in ${duration}ms`);
+
+    res.json({
+      success: true,
+      pdf_path: pdfPath,
+      generated_at: timestamp,
+      size_bytes: pdfBuffer.length,
+      duration_ms: duration,
+    });
+  } catch (error: any) {
+    const duration = Date.now() - startTime;
+    console.error(`[PDF] Generation failed after ${duration}ms:`, error.message);
+
+    res.status(500).json({
+      success: false,
+      error: "PDF generation failed",
+      message: error.message,
+      retryable: true,
+    });
+  }
+});
+
+// GET /diagnostic-runs/:id/report/download
+app.get("/diagnostic-runs/:id/report/download", async (req, res) => {
+  const runId = req.params.id;
+
+  try {
+    // Get run with PDF path
+    const { data: run, error: runError } = await req.supabase
+      .from("diagnostic_runs")
+      .select("id, report_pdf_path, finalized_at, context")
+      .eq("id", runId)
+      .single();
+
+    if (runError || !run) {
+      return res.status(404).json({ error: "Run not found" });
+    }
+
+    if (!run.finalized_at) {
+      return res.status(400).json({ error: "Run is not finalized" });
+    }
+
+    if (!run.report_pdf_path) {
+      return res.status(404).json({
+        error: "PDF not generated yet",
+        hint: "Call POST /diagnostic-runs/:id/report/generate first"
+      });
+    }
+
+    // Download PDF from Supabase Storage
+    const { data: pdfData, error: downloadError } = await req.supabase.storage
+      .from("reports")
+      .download(run.report_pdf_path);
+
+    if (downloadError || !pdfData) {
+      console.error("[PDF] Download failed:", downloadError?.message);
+      return res.status(404).json({
+        error: "PDF file not found in storage",
+        hint: "Try regenerating the PDF"
+      });
+    }
+
+    // Convert Blob to Buffer
+    const pdfBuffer = Buffer.from(await pdfData.arrayBuffer());
+    const companyName = run.context?.company?.name || "Company";
+    const safeName = companyName.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 30);
+    const filename = `Executive_Report_${safeName}_${runId.slice(0, 8)}.pdf`;
+
+    // Send PDF with proper headers
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Length": pdfBuffer.length,
+    });
+    res.send(pdfBuffer);
+  } catch (error: any) {
+    console.error("[PDF] Download error:", error.message);
+    res.status(500).json({
+      error: "Failed to download PDF",
+      message: error.message
+    });
+  }
 });
 
 // ------------------------------------------------------------------
