@@ -1,10 +1,12 @@
 /**
  * VS-44: Executive Report PDF Generator
  * Uses DocRaptor Cloud PDF API to generate boardroom-ready PDFs
+ * Premium consultant quality - think McKinsey, BCG, Bain deliverables
  */
 
 import { wrapInHtmlDocument, renderSlideWrapper, escapeHtml, formatDate, formatTimestamp } from './templates';
 import { REPORT_THEME } from './theme';
+import { LOGO_HORIZONTAL_BASE64 } from './assets';
 
 interface ActionPlan {
   question_id: string;
@@ -13,6 +15,8 @@ interface ActionPlan {
   timeline?: string;
   owner?: string;
   status?: string;
+  practice_id?: string;
+  practice_name?: string;
 }
 
 interface Objective {
@@ -27,8 +31,12 @@ interface Objective {
 interface Practice {
   id?: string;
   name?: string;
+  title?: string;
   practice_id?: string;
+  objective_id?: string;
   evidence_state?: 'full' | 'partial' | 'none' | 'proven' | 'gap' | 'not_proven';
+  maturity_level?: number;
+  has_critical?: boolean;
 }
 
 interface FootprintLevel {
@@ -41,6 +49,7 @@ interface CriticalRisk {
   evidence_id?: string;
   title?: string;
   question_text?: string;
+  objective_id?: string;
   expert_action?: {
     title?: string;
   };
@@ -54,6 +63,11 @@ interface ReportCustomizations {
     messages?: Array<{ title: string; body: string }>;
   } | null;
   action_labels?: Record<string, string>;
+}
+
+interface CalibrationData {
+  importance_map?: Record<string, number>;
+  locked?: string[];
 }
 
 interface GenerateReportInput {
@@ -71,15 +85,19 @@ interface GenerateReportInput {
     levels?: FootprintLevel[];
   };
   criticalRisks?: CriticalRisk[];
+  calibration?: CalibrationData;
+  specPractices?: Practice[];
+  specObjectives?: Objective[];
 }
 
 const DEFAULT_TITLES = {
   cover: 'FP&A Maturity Assessment',
-  executive_summary: 'Executive Summary',
-  maturity_footprint: 'Maturity Footprint',
-  strengths_gaps: 'Strengths & Gaps',
-  committed_actions: 'Committed Actions',
+  key_messages: 'Key Messages',
+  objectives_practices: 'Objectives & Practices',
+  priority_matrix: 'Priority Matrix',
   projected_impact: 'Projected Impact',
+  objective_journey: 'Objective Journey',
+  committed_actions: 'Committed Actions',
 };
 
 const MATURITY_LABELS: Record<number, string> = {
@@ -89,30 +107,70 @@ const MATURITY_LABELS: Record<number, string> = {
   4: 'Optimized',
 };
 
+// Objective IDs in display order
+const OBJECTIVES_ORDER = [
+  { id: 'obj_budget_discipline', shortTitle: 'Budget Discipline', theme: 'Foundation' },
+  { id: 'obj_financial_controls', shortTitle: 'Financial Controls', theme: 'Foundation' },
+  { id: 'obj_performance_monitoring', shortTitle: 'Performance Monitoring', theme: 'Foundation' },
+  { id: 'obj_forecasting_agility', shortTitle: 'Forecasting Agility', theme: 'Future' },
+  { id: 'obj_driver_based_planning', shortTitle: 'Driver-Based Planning', theme: 'Future' },
+  { id: 'obj_scenario_modeling', shortTitle: 'Scenario Modeling', theme: 'Future' },
+  { id: 'obj_strategic_influence', shortTitle: 'Strategic Influence', theme: 'Intelligence' },
+  { id: 'obj_decision_support', shortTitle: 'Decision Support', theme: 'Intelligence' },
+  { id: 'obj_operational_excellence', shortTitle: 'Operational Excellence', theme: 'Intelligence' },
+];
+
+// Practice to objective mapping
+const PRACTICE_OBJECTIVE_MAP: Record<string, string> = {
+  'prac_annual_budget_cycle': 'obj_budget_discipline',
+  'prac_budget_ownership': 'obj_budget_discipline',
+  'prac_policy_&_governance': 'obj_budget_discipline',
+  'prac_chart_of_accounts': 'obj_financial_controls',
+  'prac_approval_workflows': 'obj_financial_controls',
+  'prac_month_end_rigor': 'obj_financial_controls',
+  'prac_management_reporting': 'obj_performance_monitoring',
+  'prac_budget_vs_actuals': 'obj_performance_monitoring',
+  'prac_variance_investigation': 'obj_performance_monitoring',
+  'prac_rolling_forecast_cadence': 'obj_forecasting_agility',
+  'prac_cash_flow_visibility': 'obj_forecasting_agility',
+  'prac_collaborative_systems': 'obj_forecasting_agility',
+  'prac_operational_drivers': 'obj_driver_based_planning',
+  'prac_dynamic_targets': 'obj_driver_based_planning',
+  'prac_continuous_planning': 'obj_driver_based_planning',
+  'prac_rapid_what_if_capability': 'obj_scenario_modeling',
+  'prac_multi_scenario_management': 'obj_scenario_modeling',
+  'prac_stress_testing': 'obj_scenario_modeling',
+  'prac_commercial_partnership': 'obj_strategic_influence',
+  'prac_strategic_alignment': 'obj_strategic_influence',
+  'prac_board_level_impact': 'obj_strategic_influence',
+  'prac_investment_rigor': 'obj_strategic_influence',
+  'prac_data_visualization': 'obj_decision_support',
+  'prac_self_service_access': 'obj_decision_support',
+  'prac_predictive_analytics': 'obj_decision_support',
+  'prac_process_automation': 'obj_operational_excellence',
+  'prac_shared_services_model': 'obj_operational_excellence',
+  'prac_service_level_agreements': 'obj_operational_excellence',
+};
+
 /**
- * Build cover slide HTML
+ * Build cover slide HTML - Premium consultant style
  */
 function buildCoverSlide(input: GenerateReportInput, slideNumber: string): string {
-  const { companyName, overallScore, maturityLevel, customizations, timestamp, runId } = input;
+  const { companyName, timestamp, runId, customizations } = input;
   const title = customizations?.slide_titles?.cover || DEFAULT_TITLES.cover;
-  const levelName = MATURITY_LABELS[maturityLevel] || 'Emerging';
 
   return `
     <div class="slide slide-cover">
       <div class="slide-number">${slideNumber}</div>
       <div class="cover-content">
-        <div class="company-name">${escapeHtml(companyName || 'Your Company')}</div>
-        <h1 class="cover-title">${escapeHtml(title)}</h1>
-        <div class="cover-subtitle">Executive Report</div>
-        <div class="cover-badges">
-          <span class="badge-level">Level ${maturityLevel}: ${levelName}</span>
-          <span class="badge-score">Score: ${overallScore}%</span>
+        <div class="cover-logo">
+          <img src="${LOGO_HORIZONTAL_BASE64}" alt="CFO Lens" class="logo-large" />
         </div>
+        <div class="cover-company">${escapeHtml(companyName || 'Your Company')}</div>
+        <h1 class="cover-title">${escapeHtml(title)}</h1>
         <div class="cover-date">${formatDate(timestamp)}</div>
       </div>
-      <div class="cover-branding">
-        <span class="logo-text">CFO Lens</span>
-      </div>
+      <div class="cover-divider"></div>
       <div class="slide-footer">
         Generated: ${formatTimestamp(timestamp)} | Session: ${runId.slice(0, 8)}
       </div>
@@ -121,48 +179,132 @@ function buildCoverSlide(input: GenerateReportInput, slideNumber: string): strin
 }
 
 /**
- * Build executive summary slide HTML
+ * Build Key Messages slide HTML (Under Construction for now)
  */
-function buildExecutiveSummarySlide(input: GenerateReportInput, slideNumber: string): string {
-  const { overallScore, maturityLevel, actions, objectives = [], timestamp, runId, customizations } = input;
-  const title = customizations?.slide_titles?.executive_summary || DEFAULT_TITLES.executive_summary;
-  const levelName = MATURITY_LABELS[maturityLevel] || 'Emerging';
+function buildKeyMessagesSlide(input: GenerateReportInput, slideNumber: string): string {
+  const { timestamp, runId, customizations } = input;
+  const title = customizations?.slide_titles?.key_messages || DEFAULT_TITLES.key_messages;
+  const keyMessages = customizations?.key_messages;
 
-  // Build objectives progress bars
-  const objectivesHtml = objectives.slice(0, 6).map(obj => {
-    const name = obj.objective_name || obj.title || obj.name || 'Objective';
-    const score = Math.round(obj.score || 0);
+  let content = '';
+
+  if (keyMessages?.messages && keyMessages.messages.length > 0) {
+    // Real key messages
+    const headline = keyMessages.headline || 'Executive Insights';
+    const messagesHtml = keyMessages.messages.slice(0, 4).map(m => `
+      <div class="message-card">
+        <h3>${escapeHtml(m.title)}</h3>
+        <p>${escapeHtml(m.body)}</p>
+      </div>
+    `).join('');
+
+    content = `
+      <div class="key-messages-headline">${escapeHtml(headline)}</div>
+      <div class="messages-grid">
+        ${messagesHtml}
+      </div>
+    `;
+  } else {
+    // Under Construction state
+    content = `
+      <div class="coming-soon">
+        <div class="coming-soon-icon">🚧</div>
+        <div class="coming-soon-title">Under Construction</div>
+        <div class="coming-soon-subtitle">AI-powered executive insights coming soon</div>
+      </div>
+    `;
+  }
+
+  return renderSlideWrapper({
+    title,
+    content,
+    slideNumber,
+    footerData: { timestamp, sessionId: runId.slice(0, 8) },
+    logoSrc: LOGO_HORIZONTAL_BASE64,
+  });
+}
+
+/**
+ * Build Objectives & Practices slide - 9-column grid
+ */
+function buildObjectivesPracticesSlide(input: GenerateReportInput, slideNumber: string): string {
+  const { maturityFootprint, objectives = [], timestamp, runId, customizations } = input;
+  const title = customizations?.slide_titles?.objectives_practices || DEFAULT_TITLES.objectives_practices;
+  const levels = maturityFootprint?.levels || [];
+
+  // Build objective scores map
+  const objectiveScores: Record<string, number> = {};
+  objectives.forEach(obj => {
+    const objId = obj.id || obj.objective_id || '';
+    objectiveScores[objId] = Math.round(obj.score || 0);
+  });
+
+  // Flatten practices and map to objectives
+  const allPractices: Practice[] = [];
+  levels.forEach(level => {
+    (level.practices || []).forEach(practice => {
+      allPractices.push({
+        ...practice,
+        maturity_level: practice.maturity_level || level.level,
+      });
+    });
+  });
+
+  // Group practices by objective
+  const practicesByObjective: Record<string, Practice[]> = {};
+  OBJECTIVES_ORDER.forEach(obj => {
+    practicesByObjective[obj.id] = [];
+  });
+
+  allPractices.forEach(practice => {
+    const objectiveId = PRACTICE_OBJECTIVE_MAP[practice.id || ''];
+    if (objectiveId && practicesByObjective[objectiveId]) {
+      practicesByObjective[objectiveId].push(practice);
+    }
+  });
+
+  // Sort practices by maturity level
+  Object.keys(practicesByObjective).forEach(objId => {
+    practicesByObjective[objId].sort((a, b) => (a.maturity_level || 1) - (b.maturity_level || 1));
+  });
+
+  // Build grid HTML
+  const columnsHtml = OBJECTIVES_ORDER.map(obj => {
+    const practices = practicesByObjective[obj.id] || [];
+    const score = objectiveScores[obj.id];
+
+    const practicesHtml = practices.map(p => {
+      const state = p.evidence_state;
+      const colorClass = (state === 'full' || state === 'proven') ? 'practice-proven'
+        : state === 'partial' ? 'practice-partial'
+        : 'practice-gap';
+      return `<div class="practice-box ${colorClass}" title="${escapeHtml(p.name || p.title || '')}">${escapeHtml(p.title || p.name || '')}</div>`;
+    }).join('');
+
+    const scoreClass = score >= 70 ? 'score-high' : score >= 40 ? 'score-medium' : 'score-low';
+
     return `
-      <div class="objective-row">
-        <div class="objective-name">${escapeHtml(name)}</div>
-        <div class="objective-bar">
-          <div class="objective-fill" style="width: ${score}%"></div>
+      <div class="objective-column">
+        <div class="objective-header">
+          ${score !== undefined ? `<span class="objective-score ${scoreClass}">${score}</span>` : ''}
+          <span class="objective-title">${escapeHtml(obj.shortTitle)}</span>
         </div>
-        <div class="objective-score">${score}%</div>
+        <div class="practices-stack">
+          ${practicesHtml || '<div class="no-practices">-</div>'}
+        </div>
       </div>
     `;
   }).join('');
 
   const content = `
-    <div class="summary-grid">
-      <div class="summary-card">
-        <div class="summary-value">${overallScore}%</div>
-        <div class="summary-label">Overall Score</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-value">L${maturityLevel}</div>
-        <div class="summary-label">${levelName}</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-value">${actions.length}</div>
-        <div class="summary-label">Actions Planned</div>
-      </div>
+    <p class="slide-subtitle">All practices organized by objective. Score shown in corner; colors indicate current state.</p>
+    <div class="objectives-grid">
+      ${columnsHtml}
     </div>
-    <div style="margin-top: 8mm;">
-      <h2 style="font-size: 12pt; color: ${REPORT_THEME.colors.header}; margin-bottom: 4mm;">Objective Scores</h2>
-      <div class="objectives-list">
-        ${objectivesHtml || '<div class="text-muted">No objectives data available</div>'}
-      </div>
+    <div class="grid-legend">
+      <span class="legend-item"><span class="legend-box practice-proven"></span> Proven</span>
+      <span class="legend-item"><span class="legend-box practice-partial"></span> Partial</span>
+      <span class="legend-item"><span class="legend-box practice-gap"></span> Gap</span>
     </div>
   `;
 
@@ -170,62 +312,141 @@ function buildExecutiveSummarySlide(input: GenerateReportInput, slideNumber: str
     title,
     content,
     slideNumber,
-    footerData: { timestamp, sessionId: runId.slice(0, 8) }
+    footerData: { timestamp, sessionId: runId.slice(0, 8) },
+    logoSrc: LOGO_HORIZONTAL_BASE64,
   });
 }
 
 /**
- * Build maturity footprint slide HTML
+ * Build Priority Matrix slide - BCG-style quadrant
  */
-function buildMaturityFootprintSlide(input: GenerateReportInput, slideNumber: string): string {
-  const { maturityFootprint, timestamp, runId, customizations } = input;
-  const title = customizations?.slide_titles?.maturity_footprint || DEFAULT_TITLES.maturity_footprint;
+function buildPriorityMatrixSlide(input: GenerateReportInput, slideNumber: string): string {
+  const { maturityFootprint, maturityLevel, calibration, timestamp, runId, customizations } = input;
+  const title = customizations?.slide_titles?.priority_matrix || DEFAULT_TITLES.priority_matrix;
   const levels = maturityFootprint?.levels || [];
+  const importanceMap = calibration?.importance_map || {};
+  const userLevel = maturityLevel || 1;
 
-  let footprintHtml = '';
+  // Flatten practices with metadata
+  const practices: Array<Practice & { importance: number; priorityRow: string }> = [];
+  levels.forEach(level => {
+    (level.practices || []).forEach(fp => {
+      const objectiveId = PRACTICE_OBJECTIVE_MAP[fp.id || ''] || fp.objective_id;
+      const importance = importanceMap[objectiveId || ''] || 3;
+      const isGap = fp.evidence_state === 'not_proven' || fp.evidence_state === 'none';
+      const hasCritical = fp.has_critical || false;
+      const hasCriticalFailure = hasCritical && isGap;
 
-  if (levels.length > 0) {
-    footprintHtml = levels.map(level => {
-      const practices = level.practices || [];
-      const fullCount = practices.filter(p => p.evidence_state === 'full' || p.evidence_state === 'proven').length;
-      const partialCount = practices.filter(p => p.evidence_state === 'partial').length;
-      const noneCount = practices.filter(p => p.evidence_state === 'none' || p.evidence_state === 'gap' || p.evidence_state === 'not_proven').length;
+      // Critical failures force Strategic row
+      const priorityRow = (hasCriticalFailure || importance >= 4) ? 'strategic' : 'operational';
 
-      const practiceBoxes = practices.slice(0, 10).map(p => {
-        const state = p.evidence_state;
-        const color = (state === 'full' || state === 'proven') ? REPORT_THEME.colors.proven
-          : state === 'partial' ? REPORT_THEME.colors.partial
-          : REPORT_THEME.colors.gap; // 'none', 'gap', or 'not_proven' all use gap color
-        return `<div class="practice-box" style="background: ${color};" title="${escapeHtml(p.name || '')}"></div>`;
-      }).join('');
+      practices.push({
+        ...fp,
+        importance,
+        priorityRow,
+        maturity_level: fp.maturity_level || level.level,
+      });
+    });
+  });
 
-      return `
-        <div class="footprint-level">
-          <div class="level-label">L${level.level} ${MATURITY_LABELS[level.level] || ''}</div>
-          <div class="level-practices">${practiceBoxes}</div>
-          <div class="level-counts">${fullCount}✓ ${partialCount}◐ ${noneCount}○</div>
-        </div>
-      `;
-    }).join('');
+  // Get column config based on user level
+  type ColumnConfig = { id: string; label: string; sublabel: string; levels: number[] };
+  let columns: ColumnConfig[];
+  if (userLevel === 1) {
+    columns = [
+      { id: 'col1', label: 'Level 1', sublabel: 'URGENT', levels: [1] },
+      { id: 'col2', label: 'Level 2', sublabel: 'NEXT', levels: [2] },
+      { id: 'col3', label: 'L3-4', sublabel: 'VISION', levels: [3, 4] },
+    ];
+  } else if (userLevel === 2) {
+    columns = [
+      { id: 'col1', label: 'L1-2', sublabel: 'URGENT', levels: [1, 2] },
+      { id: 'col2', label: 'Level 3', sublabel: 'NEXT', levels: [3] },
+      { id: 'col3', label: 'Level 4', sublabel: 'VISION', levels: [4] },
+    ];
   } else {
-    footprintHtml = `
-      <div class="coming-soon">
-        <div class="coming-soon-subtitle">Practice evidence data not available</div>
-      </div>
-    `;
+    columns = [
+      { id: 'col1', label: 'L1-2', sublabel: 'FOUNDATION', levels: [1, 2] },
+      { id: 'col2', label: 'Level 3', sublabel: 'CURRENT', levels: [3] },
+      { id: 'col3', label: 'Level 4', sublabel: 'NEXT', levels: [4] },
+    ];
   }
 
+  // Group into grid cells
+  const grid: Record<string, Record<string, typeof practices>> = {
+    strategic: {},
+    operational: {},
+  };
+  columns.forEach(col => {
+    grid.strategic[col.id] = [];
+    grid.operational[col.id] = [];
+  });
+
+  practices.forEach(practice => {
+    const column = columns.find(col => col.levels.includes(practice.maturity_level || 1));
+    if (column) {
+      grid[practice.priorityRow][column.id].push(practice);
+    }
+  });
+
+  // Sort: gaps first
+  const statusOrder: Record<string, number> = { 'not_proven': 0, 'none': 0, 'partial': 1, 'full': 2, 'proven': 2 };
+  Object.keys(grid).forEach(row => {
+    Object.keys(grid[row]).forEach(col => {
+      grid[row][col].sort((a, b) => (statusOrder[a.evidence_state || 'none'] || 0) - (statusOrder[b.evidence_state || 'none'] || 0));
+    });
+  });
+
+  // Build matrix HTML
+  const buildCell = (items: typeof practices, isZoneA: boolean) => {
+    if (items.length === 0) {
+      return '<div class="matrix-cell-empty">-</div>';
+    }
+    return items.slice(0, 6).map(p => {
+      const state = p.evidence_state;
+      const colorClass = (state === 'full' || state === 'proven') ? 'practice-proven'
+        : state === 'partial' ? 'practice-partial'
+        : 'practice-gap';
+      return `<div class="matrix-practice ${colorClass}">${escapeHtml(p.title || p.name || '')}</div>`;
+    }).join('') + (items.length > 6 ? `<div class="matrix-more">+${items.length - 6} more</div>` : '');
+  };
+
   const content = `
-    <p style="font-size: 10pt; color: ${REPORT_THEME.colors.textLight}; margin-bottom: 6mm;">
-      Practice evidence across maturity levels
-    </p>
-    <div class="footprint-grid">
-      ${footprintHtml}
+    <p class="slide-subtitle">Practices grouped by business priority and maturity stage. Focus on top-left first.</p>
+    <div class="matrix-container">
+      <div class="matrix-y-label">
+        <div class="y-label-top">Strategic Focus</div>
+        <div class="y-label-bottom">Operational</div>
+      </div>
+      <div class="matrix-grid-wrapper">
+        <div class="matrix-header">
+          ${columns.map((col, i) => `
+            <div class="matrix-col-header ${i < 2 ? 'zone-urgent' : 'zone-vision'}">
+              <div class="col-label">${col.label}</div>
+              <div class="col-sublabel">${col.sublabel}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="matrix-row matrix-row-strategic">
+          ${columns.map((col, i) => `
+            <div class="matrix-cell ${i < 2 ? 'zone-a' : 'zone-b'}">
+              ${buildCell(grid.strategic[col.id], i < 2)}
+            </div>
+          `).join('')}
+        </div>
+        <div class="matrix-row matrix-row-operational">
+          ${columns.map(col => `
+            <div class="matrix-cell zone-c">
+              ${buildCell(grid.operational[col.id], false)}
+            </div>
+          `).join('')}
+        </div>
+      </div>
     </div>
-    <div class="footprint-legend">
-      <span class="legend-item"><span class="legend-box" style="background: ${REPORT_THEME.colors.proven};"></span> Proven</span>
-      <span class="legend-item"><span class="legend-box" style="background: ${REPORT_THEME.colors.partial};"></span> Partial</span>
-      <span class="legend-item"><span class="legend-box" style="background: ${REPORT_THEME.colors.gap};"></span> Gap</span>
+    <div class="grid-legend">
+      <span class="legend-item"><span class="legend-box practice-proven"></span> Proven</span>
+      <span class="legend-item"><span class="legend-box practice-partial"></span> Partial</span>
+      <span class="legend-item"><span class="legend-box practice-gap"></span> Gap</span>
     </div>
   `;
 
@@ -233,89 +454,270 @@ function buildMaturityFootprintSlide(input: GenerateReportInput, slideNumber: st
     title,
     content,
     slideNumber,
-    footerData: { timestamp, sessionId: runId.slice(0, 8) }
+    footerData: { timestamp, sessionId: runId.slice(0, 8) },
+    logoSrc: LOGO_HORIZONTAL_BASE64,
   });
 }
 
 /**
- * Build strengths & gaps slide HTML
+ * Build Projected Impact slide HTML
  */
-function buildStrengthsGapsSlide(input: GenerateReportInput, slideNumber: string): string {
-  const { objectives = [], criticalRisks = [], timestamp, runId, customizations } = input;
-  const title = customizations?.slide_titles?.strengths_gaps || DEFAULT_TITLES.strengths_gaps;
+function buildProjectedImpactSlide(input: GenerateReportInput, slideNumber: string): string {
+  const { overallScore, maturityLevel, actions, timestamp, runId, customizations } = input;
+  const title = customizations?.slide_titles?.projected_impact || DEFAULT_TITLES.projected_impact;
+  const levelName = MATURITY_LABELS[maturityLevel] || 'Emerging';
 
-  // Strengths (high-scoring objectives)
-  const strengths = objectives.filter(o => (o.score || 0) >= 60).slice(0, 3);
-  const strengthsHtml = strengths.length > 0
-    ? strengths.map(obj => {
-        const name = obj.objective_name || obj.title || obj.name || 'Objective';
-        const score = Math.round(obj.score || 0);
-        return `
-          <div class="strength-item">
-            <span class="strength-name">${escapeHtml(name)}</span>
-            <span class="strength-score">${score}%</span>
-          </div>
-        `;
-      }).join('')
-    : '<div class="text-muted">No high-scoring objectives yet</div>';
+  // Calculate projected score
+  const improvement = Math.min(actions.length * 3, 25);
+  const projectedScore = Math.min(overallScore + improvement, 100);
 
-  // Improvement areas (low-scoring objectives)
-  const improvements = objectives.filter(o => (o.score || 0) < 40).slice(0, 3);
-  const improvementsHtml = improvements.length > 0
-    ? improvements.map(obj => {
-        const name = obj.objective_name || obj.title || obj.name || 'Objective';
-        const score = Math.round(obj.score || 0);
-        return `
-          <div class="improvement-item">
-            <span class="improvement-name">${escapeHtml(name)}</span>
-            <span class="improvement-score">${score}%</span>
-          </div>
-        `;
-      }).join('')
-    : '<div class="text-muted">All objectives above 40%</div>';
+  // Timeline distribution
+  const sixMonth = actions.filter(a => a.timeline === '6m').length;
+  const twelveMonth = actions.filter(a => a.timeline === '12m').length;
+  const twentyFourMonth = actions.filter(a => a.timeline === '24m').length;
 
-  // Critical risks
-  const risksHtml = criticalRisks.length > 0
-    ? criticalRisks.slice(0, 4).map(risk => {
-        const riskTitle = risk.expert_action?.title || risk.title || risk.question_text || 'Critical gap';
-        return `<div class="risk-item">${escapeHtml(riskTitle)}</div>`;
-      }).join('')
-    : '<div class="text-muted">No critical gaps identified</div>';
+  // Determine level progression message
+  const nextLevel = maturityLevel + 1;
+  const nextLevelName = MATURITY_LABELS[nextLevel];
+  const levelProgressMsg = maturityLevel < 4 && projectedScore >= 70
+    ? `Progress toward <strong>Level ${nextLevel}: ${nextLevelName}</strong>`
+    : `Strengthen your <strong>Level ${maturityLevel}: ${levelName}</strong> foundation`;
 
   const content = `
-    <div class="insights-grid">
-      <div class="insights-section">
-        <h3 class="section-title section-title-green">✓ Key Strengths</h3>
-        <div class="strengths-list">${strengthsHtml}</div>
+    <div class="projection-grid">
+      <div class="projection-score-block">
+        <div class="score-comparison">
+          <div class="score-current">
+            <div class="score-value">${overallScore}%</div>
+            <div class="score-label">Current</div>
+          </div>
+          <div class="score-arrow">
+            <span class="arrow-line"></span>
+            <span class="improvement-badge">+${improvement}%</span>
+          </div>
+          <div class="score-projected">
+            <div class="score-value score-green">${projectedScore}%</div>
+            <div class="score-label">Projected</div>
+          </div>
+        </div>
+        <div class="score-bar-container">
+          <div class="score-bar">
+            <div class="bar-current" style="width: ${overallScore}%"></div>
+            <div class="bar-improvement" style="left: ${overallScore}%; width: ${improvement}%"></div>
+          </div>
+          <div class="score-scale">
+            <span>0%</span><span>50%</span><span>100%</span>
+          </div>
+        </div>
       </div>
-      <div class="insights-section">
-        <h3 class="section-title section-title-amber">◎ Improvement Areas</h3>
-        <div class="improvements-list">${improvementsHtml}</div>
+
+      <div class="projection-details">
+        <div class="timeline-distribution">
+          <div class="timeline-title">Action Timeline</div>
+          <div class="timeline-bars">
+            <div class="timeline-item">
+              <div class="timeline-count">${sixMonth}</div>
+              <div class="timeline-bar">
+                <div class="bar-fill bar-6m" style="width: ${Math.min(100, sixMonth * 15)}%"></div>
+              </div>
+              <div class="timeline-period">6 months</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-count">${twelveMonth}</div>
+              <div class="timeline-bar">
+                <div class="bar-fill bar-12m" style="width: ${Math.min(100, twelveMonth * 15)}%"></div>
+              </div>
+              <div class="timeline-period">12 months</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-count">${twentyFourMonth}</div>
+              <div class="timeline-bar">
+                <div class="bar-fill bar-24m" style="width: ${Math.min(100, twentyFourMonth * 15)}%"></div>
+              </div>
+              <div class="timeline-period">24 months</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="projection-insight">
+          <div class="insight-icon">📈</div>
+          <div class="insight-text">
+            Completing <strong>${actions.length} action${actions.length !== 1 ? 's' : ''}</strong> could help you ${levelProgressMsg}
+          </div>
+        </div>
       </div>
     </div>
-    ${criticalRisks.length > 0 ? `
-      <div class="critical-section">
-        <h3 class="section-title section-title-red">⚠ Critical Gaps (${criticalRisks.length})</h3>
-        <div class="risks-list">${risksHtml}</div>
-      </div>
-    ` : ''}
   `;
 
   return renderSlideWrapper({
     title,
     content,
     slideNumber,
-    footerData: { timestamp, sessionId: runId.slice(0, 8) }
+    footerData: { timestamp, sessionId: runId.slice(0, 8) },
+    logoSrc: LOGO_HORIZONTAL_BASE64,
   });
 }
 
 /**
- * Build committed actions slides (paginated)
+ * Build Objective Journey slide - Score journey table with milestones
+ */
+function buildObjectiveJourneySlide(input: GenerateReportInput, slideNumber: string): string {
+  const { objectives = [], actions, criticalRisks = [], calibration, timestamp, runId, customizations } = input;
+  const title = customizations?.slide_titles?.objective_journey || DEFAULT_TITLES.objective_journey;
+  const importanceMap = calibration?.importance_map || {};
+
+  // Build objective data with journey projections
+  const objectiveData = objectives.map(obj => {
+    const objId = obj.id || obj.objective_id || '';
+    const score = Math.round(obj.score || 0);
+    const importance = importanceMap[objId] || 3;
+    const objConfig = OBJECTIVES_ORDER.find(o => o.id === objId);
+    const theme = objConfig?.theme || 'Intelligence';
+    const name = obj.objective_name || obj.title || obj.name || objId;
+
+    // Determine status
+    let status = 'opportunity';
+    if (score >= 80) status = 'strength';
+    else if (score < 40 || criticalRisks.some(r => r.objective_id === objId)) status = 'critical';
+
+    // Count actions by timeline for this objective
+    const objActions = actions.filter(a => {
+      const practiceObjId = PRACTICE_OBJECTIVE_MAP[a.practice_id || ''];
+      return practiceObjId === objId;
+    });
+    const actions6m = objActions.filter(a => a.timeline === '6m').length;
+    const actions12m = objActions.filter(a => a.timeline === '12m').length;
+    const actions24m = objActions.filter(a => a.timeline === '24m').length;
+
+    // Project scores (simplified: each action adds ~10% to objective)
+    const totalQuestions = 6; // Approximate
+    const at6m = Math.min(100, score + Math.round((actions6m / totalQuestions) * 100));
+    const at12m = Math.min(100, at6m + Math.round((actions12m / totalQuestions) * 100));
+    const at24m = Math.min(100, at12m + Math.round((actions24m / totalQuestions) * 100));
+
+    // Level mapping
+    const scoreToLevel = (s: number) => s >= 85 ? 4 : s >= 65 ? 3 : s >= 40 ? 2 : 1;
+    const currentLevel = scoreToLevel(score);
+    const targetLevel = scoreToLevel(at24m);
+
+    return {
+      id: objId,
+      name,
+      theme,
+      importance,
+      today: score,
+      at6m,
+      at12m,
+      at24m,
+      currentLevel,
+      targetLevel,
+      actionCount: objActions.length,
+      status,
+    };
+  });
+
+  // Group by theme
+  const themes = ['Foundation', 'Future', 'Intelligence'];
+  const byTheme: Record<string, typeof objectiveData> = {};
+  themes.forEach(t => { byTheme[t] = []; });
+  objectiveData.forEach(obj => {
+    if (byTheme[obj.theme]) {
+      byTheme[obj.theme].push(obj);
+    }
+  });
+
+  // Build table HTML
+  const buildJourneyBar = (value: number, label: string, color: string) => {
+    const textColor = value >= 80 ? 'color-green' : value < 40 ? 'color-red' : '';
+    return `
+      <div class="journey-milestone">
+        <div class="milestone-value ${textColor}">${value}%</div>
+        <div class="milestone-bar"><div class="milestone-fill" style="width: ${value}%; background: ${color};"></div></div>
+        <div class="milestone-label">${label}</div>
+      </div>
+    `;
+  };
+
+  const buildImportanceDots = (level: number) => {
+    return Array(5).fill(0).map((_, i) =>
+      `<span class="importance-dot ${i < level ? 'filled' : ''}"></span>`
+    ).join('');
+  };
+
+  let tableRows = '';
+  themes.forEach(theme => {
+    const objs = byTheme[theme] || [];
+    if (objs.length === 0) return;
+
+    // Theme header
+    tableRows += `<tr class="theme-row"><td colspan="6">${theme}</td></tr>`;
+
+    // Objective rows
+    objs.forEach(obj => {
+      const statusClass = obj.status === 'critical' ? 'status-critical' : obj.status === 'strength' ? 'status-strength' : 'status-opportunity';
+      const statusLabel = obj.status === 'critical' ? 'Critical Fix' : obj.status === 'strength' ? 'Strength' : 'Opportunity';
+
+      tableRows += `
+        <tr class="${obj.status === 'critical' ? 'row-critical' : ''}">
+          <td class="col-objective">${escapeHtml(obj.name)}</td>
+          <td class="col-importance"><div class="importance-dots">${buildImportanceDots(obj.importance)}</div></td>
+          <td class="col-journey">
+            <div class="journey-container">
+              ${buildJourneyBar(obj.today, 'Today', '#64748b')}
+              <span class="journey-arrow">→</span>
+              ${buildJourneyBar(obj.at6m, '6m', '#60a5fa')}
+              <span class="journey-arrow">→</span>
+              ${buildJourneyBar(obj.at12m, '12m', '#3b82f6')}
+              <span class="journey-arrow">→</span>
+              ${buildJourneyBar(obj.at24m, '24m', '#2563eb')}
+            </div>
+          </td>
+          <td class="col-level">
+            <span class="level-badge level-current">L${obj.currentLevel}</span>
+            <span class="level-arrow">→</span>
+            <span class="level-badge level-target">L${obj.targetLevel}</span>
+          </td>
+          <td class="col-actions">${obj.actionCount || '-'}</td>
+          <td class="col-status"><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+        </tr>
+      `;
+    });
+  });
+
+  const content = `
+    <table class="journey-table">
+      <thead>
+        <tr>
+          <th class="col-objective">Objective</th>
+          <th class="col-importance">Importance</th>
+          <th class="col-journey">Score Journey</th>
+          <th class="col-level">Level Journey</th>
+          <th class="col-actions">Actions</th>
+          <th class="col-status">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRows}
+      </tbody>
+    </table>
+  `;
+
+  return renderSlideWrapper({
+    title,
+    content,
+    slideNumber,
+    footerData: { timestamp, sessionId: runId.slice(0, 8) },
+    logoSrc: LOGO_HORIZONTAL_BASE64,
+  });
+}
+
+/**
+ * Build committed actions slides (paginated, max 8 per slide)
  */
 function buildCommittedActionsSlides(input: GenerateReportInput): string[] {
   const { actions, customizations, timestamp, runId } = input;
   const baseTitle = customizations?.slide_titles?.committed_actions || DEFAULT_TITLES.committed_actions;
-  const actionsPerPage = 10;
+  const actionsPerPage = 8;
 
   if (actions.length === 0) {
     const content = `
@@ -328,7 +730,8 @@ function buildCommittedActionsSlides(input: GenerateReportInput): string[] {
       title: baseTitle,
       content,
       slideNumber: '{{slideNumber}}',
-      footerData: { timestamp, sessionId: runId.slice(0, 8) }
+      footerData: { timestamp, sessionId: runId.slice(0, 8) },
+      logoSrc: LOGO_HORIZONTAL_BASE64,
     })];
   }
 
@@ -344,17 +747,19 @@ function buildCommittedActionsSlides(input: GenerateReportInput): string[] {
       ? `${baseTitle} (${pageNum}/${pages.length})`
       : baseTitle;
 
-    const actionsHtml = pageActions.map(action => {
+    const actionsHtml = pageActions.map((action, idx) => {
       const label = customizations?.action_labels?.[action.question_id] || action.label || action.question_text || 'Action item';
       const timeline = action.timeline || '-';
       const owner = action.owner || '-';
+      const practice = action.practice_name || '-';
 
       return `
-        <div class="action-row">
-          <div class="action-text">${escapeHtml(label)}</div>
-          <div class="action-timeline">${escapeHtml(timeline)}</div>
-          <div class="action-owner">${escapeHtml(owner)}</div>
-        </div>
+        <tr>
+          <td class="col-practice">${escapeHtml(practice)}</td>
+          <td class="col-action">${escapeHtml(label)}</td>
+          <td class="col-timeline">${escapeHtml(timeline)}</td>
+          <td class="col-owner">${escapeHtml(owner)}</td>
+        </tr>
       `;
     }).join('');
 
@@ -364,18 +769,24 @@ function buildCommittedActionsSlides(input: GenerateReportInput): string[] {
     const twentyFourMonth = actions.filter(a => a.timeline === '24m').length;
 
     const content = `
-      <div style="margin-bottom: 4mm;">
-        <div class="action-row action-header">
-          <div class="action-text">Action Item</div>
-          <div class="action-timeline">Timeline</div>
-          <div class="action-owner">Owner</div>
-        </div>
-        ${actionsHtml}
-      </div>
-      <div class="timeline-summary">
-        <span>${sixMonth} in 6 months</span>
-        <span>${twelveMonth} in 12 months</span>
-        <span>${twentyFourMonth} in 24 months</span>
+      <table class="actions-table">
+        <thead>
+          <tr>
+            <th class="col-practice">Practice</th>
+            <th class="col-action">Action</th>
+            <th class="col-timeline">Timeline</th>
+            <th class="col-owner">Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${actionsHtml}
+        </tbody>
+      </table>
+      <div class="actions-summary">
+        <span class="summary-item"><strong>${sixMonth}</strong> in 6 months</span>
+        <span class="summary-item"><strong>${twelveMonth}</strong> in 12 months</span>
+        <span class="summary-item"><strong>${twentyFourMonth}</strong> in 24 months</span>
+        <span class="summary-total"><strong>${actions.length}</strong> total actions</span>
       </div>
     `;
 
@@ -383,65 +794,9 @@ function buildCommittedActionsSlides(input: GenerateReportInput): string[] {
       title,
       content,
       slideNumber: '{{slideNumber}}',
-      footerData: { timestamp, sessionId: runId.slice(0, 8) }
+      footerData: { timestamp, sessionId: runId.slice(0, 8) },
+      logoSrc: LOGO_HORIZONTAL_BASE64,
     });
-  });
-}
-
-/**
- * Build projected impact slide HTML
- */
-function buildProjectedImpactSlide(input: GenerateReportInput, slideNumber: string): string {
-  const { overallScore, maturityLevel, actions, timestamp, runId, customizations } = input;
-  const title = customizations?.slide_titles?.projected_impact || DEFAULT_TITLES.projected_impact;
-
-  // Calculate projected score (simplified: each action adds ~3%, max 25% improvement)
-  const improvement = Math.min(actions.length * 3, 25);
-  const projectedScore = Math.min(overallScore + improvement, 100);
-
-  const content = `
-    <div class="projection-hero">
-      <div class="projection-current">
-        <div class="projection-value">${overallScore}%</div>
-        <div class="projection-label">Current Score</div>
-      </div>
-      <div class="projection-arrow">
-        <span class="arrow-icon">→</span>
-        <span class="improvement-badge">+${improvement}%</span>
-      </div>
-      <div class="projection-target">
-        <div class="projection-value projection-value-green">${projectedScore}%</div>
-        <div class="projection-label">Projected Score</div>
-      </div>
-    </div>
-
-    <div class="progress-section">
-      <div class="progress-label">Score Progression</div>
-      <div class="progress-bar-large">
-        <div class="progress-current" style="width: ${overallScore}%"></div>
-        <div class="progress-improvement" style="left: ${overallScore}%; width: ${improvement}%"></div>
-      </div>
-      <div class="progress-scale">
-        <span>0%</span>
-        <span>50%</span>
-        <span>100%</span>
-      </div>
-    </div>
-
-    <div class="projection-insight">
-      Completing ${actions.length} action${actions.length !== 1 ? 's' : ''} could help you
-      ${maturityLevel < 4 && projectedScore >= 70
-        ? `<strong>progress toward Level ${maturityLevel + 1}</strong>`
-        : `<strong>strengthen your Level ${maturityLevel} foundation</strong>`
-      }
-    </div>
-  `;
-
-  return renderSlideWrapper({
-    title,
-    content,
-    slideNumber,
-    footerData: { timestamp, sessionId: runId.slice(0, 8) }
   });
 }
 
@@ -450,25 +805,31 @@ function buildProjectedImpactSlide(input: GenerateReportInput, slideNumber: stri
  */
 export function buildReportHtml(input: GenerateReportInput): string {
   const slides: string[] = [];
+  const showKeyMessages = input.customizations?.slide_visibility?.key_messages !== false;
 
   // Slide 1: Cover (always included)
   slides.push(buildCoverSlide(input, '{{slideNumber}}'));
 
-  // Slide 2: Executive Summary
-  slides.push(buildExecutiveSummarySlide(input, '{{slideNumber}}'));
+  // Slide 2: Key Messages (conditional, Under Construction for now)
+  if (showKeyMessages) {
+    slides.push(buildKeyMessagesSlide(input, '{{slideNumber}}'));
+  }
 
-  // Slide 3: Maturity Footprint
-  slides.push(buildMaturityFootprintSlide(input, '{{slideNumber}}'));
+  // Slide 3: Objectives & Practices (9-column grid)
+  slides.push(buildObjectivesPracticesSlide(input, '{{slideNumber}}'));
 
-  // Slide 4: Strengths & Gaps
-  slides.push(buildStrengthsGapsSlide(input, '{{slideNumber}}'));
+  // Slide 4: Priority Matrix (BCG-style)
+  slides.push(buildPriorityMatrixSlide(input, '{{slideNumber}}'));
 
-  // Slide 5+: Committed Actions (paginated)
+  // Slide 5: Projected Impact
+  slides.push(buildProjectedImpactSlide(input, '{{slideNumber}}'));
+
+  // Slide 6: Objective Journey (score journey table)
+  slides.push(buildObjectiveJourneySlide(input, '{{slideNumber}}'));
+
+  // Slide 7+: Committed Actions (paginated)
   const actionSlides = buildCommittedActionsSlides(input);
   slides.push(...actionSlides);
-
-  // Last Slide: Projected Impact
-  slides.push(buildProjectedImpactSlide(input, '{{slideNumber}}'));
 
   // Replace slide number placeholders
   const totalSlides = slides.length;

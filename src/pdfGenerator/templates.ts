@@ -1,6 +1,7 @@
 /**
  * VS-44: PDF HTML Templates
  * Core template functions for Executive Report PDF generation
+ * Premium consultant quality - McKinsey/BCG/Bain style
  */
 
 import { REPORT_THEME } from './theme';
@@ -60,7 +61,12 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       font-family: ${fonts.family};
       background: white;
       color: ${colors.text};
+      line-height: 1.4;
     }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * SLIDE BASE
+     * ═══════════════════════════════════════════════════════════════════════════ */
 
     .slide {
       width: ${spacing.slide.width};
@@ -84,11 +90,31 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       color: ${colors.textLight};
     }
 
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6mm;
+      padding-bottom: 4mm;
+      border-bottom: 1px solid ${colors.border};
+    }
+
+    .slide-logo {
+      height: 12mm;
+      object-fit: contain;
+    }
+
     .slide-title {
       font-size: ${fonts.sizeTitle};
       font-weight: 600;
       color: ${colors.header};
-      margin-bottom: 10mm;
+      text-align: right;
+    }
+
+    .slide-subtitle {
+      font-size: ${fonts.sizeNormal};
+      color: ${colors.textLight};
+      margin-bottom: 4mm;
     }
 
     .slide-content {
@@ -104,17 +130,10 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       color: ${colors.footer};
     }
 
-    /* Status colors */
-    .status-proven { background-color: ${colors.proven}; color: white; }
-    .status-partial { background-color: ${colors.partial}; color: white; }
-    .status-gap { background-color: ${colors.gap}; color: white; }
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * COVER SLIDE
+     * ═══════════════════════════════════════════════════════════════════════════ */
 
-    /* Status badges */
-    .badge-strength { background-color: ${colors.strength}; color: white; }
-    .badge-opportunity { background-color: ${colors.opportunity}; color: white; }
-    .badge-critical { background-color: ${colors.criticalFix}; color: white; }
-
-    /* Cover slide */
     .slide-cover {
       display: flex;
       flex-direction: column;
@@ -123,23 +142,36 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       text-align: center;
     }
 
-    .company-name {
+    .cover-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .cover-logo {
+      margin-bottom: 15mm;
+    }
+
+    .logo-large {
+      height: 50mm;
+      object-fit: contain;
+    }
+
+    .cover-company {
       font-size: ${fonts.sizeLarge};
       color: ${colors.textLight};
-      margin-bottom: 10mm;
+      margin-bottom: 8mm;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .cover-title {
       font-size: ${fonts.sizeCoverTitle};
       font-weight: 700;
       color: ${colors.header};
-      margin-bottom: 5mm;
-    }
-
-    .cover-subtitle {
-      font-size: 18pt;
-      color: ${colors.text};
-      margin-bottom: 15mm;
+      margin-bottom: 8mm;
     }
 
     .cover-date {
@@ -147,84 +179,53 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       color: ${colors.textLight};
     }
 
-    .cover-branding {
+    .cover-divider {
       position: absolute;
-      bottom: 15mm;
+      bottom: 20mm;
+      left: 20mm;
       right: 20mm;
+      height: 1px;
+      background: ${colors.border};
     }
 
-    .logo-text {
-      font-size: ${fonts.sizeLarge};
-      font-weight: 700;
-      color: ${colors.header};
-      letter-spacing: 0.02em;
-    }
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * COMING SOON / UNDER CONSTRUCTION
+     * ═══════════════════════════════════════════════════════════════════════════ */
 
-    /* Summary cards */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5mm;
-    }
-
-    .summary-card {
-      background: ${colors.bgCard};
-      padding: 5mm;
+    .coming-soon {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
       text-align: center;
     }
 
-    .summary-value {
-      font-size: 28pt;
-      font-weight: 700;
-      color: ${colors.primary};
+    .coming-soon-icon {
+      font-size: 48pt;
+      margin-bottom: 5mm;
     }
 
-    .summary-label {
-      font-size: ${fonts.sizeSmall};
+    .coming-soon-title {
+      font-size: ${fonts.sizeTitle};
       color: ${colors.textLight};
-      text-transform: uppercase;
-      margin-top: 2mm;
+      margin-bottom: 5mm;
     }
 
-    /* Tables */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: ${fonts.sizeSmall};
+    .coming-soon-subtitle {
+      font-size: ${fonts.sizeMedium};
+      color: ${colors.textLight};
     }
 
-    .data-table th {
-      background: ${colors.header};
-      color: white;
-      padding: 3mm;
-      text-align: left;
+    /* Key Messages */
+    .key-messages-headline {
+      font-size: 18pt;
       font-weight: 600;
+      color: ${colors.header};
+      margin-bottom: 8mm;
+      text-align: center;
     }
 
-    .data-table td {
-      padding: 2.5mm 3mm;
-      border-bottom: 1px solid ${colors.border};
-    }
-
-    .data-table tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
-    /* Progress bars */
-    .progress-bar {
-      height: 8px;
-      background: ${colors.border};
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: ${colors.primary};
-      border-radius: 4px;
-    }
-
-    /* Messages grid */
     .messages-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -234,7 +235,7 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
     .message-card {
       padding: 5mm;
       background: ${colors.bgLight};
-      border-radius: 2mm;
+      border-left: 3px solid ${colors.primary};
     }
 
     .message-card h3 {
@@ -250,215 +251,92 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       line-height: 1.4;
     }
 
-    /* Coming soon placeholder */
-    .coming-soon {
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * OBJECTIVES & PRACTICES GRID (9-column)
+     * ═══════════════════════════════════════════════════════════════════════════ */
+
+    .objectives-grid {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      text-align: center;
+      gap: 2mm;
+      margin-bottom: 4mm;
     }
 
-    .coming-soon-title {
-      font-size: ${fonts.sizeTitle};
-      color: ${colors.textLight};
-      margin-bottom: 5mm;
-    }
-
-    .coming-soon-subtitle {
-      font-size: ${fonts.sizeMedium};
-      color: ${colors.textLight};
-    }
-
-    /* Action items */
-    .action-row {
-      display: flex;
-      align-items: center;
-      padding: 3mm 4mm;
-      border-bottom: 1px solid ${colors.border};
-    }
-
-    .action-row:nth-child(even) {
-      background: ${colors.bgLight};
-    }
-
-    .action-text {
+    .objective-column {
       flex: 1;
-      font-size: ${fonts.sizeNormal};
-    }
-
-    .action-timeline {
-      width: 15mm;
-      text-align: center;
-      font-size: ${fonts.sizeSmall};
-      color: ${colors.textLight};
-    }
-
-    .action-owner {
-      width: 35mm;
-      text-align: right;
-      font-size: ${fonts.sizeSmall};
-      color: ${colors.textLight};
-    }
-
-    /* Matrix placeholder */
-    .matrix-placeholder {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
-
-    .matrix-grid {
-      width: 200mm;
-      height: 130mm;
-      border: 2px solid ${colors.border};
-      position: relative;
-    }
-
-    .matrix-label {
-      position: absolute;
-      font-size: ${fonts.sizeSmall};
-      color: ${colors.textLight};
-    }
-
-    .matrix-label-top {
-      top: -6mm;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .matrix-label-left {
-      left: -15mm;
-      top: 50%;
-      transform: rotate(-90deg) translateX(-50%);
-    }
-
-    /* Cover slide badges */
-    .cover-badges {
-      display: flex;
-      gap: 8mm;
-      margin-top: 10mm;
-    }
-
-    .badge-level {
-      background: ${colors.primary};
-      color: white;
-      padding: 3mm 6mm;
-      font-size: ${fonts.sizeMedium};
-      font-weight: 600;
-    }
-
-    .badge-score {
-      background: ${colors.accent};
-      color: white;
-      padding: 3mm 6mm;
-      font-size: ${fonts.sizeMedium};
-      font-weight: 600;
-    }
-
-    /* Executive Summary - Objectives list */
-    .objectives-list {
-      margin-top: 8mm;
-    }
-
-    .objective-row {
-      display: flex;
-      align-items: center;
-      padding: 3mm 0;
-      border-bottom: 1px solid ${colors.border};
-    }
-
-    .objective-name {
-      width: 50%;
-      font-size: ${fonts.sizeNormal};
-      color: ${colors.text};
-    }
-
-    .objective-bar {
-      flex: 1;
-      height: 12px;
-      background: ${colors.border};
-      border-radius: 6px;
-      overflow: hidden;
-      margin: 0 4mm;
-    }
-
-    .objective-fill {
-      height: 100%;
-      background: ${colors.primary};
-      border-radius: 6px;
-    }
-
-    .objective-score {
-      width: 12mm;
-      text-align: right;
-      font-size: ${fonts.sizeNormal};
-      font-weight: 600;
-      color: ${colors.primary};
-    }
-
-    /* Maturity Footprint Grid */
-    .footprint-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4mm;
-      margin-bottom: 6mm;
-    }
-
-    .footprint-level {
+      min-width: 0;
       background: ${colors.bgLight};
-      padding: 4mm;
       border: 1px solid ${colors.border};
     }
 
-    .level-label {
-      font-size: ${fonts.sizeMedium};
-      font-weight: 600;
-      color: ${colors.header};
-      margin-bottom: 3mm;
+    .objective-header {
+      background: ${colors.header};
+      color: white;
+      padding: 2mm;
       text-align: center;
-      padding-bottom: 2mm;
-      border-bottom: 2px solid ${colors.primary};
+      position: relative;
+      min-height: 12mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .level-practices {
+    .objective-title {
+      font-size: 8pt;
+      font-weight: 600;
+      line-height: 1.2;
+      padding-right: 8mm;
+    }
+
+    .objective-score {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 7mm;
+      height: 7mm;
       display: flex;
-      flex-wrap: wrap;
-      gap: 2mm;
-      margin-bottom: 3mm;
+      align-items: center;
+      justify-content: center;
+      font-size: 7pt;
+      font-weight: 700;
+      border-bottom-left-radius: 2mm;
+    }
+
+    .score-high { background: ${colors.strength}; color: white; }
+    .score-medium { background: ${colors.opportunity}; color: white; }
+    .score-low { background: ${colors.criticalFix}; color: white; }
+
+    .practices-stack {
+      padding: 1.5mm;
+      display: flex;
+      flex-direction: column;
+      gap: 1mm;
     }
 
     .practice-box {
-      width: 8mm;
-      height: 8mm;
-      border-radius: 1mm;
+      padding: 1.5mm;
+      font-size: 7pt;
+      line-height: 1.2;
+      text-align: center;
+      color: white;
+      border-radius: 1px;
     }
 
-    .practice-box.proven {
-      background: ${colors.proven};
-    }
+    .practice-proven { background: ${colors.proven}; }
+    .practice-partial { background: ${colors.partial}; }
+    .practice-gap { background: ${colors.gap}; }
 
-    .practice-box.partial {
-      background: ${colors.partial};
-    }
-
-    .practice-box.gap {
-      background: ${colors.gap};
-    }
-
-    .level-counts {
-      font-size: ${fonts.sizeSmall};
+    .no-practices {
+      font-size: 8pt;
       color: ${colors.textLight};
       text-align: center;
+      padding: 3mm;
     }
 
-    .footprint-legend {
+    .grid-legend {
       display: flex;
       justify-content: center;
-      gap: 8mm;
-      padding: 4mm;
+      gap: 6mm;
+      padding: 3mm;
       background: ${colors.bgCard};
     }
 
@@ -471,137 +349,193 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
     }
 
     .legend-box {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 1px;
     }
 
-    .legend-box.proven {
-      background: ${colors.proven};
-    }
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * PRIORITY MATRIX (BCG-style)
+     * ═══════════════════════════════════════════════════════════════════════════ */
 
-    .legend-box.partial {
-      background: ${colors.partial};
-    }
-
-    .legend-box.gap {
-      background: ${colors.gap};
-    }
-
-    /* Strengths & Gaps slide */
-    .insights-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6mm;
-    }
-
-    .insights-section {
-      background: ${colors.bgLight};
-      padding: 5mm;
-      border: 1px solid ${colors.border};
-    }
-
-    .section-title {
-      font-size: ${fonts.sizeMedium};
-      font-weight: 600;
-      color: ${colors.header};
-      margin-bottom: 4mm;
-      padding-bottom: 2mm;
-      border-bottom: 2px solid ${colors.strength};
-    }
-
-    .section-title.improvements {
-      border-bottom-color: ${colors.opportunity};
-    }
-
-    .section-title.critical {
-      border-bottom-color: ${colors.criticalFix};
-    }
-
-    .strengths-list, .improvements-list, .risks-list {
-      list-style: none;
-    }
-
-    .strength-item, .improvement-item, .risk-item {
-      padding: 2mm 0;
-      font-size: ${fonts.sizeNormal};
-      color: ${colors.text};
-      border-bottom: 1px solid ${colors.border};
-    }
-
-    .strength-item:last-child, .improvement-item:last-child, .risk-item:last-child {
-      border-bottom: none;
-    }
-
-    .strength-item::before {
-      content: "\\2713 ";
-      color: ${colors.strength};
-      font-weight: bold;
-    }
-
-    .improvement-item::before {
-      content: "\\25B2 ";
-      color: ${colors.opportunity};
-    }
-
-    .risk-item::before {
-      content: "\\26A0 ";
-      color: ${colors.criticalFix};
-    }
-
-    .critical-section {
-      grid-column: 1 / -1;
-      background: #fef2f2;
-      border-color: ${colors.criticalFix};
-    }
-
-    /* Projected Impact slide */
-    .projection-hero {
+    .matrix-container {
       display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20mm;
-      padding: 15mm 0;
+      gap: 4mm;
+      margin-bottom: 4mm;
     }
 
-    .projection-current, .projection-target {
+    .matrix-y-label {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 12mm;
       text-align: center;
     }
 
-    .projection-value {
-      font-size: 48pt;
-      font-weight: 700;
+    .y-label-top, .y-label-bottom {
+      font-size: 8pt;
+      font-weight: 600;
+      color: ${colors.textLight};
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
     }
 
-    .projection-current .projection-value {
+    .matrix-grid-wrapper {
+      flex: 1;
+    }
+
+    .matrix-header {
+      display: flex;
+      gap: 2mm;
+      margin-bottom: 2mm;
+    }
+
+    .matrix-col-header {
+      flex: 1;
+      text-align: center;
+      padding: 2mm;
+      border-radius: 2px;
+    }
+
+    .zone-urgent { background: #fef2f2; }
+    .zone-vision { background: #eff6ff; }
+
+    .col-label {
+      font-size: 9pt;
+      font-weight: 600;
+      color: ${colors.header};
+    }
+
+    .col-sublabel {
+      font-size: 7pt;
+      color: ${colors.textLight};
+      text-transform: uppercase;
+    }
+
+    .matrix-row {
+      display: flex;
+      gap: 2mm;
+      margin-bottom: 2mm;
+    }
+
+    .matrix-cell {
+      flex: 1;
+      min-height: 50mm;
+      padding: 2mm;
+      border: 1px solid ${colors.border};
+    }
+
+    .zone-a { background: #fef2f2; }
+    .zone-b { background: #eff6ff; }
+    .zone-c { background: ${colors.bgLight}; }
+
+    .matrix-cell-empty {
+      font-size: 9pt;
+      color: ${colors.textLight};
+      text-align: center;
+      padding: 10mm;
+    }
+
+    .matrix-practice {
+      padding: 1.5mm;
+      margin-bottom: 1mm;
+      font-size: 7pt;
+      line-height: 1.2;
+      color: white;
+      border-radius: 1px;
+    }
+
+    .matrix-more {
+      font-size: 7pt;
+      color: ${colors.textLight};
+      text-align: center;
+      padding: 1mm;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * PROJECTED IMPACT
+     * ═══════════════════════════════════════════════════════════════════════════ */
+
+    .projection-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 8mm;
+    }
+
+    .projection-score-block {
+      background: ${colors.bgLight};
+      padding: 6mm;
+      border: 1px solid ${colors.border};
+    }
+
+    .score-comparison {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15mm;
+      margin-bottom: 6mm;
+    }
+
+    .score-current, .score-projected {
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 36pt;
+      font-weight: 700;
       color: ${colors.textLight};
     }
 
-    .projection-target .projection-value {
+    .score-green {
       color: ${colors.strength};
     }
 
-    .projection-label {
-      font-size: ${fonts.sizeMedium};
+    .score-label {
+      font-size: ${fonts.sizeSmall};
       color: ${colors.textLight};
-      margin-top: 2mm;
+      text-transform: uppercase;
+      margin-top: 1mm;
     }
 
-    .projection-arrow {
-      font-size: 36pt;
+    .score-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .arrow-line {
+      font-size: 24pt;
       color: ${colors.primary};
     }
 
-    .progress-bar-large {
-      height: 24px;
-      background: ${colors.border};
-      border-radius: 12px;
-      overflow: hidden;
-      margin: 10mm 0;
-      position: relative;
+    .arrow-line::before {
+      content: "→";
     }
 
-    .progress-current {
+    .improvement-badge {
+      background: ${colors.strength};
+      color: white;
+      padding: 2mm 4mm;
+      font-size: ${fonts.sizeMedium};
+      font-weight: 700;
+      border-radius: 2px;
+    }
+
+    .score-bar-container {
+      padding-top: 4mm;
+    }
+
+    .score-bar {
+      height: 16px;
+      background: ${colors.border};
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bar-current {
       height: 100%;
       background: ${colors.textLight};
       position: absolute;
@@ -609,93 +543,310 @@ export function wrapInHtmlDocument(slidesHtml: string): string {
       top: 0;
     }
 
-    .progress-improvement {
+    .bar-improvement {
       height: 100%;
       background: ${colors.strength};
       position: absolute;
       top: 0;
     }
 
-    .timeline-summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5mm;
-      margin-top: 8mm;
+    .score-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: ${colors.textLight};
+      margin-top: 2mm;
     }
 
-    .timeline-card {
-      background: ${colors.bgCard};
+    .projection-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4mm;
+    }
+
+    .timeline-distribution {
+      background: ${colors.bgLight};
       padding: 4mm;
-      text-align: center;
+      border: 1px solid ${colors.border};
     }
 
-    .timeline-period {
+    .timeline-title {
       font-size: ${fonts.sizeMedium};
       font-weight: 600;
       color: ${colors.header};
+      margin-bottom: 4mm;
+    }
+
+    .timeline-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 3mm;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
     }
 
     .timeline-count {
-      font-size: ${fonts.sizeLarge};
+      width: 8mm;
+      font-size: ${fonts.sizeMedium};
       font-weight: 700;
       color: ${colors.primary};
-      margin: 2mm 0;
+      text-align: right;
     }
 
-    .timeline-label {
+    .timeline-bar {
+      flex: 1;
+      height: 8px;
+      background: ${colors.border};
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .bar-6m { background: #3b82f6; }
+    .bar-12m { background: #2563eb; }
+    .bar-24m { background: #1d4ed8; }
+
+    .timeline-period {
+      width: 18mm;
       font-size: ${fonts.sizeSmall};
       color: ${colors.textLight};
     }
 
-    /* Action items header */
-    .action-header {
+    .projection-insight {
+      background: ${colors.bgCard};
+      padding: 4mm;
+      border-left: 3px solid ${colors.primary};
       display: flex;
-      background: ${colors.header};
-      color: white;
-      font-weight: 600;
+      gap: 3mm;
+      align-items: flex-start;
+    }
+
+    .insight-icon {
+      font-size: 18pt;
+    }
+
+    .insight-text {
+      font-size: ${fonts.sizeNormal};
+      color: ${colors.text};
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * OBJECTIVE JOURNEY TABLE
+     * ═══════════════════════════════════════════════════════════════════════════ */
+
+    .journey-table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: ${fonts.sizeSmall};
     }
 
-    .action-header-text {
-      flex: 1;
-      padding: 3mm 4mm;
+    .journey-table th {
+      background: ${colors.header};
+      color: white;
+      padding: 2.5mm;
+      text-align: left;
+      font-weight: 600;
+      font-size: 8pt;
     }
 
-    .action-header-timeline {
-      width: 15mm;
-      padding: 3mm;
-      text-align: center;
+    .journey-table td {
+      padding: 2mm 2.5mm;
+      border-bottom: 1px solid ${colors.border};
+      vertical-align: middle;
     }
 
-    .action-header-owner {
-      width: 35mm;
-      padding: 3mm 4mm;
-      text-align: right;
+    .journey-table .theme-row td {
+      background: ${colors.bgLight};
+      font-weight: 600;
+      font-size: 8pt;
+      color: ${colors.header};
+      text-transform: uppercase;
+      padding: 2mm 2.5mm;
     }
 
-    /* Action priority badge */
-    .action-priority {
-      display: inline-block;
-      padding: 1mm 2mm;
+    .journey-table .row-critical {
+      border-left: 2px solid ${colors.criticalFix};
+    }
+
+    .col-objective { width: 22%; }
+    .col-importance { width: 10%; text-align: center; }
+    .col-journey { width: 38%; }
+    .col-level { width: 12%; text-align: center; }
+    .col-actions { width: 8%; text-align: center; }
+    .col-status { width: 10%; text-align: center; }
+
+    .importance-dots {
+      display: flex;
+      justify-content: center;
+      gap: 1px;
+    }
+
+    .importance-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: ${colors.border};
+    }
+
+    .importance-dot.filled {
+      background: ${colors.header};
+    }
+
+    .journey-container {
+      display: flex;
+      align-items: center;
+      gap: 1mm;
+    }
+
+    .journey-milestone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 11mm;
+    }
+
+    .milestone-value {
       font-size: 8pt;
       font-weight: 600;
+      color: ${colors.text};
+    }
+
+    .milestone-value.color-green { color: ${colors.strength}; }
+    .milestone-value.color-red { color: ${colors.criticalFix}; }
+
+    .milestone-bar {
+      width: 100%;
+      height: 4px;
+      background: ${colors.border};
       border-radius: 2px;
-      margin-right: 2mm;
+      overflow: hidden;
+      margin: 1mm 0;
     }
 
-    .priority-high {
-      background: ${colors.criticalFix};
-      color: white;
+    .milestone-fill {
+      height: 100%;
+      border-radius: 2px;
     }
 
-    .priority-medium {
-      background: ${colors.opportunity};
-      color: white;
+    .milestone-label {
+      font-size: 6pt;
+      color: ${colors.textLight};
     }
 
-    .priority-low {
-      background: ${colors.textLight};
+    .journey-arrow {
+      font-size: 8pt;
+      color: ${colors.textLight};
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 1mm 2mm;
+      font-size: 7pt;
+      font-weight: 600;
+      border-radius: 2px;
+    }
+
+    .level-current {
+      background: ${colors.bgCard};
+      color: ${colors.text};
+    }
+
+    .level-target {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .level-arrow {
+      font-size: 7pt;
+      color: ${colors.textLight};
+      margin: 0 1mm;
+    }
+
+    .status-badge {
+      font-size: 7pt;
+      font-weight: 500;
+    }
+
+    .status-strength { color: ${colors.strength}; }
+    .status-opportunity { color: ${colors.opportunity}; }
+    .status-critical { color: ${colors.criticalFix}; font-weight: 600; }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * COMMITTED ACTIONS TABLE
+     * ═══════════════════════════════════════════════════════════════════════════ */
+
+    .actions-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: ${fonts.sizeSmall};
+      margin-bottom: 4mm;
+    }
+
+    .actions-table th {
+      background: ${colors.header};
       color: white;
+      padding: 3mm;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .actions-table td {
+      padding: 2.5mm 3mm;
+      border-bottom: 1px solid ${colors.border};
+    }
+
+    .actions-table tr:nth-child(even) {
+      background: ${colors.bgLight};
+    }
+
+    .actions-table .col-practice { width: 20%; }
+    .actions-table .col-action { width: 50%; }
+    .actions-table .col-timeline { width: 15%; text-align: center; }
+    .actions-table .col-owner { width: 15%; text-align: center; }
+
+    .actions-summary {
+      display: flex;
+      justify-content: center;
+      gap: 8mm;
+      padding: 4mm;
+      background: ${colors.bgCard};
+      font-size: ${fonts.sizeSmall};
+      color: ${colors.text};
+    }
+
+    .summary-item strong {
+      color: ${colors.primary};
+    }
+
+    .summary-total {
+      border-left: 1px solid ${colors.border};
+      padding-left: 8mm;
+    }
+
+    .summary-total strong {
+      color: ${colors.header};
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+     * TEXT UTILITIES
+     * ═══════════════════════════════════════════════════════════════════════════ */
+
+    .text-muted {
+      color: ${colors.textLight};
+      font-style: italic;
+    }
+
+    strong {
+      font-weight: 600;
     }
   </style>
 </head>
@@ -714,14 +865,18 @@ export function renderSlideWrapper(params: {
   content: string;
   slideNumber: string;
   footerData: { timestamp: string; sessionId: string };
+  logoSrc?: string;
   additionalClass?: string;
 }): string {
-  const { title, content, slideNumber, footerData, additionalClass = '' } = params;
+  const { title, content, slideNumber, footerData, logoSrc, additionalClass = '' } = params;
 
   return `
     <div class="slide ${additionalClass}">
       <div class="slide-number">${slideNumber}</div>
-      <h1 class="slide-title">${escapeHtml(title)}</h1>
+      <div class="slide-header">
+        ${logoSrc ? `<img src="${logoSrc}" class="slide-logo" alt="CFO Lens" />` : '<div></div>'}
+        <h1 class="slide-title">${escapeHtml(title)}</h1>
+      </div>
       <div class="slide-content">
         ${content}
       </div>
