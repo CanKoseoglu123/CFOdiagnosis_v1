@@ -276,6 +276,15 @@ export const SystemsSchema = z.enum([
   'oracle'
 ]);
 
+// VS26: Tool effectiveness rating
+export const ToolEffectivenessSchema = z.enum(['low', 'medium', 'high']);
+
+// VS26: Tool with effectiveness - new format
+export const ToolWithEffectivenessSchema = z.object({
+  tool: SystemsSchema,
+  effectiveness: ToolEffectivenessSchema
+});
+
 // Keep old schema for backward compat
 export const PlanningToolsSchema = SystemsSchema;
 
@@ -358,7 +367,7 @@ export const ToolWithEffectivenessSchema = z.object({
 
 // Pillar Context Object (FP&A Specific)
 export const PillarContextSchema = z.object({
-  // Tools & Technology - accepts both old (string[]) and new ({tool, effectiveness}[]) formats
+  // Tools & Technology - VS26: accepts both old (string[]) and new ({tool, effectiveness}[]) formats
   tools: z.union([
     z.array(SystemsSchema),
     z.array(ToolWithEffectivenessSchema)
@@ -411,6 +420,8 @@ export type ChangeAppetite = z.infer<typeof ChangeAppetiteSchema>;
 export type FinanceFTERange = z.infer<typeof FinanceFTERangeSchema>;
 export type LegalEntityRange = z.infer<typeof LegalEntityRangeSchema>;
 export type Systems = z.infer<typeof SystemsSchema>;
+export type ToolEffectiveness = z.infer<typeof ToolEffectivenessSchema>;
+export type ToolWithEffectiveness = z.infer<typeof ToolWithEffectivenessSchema>;
 export type PlanningTools = z.infer<typeof PlanningToolsSchema>;
 export type TeamSize = z.infer<typeof TeamSizeSchema>;
 export type ForecastFrequency = z.infer<typeof ForecastFrequencySchema>;
@@ -485,21 +496,43 @@ export const LEGAL_ENTITY_LABELS: Record<LegalEntityRange, string> = {
 };
 
 // Systems labels (also exported as PLANNING_TOOLS_LABELS for backward compat)
+// VS26: Updated to match new systems enum
 export const SYSTEMS_LABELS: Record<Systems, string> = {
+  // Spreadsheet
   excel: 'Excel',
+  // Excel-connected
+  datarails: 'Datarails',
+  vena: 'Vena',
+  jirav: 'Jirav',
+  aleph: 'Aleph',
+  // Planning platforms
   anaplan: 'Anaplan',
   adaptive: 'Adaptive Insights',
+  planful: 'Planful',
   pigment: 'Pigment',
-  aleph: 'Aleph',
-  datarails: 'Datarails',
-  sap: 'SAP',
-  oracle: 'Oracle',
+  cube: 'Cube',
+  onestream: 'OneStream',
+  oracle_epm: 'Oracle EPM',
+  sap_sac: 'SAP Analytics Cloud',
+  // BI tools
   powerbi: 'Power BI',
   tableau: 'Tableau',
-  other: 'Other'
+  looker: 'Looker',
+  // Other
+  other: 'Other',
+  // Legacy
+  sap: 'SAP',
+  oracle: 'Oracle'
 };
 
 export const PLANNING_TOOLS_LABELS = SYSTEMS_LABELS;
+
+// VS26: Tool effectiveness labels
+export const TOOL_EFFECTIVENESS_LABELS: Record<ToolEffectiveness, string> = {
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High'
+};
 
 export const TEAM_SIZE_LABELS: Record<TeamSize, string> = {
   '1_3': '1 - 3',
