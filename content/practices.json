@@ -22,7 +22,7 @@
   { "id": "prac_board_level_impact", "objective_id": "obj_strategic_influence", "title": "Board-Level Impact", "capability_tags": ["People", "Communication"] },
   { "id": "prac_investment_rigor", "objective_id": "obj_strategic_influence", "title": "Investment Rigor", "capability_tags": ["Process", "Governance"] },
   { "id": "prac_data_visualization", "objective_id": "obj_decision_support", "title": "Data Visualization", "capability_tags": ["Technology", "Communication"] },
-  { "id": "prac_self_service_access", "objective_id": "obj_decision_support", "title": "Self-Service Access", "capability_tags": ["Technology", "Culture"] },
+  { "id": "prac_self_service_analytics", "objective_id": "obj_decision_support", "title": "Self-Service Analytics", "capability_tags": ["Technology", "Culture"] },
   { "id": "prac_predictive_analytics", "objective_id": "obj_decision_support", "title": "Predictive Analytics", "capability_tags": ["Technology", "Data"] },
   { "id": "prac_process_automation", "objective_id": "obj_operational_excellence", "title": "Process Automation", "capability_tags": ["Technology", "Process"] },
   { "id": "prac_shared_services_model", "objective_id": "obj_operational_excellence", "title": "Shared Services Model", "capability_tags": ["People", "Structure"] },

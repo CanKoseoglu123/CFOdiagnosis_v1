@@ -74,13 +74,13 @@ console.log('');
 console.log('--- Content Loading ---');
 
 const questions = loadQuestions();
-assertEqual(questions.length, 48, 'Loads exactly 48 questions');
+assertEqual(questions.length, 60, 'Loads exactly 60 questions');
 
 const practices = loadPractices();
 assertEqual(practices.length, 28, 'Loads exactly 28 practices');  // VS-26: Expanded
 
 const initiatives = loadInitiatives();
-assertEqual(initiatives.length, 9, 'Loads exactly 9 initiatives');
+assertEqual(initiatives.length, 10, 'Loads exactly 10 initiatives');
 
 const objectives = loadObjectives();
 assertEqual(objectives.length, 9, 'Loads exactly 9 objectives');  // VS-26: Expanded
@@ -138,13 +138,13 @@ const l1Questions = getQuestionsByLevel(1);
 assertEqual(l1Questions.length, 9, 'L1 has 9 questions');
 
 const l2Questions = getQuestionsByLevel(2);
-assertEqual(l2Questions.length, 14, 'L2 has 14 questions');
+assertEqual(l2Questions.length, 15, 'L2 has 15 questions');
 
 const l3Questions = getQuestionsByLevel(3);
-assertEqual(l3Questions.length, 15, 'L3 has 15 questions');
+assertEqual(l3Questions.length, 21, 'L3 has 21 questions');
 
 const l4Questions = getQuestionsByLevel(4);
-assertEqual(l4Questions.length, 10, 'L4 has 10 questions');
+assertEqual(l4Questions.length, 15, 'L4 has 15 questions');
 
 // --- Practice Distribution by Objective ---
 // VS-26: Practices no longer have level, they link to objectives
@@ -167,7 +167,7 @@ const foundationInits = initiatives.filter(i => i.theme_id === 'foundation');
 assertEqual(foundationInits.length, 3, 'Foundation theme has 3 initiatives');
 
 const futureInits = initiatives.filter(i => i.theme_id === 'future');
-assertEqual(futureInits.length, 2, 'Future theme has 2 initiatives');
+assertEqual(futureInits.length, 3, 'Future theme has 3 initiatives');
 
 const intelligenceInits = initiatives.filter(i => i.theme_id === 'intelligence');
 assertEqual(intelligenceInits.length, 4, 'Intelligence theme has 4 initiatives');

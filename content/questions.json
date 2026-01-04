@@ -772,7 +772,7 @@
     },
     {
       "id": "fpa_l4_q01",
-      "practice_id": "prac_self_service_access",
+      "practice_id": "prac_self_service_analytics",
       "text": "Do dashboards allow users to drill down from summary to transaction level without asking Finance?",
       "help": "Self-service empowers the business. It allows users to answer their own questions immediately, reducing the ad-hoc query burden on Finance.",
       "maturity_level": 4,
@@ -788,7 +788,7 @@
     },
     {
       "id": "fpa_l4_q05",
-      "practice_id": "prac_self_service_access",
+      "practice_id": "prac_self_service_analytics",
       "text": "Can non-finance leaders access their real-time spend vs. budget without emailing Finance?",
       "help": "Real-time access encourages ownership. When leaders can see their spend status anytime, they are better equipped to manage their own budgets.",
       "maturity_level": 4,

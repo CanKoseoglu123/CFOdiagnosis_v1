@@ -46,7 +46,7 @@ const PRACTICE_OBJECTIVE_MAP = {
   'prac_board_level_impact': 'obj_strategic_influence',
   'prac_investment_rigor': 'obj_strategic_influence',
   'prac_data_visualization': 'obj_decision_support',
-  'prac_self_service_access': 'obj_decision_support',
+  'prac_self_service_analytics': 'obj_decision_support',
   'prac_predictive_analytics': 'obj_decision_support',
   'prac_process_automation': 'obj_operational_excellence',
   'prac_shared_services_model': 'obj_operational_excellence',

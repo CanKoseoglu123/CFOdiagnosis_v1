@@ -255,7 +255,7 @@ export const PAIN_POINTS = [
     label: 'Real-time visibility gaps',
     related_practices: [
       'prac_month_end_rigor',
-      'prac_self_service_access',
+      'prac_self_service_analytics',
       'prac_management_reporting'
     ]
   }

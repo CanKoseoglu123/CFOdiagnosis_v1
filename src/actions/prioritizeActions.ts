@@ -68,7 +68,7 @@ const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
   ],
   realtime_visibility: [
     'prac_month_end_rigor',
-    'prac_self_service_access',
+    'prac_self_service_analytics',
     'prac_management_reporting'
   ]
 };
