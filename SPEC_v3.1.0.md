@@ -1,11 +1,11 @@
 # 🚀 FINANCE DIAGNOSTIC PLATFORM — SYSTEM SPEC
 
-**Version:** v3.0.0  
+**Version:** v3.1.0  
 **Status:** FINAL / FROZEN  
-**Supersedes:** v2.9.0  
+**Supersedes:** v3.0.0  
 **Audience:** Product, Engineering, Design, Content  
-**Change Type:** Scoring Engine & AI Interpretation Release  
-**Engineering Review:** Complete — reflects actual implementation through VS-40
+**Change Type:** Context Modifier & Pain Point Mapping (VS-26)  
+**Engineering Review:** Complete — reflects actual implementation through VS-40, VS-26
 
 ---
 
@@ -150,10 +150,10 @@ interface GatesConfig {
     "l2_to_l3": ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q07"]
   },
   "level_names": {
-    "1": "Foundational",
-    "2": "Developing",
-    "3": "Advanced",
-    "4": "Leading"
+    "1": "Emerging",
+    "2": "Defined",
+    "3": "Managed",
+    "4": "Optimized"
   }
 }
 ```
@@ -171,7 +171,7 @@ Primary table for assessment sessions.
 ```sql
 CREATE TABLE diagnostic_runs (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id),
+  owner_id UUID REFERENCES auth.users(id),
   pillar TEXT NOT NULL DEFAULT 'fpa',
   
   -- VS-18: Context Intake
@@ -382,8 +382,12 @@ CREATE TABLE feedback (
 The scoring engine calculates action priority using the **Impact²/Complexity** formula with multipliers.
 
 ```
-Priority Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
+Priority Score = (Impact² / Complexity) × CriticalBoost × CombinedMultiplier
+
+where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
 ```
+
+See Section 5.7 for Combined Multiplier Cap rationale.
 
 ### 5.2 Components
 
@@ -393,6 +397,7 @@ Priority Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
 | **Complexity** | `questions.json` | 1–5 | Implementation difficulty |
 | **CriticalBoost** | `is_critical` flag | 1× or 2× | Doubles score for critical blockers |
 | **ImportanceFactor** | VS-21 Calibration | 0.50×–1.50× | User-declared objective importance |
+| **ContextModifier** | VS-26 Pain Points | 1.0×–2.0× | Boost for practices matching user pain points |
 
 ### 5.3 Priority Lanes
 
@@ -415,6 +420,7 @@ Actions are sorted into three priority lanes based on gap analysis:
    a. Calculate: (Impact² / Complexity)
    b. Apply CriticalBoost if is_critical = true
    c. Apply ImportanceFactor from calibration
+   d. Apply ContextModifier from pain point mapping (VS-26)
 6. Assign to P1/P2/P3 lane based on gap type
 7. Sort within lane by Priority Score (descending)
 ```
@@ -426,6 +432,65 @@ To prevent the "Green Light of Death" (high aggregate scores masking critical fa
 - **Rule:** If any P1 (critical blocker) exists, overall status cannot be "Green"
 - **Rule:** Maximum 2 levels above lowest practice score
 - **Rule:** Critical gate failures override percentage-based scoring
+
+### 5.6 VS-26: Context Modifier (Pain Point Boosting)
+
+Actions in practices related to user-selected pain points receive a priority boost.
+
+#### 5.6.1 Formula
+
+For each matching pain point, the modifier is multiplied by 1.5×, capped at 2.0×:
+
+```
+ContextModifier = min(2.0, 1.0 × 1.5^matching_count)
+```
+
+- **Base:** 1.0× (no matching pain points)
+- **1 match:** 1.5× (1.0 × 1.5)
+- **2+ matches:** 2.0× (capped at 2.0)
+
+**Implementation Note:** The multiplicative approach provides compound boosting while the 2.0× cap prevents runaway scores. This is implemented as an iterative multiplication: `modifier = Math.min(modifier * 1.5, 2.0)` for each matching pain point.
+
+#### 5.6.2 PrioritizedAction Extension
+
+| Field | Type | Description |
+|:------|:-----|:------------|
+| `boosted_by_context` | Boolean | True if action received pain point boost |
+| `matching_pain_points` | string[] | Pain point IDs that triggered boost |
+
+#### 5.6.3 Pain Point → Practice Mapping
+
+| Pain Point ID | Display Name | Related Practices |
+|:--------------|:-------------|:------------------|
+| `data_wrangling` | Endless manual data gathering | prac_collaborative_systems, prac_process_automation, prac_self_service_analytics |
+| `forecast_accuracy` | Forecasting accuracy & credibility | prac_rolling_forecast_cadence, prac_operational_drivers, prac_dynamic_targets, prac_predictive_analytics |
+| `partner_engagement` | Business partners don't engage | prac_commercial_partnership, prac_strategic_alignment, prac_variance_investigation, prac_data_visualization |
+| `budget_cycle` | Endless budget process | prac_annual_budget_cycle, prac_continuous_planning, prac_rolling_forecast_cadence, prac_process_automation |
+| `bandwidth` | Talent & bandwidth constraints | prac_process_automation, prac_shared_services_model, prac_service_level_agreements |
+| `tech_fragmentation` | Technology stack fragmentation | prac_collaborative_systems, prac_chart_of_accounts, prac_process_automation |
+| `scenario_planning` | Scenario planning gaps | prac_rapid_what_if_capability, prac_multi_scenario_management, prac_stress_testing |
+| `communication` | Communicating to non-finance execs | prac_data_visualization, prac_board_level_impact, prac_operational_drivers |
+| `realtime_visibility` | Real-time visibility gaps | prac_month_end_rigor, prac_self_service_analytics, prac_management_reporting |
+
+### 5.7 Combined Multiplier Cap
+
+To prevent score inflation from stacking ImportanceFactor and ContextModifier ("Double Jeopardy"), the combined multiplier is capped:
+
+```
+CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
+```
+
+**Examples:**
+
+| Importance | Pain Points | Raw Multiplier | Capped Result |
+|:-----------|:------------|:---------------|:--------------|
+| 5 (Critical) | 2 matches | 1.5 × 2.0 = 3.0 | **2.0×** |
+| 5 (Critical) | 1 match | 1.5 × 1.5 = 2.25 | **2.0×** |
+| 5 (Critical) | 0 matches | 1.5 × 1.0 = 1.5 | 1.5× |
+| 3 (Medium) | 2 matches | 1.0 × 2.0 = 2.0 | 2.0× |
+| 1 (Minimal) | 2 matches | 0.5 × 2.0 = 1.0 | 1.0× |
+
+**Rationale:** This ensures that user-declared importance and pain points reinforce each other without allowing trivial L1 gaps to outrank strategic L3 gaps solely due to UI selections.
 
 ---
 
@@ -473,7 +538,7 @@ interface CalibrationData {
 
 ### 7.1 Purpose
 
-Captures company and pillar context before assessment begins, enabling personalized AI interpretation and relevant benchmarking.
+Captures company and pillar context before assessment begins, enabling personalized AI interpretation, relevant benchmarking, and pain point boosting (VS-26).
 
 ### 7.2 Schema (diagnostic_runs.context)
 
@@ -489,13 +554,56 @@ interface Context {
   pillar: {
     team_size: number;
     reporting_to: string;           // e.g., "CFO", "VP Finance"
-    current_tools: string[];        // e.g., ["Excel", "Anaplan"]
-    pain_points: string[];
+    tools: Array<{                  // VS-26: Renamed from current_tools
+      tool: string;                 // Tool name, e.g., "Excel", "Anaplan"
+      effectiveness: 'low' | 'medium' | 'high';
+    }>;
+    pain_points: string[];          // VS-26: Maps to practices via PAIN_POINT_PRACTICE_MAP
     strategic_priorities: string[];
   };
   completed_at: string;             // ISO timestamp
 }
 ```
+
+#### 7.2.1 Valid Pain Point Values
+
+| ID | Display Label |
+|:---|:--------------|
+| `data_wrangling` | Endless manual data gathering |
+| `forecast_accuracy` | Forecasting accuracy & credibility |
+| `partner_engagement` | Business partners don't engage |
+| `budget_cycle` | Endless budget process |
+| `bandwidth` | Talent & bandwidth constraints |
+| `tech_fragmentation` | Technology stack fragmentation |
+| `scenario_planning` | Scenario planning gaps |
+| `communication` | Communicating to non-finance execs |
+| `realtime_visibility` | Real-time visibility gaps |
+
+See Section 5.6.3 for mapping to practices.
+
+### 7.2.2 Legacy Data Transformation
+
+For backward compatibility with runs created before VS-26, loaders must transform legacy `current_tools` (string array) to the new `tools` (object array) format:
+
+```typescript
+// Legacy Transformation (loader responsibility)
+function transformLegacyTools(context: any): Context {
+  if (Array.isArray(context.current_tools) && !context.tools) {
+    context.tools = context.current_tools.map(tool => ({
+      tool: tool,
+      effectiveness: 'medium'  // Safe default assumption
+    }));
+    delete context.current_tools;
+  }
+  return context;
+}
+```
+
+**Rules:**
+- Legacy `current_tools: string[]` → Transform to `tools: Array<{tool, effectiveness}>`
+- Default effectiveness: `'medium'` (neutral assumption)
+- Transformation happens at read-time, not migration
+- New runs should only use the `tools` format
 
 ### 7.3 Workflow
 
@@ -738,7 +846,27 @@ BCG-style 2×2 matrix grouping practices:
 
 ---
 
-## APPENDIX A: Changelog (v2.9.0 → v3.0.0)
+## APPENDIX A: Changelog
+
+### v3.1.0 Errata (Post-Review Corrections)
+
+| Issue | Original | Corrected |
+|:------|:---------|:----------|
+| **Double Jeopardy Risk** | No cap on Importance × Context | Added Section 5.7: CombinedMultiplier cap at 2.0× |
+| **Legacy Tools Migration** | No transformation documented | Added Section 7.2.2: Auto-convert `current_tools` to `tools` format |
+| **data_wrangling Mapping** | Mapped to prac_chart_of_accounts | Changed to prac_self_service_analytics (causal accuracy) |
+
+### v3.0.0 → v3.1.0
+
+| Area | v3.0.0 | v3.1.0 |
+|:-----|:-------|:-------|
+| **Scoring Formula** | 4 multipliers | 5 multipliers (+ContextModifier), capped at 2.0× combined |
+| **Context Modifier** | Not present | VS-26: Pain point → practice boosting (1.0×–2.0×) |
+| **Tools Schema** | `current_tools: string[]` | `tools: Array<{tool, effectiveness}>` + legacy transformation |
+| **Pain Points** | Freeform array | 9 defined values with practice mappings |
+| **PrioritizedAction** | Base fields | +boosted_by_context, +matching_pain_points |
+
+### v2.9.0 → v3.0.0
 
 | Area | v2.9.0 | v3.0.0 |
 |:-----|:-------|:-------|
@@ -768,6 +896,7 @@ BCG-style 2×2 matrix grouping practices:
 | 006 | VS-32d | + rationale, evidence_ids, ai_generated, priority_rank, action_proposal |
 | 007 | VS-39 | + finalized_at, action_plan_snapshot |
 | 008 | VS-101 | feedback |
+| 009 | VS-26 | Context schema update (tools format, pain_points mapping) |
 
 ---
 
@@ -788,9 +917,17 @@ Items from v2.9.0 explicitly updated in v3.0.0:
 | Interpretation endpoints standalone | Corrected to nested under `/diagnostic-runs/:id/` |
 | VS-33 marked as Planned | Removed — VS-33 is implemented |
 
+Items from v3.0.0 updated in v3.1.0:
+
+| v3.0.0 Claim | v3.1.0 Status |
+|:-------------|:--------------|
+| `current_tools: string[]` | Renamed to `tools` with effectiveness rating |
+| `pain_points` freeform | Now 9 defined values with practice mappings |
+| Priority formula 4 factors | Now 5 factors (+ContextModifier) |
+
 ---
 
 **END OF SPECIFICATION**
 
-*Document version: v3.0.0*  
-*Reflects implementation through VS-40*
+*Document version: v3.1.0*  
+*Reflects implementation through VS-40, VS-26*
