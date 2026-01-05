@@ -1,5 +1,5 @@
 {
-  "version": "2.9.0",
+  "version": "2.15.1",
   "pillar": "fpa",
   "questions": [
     {
@@ -37,8 +37,8 @@
     {
       "id": "fpa_l1_q03",
       "practice_id": "prac_budget_ownership",
-      "text": "Can every line of budgeted OpEx be mapped to a specific human owner (e.g., department head)?",
-      "help": "When 'everyone' owns a budget line, no one does. Mapping costs to specific owners ensures accountability and gives you a direct point of contact for variance investigation.",
+      "text": "Can every line of controllable OpEx be mapped to a specific human owner (e.g., department head)?",
+      "help": "When 'everyone' owns a budget line, no one does. Mapping controllable costs to specific owners ensures accountability and gives you a direct point of contact for variance investigation.",
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
@@ -46,7 +46,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Assign Budget Ownership",
-        "recommendation": "Create a simple RACI matrix mapping every cost center to a named owner. Publish it. Make budget reviews part of their job description.",
+        "recommendation": "Create a simple RACI matrix mapping every controllable cost center to a named owner. Publish it. Make budget reviews part of their job description.",
         "type": "governance"
       }
     },
@@ -67,6 +67,54 @@
       }
     },
     {
+      "id": "fpa_l1_q55",
+      "practice_id": "prac_budget_ownership",
+      "text": "Do revenue owners formally sign off on their top-line targets before the year starts?",
+      "help": "Revenue accountability is often assumed but rarely formalized. Without explicit sign-off, sales leaders can claim targets were imposed rather than committed to.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 4,
+      "complexity": 1,
+      "expert_action": {
+        "title": "Implement Revenue Sign-Off",
+        "recommendation": "Require Sales/Commercial leaders to formally approve revenue targets before budget finalization. Document the commitment.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l1_q56",
+      "practice_id": "prac_budget_ownership",
+      "text": "Can every material CapEx line be mapped to a project owner?",
+      "help": "CapEx often lacks clear ownership, leading to cost overruns and delayed projects. Every significant capital investment should have a named accountable owner.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 4,
+      "complexity": 1,
+      "expert_action": {
+        "title": "Assign CapEx Ownership",
+        "recommendation": "Map every CapEx line item to a project owner and business sponsor. Include in the capital approval process.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l1_q62",
+      "practice_id": "prac_collaborative_systems",
+      "text": "Do all Finance outputs (reports, decks, dashboards) pull from a single reconciled data source?",
+      "help": "Multiple data sources create multiple truths. A single source eliminates reconciliation debates and version confusion. This is foundational\u2014if the numbers are wrong, nothing else matters.",
+      "maturity_level": 1,
+      "is_critical": true,
+      "initiative_id": "init_financial_controls",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Establish Single Data Source",
+        "recommendation": "Identify and document the 'golden source' for each data element. Eliminate alternative extracts and shadow spreadsheets.",
+        "type": "structural"
+      }
+    },
+    {
       "id": "fpa_l2_q12",
       "practice_id": "prac_policy_&_governance",
       "text": "Is there a single person clearly accountable for the integrity and delivery of the end-to-end budget process?",
@@ -78,24 +126,72 @@
       "complexity": 1,
       "expert_action": {
         "title": "Assign Budget Process Owner",
-        "recommendation": "Name one person accountable for budget timeline, templates, and consolidation. Doesn't need to be senior—needs to be organized and empowered.",
+        "recommendation": "Name one person accountable for budget timeline, templates, and consolidation. Doesn't need to be senior\u2014needs to be organized and empowered.",
         "type": "governance"
       }
     },
     {
       "id": "fpa_l2_q50",
       "practice_id": "prac_policy_&_governance",
-      "text": "Is there a formally approved budget policy that defines roles, timelines, and approval thresholds for the annual budget process?",
-      "help": "Documented policies reduce ambiguity. They clarify who has the authority to approve spending and what steps must be followed, preventing ad-hoc decision making.",
+      "text": "Are the 'rules of engagement' for the budget (e.g., reallocation rights, hiring freezes) clearly communicated and enforced, preventing mid-cycle negotiation?",
+      "help": "Ambiguous rules invite mid-cycle lobbying. Clear, enforced rules remove the noise and let managers focus on execution rather than renegotiation.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 2,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Clarify Budget Rules of Engagement",
+        "recommendation": "Document and communicate the 3-5 key rules: Can budget be reallocated? What triggers a freeze? Is unspent budget lost? Enforce consistently.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l2_q57",
+      "practice_id": "prac_policy_&_governance",
+      "text": "Does the organization consistently adhere to a published budget calendar with defined milestones?",
+      "help": "Many organizations have a calendar that they ignore. Adherence to milestones (e.g., 'First Pass due Oct 15') is the true test of governance.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
       "impact": 3,
+      "complexity": 1,
+      "expert_action": {
+        "title": "Enforce Budget Calendar",
+        "recommendation": "Secure CEO backing to treat missed deadlines as performance issues. Track 'on-time delivery' of budget submissions and report offenders to the executive committee.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l2_q58",
+      "practice_id": "prac_policy_&_governance",
+      "text": "Is there a formal reconciliation between top-down targets and bottom-up budget submissions?",
+      "help": "Without reconciliation, organizations often operate with two truths: what the board expects and what operations committed to. This creates accountability gaps.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Create Budget Policy",
-        "recommendation": "Draft a simple 2-page policy defining who approves what. Ensure it covers reallocations and 'use-it-or-lose-it' rules.",
-        "type": "governance"
+        "title": "Reconcile Top-Down and Bottom-Up",
+        "recommendation": "Build a formal step where top-down targets and bottom-up submissions are compared and gaps are resolved before final approval.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l2_q70",
+      "practice_id": "prac_budget_discipline",
+      "text": "Is the initial bottom-up budget submission typically close to the top-down target (+/- 10%), without requiring massive negotiation?",
+      "help": "Large gaps between what leadership wants and what ops submits indicate 'sandbagging' or strategic misalignment. A mature process starts with alignment.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Anchor the Discussion",
+        "recommendation": "Send out budget templates with targets hard-coded based on run-rate + strategy. Force business units to justify *deviations* from the target, rather than building from zero.",
+        "type": "behavioral"
       }
     },
     {
@@ -133,8 +229,8 @@
     {
       "id": "fpa_l1_q06",
       "practice_id": "prac_approval_workflows",
-      "text": "Are spending approvals systematically rejected by Finance when they exceed delegated authority, without escalation to override the controls?",
-      "help": "Controls are only effective if enforced consistently. Allowing overrides weakens the control environment and signals that policies are optional.",
+      "text": "Is the ERP or procurement system configured to block unapproved spend by default?",
+      "help": "Controls are only effective if enforced consistently. System-enforced blocks prevent unauthorized spend from entering the pipeline in the first place.",
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
@@ -227,6 +323,22 @@
       }
     },
     {
+      "id": "fpa_l2_q67",
+      "practice_id": "prac_management_reporting",
+      "text": "Do operational leaders rely on Finance's reports as their single source of truth, without maintaining parallel 'shadow' spreadsheets?",
+      "help": "Shadow spreadsheets signal a breakdown in trust or usability. If the business keeps parallel books, you have a credibility problem that no process improvement will fix.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_feedback_loops",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Co-Create the Single Source",
+        "recommendation": "Don't ban the shadow sheet; absorb it. Audit their spreadsheet and rebuild their specific view inside your official system. Win them over by building what they need.",
+        "type": "behavioral"
+      }
+    },
+    {
       "id": "fpa_l2_q01",
       "practice_id": "prac_budget_vs_actuals",
       "text": "Is a Budget vs. Actuals (BvA) report generated every month?",
@@ -309,6 +421,22 @@
     {
       "id": "fpa_l3_q11",
       "practice_id": "prac_rolling_forecast_cadence",
+      "text": "Does Finance explicitly track and communicate systematic forecast bias (optimism/conservatism)?",
+      "help": "Bias tracking improves accuracy. Identifying if a team is consistently optimistic or conservative allows for better calibration of future forecasts.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 3,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Track Forecast Accuracy",
+        "recommendation": "Measure forecast vs. actual each month. Track bias (consistently high or low?) and absolute error. Share with leadership.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_l3_q72",
+      "practice_id": "prac_rolling_forecast_cadence",
       "text": "Does the rolling forecast extend beyond the current fiscal year end?",
       "help": "Business doesn't stop at year-end. A rolling forecast (e.g., 12 months out) provides continuous visibility, aiding in longer-term decision making.",
       "maturity_level": 3,
@@ -323,11 +451,11 @@
       }
     },
     {
-      "id": "fpa_l2_q07",
+      "id": "fpa_l3_q07",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Does the forecast project cash flow and liquidity, not just P&L?",
       "help": "Profit is not cash. Forecasting liquidity ensures the business can meet its obligations and fund operations, which is critical for survival and growth.",
-      "maturity_level": 2,
+      "maturity_level": 3,
       "is_critical": true,
       "initiative_id": "init_forecast_infrastructure",
       "impact": 5,
@@ -342,15 +470,31 @@
       "id": "fpa_l2_q08",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Are working capital assumptions (DSO, DPO) explicitly modeled in the forecast?",
-      "help": "Working capital drivers directly impact cash flow. Modeling them explicitly allows you to see the cash impact of operational changes like collecting faster or paying slower.",
+      "help": "Working capital drivers directly impact cash flow. Modeling them explicitly allows you to see the cash impact of operational changes like collecting faster or paying slower. For midcaps, cash is king.",
       "maturity_level": 2,
-      "is_critical": false,
+      "is_critical": true,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 4,
+      "impact": 5,
       "complexity": 3,
       "expert_action": {
         "title": "Model Working Capital Drivers",
         "recommendation": "Don't just plug cash. Driver-based AR (Sales * DSO) and AP (COGS * DPO) gives you levers to pull.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l2_q65",
+      "practice_id": "prac_cash_flow_visibility",
+      "text": "Is covenant compliance forecasted at least 12 months out as part of the standard reporting package?",
+      "help": "For PE-backed or leveraged companies, covenant breach is existential. Forecasting compliance ahead of time allows for proactive management of lender relationships.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Covenant Forecasting",
+        "recommendation": "Add covenant metrics (leverage ratio, interest coverage, etc.) to your monthly package. Forecast 12 months forward. Flag breaches early.",
         "type": "structural"
       }
     },
@@ -366,7 +510,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Migrate to Collaborative Planning",
-        "recommendation": "Invest in dedicated FP&A software (e.g., DataRails, Planful). If not feasible, move to cloud sheets with strict version control. Stop single-user files.",
+        "recommendation": "Invest in dedicated FP&A software (e.g., DataRails, Planful). Fallback: Use cloud sheets with strict cell-level locking. The goal is single-source integrity, not just tools.",
         "type": "structural"
       }
     },
@@ -387,6 +531,22 @@
       }
     },
     {
+      "id": "fpa_l2_q59",
+      "practice_id": "prac_collaborative_systems",
+      "text": "Are key forecast assumptions documented and accessible to all contributors?",
+      "help": "Undocumented assumptions lead to inconsistent inputs and make it impossible to explain forecast changes. Central documentation ensures alignment.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Document Forecast Assumptions",
+        "recommendation": "Maintain a single assumptions log (inflation, FX, headcount rates, etc.) that all contributors reference. Update at each forecast cycle.",
+        "type": "governance"
+      }
+    },
+    {
       "id": "fpa_l4_q10",
       "practice_id": "prac_collaborative_systems",
       "text": "Is the 'Financial Truth' stored in a robust system with version control, audit trails, and backup (vs. offline spreadsheets that are prone to breaking)?",
@@ -397,25 +557,25 @@
       "impact": 3,
       "complexity": 2,
       "expert_action": {
-        "title": "Explore Predictive Analytics",
-        "recommendation": "Start with one use case: churn prediction, deal probability. Partner with data science team or use simple tools.",
+        "title": "Implement Financial Data Governance",
+        "recommendation": "Establish version control, audit trails, and backup protocols for core financial models. Define who can modify model logic vs. inputs.",
         "type": "structural"
       }
     },
     {
       "id": "fpa_l3_q08",
       "practice_id": "prac_operational_drivers",
-      "text": "Can executives clearly explain the 2-3 key drivers that determine financial success, without prompting from Finance?",
-      "help": "This tests alignment. When executives understand the operational levers of financial success, they can make better day-to-day decisions.",
+      "text": "Do the monthly executive reports explicitly track the top 3 operational drivers against targets?",
+      "help": "If drivers aren't in the report, they aren't being managed. Explicit tracking ensures leadership focuses on the levers that actually move financial outcomes.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Make Downside Scenarios Actionable",
-        "recommendation": "Don't just present 'what if bad.' Present 'what if bad, and here's the action plan.' Ensure action plans are owned multifunctionally, not just by Finance.",
-        "type": "behavioral"
+        "title": "Embed Driver Tracking",
+        "recommendation": "Identify the 2-3 drivers that matter most (volume, price, churn, etc.). Add a dedicated section in the monthly pack tracking these against targets.",
+        "type": "structural"
       }
     },
     {
@@ -429,9 +589,9 @@
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Integrate External Data",
-        "recommendation": "Identify 3-5 external indicators relevant to your business. Subscribe to data feeds or track manually. Include in planning assumptions.",
-        "type": "structural"
+        "title": "Shift to Driver-Based Narratives",
+        "recommendation": "Train FP&A to present in operational language. Replace accounting jargon with business metrics in all executive communications.",
+        "type": "behavioral"
       }
     },
     {
@@ -515,11 +675,11 @@
       }
     },
     {
-      "id": "fpa_l4_q45",
+      "id": "fpa_l3_q45",
       "practice_id": "prac_rapid_what_if_capability",
       "text": "Are sensitivity tables standard inclusions in executive forecast reviews?",
       "help": "Sensitivity analysis highlights risk. Showing how outcomes change with different assumptions prepares leadership for volatility and helps manage expectations.",
-      "maturity_level": 4,
+      "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 3,
@@ -531,11 +691,11 @@
       }
     },
     {
-      "id": "fpa_l3_q30",
+      "id": "fpa_l4_q30",
       "practice_id": "prac_multi_scenario_management",
-      "text": "Do you maintain at least three live scenarios (Base, Bull, Bear) at all times?",
+      "text": "Do you maintain at least three live scenarios (Base, Bull, Bear) during planning cycles?",
       "help": "The future is uncertain. Maintaining multiple scenarios ensures the business is prepared for different outcomes and has thought through response plans.",
-      "maturity_level": 3,
+      "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
@@ -549,17 +709,17 @@
     {
       "id": "fpa_l3_q52",
       "practice_id": "prac_multi_scenario_management",
-      "text": "Can you switch between scenarios in your reporting package with a single toggle/click?",
-      "help": "Easy scenario switching empowers decision-makers to compare outcomes instantly. Without it, scenario analysis becomes a back-office exercise rather than a boardroom tool.",
+      "text": "Does leadership actively review multiple scenarios when making significant decisions, rather than relying solely on the base case?",
+      "help": "Having scenarios is useless if leadership ignores them. True scenario discipline means decision-makers consider alternatives before committing.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 3,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Build Scenario Toggles",
-        "recommendation": "Add a global 'Scenario' selector to your reporting dashboards. Allow users to instantly flip between Base, Upside, and Downside views.",
-        "type": "structural"
+        "title": "Embed Scenario Discipline",
+        "recommendation": "Require scenario comparison for all major decisions. Ask 'what does this look like in the downside case?' before approval.",
+        "type": "behavioral"
       }
     },
     {
@@ -597,17 +757,17 @@
     {
       "id": "fpa_l3_q01",
       "practice_id": "prac_commercial_partnership",
-      "text": "Does Finance have a voting seat on the committee that approves new product launches or pricing?",
-      "help": "Finance needs to be involved upfront to ensure commercial viability. A voting seat ensures financial implications are considered before commitments are made.",
+      "text": "Is Finance consulted before major commercial decisions (new products, pricing changes, large deals) are finalized?",
+      "help": "Finance needs to be involved upfront to ensure commercial viability. Early consultation ensures financial implications are considered before commitments are made.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
-        "title": "Secure Seat at Approval Table",
-        "recommendation": "Insert Finance into the formal approval workflow. 'No new SKU without Finance sign-off.'",
-        "type": "governance"
+        "title": "Insert Finance into Commercial Flow",
+        "recommendation": "Establish the norm that Finance reviews major deals before signing. Start informally, then formalize once trust is built.",
+        "type": "behavioral"
       }
     },
     {
@@ -622,8 +782,24 @@
       "complexity": 3,
       "expert_action": {
         "title": "Enforce Deal Desk Logic",
-        "recommendation": "Implement a 'Deal Desk' approval workflow in your CRM. Block signatures until Finance approves non-standard terms.",
+        "recommendation": "Secure CEO mandate first: 'No signature without Finance approval.' Implement a 'Deal Desk' workflow in CRM to block non-standard terms.",
         "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l3_q71",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Has Finance successfully stopped or restructured a major commercial deal or initiative in the last 12 months based on negative ROI?",
+      "help": "The ability to say 'no' is the ultimate test of Finance's influence. If you only approve, you are a rubber stamp, not a strategic partner.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement 'Yellow Flag' Process",
+        "recommendation": "Start smaller than a veto. Institute a formal 'Financial Risk Assessment' appendix for all deals. You don't have to kill the deal yet, but you must officially document the risks.",
+        "type": "behavioral"
       }
     },
     {
@@ -637,9 +813,41 @@
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Build Trusted Advisor Status",
-        "recommendation": "Shift conversation from 'here is your budget' to 'how can I help you hit your target?' Solve their problems, don't just police them.",
+        "title": "Embed Finance in Ops Meetings",
+        "recommendation": "Stop waiting for them to come to you. Mandate FP&A attendance at weekly Ops meetings to listen. Pick one operational headache they mention and solve it with data by the next week.",
         "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_l3_q06",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Are Finance Business Partners measured on the performance of their supported units?",
+      "help": "Shared KPIs create alignment. When Finance partners share the goals of their business unit, they are more motivated to drive operational success.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Shared Performance KPIs",
+        "recommendation": "Link Finance bonus to the P&L of the unit they support. Align incentives.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l3_q70",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Are business unit bonuses tied to forecast accuracy (e.g., hitting the commitment) rather than just 'beating' a sandbagged budget?",
+      "help": "If bonuses are only tied to exceeding budget, managers will sandbag. Tying incentives to accuracy aligns everyone on hitting the 'real' number.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Incentivize Accuracy",
+        "recommendation": "Propose a symmetric bonus structure: Cap upside for sandbagging, and penalize for significant misses in *either* direction.",
+        "type": "governance"
       }
     },
     {
@@ -669,9 +877,9 @@
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Join Cross-Functional Planning",
-        "recommendation": "Ensure planning is a cross-functional activity (e.g., S&OP or similar)—not an isolated finance exercise. Bring financial lens to operational decisions.",
-        "type": "governance"
+        "title": "Build Profitability Reporting",
+        "recommendation": "Create a ranked view of customer/product profitability. Update quarterly. Share with commercial teams to inform resource allocation.",
+        "type": "structural"
       }
     },
     {
@@ -701,9 +909,25 @@
       "impact": 3,
       "complexity": 2,
       "expert_action": {
-        "title": "Explore Statistical Forecasting",
-        "recommendation": "Start simple: time series analysis on revenue. Use tools like Prophet if you have data science capabilities.",
-        "type": "structural"
+        "title": "Enforce Single Source of Truth",
+        "recommendation": "Implement a mandatory 'Data Tie-Out' meeting 48 hours before Board decks go out. CEO must validate discrepancies.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l4_q70",
+      "practice_id": "prac_board_level_impact",
+      "text": "When Finance and Sales present conflicting forecast numbers, does the CEO typically use the Finance view for Board reporting?",
+      "help": "This is the ultimate credibility test. If the CEO trusts the Sales 'optimism' over Finance's 'realism', the finance function is weak.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Build Forecast Credibility",
+        "recommendation": "Track your forecast accuracy vs. Sales. If Sales misses by >X% twice, propose a governance rule: Finance forecast becomes the Board default.",
+        "type": "behavioral"
       }
     },
     {
@@ -739,19 +963,83 @@
       }
     },
     {
+      "id": "fpa_l3_q73",
+      "practice_id": "prac_investment_rigor",
+      "text": "Does the organization promptly kill underperforming projects based on Finance data, or do they linger as 'zombie' initiatives?",
+      "help": "Starting projects is easy; stopping them is hard. A mature org uses financial data to cut losses early, freeing up capital for better ideas.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Establish Kill Criteria",
+        "recommendation": "Pre-agree with the Board/CEO on specific milestones. If milestones aren't met by Date X, funding pauses automatically.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l2_q60",
+      "practice_id": "prac_data_visualization",
+      "text": "Does Finance routinely perform profitability analysis at the customer, product, or channel level?",
+      "help": "Understanding where money is made vs. lost is foundational. Without this analysis, commercial decisions are based on revenue, not profit.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Build Profitability Analysis Capability",
+        "recommendation": "Start with top 10 customers or products. Allocate direct costs, then layer in reasonable overhead allocation. Update quarterly.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l2_q68",
+      "practice_id": "prac_data_visualization",
+      "text": "Are shared cost allocations (IT, HR, Rent) based on clear, agreed-upon drivers (e.g., headcount, square footage) rather than arbitrary percentages?",
+      "help": "Opaque allocations destroy trust. When business units don't understand or agree with how costs are allocated, they dismiss the numbers entirely.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Rationalize Allocations",
+        "recommendation": "Document allocation methodology. Use logical drivers (headcount for HR, users for IT). Get business unit sign-off on the approach.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l3_q60",
+      "practice_id": "prac_data_visualization",
+      "text": "Does Finance proactively deliver analysis (including NPV/ROI) that influences commercial decisions such as pricing, promotions, or product mix?",
+      "help": "Reactive Finance waits to be asked. Proactive Finance identifies opportunities and brings insight to the table before decisions are made.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Shift to Proactive Analysis",
+        "recommendation": "Identify 2-3 commercial decisions per quarter where Finance can add value. Deliver unsolicited analysis. Measure uptake.",
+        "type": "behavioral"
+      }
+    },
+    {
       "id": "fpa_l3_q13",
       "practice_id": "prac_data_visualization",
-      "text": "Are reports primarily visual (charts/trends) rather than tabular data dumps?",
-      "help": "Visuals communicate trends faster than tables. Good visualization helps non-financial stakeholders grasp the key messages quickly.",
+      "text": "Are reports primarily narrative and insight-driven, rather than just data dumps of tables and charts?",
+      "help": "A chart without a 'so what' is just data. Mature reporting tells a story: What happened, Why it happened, and What we are doing about it.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_decision_support",
       "impact": 3,
       "complexity": 3,
       "expert_action": {
-        "title": "Switch to Visual Reporting",
-        "recommendation": "Adopt the '5-second rule'. If a user can't understand the trend in 5 seconds, it's a bad chart. Use waterfalls and trend lines.",
-        "type": "quick_win"
+        "title": "Enforce the 'So What?' Rule",
+        "recommendation": "Every chart must have a headline stating the *insight*, not the data. If the headline isn't an insight, delete the chart.",
+        "type": "behavioral"
       }
     },
     {
@@ -805,33 +1093,17 @@
     {
       "id": "fpa_l4_q43",
       "practice_id": "prac_predictive_analytics",
-      "text": "Does Finance use any automated algorithmic forecasting (e.g., machine learning) to validate human inputs?",
-      "help": "Algorithms provide an unbiased baseline. Using them to challenge human inputs helps identify sandbagging or over-optimism in the forecast.",
+      "text": "Does Finance use any form of statistical or algorithmic forecasting to validate or challenge human inputs?",
+      "help": "Even simple statistical methods (trend analysis, regression) provide an unbiased baseline. Using them to challenge human inputs helps identify sandbagging or over-optimism.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_decision_support",
-      "impact": 4,
-      "complexity": 5,
-      "expert_action": {
-        "title": "Pilot Algorithmic Forecasting",
-        "recommendation": "Run a simple regression model on historical sales parallel to your manual forecast. Investigate large deviations.",
-        "type": "structural"
-      }
-    },
-    {
-      "id": "fpa_l2_q11",
-      "practice_id": "prac_predictive_analytics",
-      "text": "Does Finance explicitly track and communicate systematic forecast bias (optimism/conservatism)?",
-      "help": "Bias tracking improves accuracy. Identifying if a team is consistently optimistic or conservative allows for better calibration of future forecasts.",
-      "maturity_level": 2,
-      "is_critical": false,
-      "initiative_id": "init_decision_support",
       "impact": 3,
-      "complexity": 2,
+      "complexity": 4,
       "expert_action": {
-        "title": "Track Forecast Accuracy",
-        "recommendation": "Measure forecast vs. actual each month. Track bias (consistently high or low?) and absolute error. Share with leadership.",
-        "type": "behavioral"
+        "title": "Pilot Statistical Forecasting",
+        "recommendation": "Start simple: run a trend analysis or regression on historical sales parallel to your manual forecast. Investigate large deviations.",
+        "type": "structural"
       }
     },
     {
@@ -851,35 +1123,83 @@
       }
     },
     {
-      "id": "fpa_l4_q02",
+      "id": "fpa_l2_q61",
       "practice_id": "prac_process_automation",
-      "text": "Are standard journal entries automated?",
-      "help": "Automation reduces manual error and effort. Recurring entries should be set to run automatically, freeing up time for higher-value activities.",
-      "maturity_level": 4,
+      "text": "Is the management reporting pack delivered within a defined SLA, every month without exception?",
+      "help": "Consistency builds trust. Occasional delays signal process fragility and reduce the relevance of financial information.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 3,
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Define Reporting SLA",
+        "recommendation": "Set and publish a delivery date for the monthly pack. Track misses. Investigate root causes when deadlines slip.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l2_q63",
+      "practice_id": "prac_process_automation",
+      "text": "Is the annual budget cycle completed within a defined timeframe (e.g., 8 weeks) from kickoff to board approval?",
+      "help": "Drawn-out budget processes exhaust the organization and produce stale assumptions. Efficiency signals process maturity.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Automate Standard JEs",
-        "recommendation": "Configure recurring journals for rent, depreciation, and standard accruals. Remove manual touchpoints.",
+        "title": "Compress Budget Cycle",
+        "recommendation": "Map the current timeline. Identify bottlenecks. Set a target duration and work backwards to compress each phase.",
         "type": "structural"
       }
     },
     {
-      "id": "fpa_l4_q03",
+      "id": "fpa_l2_q64",
       "practice_id": "prac_process_automation",
-      "text": "Is the bank reconciliation process >90% automated?",
-      "help": "High automation rates in reconciliation indicate efficient processes. Manual matching should be the exception, not the rule.",
-      "maturity_level": 4,
+      "text": "Do FP&A analysts spend less than 50% of their time on data gathering, cleaning, and reconciliation?",
+      "help": "If analysts spend most of their time scrubbing data, there's no capacity for actual analysis. This is the #1 productivity killer in mid-market finance.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 3,
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Reduce Data Wrangling Time",
+        "recommendation": "Conduct a time study. Identify the biggest data prep bottlenecks. Invest in automation, better extracts, or upstream data quality fixes.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l2_q66",
+      "practice_id": "prac_process_automation",
+      "text": "Does at least one FP&A team member have working proficiency in data extraction and analysis tools (e.g., SQL, Power BI, Python) beyond Excel?",
+      "help": "Modern FP&A requires technical skills to access data independently. Reliance on IT for every data pull slows the team and limits analytical depth.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Automate Bank Recs",
-        "recommendation": "Connect bank feeds to ERP. Configure auto-matching rules for 90% of transaction volume.",
+        "title": "Build Technical Capability",
+        "recommendation": "Identify skill gaps. Invest in training or hire for SQL/BI proficiency. Target: at least one team member who can self-serve data.",
         "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l3_q61",
+      "practice_id": "prac_process_automation",
+      "text": "Can the monthly close and reporting process run without key-person dependency?",
+      "help": "If one person's absence breaks the process, you have a fragility problem. Mature processes are documented and transferable.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Eliminate Key-Person Risk",
+        "recommendation": "Document all close procedures. Cross-train team members. Test by having backup staff run the process quarterly.",
+        "type": "governance"
       }
     },
     {
@@ -893,9 +1213,25 @@
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Insert Finance into Pricing",
-        "recommendation": "Create pricing guardrails: minimum margins, discount approval levels. Provide Sales with a simple tool showing deal profitability.",
-        "type": "governance"
+        "title": "Conduct Report Pruning Exercise",
+        "recommendation": "Audit all recurring reports. Stop or automate lowest-value outputs. Reallocate freed capacity to strategic work.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_l3_q62",
+      "practice_id": "prac_service_level_agreements",
+      "text": "Does the FP&A team spend more time on analysis and insight generation than on data gathering and reconciliation?",
+      "help": "Time allocation reveals maturity. If most effort goes to data wrangling, there's no capacity left for value-add work.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Rebalance FP&A Capacity",
+        "recommendation": "Conduct a time study. Target 60%+ on analysis vs. data gathering. Automate or centralize data prep to shift the balance.",
+        "type": "behavioral"
       }
     },
     {
@@ -909,56 +1245,24 @@
       "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Create Strategic Capacity",
-        "recommendation": "Audit time spent on BAU (Business As Usual) vs. strategic. Target: 70/30 split. Automate or eliminate low-value BAU work.",
-        "type": "behavioral"
-      }
-    },
-    {
-      "id": "fpa_l3_q07",
-      "practice_id": "prac_shared_services_model",
-      "text": "Are Finance Business Partners measured on the performance of their supported units?",
-      "help": "Shared KPIs create alignment. When Finance partners share the goals of their business unit, they are more motivated to drive operational success.",
-      "maturity_level": 3,
-      "is_critical": false,
-      "initiative_id": "init_operational_excellence",
-      "impact": 4,
-      "complexity": 2,
-      "expert_action": {
-        "title": "Shared Performance KPIs",
-        "recommendation": "Link Finance bonus to the P&L of the unit they support. Align incentives.",
-        "type": "governance"
-      }
-    },
-    {
-      "id": "fpa_l4_q07",
-      "practice_id": "prac_service_level_agreements",
-      "text": "Is there a formal Service Level Agreement (SLA) between the business and the finance processing team?",
-      "help": "SLAs set expectations. They define what the business can expect in terms of speed and quality, reducing friction and clarifying accountability.",
-      "maturity_level": 4,
-      "is_critical": false,
-      "initiative_id": "init_operational_excellence",
-      "impact": 3,
-      "complexity": 2,
-      "expert_action": {
-        "title": "Implement Finance Retrospectives",
-        "recommendation": "Run a retrospective after each close and budget cycle (Kaizen). What worked? What didn't? Pick one improvement per cycle.",
-        "type": "behavioral"
+        "title": "Evaluate Shared Services Model",
+        "recommendation": "Assess cost/benefit of centralizing or outsourcing transactional roles. Build business case if not already implemented.",
+        "type": "structural"
       }
     },
     {
       "id": "fpa_l4_q51",
       "practice_id": "prac_service_level_agreements",
-      "text": "Are there defined response times for key finance services (e.g., ad-hoc analysis, AP inquiries) that the business relies on?",
-      "help": "Defined response times manage expectations. They ensure the business knows when they will get an answer, which improves planning and trust.",
+      "text": "Does the business have a clear, reliable understanding of Finance turnaround times (e.g., 'AP queries are 48 hours'), or is it a black box?",
+      "help": "Predictability matters more than formal SLAs. If the business knows what to expect, they can plan around it. If Finance is a black box, frustration builds.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
       "impact": 3,
       "complexity": 2,
       "expert_action": {
-        "title": "Publish Finance SLAs",
-        "recommendation": "Define and track turnaround times for common requests (e.g., '24 hours for AP queries'). Publish performance to the business.",
+        "title": "Establish Predictable Response Times",
+        "recommendation": "Communicate expected turnaround times for common requests. Consistency matters more than speed. If AP is always 48 hours, the business can plan around it.",
         "type": "governance"
       }
     }
