@@ -1454,7 +1454,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
     .from("diagnostic_runs")
     .select(`
       id,
-      user_id,
+      owner_id,
       status,
       spec_version,
       context,
@@ -1471,7 +1471,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   }
 
   // Get user emails for each session
-  const userIds = [...new Set(data.map(r => r.user_id).filter(Boolean))];
+  const userIds = [...new Set(data.map(r => r.owner_id).filter(Boolean))];
   const { data: users } = await req.supabase.auth.admin.listUsers();
 
   const userMap = new Map();
@@ -1482,7 +1482,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   // Enrich sessions with user email
   const enrichedData = data.map(session => ({
     ...session,
-    user_email: userMap.get(session.user_id) || "unknown",
+    user_email: userMap.get(session.owner_id) || "unknown",
     company_name: session.context?.company?.name || null,
     industry: session.context?.company?.industry || null,
   }));
