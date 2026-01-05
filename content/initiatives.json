@@ -42,13 +42,6 @@
     "description": "When markets shift, can you model the impact in hours, not weeks? Scenario agility means instant what-if analysis, pre-defined trigger responses, and stress-tested assumptions. This is how Finance stays ahead of surprises."
   },
   {
-    "id": "init_seat_at_table",
-    "theme_id": "intelligence",
-    "objective_id": "obj_strategic_influence",
-    "title": "Earn a Seat at the Table",
-    "description": "Finance must be consulted before decisions are made, not informed after. This requires building trust through reliability, then proving value through insight."
-  },
-  {
     "id": "init_strategic_influence",
     "theme_id": "intelligence",
     "objective_id": "obj_strategic_influence",

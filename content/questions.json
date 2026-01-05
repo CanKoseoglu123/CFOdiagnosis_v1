@@ -110,7 +110,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Establish Single Data Source",
-        "recommendation": "Identify and document the 'golden source' for each data element. Eliminate alternative extracts and shadow spreadsheets.",
+        "recommendation": "Identify and document the 'golden source' for each data element. When ERP, CRM, and BI tool show different numbers, establish a hierarchy (e.g., 'GL is always right for actuals, CRM is right for pipeline'). Create a conflict resolution protocol and assign a data steward to adjudicate disputes.",
         "type": "structural"
       }
     },
@@ -191,7 +191,7 @@
       "expert_action": {
         "title": "Anchor the Discussion",
         "recommendation": "Send out budget templates with targets hard-coded based on run-rate + strategy. Force business units to justify *deviations* from the target, rather than building from zero.",
-        "type": "behavioral"
+        "type": "structural"
       }
     },
     {
@@ -334,7 +334,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Co-Create the Single Source",
-        "recommendation": "Don't ban the shadow sheet; absorb it. Audit their spreadsheet and rebuild their specific view inside your official system. Win them over by building what they need.",
+        "recommendation": "First diagnose WHY the shadow sheet exists: Is it timing (your reports come too late)? Granularity (they need SKU-level, you provide category)? Format (they need it in their workflow)? Then absorb their specific requirements into your official system. Win them over by building what they actually need.",
         "type": "behavioral"
       }
     },
@@ -441,13 +441,13 @@
       "help": "Business doesn't stop at year-end. A rolling forecast (e.g., 12 months out) provides continuous visibility, aiding in longer-term decision making.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_forward_visibility",
+      "initiative_id": "init_forecast_infrastructure",
       "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Extend Forecast Horizon",
-        "recommendation": "Add 4 quarters to your view. Don't fall off a cliff at year-end.",
-        "type": "quick_win"
+        "recommendation": "Add 4 quarters to your view. This requires developing assumptions for the out-period (growth rates, cost inflation, headcount plans) and gaining stakeholder alignment on the extended horizon's purpose.",
+        "type": "structural"
       }
     },
     {
@@ -510,7 +510,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Migrate to Collaborative Planning",
-        "recommendation": "Invest in dedicated FP&A software (e.g., DataRails, Planful). Fallback: Use cloud sheets with strict cell-level locking. The goal is single-source integrity, not just tools.",
+        "recommendation": "For sub-$100M revenue companies, cloud-based spreadsheets (Google Sheets, Excel Online) with strict cell-level protection and naming conventions may be more cost-effective than dedicated FP&A software. For $100M+, evaluate purpose-built tools (DataRails, Planful, Cube). The goal is single-source integrity and version control, not just tools.",
         "type": "structural"
       }
     },
@@ -798,7 +798,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement 'Yellow Flag' Process",
-        "recommendation": "Start smaller than a veto. Institute a formal 'Financial Risk Assessment' appendix for all deals. You don't have to kill the deal yet, but you must officially document the risks.",
+        "recommendation": "If Finance hasn't stopped a bad deal in 12 months, diagnose why: Is your analysis not compelling? Or is leadership not listening? Start with a formal 'Financial Risk Assessment' appendix for all deals to document concerns on the record. Then track whether flagged deals underperform—build your credibility with data before escalating to veto power.",
         "type": "behavioral"
       }
     },
@@ -1246,7 +1246,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Evaluate Shared Services Model",
-        "recommendation": "Assess cost/benefit of centralizing or outsourcing transactional roles. Build business case if not already implemented.",
+        "recommendation": "For mid-market companies ($50M-$250M revenue), traditional internal shared services rarely achieve scale. Instead, evaluate outsourcing AP/AR to a BPO provider or using managed services. Build a business case comparing: current FTE cost, error rates, and cycle times vs. outsourced alternatives.",
         "type": "structural"
       }
     },
