@@ -57,7 +57,7 @@ export const QuestionsFileSchema = z.object({
   pillar: z.literal('fpa'),
   questions: z.array(QuestionSchema)
     .min(60)
-    .max(60)
+    .max(100)
     .refine((items) => {
       const ids = items.map(i => i.id);
       return new Set(ids).size === ids.length;
