@@ -17,7 +17,6 @@ import {
   ClipboardCheck,
   Users,
   ArrowRight,
-  Clock,
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -150,12 +149,8 @@ export default function SelectPillarPage() {
     <div className="min-h-screen bg-slate-50">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
           <Logo size="sm" />
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Clock className="w-4 h-4" />
-            <span>~25 minutes per assessment</span>
-          </div>
         </div>
       </nav>
 
@@ -186,10 +181,10 @@ export default function SelectPillarPage() {
                 <div
                   key={pillar.id}
                   className={`
-                    relative bg-white border transition-all
+                    relative border transition-all
                     ${pillar.available
-                      ? 'border-slate-300 hover:border-slate-400 hover:shadow-md cursor-pointer'
-                      : 'border-slate-200 cursor-not-allowed'
+                      ? 'bg-white border-slate-300 hover:border-slate-400 hover:shadow-md cursor-pointer'
+                      : 'bg-slate-50 border-slate-100 cursor-not-allowed opacity-60'
                     }
                   `}
                   onClick={() => handlePillarClick(pillar)}
