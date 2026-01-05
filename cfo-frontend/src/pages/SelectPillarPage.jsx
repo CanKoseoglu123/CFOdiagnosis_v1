@@ -2,7 +2,7 @@
 // Pillar selection page - user chooses which diagnostic to run
 // Only FP&A is active, all others coming soon
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Logo, BRAND_COLORS } from '../components/Logo';
 import { supabase } from '../lib/supabase';
@@ -102,6 +102,11 @@ export default function SelectPillarPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loadingPillar, setLoadingPillar] = useState(null);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   async function handlePillarClick(pillar) {
     if (!pillar.available) return;
