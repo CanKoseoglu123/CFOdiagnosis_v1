@@ -25,6 +25,5 @@
   { "id": "prac_self_service_analytics", "objective_id": "obj_decision_support", "title": "Self-Service Analytics", "capability_tags": ["Technology", "Culture"] },
   { "id": "prac_predictive_analytics", "objective_id": "obj_decision_support", "title": "Predictive Analytics", "capability_tags": ["Technology", "Data"] },
   { "id": "prac_process_automation", "objective_id": "obj_operational_excellence", "title": "Process Automation", "capability_tags": ["Technology", "Process"] },
-  { "id": "prac_shared_services_model", "objective_id": "obj_operational_excellence", "title": "Shared Services Model", "capability_tags": ["People", "Structure"] },
   { "id": "prac_service_level_agreements", "objective_id": "obj_operational_excellence", "title": "Service Level Agreements", "capability_tags": ["Process", "Governance"] }
 ]

@@ -1235,22 +1235,6 @@
       }
     },
     {
-      "id": "fpa_l4_q06",
-      "practice_id": "prac_shared_services_model",
-      "text": "Are transactional finance roles (AP/AR) centralized or outsourced to lower-cost centers?",
-      "help": "Centralization drives efficiency. Grouping transactional roles allows for standardization and economies of scale, often reducing cost.",
-      "maturity_level": 4,
-      "is_critical": false,
-      "initiative_id": "init_operational_excellence",
-      "impact": 4,
-      "complexity": 4,
-      "expert_action": {
-        "title": "Evaluate Shared Services Model",
-        "recommendation": "For mid-market companies ($50M-$250M revenue), traditional internal shared services rarely achieve scale. Instead, evaluate outsourcing AP/AR to a BPO provider or using managed services. Build a business case comparing: current FTE cost, error rates, and cycle times vs. outsourced alternatives.",
-        "type": "structural"
-      }
-    },
-    {
       "id": "fpa_l4_q51",
       "practice_id": "prac_service_level_agreements",
       "text": "Does the business have a clear, reliable understanding of Finance turnaround times (e.g., 'AP queries are 48 hours'), or is it a black box?",
