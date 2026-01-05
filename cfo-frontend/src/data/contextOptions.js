@@ -258,6 +258,16 @@ export const PAIN_POINTS = [
       'prac_self_service_analytics',
       'prac_management_reporting'
     ]
+  },
+  {
+    value: 'data_silos',
+    label: 'Non-financial data sits in silos',
+    related_practices: [
+      'prac_operational_drivers',
+      'prac_collaborative_systems',
+      'prac_predictive_analytics',
+      'prac_self_service_analytics'
+    ]
   }
 ];
 

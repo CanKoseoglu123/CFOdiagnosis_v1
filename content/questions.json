@@ -1,5 +1,5 @@
 {
-  "version": "2.15.2",
+  "version": "2.16.0",
   "pillar": "fpa",
   "questions": [
     {
@@ -1264,6 +1264,22 @@
         "title": "Establish Predictable Response Times",
         "recommendation": "Communicate expected turnaround times for common requests. Consistency matters more than speed. If AP is always 48 hours, the business can plan around it.",
         "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l4_q61",
+      "practice_id": "prac_operational_drivers",
+      "text": "Is non-financial data (CRM pipeline, HR headcount, operational KPIs) systematically integrated into financial performance reporting?",
+      "help": "True performance management requires connecting financial outcomes to operational drivers. Without automated integration of non-financial data, FP&A spends excessive time manually gathering context and cannot provide real-time business intelligence.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 5,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Build Integrated Performance Data Model",
+        "recommendation": "Identify the top 5 operational metrics that drive financial outcomes (e.g., pipeline value, headcount, utilization, NPS). Build automated feeds from source systems (CRM, HRIS, operations tools) into your FP&A data layer. Target: monthly reports should include both financial and operational context without manual data pulls.",
+        "type": "structural"
       }
     }
   ]
