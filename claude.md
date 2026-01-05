@@ -48,7 +48,7 @@ CFOdiagnosis_v1/
 │   └── tests/                    # QA test suites
 │
 ├── content/                      # JSON content catalog (v2.9.0)
-│   ├── questions.json            # 60 FP&A questions (practice_id linkage)
+│   ├── questions.json            # 79 FP&A questions (practice_id linkage)
 │   ├── practices.json            # 28 practices
 │   ├── initiatives.json          # 9 initiatives
 │   ├── objectives.json           # 9 objectives
@@ -204,7 +204,7 @@ CFOdiagnosis_v1/
 | L2 Defined | 15 | 4 | 7 | Variance Analysis, Forecasting |
 | L3 Managed | 21 | 0 | 9 | Driver-Based Planning, Scenario Modeling |
 | L4 Optimized | 15 | 0 | 6 | Integrated Planning, Predictive Analytics |
-| **Total** | **60** | **8** | **28** | **9** |
+| **Total** | **79** | **8** | **28** | **9** |
 
 ---
 
