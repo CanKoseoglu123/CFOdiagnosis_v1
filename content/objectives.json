@@ -9,7 +9,7 @@
     "id": "obj_financial_controls",
     "theme_id": "foundation",
     "title": "Financial Controls",
-    "description": "Ensure data integrity and prevent leakage."
+    "description": "Ensure analytical integrity through model governance and assumption management."
   },
   {
     "id": "obj_performance_monitoring",
@@ -33,19 +33,19 @@
     "id": "obj_scenario_modeling",
     "theme_id": "future",
     "title": "Scenario Modeling",
-    "description": "Prepare the business for multiple potential futures."
+    "description": "Enable confident decision-making when conditions deviate from plan."
   },
   {
     "id": "obj_strategic_influence",
     "theme_id": "intelligence",
     "title": "Strategic Influence",
-    "description": "Seat at the table for major commercial decisions."
+    "description": "Proactively shape commercial decisions through financial insight."
   },
   {
     "id": "obj_decision_support",
     "theme_id": "intelligence",
     "title": "Decision Support",
-    "description": "Democratize data to enable faster business decisions."
+    "description": "Deliver accessible, actionable financial insights to decision-makers."
   },
   {
     "id": "obj_operational_excellence",
