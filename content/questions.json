@@ -180,7 +180,7 @@
     },
     {
       "id": "fpa_l2_q70",
-      "practice_id": "prac_budget_discipline",
+      "practice_id": "prac_policy_&_governance",
       "text": "Is the initial bottom-up budget submission typically close to the top-down target (+/- 10%), without requiring massive negotiation?",
       "help": "Large gaps between what leadership wants and what ops submits indicate 'sandbagging' or strategic misalignment. A mature process starts with alignment.",
       "maturity_level": 2,
