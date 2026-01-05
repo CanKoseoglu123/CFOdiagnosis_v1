@@ -184,7 +184,7 @@ export default function SelectPillarPage() {
                     relative border transition-all
                     ${pillar.available
                       ? 'bg-white border-slate-300 hover:border-slate-400 hover:shadow-md cursor-pointer'
-                      : 'bg-slate-50 border-slate-100 cursor-not-allowed opacity-60'
+                      : 'bg-slate-50/50 border-slate-200 cursor-not-allowed'
                     }
                   `}
                   onClick={() => handlePillarClick(pillar)}
