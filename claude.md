@@ -200,11 +200,11 @@ CFOdiagnosis_v1/
 
 | Level | Questions | Critical | Practices | Objectives |
 |-------|-----------|----------|-----------|------------|
-| L1 Emerging | 9 | 4 | 6 | Budget Foundation, Financial Controls |
+| L1 Emerging | 9 | 5 | 6 | Budget Foundation, Financial Controls |
 | L2 Defined | 15 | 4 | 7 | Variance Analysis, Forecasting |
-| L3 Managed | 21 | 0 | 9 | Driver-Based Planning, Scenario Modeling |
+| L3 Managed | 21 | 1 | 9 | Driver-Based Planning, Scenario Modeling |
 | L4 Optimized | 15 | 0 | 6 | Integrated Planning, Predictive Analytics |
-| **Total** | **79** | **8** | **28** | **9** |
+| **Total** | **79** | **10** | **28** | **9** |
 
 ---
 
