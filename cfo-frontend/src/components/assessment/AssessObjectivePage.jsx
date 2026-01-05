@@ -1,10 +1,10 @@
-// src/components/assessment/AssessThemePage.jsx
-// VS-30: Reusable theme assessment page with Action Planning design
+// src/components/assessment/AssessObjectivePage.jsx
+// VS-44: Objective-based assessment pages (9 pages, one per objective)
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { ChevronDown, ChevronRight, Loader, AlertTriangle, ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import { Loader, AlertTriangle, ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import AppShell from '../AppShell';
 import EnterpriseCanvas from '../EnterpriseCanvas';
 import ChapterHeader from '../ChapterHeader';
@@ -13,39 +13,75 @@ import QuestionCard from './QuestionCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Theme metadata
-const THEME_META = {
-  foundation: {
-    title: 'Foundation',
-    subtitle: 'Budget Discipline & Financial Controls',
-    description: 'Establish the baseline capabilities for financial accountability and data integrity.',
-    objectives: ['obj_budget_discipline', 'obj_financial_controls', 'obj_performance_monitoring']
-  },
-  future: {
-    title: 'Future',
-    subtitle: 'Forecasting & Scenario Planning',
-    description: 'Build forward-looking capabilities to anticipate and prepare for what\'s ahead.',
-    objectives: ['obj_forecasting_agility', 'obj_driver_based_planning', 'obj_scenario_modeling']
-  },
-  intelligence: {
-    title: 'Intelligence',
-    subtitle: 'Strategic Influence & Decision Support',
-    description: 'Transform finance into a strategic partner that drives business decisions.',
-    objectives: ['obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence']
-  }
-};
+// Objective order (linear progression)
+const OBJECTIVE_ORDER = [
+  'obj_budget_discipline',
+  'obj_financial_controls',
+  'obj_performance_monitoring',
+  'obj_forecasting_agility',
+  'obj_driver_based_planning',
+  'obj_scenario_modeling',
+  'obj_strategic_influence',
+  'obj_decision_support',
+  'obj_operational_excellence'
+];
 
-// Objective display names
-const OBJECTIVE_NAMES = {
-  'obj_budget_discipline': 'Budget Discipline',
-  'obj_financial_controls': 'Financial Controls',
-  'obj_performance_monitoring': 'Performance Monitoring',
-  'obj_forecasting_agility': 'Forecasting Agility',
-  'obj_driver_based_planning': 'Driver-Based Planning',
-  'obj_scenario_modeling': 'Scenario Modeling',
-  'obj_strategic_influence': 'Strategic Influence',
-  'obj_decision_support': 'Decision Support',
-  'obj_operational_excellence': 'Operational Excellence'
+// Objective metadata
+const OBJECTIVE_META = {
+  obj_budget_discipline: {
+    title: 'Budget Discipline',
+    description: 'Establish a baseline of financial accountability.',
+    theme: 'foundation',
+    themeLabel: 'Foundation'
+  },
+  obj_financial_controls: {
+    title: 'Financial Controls',
+    description: 'Ensure analytical integrity through model governance and assumption management.',
+    theme: 'foundation',
+    themeLabel: 'Foundation'
+  },
+  obj_performance_monitoring: {
+    title: 'Performance Monitoring',
+    description: 'Create feedback loops to track actuals against the plan.',
+    theme: 'foundation',
+    themeLabel: 'Foundation'
+  },
+  obj_forecasting_agility: {
+    title: 'Forecasting Agility',
+    description: 'Update the financial outlook frequently and efficiently.',
+    theme: 'future',
+    themeLabel: 'Future'
+  },
+  obj_driver_based_planning: {
+    title: 'Driver-Based Planning',
+    description: 'Link financial outcomes to operational inputs.',
+    theme: 'future',
+    themeLabel: 'Future'
+  },
+  obj_scenario_modeling: {
+    title: 'Scenario Modeling',
+    description: 'Enable confident decision-making when conditions deviate from plan.',
+    theme: 'future',
+    themeLabel: 'Future'
+  },
+  obj_strategic_influence: {
+    title: 'Strategic Influence',
+    description: 'Proactively shape commercial decisions through financial insight.',
+    theme: 'intelligence',
+    themeLabel: 'Intelligence'
+  },
+  obj_decision_support: {
+    title: 'Decision Support',
+    description: 'Deliver accessible, actionable financial insights to decision-makers.',
+    theme: 'intelligence',
+    themeLabel: 'Intelligence'
+  },
+  obj_operational_excellence: {
+    title: 'Operational Excellence',
+    description: 'Run the finance function with maximum efficiency.',
+    theme: 'intelligence',
+    themeLabel: 'Intelligence'
+  }
 };
 
 // Debounce helper
@@ -57,8 +93,9 @@ function debounce(fn, delay) {
   };
 }
 
-export default function AssessThemePage({ themeId }) {
+export default function AssessObjectivePage() {
   const navigate = useNavigate();
+  const { objectiveId } = useParams();
   const [searchParams] = useSearchParams();
   const runId = searchParams.get('runId');
 
@@ -68,22 +105,28 @@ export default function AssessThemePage({ themeId }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [expandedGroups, setExpandedGroups] = useState(new Set(['all']));
 
-  const themeMeta = THEME_META[themeId];
+  const objectiveMeta = OBJECTIVE_META[objectiveId];
 
-  // Theme order for navigation
-  const themeOrder = ['foundation', 'future', 'intelligence'];
-  const currentIndex = themeOrder.indexOf(themeId);
-  const isFirstTheme = currentIndex === 0;
-  const isLastTheme = currentIndex === themeOrder.length - 1;
-  const prevTheme = !isFirstTheme ? themeOrder[currentIndex - 1] : null;
-  const nextTheme = !isLastTheme ? themeOrder[currentIndex + 1] : null;
+  // Navigation calculation
+  const currentIndex = OBJECTIVE_ORDER.indexOf(objectiveId);
+  const isFirstObjective = currentIndex === 0;
+  const isLastObjective = currentIndex === OBJECTIVE_ORDER.length - 1;
+  const prevObjective = !isFirstObjective ? OBJECTIVE_ORDER[currentIndex - 1] : null;
+  const nextObjective = !isLastObjective ? OBJECTIVE_ORDER[currentIndex + 1] : null;
 
-  // Scroll to top when theme changes
+  // Scroll to top when objective changes
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [themeId]);
+  }, [objectiveId]);
+
+  // Validate objective ID
+  useEffect(() => {
+    if (!objectiveMeta) {
+      setError(`Invalid objective: ${objectiveId}`);
+      setLoading(false);
+    }
+  }, [objectiveId, objectiveMeta]);
 
   // Get auth headers
   const getAuthHeaders = async () => {
@@ -129,16 +172,12 @@ export default function AssessThemePage({ themeId }) {
         setSpec(specData);
         setRunContext(runData.context);
 
-        // Fetch existing answers
-        const inputsRes = await fetch(`${API_URL}/diagnostic-runs/${runId}`, { headers });
-        if (inputsRes.ok) {
-          const fullRun = await inputsRes.json();
-          const existingAnswers = {};
-          (fullRun.inputs || []).forEach(input => {
-            existingAnswers[input.question_id] = input.value;
-          });
-          setAnswers(existingAnswers);
-        }
+        // Load existing answers
+        const existingAnswers = {};
+        (runData.inputs || []).forEach(input => {
+          existingAnswers[input.question_id] = input.value;
+        });
+        setAnswers(existingAnswers);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -149,7 +188,7 @@ export default function AssessThemePage({ themeId }) {
     fetchData();
   }, [runId, navigate]);
 
-  // Build practice_id → objective_id lookup (v2.9.0 schema)
+  // Build practice_id -> objective_id lookup
   const practiceToObjective = useMemo(() => {
     if (!spec?.practices) return {};
     const lookup = {};
@@ -159,42 +198,27 @@ export default function AssessThemePage({ themeId }) {
     return lookup;
   }, [spec]);
 
-  // Helper: get objective_id for a question (supports both old and new schema)
+  // Helper: get objective_id for a question
   const getQuestionObjective = useCallback((q) => {
-    // v2.9.0 schema: question.practice_id → practice.objective_id
     if (q.practice_id && practiceToObjective[q.practice_id]) {
       return practiceToObjective[q.practice_id];
     }
-    // Fallback for old schema: question.objective_id
     return q.objective_id;
   }, [practiceToObjective]);
 
-  // Get questions for this theme
-  const themeQuestions = useMemo(() => {
+  // Get questions for this objective
+  const objectiveQuestions = useMemo(() => {
     if (!spec?.questions) return [];
-    return spec.questions.filter(q => {
-      const objId = getQuestionObjective(q);
-      return themeMeta.objectives.includes(objId);
-    });
-  }, [spec, themeMeta, getQuestionObjective]);
+    return spec.questions.filter(q => getQuestionObjective(q) === objectiveId);
+  }, [spec, objectiveId, getQuestionObjective]);
 
   // Get all questions for overall progress
   const allQuestions = useMemo(() => spec?.questions || [], [spec]);
 
-  // Group questions by objective
-  const questionsByObjective = useMemo(() => {
-    const grouped = {};
-    themeMeta.objectives.forEach(objId => {
-      grouped[objId] = themeQuestions.filter(q => getQuestionObjective(q) === objId);
-    });
-    return grouped;
-  }, [themeQuestions, themeMeta, getQuestionObjective]);
-
-  // Calculate progress for ALL themes (for sidebar)
-  const allThemesProgress = useMemo(() => {
+  // Calculate progress for ALL objectives (for sidebar)
+  const allObjectivesProgress = useMemo(() => {
     if (!spec?.questions) return {};
 
-    // Helper inline since getQuestionObjective is a callback
     const getObjId = (q) => {
       if (q.practice_id && practiceToObjective[q.practice_id]) {
         return practiceToObjective[q.practice_id];
@@ -203,37 +227,24 @@ export default function AssessThemePage({ themeId }) {
     };
 
     const progress = {};
-    Object.entries(THEME_META).forEach(([tId, tMeta]) => {
-      const tQuestions = spec.questions.filter(q => tMeta.objectives.includes(getObjId(q)));
-      const tAnswered = tQuestions.filter(q => answers[q.id] !== undefined).length;
-
-      const objectives = tMeta.objectives.map(objId => {
-        const objQuestions = tQuestions.filter(q => getObjId(q) === objId);
-        const objAnswered = objQuestions.filter(q => answers[q.id] !== undefined).length;
-        return {
-          id: objId,
-          name: OBJECTIVE_NAMES[objId] || objId,
-          answered: objAnswered,
-          total: objQuestions.length
-        };
-      });
-
-      progress[tId] = {
-        answered: tAnswered,
-        total: tQuestions.length,
-        objectives
+    OBJECTIVE_ORDER.forEach(objId => {
+      const objQuestions = spec.questions.filter(q => getObjId(q) === objId);
+      const objAnswered = objQuestions.filter(q => answers[q.id] !== undefined).length;
+      progress[objId] = {
+        answered: objAnswered,
+        total: objQuestions.length
       };
     });
 
     return progress;
   }, [spec, answers, practiceToObjective]);
 
-  // Current theme progress (for local use)
-  const themeProgress = useMemo(() => {
-    return allThemesProgress[themeId] || { answered: 0, total: 0, objectives: [] };
-  }, [allThemesProgress, themeId]);
+  // Current objective progress
+  const objectiveProgress = useMemo(() => {
+    return allObjectivesProgress[objectiveId] || { answered: 0, total: 0 };
+  }, [allObjectivesProgress, objectiveId]);
 
-  // Calculate overall progress
+  // Overall progress
   const overallProgress = useMemo(() => {
     const answered = allQuestions.filter(q => answers[q.id] !== undefined).length;
     return {
@@ -241,6 +252,36 @@ export default function AssessThemePage({ themeId }) {
       total: allQuestions.length
     };
   }, [allQuestions, answers]);
+
+  // Gate check: Can user access this objective?
+  const canAccessObjective = useMemo(() => {
+    if (currentIndex === 0) return true; // First objective always accessible
+
+    // Check all previous objectives are complete
+    for (let i = 0; i < currentIndex; i++) {
+      const prevObjId = OBJECTIVE_ORDER[i];
+      const prevProgress = allObjectivesProgress[prevObjId];
+      if (!prevProgress || prevProgress.answered < prevProgress.total) {
+        return false;
+      }
+    }
+    return true;
+  }, [currentIndex, allObjectivesProgress]);
+
+  // Redirect if trying to access locked objective
+  useEffect(() => {
+    if (!loading && spec && !canAccessObjective) {
+      // Find first incomplete objective
+      for (let i = 0; i < OBJECTIVE_ORDER.length; i++) {
+        const objId = OBJECTIVE_ORDER[i];
+        const progress = allObjectivesProgress[objId];
+        if (!progress || progress.answered < progress.total) {
+          navigate(`/assess/objective/${objId}?runId=${runId}`, { replace: true });
+          return;
+        }
+      }
+    }
+  }, [loading, spec, canAccessObjective, allObjectivesProgress, runId, navigate]);
 
   // Debounced save
   const saveAnswer = useCallback(
@@ -273,17 +314,16 @@ export default function AssessThemePage({ themeId }) {
 
   // Navigation handlers
   function handleBack() {
-    if (isFirstTheme) {
-      // First theme: go back to methodology/intro page
+    if (isFirstObjective) {
       navigate(`/run/${runId}/intro`);
-    } else if (prevTheme) {
-      navigate(`/assess/${prevTheme}?runId=${runId}`);
+    } else if (prevObjective) {
+      navigate(`/assess/objective/${prevObjective}?runId=${runId}`);
     }
   }
 
   function handleNext() {
-    if (nextTheme) {
-      navigate(`/assess/${nextTheme}?runId=${runId}`);
+    if (nextObjective) {
+      navigate(`/assess/objective/${nextObjective}?runId=${runId}`);
     }
   }
 
@@ -294,22 +334,20 @@ export default function AssessThemePage({ themeId }) {
       setSaving(true);
       const headers = await getAuthHeaders();
 
-      // Complete the run (409 = already completed, which is OK)
+      // Complete the run
       const completeRes = await fetch(`${API_URL}/diagnostic-runs/${runId}/complete`, {
         method: 'POST',
         headers
       });
-      // Allow 409 (already completed) - this happens when returning from report
       if (!completeRes.ok && completeRes.status !== 409) {
         throw new Error('Failed to complete');
       }
 
-      // Score the run (409 = scores already exist, which is OK)
+      // Score the run
       const scoreRes = await fetch(`${API_URL}/diagnostic-runs/${runId}/score`, {
         method: 'POST',
         headers
       });
-      // Allow 409 (scores already exist) - this happens when returning from report
       if (!scoreRes.ok && scoreRes.status !== 409) {
         throw new Error('Failed to score');
       }
@@ -321,19 +359,6 @@ export default function AssessThemePage({ themeId }) {
     } finally {
       setSaving(false);
     }
-  }
-
-  // Toggle objective group
-  function toggleGroup(groupId) {
-    setExpandedGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(groupId)) {
-        next.delete(groupId);
-      } else {
-        next.add(groupId);
-      }
-      return next;
-    });
   }
 
   // Loading state
@@ -364,12 +389,15 @@ export default function AssessThemePage({ themeId }) {
   // Sidebar content
   const sidebarContent = (
     <AssessmentSidebar
-      currentTheme={themeId}
-      allThemesProgress={allThemesProgress}
+      currentObjective={objectiveId}
+      allObjectivesProgress={allObjectivesProgress}
       overallProgress={overallProgress}
       runId={runId}
     />
   );
+
+  // Check if current objective is complete (for Next button)
+  const objectiveComplete = objectiveProgress.answered === objectiveProgress.total;
 
   // Mobile bottom navigation
   const mobileBottomNav = (
@@ -379,12 +407,12 @@ export default function AssessThemePage({ themeId }) {
         className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm"
       >
         <ArrowLeft className="w-4 h-4" />
-        {isFirstTheme ? 'Methodology' : 'Back'}
+        Back
       </button>
       <div className="text-xs text-slate-500">
-        {themeProgress.answered}/{themeProgress.total}
+        {objectiveProgress.answered}/{objectiveProgress.total}
       </div>
-      {isLastTheme ? (
+      {isLastObjective ? (
         <button
           onClick={handleSubmit}
           disabled={overallProgress.answered !== overallProgress.total}
@@ -400,9 +428,9 @@ export default function AssessThemePage({ themeId }) {
       ) : (
         <button
           onClick={handleNext}
-          disabled={themeProgress.answered !== themeProgress.total}
+          disabled={!objectiveComplete}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-sm ${
-            themeProgress.answered === themeProgress.total
+            objectiveComplete
               ? 'bg-blue-600 text-white'
               : 'bg-slate-200 text-slate-400'
           }`}
@@ -419,9 +447,9 @@ export default function AssessThemePage({ themeId }) {
       <div className="min-h-screen bg-slate-50">
         {/* Chapter Header */}
         <ChapterHeader
-          label={`Theme ${currentIndex + 1} of 3`}
-          title={themeMeta.title}
-          description={themeMeta.description}
+          label={`Objective ${currentIndex + 1} of 9 | ${objectiveMeta?.themeLabel || ''}`}
+          title={objectiveMeta?.title || objectiveId}
+          description={objectiveMeta?.description || ''}
           mode="assessment"
         />
 
@@ -441,65 +469,17 @@ export default function AssessThemePage({ themeId }) {
             </div>
           )}
 
-          {/* Questions by Objective */}
-          <div className="space-y-4">
-            {themeMeta.objectives.map((objId) => {
-              const questions = questionsByObjective[objId] || [];
-              const isExpanded = expandedGroups.has(objId) || expandedGroups.has('all');
-              const answeredCount = questions.filter(q => answers[q.id] !== undefined).length;
-              const allAnswered = answeredCount === questions.length;
-
-              if (questions.length === 0) return null;
-
-              return (
-                <div
-                  key={objId}
-                  className="bg-white border border-slate-300 rounded-sm overflow-hidden"
-                >
-                  {/* Objective Header */}
-                  <button
-                    onClick={() => toggleGroup(objId)}
-                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
-                  >
-                    {isExpanded ? (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    )}
-                    <div className="flex-1 text-left">
-                      <span className="font-semibold text-slate-700">
-                        {OBJECTIVE_NAMES[objId] || objId}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {allAnswered && (
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                          Complete
-                        </span>
-                      )}
-                      <span className="text-sm text-slate-500">
-                        {answeredCount}/{questions.length}
-                      </span>
-                    </div>
-                  </button>
-
-                  {/* Questions List */}
-                  {isExpanded && (
-                    <div className="border-t border-slate-200 p-4 space-y-3 bg-slate-50">
-                      {questions.map((question, idx) => (
-                        <QuestionCard
-                          key={question.id}
-                          question={question}
-                          answer={answers[question.id]}
-                          onAnswer={handleAnswer}
-                          index={idx}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          {/* Questions List (flat, no collapsible) */}
+          <div className="space-y-3">
+            {objectiveQuestions.map((question, idx) => (
+              <QuestionCard
+                key={question.id}
+                question={question}
+                answer={answers[question.id]}
+                onAnswer={handleAnswer}
+                index={idx}
+              />
+            ))}
           </div>
 
           {/* Bottom Navigation (Desktop) */}
@@ -509,10 +489,10 @@ export default function AssessThemePage({ themeId }) {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              {isFirstTheme ? 'Back to Methodology' : 'Back to Previous Theme'}
+              {isFirstObjective ? 'Back to Methodology' : 'Previous Objective'}
             </button>
 
-            {isLastTheme ? (
+            {isLastObjective ? (
               <button
                 onClick={handleSubmit}
                 disabled={overallProgress.answered !== overallProgress.total}
@@ -530,16 +510,16 @@ export default function AssessThemePage({ themeId }) {
             ) : (
               <button
                 onClick={handleNext}
-                disabled={themeProgress.answered !== themeProgress.total}
+                disabled={!objectiveComplete}
                 className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
-                  themeProgress.answered === themeProgress.total
+                  objectiveComplete
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
-                {themeProgress.answered === themeProgress.total
-                  ? 'Next Theme'
-                  : `${themeProgress.total - themeProgress.answered} questions remaining`}
+                {objectiveComplete
+                  ? 'Next Objective'
+                  : `${objectiveProgress.total - objectiveProgress.answered} questions remaining`}
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}

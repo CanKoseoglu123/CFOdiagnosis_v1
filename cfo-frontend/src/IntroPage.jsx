@@ -15,7 +15,7 @@ const JOURNEY_STEPS = [
     step: 1,
     title: 'Assess',
     duration: '15 min',
-    description: '79 Yes/No questions across 3 themes'
+    description: '79 Yes/No questions across 9 objectives'
   },
   {
     step: 2,
@@ -218,15 +218,15 @@ export default function IntroPage() {
         {/* ROW 4: CTA */}
         <section className="pt-2 border-t border-slate-200 mt-2">
           <div className="flex items-center justify-between">
-            <Link to="/select-pillar">
+            <Link to={`/run/${runId}/setup/pillar`}>
               <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
-                Back
+                Back to Setup
               </button>
             </Link>
-            <Link to={`/run/${runId}/setup/company`}>
+            <Link to={`/assess/objective/obj_budget_discipline?runId=${runId}`}>
               <button className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 text-sm font-semibold hover:bg-blue-700 transition-colors rounded-sm">
-                Continue Setup
+                Begin Assessment
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>

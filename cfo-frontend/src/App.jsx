@@ -14,10 +14,8 @@ import PillarSetupPage from './pages/PillarSetupPage'
 import IntroPage from './IntroPage'
 import SelectPillarPage from './pages/SelectPillarPage'
 import AdminPage from './pages/AdminPage'
-// VS-30: Theme-based assessment pages
-import AssessFoundation from './pages/AssessFoundation'
-import AssessFuture from './pages/AssessFuture'
-import AssessIntelligence from './pages/AssessIntelligence'
+// VS-44: Objective-based assessment page
+import AssessObjectivePage from './components/assessment/AssessObjectivePage'
 import { useState } from 'react'
 
 function LoginPage() {
@@ -118,22 +116,16 @@ export default function App() {
               <IntroPage />
             </ProtectedRoute>
           } />
-          {/* VS-30: Theme-based assessment routes */}
-          <Route path="/assess/foundation" element={
+          {/* VS-44: Objective-based assessment route */}
+          <Route path="/assess/objective/:objectiveId" element={
             <ProtectedRoute>
-              <AssessFoundation />
+              <AssessObjectivePage />
             </ProtectedRoute>
           } />
-          <Route path="/assess/future" element={
-            <ProtectedRoute>
-              <AssessFuture />
-            </ProtectedRoute>
-          } />
-          <Route path="/assess/intelligence" element={
-            <ProtectedRoute>
-              <AssessIntelligence />
-            </ProtectedRoute>
-          } />
+          {/* Legacy theme routes - redirect to first objective of each theme */}
+          <Route path="/assess/foundation" element={<Navigate to="/assess/objective/obj_budget_discipline" replace />} />
+          <Route path="/assess/future" element={<Navigate to="/assess/objective/obj_forecasting_agility" replace />} />
+          <Route path="/assess/intelligence" element={<Navigate to="/assess/objective/obj_strategic_influence" replace />} />
           {/* Legacy single-page assessment (still functional) */}
           <Route path="/assess" element={
             <ProtectedRoute>

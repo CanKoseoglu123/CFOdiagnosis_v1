@@ -1,14 +1,14 @@
 // src/components/assessment/AssessmentSidebar.jsx
-// VS-42: Assessment sidebar matching Report section styling
-// - Removed "Assessing" company box
-// - Matched font sizes and styling to WorkflowSidebar
-// - Added back button navigation
+// VS-44: Objective-level assessment sidebar
+// - Shows 9 objectives grouped under 3 themes
+// - Current objective highlighted, completed objectives clickable
+// - Linear navigation enforced (can only click completed objectives)
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Circle, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft } from 'lucide-react';
 
-// Theme configuration
+// Theme configuration with objectives in order
 const THEME_CONFIG = {
   foundation: {
     label: 'Foundation',
@@ -37,6 +37,13 @@ const OBJECTIVE_NAMES = {
   'obj_operational_excellence': 'Operational Excellence'
 };
 
+// Full objective order for navigation checks
+const OBJECTIVE_ORDER = [
+  'obj_budget_discipline', 'obj_financial_controls', 'obj_performance_monitoring',
+  'obj_forecasting_agility', 'obj_driver_based_planning', 'obj_scenario_modeling',
+  'obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence'
+];
+
 // Workflow steps
 const WORKFLOW_STEPS = [
   { id: 'setup', label: 'Company Setup', completed: true },
@@ -47,46 +54,52 @@ const WORKFLOW_STEPS = [
 ];
 
 export default function AssessmentSidebar({
-  currentTheme,
-  allThemesProgress,
+  currentObjective,
+  allObjectivesProgress,
   overallProgress,
   runId
 }) {
   const navigate = useNavigate();
-  // Track which themes are expanded (current theme expanded by default)
-  const [expandedThemes, setExpandedThemes] = useState(new Set([currentTheme]));
 
-  const toggleTheme = (themeId) => {
-    setExpandedThemes(prev => {
-      const next = new Set(prev);
-      if (next.has(themeId)) {
-        next.delete(themeId);
-      } else {
-        next.add(themeId);
-      }
-      return next;
-    });
+  // Get current objective index
+  const currentIndex = OBJECTIVE_ORDER.indexOf(currentObjective);
+  const isFirstObjective = currentIndex === 0;
+
+  // Check if an objective is completed (all questions answered)
+  const isObjectiveComplete = (objId) => {
+    const progress = allObjectivesProgress?.[objId];
+    return progress && progress.answered === progress.total && progress.total > 0;
   };
 
-  // Theme order for navigation
-  const themeOrder = ['foundation', 'future', 'intelligence'];
-  const currentIndex = themeOrder.indexOf(currentTheme);
-  const isFirstTheme = currentIndex === 0;
-  const prevTheme = !isFirstTheme ? themeOrder[currentIndex - 1] : null;
+  // Check if user can navigate to an objective (must be completed or current)
+  const canNavigateTo = (objId) => {
+    const targetIndex = OBJECTIVE_ORDER.indexOf(objId);
+    if (targetIndex === currentIndex) return false; // Already there
+    if (targetIndex < currentIndex) return true; // Can go back to previous
+    return false; // Can't skip ahead
+  };
 
-  // Back button handler - matches main content navigation
+  // Handle objective click - navigate to completed objectives for review
+  const handleObjectiveClick = (objId) => {
+    if (!runId || !canNavigateTo(objId)) return;
+    navigate(`/assess/objective/${objId}?runId=${runId}`);
+  };
+
+  // Back button handler
   const handleBack = () => {
     if (!runId) return;
-    if (isFirstTheme) {
-      // First theme: go back to methodology/intro page
+    if (isFirstObjective) {
+      // First objective: go back to methodology/intro page
       navigate(`/run/${runId}/intro`);
-    } else if (prevTheme) {
-      navigate(`/assess/${prevTheme}?runId=${runId}`);
+    } else {
+      // Go to previous objective
+      const prevObjective = OBJECTIVE_ORDER[currentIndex - 1];
+      navigate(`/assess/objective/${prevObjective}?runId=${runId}`);
     }
   };
 
   // Back button label
-  const backButtonLabel = isFirstTheme ? 'Back to Methodology' : 'Back to Previous Theme';
+  const backButtonLabel = isFirstObjective ? 'Back to Methodology' : 'Previous Objective';
 
   return (
     <div className="flex flex-col h-full">
@@ -121,84 +134,90 @@ export default function AssessmentSidebar({
       {/* Divider */}
       <div className="border-t border-slate-200 my-6" />
 
-      {/* Themes Progress */}
+      {/* Assessment Progress - Objectives grouped by Theme */}
       <div>
         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Themes Progress
+          Assessment Progress
         </div>
-        <div className="space-y-1">
+        <div className="space-y-4">
           {Object.entries(THEME_CONFIG).map(([themeId, config]) => {
-            const themeData = allThemesProgress?.[themeId] || { answered: 0, total: 0, objectives: [] };
-            const isExpanded = expandedThemes.has(themeId);
-            const isCurrent = themeId === currentTheme;
-            const isComplete = themeData.answered === themeData.total && themeData.total > 0;
+            // Calculate theme progress
+            const themeObjectives = config.objectives;
+            const themeAnswered = themeObjectives.reduce((sum, objId) => {
+              return sum + (allObjectivesProgress?.[objId]?.answered || 0);
+            }, 0);
+            const themeTotal = themeObjectives.reduce((sum, objId) => {
+              return sum + (allObjectivesProgress?.[objId]?.total || 0);
+            }, 0);
+            const isThemeComplete = themeAnswered === themeTotal && themeTotal > 0;
 
             return (
               <div key={themeId}>
-                {/* Theme Header */}
-                <button
-                  onClick={() => toggleTheme(themeId)}
-                  className={`w-full flex items-center gap-2 py-1.5 hover:bg-slate-50 transition-colors rounded ${
-                    isCurrent ? 'bg-slate-50' : ''
-                  }`}
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  )}
-
-                  {isComplete ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  ) : isCurrent ? (
-                    <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
-                  ) : (
-                    <Circle className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  )}
-
-                  <span className={`flex-1 text-left text-sm ${
-                    isCurrent ? 'font-medium text-blue-700' :
-                    isComplete ? 'text-emerald-600' :
-                    'text-slate-600'
+                {/* Theme Label */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-semibold uppercase tracking-wide ${
+                    isThemeComplete ? 'text-emerald-600' : 'text-slate-400'
                   }`}>
                     {config.label}
                   </span>
-
                   <span className={`text-xs ${
-                    isComplete ? 'text-emerald-600' : 'text-slate-400'
+                    isThemeComplete ? 'text-emerald-600' : 'text-slate-400'
                   }`}>
-                    {themeData.answered}/{themeData.total}
+                    {themeAnswered}/{themeTotal}
                   </span>
-                </button>
+                </div>
 
-                {/* Objectives (expanded) */}
-                {isExpanded && themeData.objectives?.length > 0 && (
-                  <div className="ml-6 pl-3 border-l border-slate-200 mt-1 space-y-1">
-                    {themeData.objectives.map((obj) => {
-                      const objComplete = obj.answered === obj.total && obj.total > 0;
-                      return (
-                        <div
-                          key={obj.id}
-                          className="flex items-center gap-2 py-1"
-                        >
-                          {objComplete ? (
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                          ) : (
-                            <Circle className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
-                          )}
-                          <span className={`flex-1 truncate text-xs ${
-                            objComplete ? 'text-emerald-600' : 'text-slate-500'
-                          }`}>
-                            {OBJECTIVE_NAMES[obj.id] || obj.id}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
-                            {obj.answered}/{obj.total}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                {/* Objectives in this theme */}
+                <div className="space-y-1 ml-1">
+                  {themeObjectives.map((objId) => {
+                    const progress = allObjectivesProgress?.[objId] || { answered: 0, total: 0 };
+                    const isCurrent = objId === currentObjective;
+                    const isComplete = isObjectiveComplete(objId);
+                    const canClick = canNavigateTo(objId);
+
+                    return (
+                      <button
+                        key={objId}
+                        onClick={() => handleObjectiveClick(objId)}
+                        disabled={!canClick}
+                        className={`w-full flex items-center gap-2 py-1.5 px-2 rounded transition-colors ${
+                          isCurrent
+                            ? 'bg-blue-50 border-l-2 border-blue-500'
+                            : canClick
+                              ? 'hover:bg-slate-50 cursor-pointer'
+                              : 'cursor-default'
+                        }`}
+                      >
+                        {/* Status icon */}
+                        {isComplete ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        ) : isCurrent ? (
+                          <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-slate-300 flex-shrink-0" />
+                        )}
+
+                        {/* Objective name */}
+                        <span className={`flex-1 text-left text-sm truncate ${
+                          isCurrent ? 'font-medium text-blue-700' :
+                          isComplete ? 'text-emerald-600' :
+                          'text-slate-500'
+                        }`}>
+                          {OBJECTIVE_NAMES[objId]}
+                        </span>
+
+                        {/* Progress count */}
+                        <span className={`text-xs flex-shrink-0 ${
+                          isComplete ? 'text-emerald-600' :
+                          isCurrent ? 'text-blue-600' :
+                          'text-slate-400'
+                        }`}>
+                          {progress.answered}/{progress.total}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
@@ -216,18 +235,18 @@ export default function AssessmentSidebar({
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-slate-600">All Questions</span>
           <span className="font-semibold text-slate-700">
-            {overallProgress.answered}/{overallProgress.total}
+            {overallProgress?.answered || 0}/{overallProgress?.total || 0}
           </span>
         </div>
         <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${
-              overallProgress.answered === overallProgress.total
+              overallProgress?.answered === overallProgress?.total && overallProgress?.total > 0
                 ? 'bg-emerald-500'
                 : 'bg-blue-500'
             }`}
             style={{
-              width: `${overallProgress.total > 0
+              width: `${overallProgress?.total > 0
                 ? (overallProgress.answered / overallProgress.total) * 100
                 : 0}%`
             }}
