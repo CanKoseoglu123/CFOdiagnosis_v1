@@ -10,11 +10,7 @@ import {
   ArrowRight,
   X,
   AlertCircle,
-  Clock,
-  DollarSign,
   Zap,
-  Play,
-  ChevronRight,
   Crosshair,
   Layers,
   GitBranch,
@@ -154,22 +150,14 @@ export default function LandingPage() {
             and get it done.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to={isAuthenticated ? '/select-pillar' : '/login'}
-              className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
-              style={{ backgroundColor: BRAND_COLORS.navy }}
-            >
-              Start the Diagnostic
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <Clock className="w-4 h-4" />
-              <span>~25 minutes</span>
-              <span className="text-slate-300">|</span>
-              <span>No credit card</span>
-            </div>
-          </div>
+          <Link
+            to={isAuthenticated ? '/select-pillar' : '/login'}
+            className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: BRAND_COLORS.navy }}
+          >
+            Start the FP&A Diagnostic
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </section>
 
