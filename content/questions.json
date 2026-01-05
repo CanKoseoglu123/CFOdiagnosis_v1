@@ -1,5 +1,5 @@
 {
-  "version": "2.15.1",
+  "version": "2.15.2",
   "pillar": "fpa",
   "questions": [
     {
@@ -105,7 +105,7 @@
       "help": "Multiple data sources create multiple truths. A single source eliminates reconciliation debates and version confusion. This is foundational\u2014if the numbers are wrong, nothing else matters.",
       "maturity_level": 1,
       "is_critical": true,
-      "initiative_id": "init_financial_controls",
+      "initiative_id": "init_forecast_infrastructure",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
@@ -777,7 +777,7 @@
       "help": "Standard terms protect margin and risk. Mandatory review for deviations ensures that exceptions are financially sound and approved by the right level.",
       "maturity_level": 3,
       "is_critical": false,
-      "initiative_id": "init_seat_at_table",
+      "initiative_id": "init_strategic_influence",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
