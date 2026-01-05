@@ -80,6 +80,11 @@ export default function AssessThemePage({ themeId }) {
   const prevTheme = !isFirstTheme ? themeOrder[currentIndex - 1] : null;
   const nextTheme = !isLastTheme ? themeOrder[currentIndex + 1] : null;
 
+  // Scroll to top when theme changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [themeId]);
+
   // Get auth headers
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
