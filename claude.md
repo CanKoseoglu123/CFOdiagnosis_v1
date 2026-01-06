@@ -59,6 +59,7 @@ CFOdiagnosis_v1/
 │   │   ├── App.jsx               # Routes, auth, navigation
 │   │   ├── pages/
 │   │   │   ├── PillarReport.jsx  # Main report with 4 tabs (VS-39)
+│   │   │   ├── ExecutiveReportPage.jsx # PDF-ready executive summary (VS-45)
 │   │   │   └── CalibrationPage.jsx # VS21 importance calibration
 │   │   ├── components/
 │   │   │   ├── AppShell.jsx      # Responsive layout wrapper
@@ -68,6 +69,7 @@ CFOdiagnosis_v1/
 │   │   │   ├── ChapterHeader.jsx # Unified dark header (VS-30)
 │   │   │   ├── EnterpriseCanvas.jsx # Max-width content wrapper (VS-30)
 │   │   │   ├── ExecutiveSpine.jsx # Report header component (VS-30)
+│   │   │   ├── ExecutiveSummaryV2.jsx # Executive Report content (VS-45)
 │   │   │   └── report/           # Report components
 │   │   │       ├── ActionPlanTab.jsx   # Action Planning (VS-28)
 │   │   │       ├── SimulatorHUD.jsx    # Score + maturity level projections (VS-38)
@@ -164,6 +166,7 @@ CFOdiagnosis_v1/
 | `/assess/intelligence` | AssessIntelligence | Theme-based questions (VS-30) |
 | `/run/:runId/calibrate` | CalibrationPage | Objective importance (VS21) |
 | `/report/:runId` | PillarReport | Main report (V2.8.0) |
+| `/report/:runId/executive` | ExecutiveReportPage | PDF-ready executive summary (VS-45) |
 
 ---
 
@@ -193,6 +196,16 @@ CFOdiagnosis_v1/
 - All selected actions must have a timeline (6m/12m/24m)
 - All selected actions must have an owner assigned
 - Confirmation modal: "Are you sure you want to finalize?"
+
+**Executive Report (VS-45):**
+- Accessed via `/report/:runId/executive` after finalization
+- Single-page PDF-optimized layout designed for browser print
+- Content includes:
+  - Company name, maturity level, overall score
+  - AI-generated executive summary
+  - Top 3 strengths and critical risks
+  - Action plan snapshot (frozen at finalization)
+- Print button triggers browser print dialog for PDF export
 
 ---
 
@@ -314,6 +327,8 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-40: Finalization Validation | Require timeline + owner for all actions before finalizing |
 | VS-42: Assessment Sidebar Polish | Matches Report sidebar styling, back button navigation |
 | VS-43: IntroPage Redesign | Marketing-focused, horizontal layout, journey + value props |
+| VS-44: Objective-Based Assessment | 9 objective pages replace 3 theme pages |
+| VS-45: Executive Report | PDF-ready single-page summary with action plan snapshot |
 
 ---
 
@@ -393,17 +408,17 @@ Schema Relationships (v2.9.0):
 
 ## MVP Polish (Pre-Launch)
 
-| Task | Priority | Issue |
-|------|----------|-------|
-| Domain QA (cfo-lens.com) | High | #62 |
-| Move Intro page before Company Setup | High | #63 |
-| Post-completion flow (return to landing) | High | #64 |
-| PDF export for reports | High | #65 |
-| Executive Report comprehensive export (PPTX-like) | Medium | #66 |
-| Review diagnostic questions | Medium | #67 |
-| Review AI report generation | Medium | #68 |
-| Logo on all pages | High | #69 |
-| Implement code/Supabase audit findings | High | #70 |
+| Task | Priority | Status |
+|------|----------|--------|
+| Domain QA (cfo-lens.com) | High | Pending |
+| Move Intro page before Company Setup | High | Pending |
+| Post-completion flow (return to landing) | High | Pending |
+| PDF export for reports | High | **Done** (VS-45 Executive Report) |
+| Executive Report comprehensive export (PPTX-like) | Medium | Pending |
+| Review diagnostic questions | Medium | Pending |
+| Review AI report generation | Medium | Pending |
+| Logo on all pages | High | Pending |
+| Implement code/Supabase audit findings | High | Pending |
 
 ---
 
