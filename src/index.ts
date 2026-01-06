@@ -91,6 +91,12 @@ const supabaseAdmin = supabaseServiceRoleKey
 
 if (!supabaseAdmin) {
   console.warn("WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Admin features will be limited.");
+} else {
+  // Log service role key info for debugging (masked)
+  const keyPreview = supabaseServiceRoleKey?.substring(0, 10) + "...";
+  const keyLength = supabaseServiceRoleKey?.length || 0;
+  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ");
+  console.log(`[Admin] Service role key configured: length=${keyLength}, isJWT=${isJWT}, preview=${keyPreview}`);
 }
 
 // ------------------------------------------------------------------
