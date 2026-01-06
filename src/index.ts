@@ -655,7 +655,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, calibration, finalized_at")
+    .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot")
     .eq("id", runId)
     .single();
 
@@ -725,11 +725,13 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
   // VS18: Include context in report response (normalized for backward compatibility)
   // VS21: Include calibration in report response
   // VS39: Include finalized_at for Executive Report tab lock
+  // VS45: Include action_plan_snapshot for Executive Report
   res.json({
     ...report,
     context: normalizedCtx,
     calibration: run.calibration || null,
     finalized_at: run.finalized_at || null,
+    action_plan_snapshot: run.action_plan_snapshot || null,
   });
 });
 
