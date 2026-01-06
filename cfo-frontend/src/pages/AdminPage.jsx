@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
-  AlertTriangle, CheckCircle, Clock, Lock, Shield
+  AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -233,6 +233,13 @@ export default function AdminPage() {
               <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">
                 {feedback.length}
               </span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/scoring-matrix')}
+              className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-800 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Scoring Matrix
             </button>
           </div>
         </div>
