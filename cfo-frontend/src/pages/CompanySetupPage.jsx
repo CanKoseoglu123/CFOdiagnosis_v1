@@ -124,6 +124,7 @@ export default function CompanySetupPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState(null);
 
   const [company, setCompany] = useState({
@@ -162,6 +163,7 @@ export default function CompanySetupPage() {
 
         // If setup already completed and NOT in review mode, redirect to intro
         if (run.setup_completed_at && !isReviewMode) {
+          setRedirecting(true);
           navigate(`/run/${runId}/intro`);
           return;
         }
@@ -236,12 +238,12 @@ export default function CompanySetupPage() {
     }
   };
 
-  if (loading) {
+  if (loading || redirecting) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <Loader size={40} className="animate-spin text-primary-600 mx-auto" />
-          <p className="mt-4 text-slate-500">Loading...</p>
+          <p className="mt-4 text-slate-500">{redirecting ? 'Redirecting...' : 'Loading...'}</p>
         </div>
       </div>
     );

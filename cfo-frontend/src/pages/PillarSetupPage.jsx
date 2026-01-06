@@ -295,6 +295,7 @@ export default function PillarSetupPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState(null);
   const [company, setCompany] = useState(null);
 
@@ -343,6 +344,7 @@ export default function PillarSetupPage() {
         // If setup already completed and not in review mode, redirect to assessment
         if (run.setup_completed_at && !isReviewMode) {
           localStorage.removeItem(`setup_company_${runId}`);
+          setRedirecting(true);
           navigate(`/assess/foundation?runId=${runId}`);
           return;
         }
@@ -367,6 +369,7 @@ export default function PillarSetupPage() {
           const savedCompany = localStorage.getItem(`setup_company_${runId}`);
           if (!savedCompany) {
             // No company data - redirect back to step 1
+            setRedirecting(true);
             navigate(`/run/${runId}/setup/company`);
             return;
           }
@@ -514,12 +517,12 @@ export default function PillarSetupPage() {
     }
   };
 
-  if (loading) {
+  if (loading || redirecting) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader size={40} className="animate-spin text-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-500">Loading...</p>
+          <p className="mt-4 text-gray-500">{redirecting ? 'Redirecting...' : 'Loading...'}</p>
         </div>
       </div>
     );
