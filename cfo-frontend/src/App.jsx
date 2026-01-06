@@ -1,7 +1,7 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
-import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
@@ -16,7 +16,15 @@ import SelectPillarPage from './pages/SelectPillarPage'
 import AdminPage from './pages/AdminPage'
 // VS-44: Objective-based assessment page
 import AssessObjectivePage from './components/assessment/AssessObjectivePage'
+// VS-45: Executive Report page (post-finalization)
+import ExecutiveReportPage from './pages/ExecutiveReportPage'
 import { useState } from 'react'
+
+// Helper component to redirect while preserving query params
+function RedirectWithParams({ to }) {
+  const location = useLocation()
+  return <Navigate to={`${to}${location.search}`} replace />
+}
 
 function LoginPage() {
   const [email, setEmail] = useState('')
@@ -122,10 +130,10 @@ export default function App() {
               <AssessObjectivePage />
             </ProtectedRoute>
           } />
-          {/* Legacy theme routes - redirect to first objective of each theme */}
-          <Route path="/assess/foundation" element={<Navigate to="/assess/objective/obj_budget_discipline" replace />} />
-          <Route path="/assess/future" element={<Navigate to="/assess/objective/obj_forecasting_agility" replace />} />
-          <Route path="/assess/intelligence" element={<Navigate to="/assess/objective/obj_strategic_influence" replace />} />
+          {/* Legacy theme routes - redirect to first objective of each theme (preserves query params) */}
+          <Route path="/assess/foundation" element={<RedirectWithParams to="/assess/objective/obj_budget_discipline" />} />
+          <Route path="/assess/future" element={<RedirectWithParams to="/assess/objective/obj_forecasting_agility" />} />
+          <Route path="/assess/intelligence" element={<RedirectWithParams to="/assess/objective/obj_strategic_influence" />} />
           {/* Legacy single-page assessment (still functional) */}
           <Route path="/assess" element={
             <ProtectedRoute>
@@ -140,6 +148,12 @@ export default function App() {
           <Route path="/report/:runId" element={
             <ProtectedRoute>
               <PillarReport />
+            </ProtectedRoute>
+          } />
+          {/* VS-45: Executive Report page (post-finalization) */}
+          <Route path="/report/:runId/executive" element={
+            <ProtectedRoute>
+              <ExecutiveReportPage />
             </ProtectedRoute>
           } />
           <Route path="/report-legacy/:runId" element={
