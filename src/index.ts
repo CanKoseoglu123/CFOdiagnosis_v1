@@ -1566,13 +1566,25 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   }
 
   // Get user emails using admin client (requires service role)
-  const { data: users } = await supabaseAdmin.auth.admin.listUsers();
-
+  // Paginate through all users (default limit is 50)
   const userMap = new Map<string, string>();
-  if (users?.users) {
-    users.users.forEach((u: { id: string; email?: string }) => {
+  let page = 1;
+  const perPage = 1000; // Max per request
+
+  while (true) {
+    const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage
+    });
+
+    if (!usersPage?.users || usersPage.users.length === 0) break;
+
+    usersPage.users.forEach((u: { id: string; email?: string }) => {
       if (u.email) userMap.set(u.id, u.email);
     });
+
+    if (usersPage.users.length < perPage) break; // Last page
+    page++;
   }
 
   // Enrich sessions with user email
