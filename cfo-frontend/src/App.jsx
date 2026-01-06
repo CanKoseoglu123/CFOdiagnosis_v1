@@ -11,6 +11,8 @@ import PillarReport from './pages/PillarReport'
 import CalibrationPage from './pages/CalibrationPage'
 import CompanySetupPage from './pages/CompanySetupPage'
 import PillarSetupPage from './pages/PillarSetupPage'
+// VS-27c: Persona Confirmation page (after company setup, before pillar setup)
+import PersonaConfirmationPage from './pages/PersonaConfirmationPage'
 import IntroPage from './IntroPage'
 import SelectPillarPage from './pages/SelectPillarPage'
 import AdminPage from './pages/AdminPage'
@@ -114,6 +116,12 @@ export default function App() {
           <Route path="/run/:runId/setup/company" element={
             <ProtectedRoute>
               <CompanySetupPage />
+            </ProtectedRoute>
+          } />
+          {/* VS-27c: Persona confirmation after company classification */}
+          <Route path="/run/:runId/setup/persona" element={
+            <ProtectedRoute>
+              <PersonaConfirmationPage />
             </ProtectedRoute>
           } />
           <Route path="/run/:runId/setup/pillar" element={

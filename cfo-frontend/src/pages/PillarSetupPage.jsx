@@ -1,5 +1,6 @@
 // src/pages/PillarSetupPage.jsx
-// VS25: FP&A pillar context setup - Step 2 of 2
+// VS25: FP&A pillar context setup - Step 3 of 3 (after company + persona)
+// VS-27c: Updated to only send pillar context (company lives in company_profiles)
 // Includes: Tools & Technology, Team & Process, Pain Points, Additional Context
 
 import React, { useState, useEffect } from 'react';
@@ -297,7 +298,7 @@ export default function PillarSetupPage() {
   const [saving, setSaving] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState(null);
-  const [company, setCompany] = useState(null);
+  // VS-27c: Company data now lives in company_profiles table, not in state
 
   const [pillar, setPillar] = useState({
     // Tools & Technology
@@ -326,7 +327,7 @@ export default function PillarSetupPage() {
     };
   };
 
-  // Load company data from localStorage and check run
+  // VS-27c: Load run data and check for linked company profile
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -341,66 +342,40 @@ export default function PillarSetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed and not in review mode, redirect to assessment
+        // If setup already completed and not in review mode, redirect to intro
         if (run.setup_completed_at && !isReviewMode) {
-          localStorage.removeItem(`setup_company_${runId}`);
           setRedirecting(true);
-          navigate(`/assess/foundation?runId=${runId}`);
+          navigate(`/run/${runId}/intro`);
           return;
         }
 
-        // In review mode, load company from API context with defaults for missing fields
-        if (isReviewMode && run.context?.company) {
-          const apiCompany = run.context.company;
-          console.log('[PillarSetupPage] Loading company from API in review mode:', apiCompany);
-          setCompany({
-            name: apiCompany.name || '',
-            industry: apiCompany.industry || '',
-            revenue_range: apiCompany.revenue_range || '',
-            employee_count: apiCompany.employee_count || '',
-            finance_ftes: apiCompany.finance_ftes || '',
-            legal_entities: apiCompany.legal_entities || '',
-            finance_structure: apiCompany.finance_structure || '',
-            ownership_structure: apiCompany.ownership_structure || '',
-            change_appetite: apiCompany.change_appetite || '',
-            // VS-27: Business Dynamics classification inputs
-            revenue_trajectory: apiCompany.revenue_trajectory || '',
-            debt_pressure: apiCompany.debt_pressure || '',
-            ma_intensity: apiCompany.ma_intensity || '',
-            gross_margin_band: apiCompany.gross_margin_band || '',
-            audit_rigor: apiCompany.audit_rigor || '',
-            erp_strategy: apiCompany.erp_strategy || ''
-          });
-        } else {
-          // Normal flow: check localStorage for company data
-          const savedCompany = localStorage.getItem(`setup_company_${runId}`);
-          if (!savedCompany) {
-            // No company data - redirect back to step 1
-            setRedirecting(true);
-            navigate(`/run/${runId}/setup/company`);
-            return;
-          }
-          setCompany(JSON.parse(savedCompany));
+        // VS-27c: Check for linked company profile instead of localStorage
+        if (!run.company_profile_id) {
+          // No company profile - redirect back to company setup
+          console.log('[PillarSetupPage] No company_profile_id, redirecting to company setup');
+          setRedirecting(true);
+          navigate(`/run/${runId}/setup/company`);
+          return;
         }
 
-        // Pre-fill if v1 pillar context exists
-        if (run.context?.version === 'v1' && run.context.pillar) {
-          const apiPillar = run.context.pillar;
+        // Pre-fill if pillar context exists (v1 or v2 format)
+        const pillarContext = run.context?.pillar;
+        if (pillarContext) {
           // VS26: Convert tools array to effectiveness map if it contains objects
           let toolEffectiveness = {};
           let toolsArray = [];
-          if (Array.isArray(apiPillar.tools)) {
-            if (apiPillar.tools.length > 0 && typeof apiPillar.tools[0] === 'object') {
+          if (Array.isArray(pillarContext.tools)) {
+            if (pillarContext.tools.length > 0 && typeof pillarContext.tools[0] === 'object') {
               // New format: [{tool: 'excel', effectiveness: 'medium'}, ...]
-              toolsArray = apiPillar.tools.map(t => t.tool);
+              toolsArray = pillarContext.tools.map(t => t.tool);
               toolEffectiveness = Object.fromEntries(
-                apiPillar.tools.map(t => [t.tool, t.effectiveness || 'medium'])
+                pillarContext.tools.map(t => [t.tool, t.effectiveness || 'medium'])
               );
             } else {
               // Old format: ['excel', 'datarails', ...]
-              toolsArray = apiPillar.tools;
+              toolsArray = pillarContext.tools;
               toolEffectiveness = Object.fromEntries(
-                apiPillar.tools.map(t => [t, 'medium'])
+                pillarContext.tools.map(t => [t, 'medium'])
               );
             }
           }
@@ -409,17 +384,17 @@ export default function PillarSetupPage() {
             // Arrays - default to empty array if null/undefined
             tools: toolsArray,
             tool_effectiveness: toolEffectiveness,
-            budget_process_modifiers: apiPillar.budget_process_modifiers || [],
-            pain_points: apiPillar.pain_points || [],
+            budget_process_modifiers: pillarContext.budget_process_modifiers || [],
+            pain_points: pillarContext.pain_points || [],
             // Strings - default to empty string if null/undefined
-            other_tool: apiPillar.other_tool || '',
-            team_size: apiPillar.team_size || '',
-            forecast_frequency: apiPillar.forecast_frequency || '',
-            budget_process_base: apiPillar.budget_process_base || '',
-            other_pain_point: apiPillar.other_pain_point || '',
-            user_role: apiPillar.user_role || '',
-            other_role: apiPillar.other_role || '',
-            additional_context: apiPillar.additional_context || ''
+            other_tool: pillarContext.other_tool || '',
+            team_size: pillarContext.team_size || '',
+            forecast_frequency: pillarContext.forecast_frequency || '',
+            budget_process_base: pillarContext.budget_process_base || '',
+            other_pain_point: pillarContext.other_pain_point || '',
+            user_role: pillarContext.user_role || '',
+            other_role: pillarContext.other_role || '',
+            additional_context: pillarContext.additional_context || ''
           }));
         }
       } catch (err) {
@@ -446,13 +421,14 @@ export default function PillarSetupPage() {
   };
 
   const handleBack = () => {
-    // Pass review=true if we're in review mode so CompanySetupPage doesn't redirect
+    // VS-27c: Navigate to persona confirmation page (back from pillar → persona)
     const reviewParam = isReviewMode ? '?review=true' : '';
-    navigate(`/run/${runId}/setup/company${reviewParam}`);
+    navigate(`/run/${runId}/setup/persona${reviewParam}`);
   };
 
   const handleSubmit = async () => {
-    if (!isValid() || !company) return;
+    // VS-27c: Only validate pillar data (company is already in company_profiles)
+    if (!isValid()) return;
 
     setSaving(true);
     setError(null);
@@ -480,13 +456,6 @@ export default function PillarSetupPage() {
       delete pillarData.budget_process_modifiers;
       delete pillarData.tool_effectiveness;
 
-      // Clean company data - remove empty/null fields that would fail validation
-      const cleanCompany = Object.fromEntries(
-        Object.entries(company).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
-      );
-      console.log('[PillarSetupPage] Original company from state:', company);
-      console.log('[PillarSetupPage] Cleaned company being sent to API:', cleanCompany);
-
       // Clean pillar data - convert null to empty string for text fields, remove empty optional fields
       const cleanPillar = {
         ...pillarData,
@@ -503,11 +472,14 @@ export default function PillarSetupPage() {
       // Remove empty budget_process array
       if (cleanPillar.budget_process.length === 0) delete cleanPillar.budget_process;
 
+      // VS-27c: Only send pillar data (company is already in company_profiles table)
+      console.log('[PillarSetupPage] Sending pillar context:', cleanPillar);
+
       const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/setup`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ company: cleanCompany, pillar: cleanPillar })
+        body: JSON.stringify({ pillar: cleanPillar })
       });
 
       if (!response.ok) {
@@ -515,9 +487,8 @@ export default function PillarSetupPage() {
         throw new Error(data.details?.join(', ') || data.error || 'Failed to save');
       }
 
-      // Clear localStorage and proceed to assessment
-      localStorage.removeItem(`setup_company_${runId}`);
-      navigate(`/assess/foundation?runId=${runId}`);
+      // VS-27c: Navigate to intro page (assessment now requires setup completion)
+      navigate(`/run/${runId}/intro`);
     } catch (err) {
       setError(err.message);
       setSaving(false);
@@ -699,7 +670,7 @@ export default function PillarSetupPage() {
                 text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
             >
               <ArrowLeft size={18} />
-              Back to Organizational Context
+              Back to Persona
             </button>
             <button
               onClick={handleSubmit}

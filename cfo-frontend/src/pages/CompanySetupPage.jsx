@@ -151,6 +151,9 @@ export default function CompanySetupPage() {
     erp_strategy: ''
   });
 
+  // VS-27c: Track company profile ID if linked
+  const [companyProfileId, setCompanyProfileId] = useState(null);
+
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return {
@@ -180,14 +183,48 @@ export default function CompanySetupPage() {
           return;
         }
 
-        // Pre-fill if context exists (works for v1 and v2)
-        if (run.context?.company) {
+        // VS-27c: Check for linked company profile (single source of truth)
+        if (run.company_profile_id) {
+          setCompanyProfileId(run.company_profile_id);
+
+          // Fetch company profile to get context
+          const profileResponse = await fetch(`${API_BASE_URL}/api/company-profiles/${run.company_profile_id}`, { headers });
+
+          if (profileResponse.ok) {
+            const profile = await profileResponse.json();
+            const profileContext = profile.context || {};
+
+            console.log('[CompanySetupPage] Loading from company profile:', {
+              profile_id: profile.id,
+              context: profileContext
+            });
+
+            setCompany({
+              name: profileContext.name || '',
+              industry: profileContext.industry || '',
+              revenue_range: profileContext.revenue_range || '',
+              employee_count: profileContext.employee_count || '',
+              finance_ftes: profileContext.finance_ftes || '',
+              legal_entities: profileContext.legal_entities || '',
+              finance_structure: profileContext.finance_structure || '',
+              ownership_structure: profileContext.ownership_structure || '',
+              change_appetite: profileContext.change_appetite || '',
+              revenue_trajectory: profileContext.revenue_trajectory || '',
+              debt_pressure: profileContext.debt_pressure || '',
+              ma_intensity: profileContext.ma_intensity || '',
+              gross_margin_band: profileContext.gross_margin_band || '',
+              audit_rigor: profileContext.audit_rigor || '',
+              erp_strategy: profileContext.erp_strategy || ''
+            });
+          }
+        }
+        // Fallback: Pre-fill from legacy context if no profile linked (backwards compat)
+        else if (run.context?.company) {
           const apiCompany = run.context.company;
-          console.log('[CompanySetupPage] Loading from API:', {
+          console.log('[CompanySetupPage] Loading from legacy context:', {
             ownership_structure: apiCompany.ownership_structure,
             finance_structure: apiCompany.finance_structure,
-            revenue_trajectory: apiCompany.revenue_trajectory,
-            full_company: apiCompany
+            revenue_trajectory: apiCompany.revenue_trajectory
           });
           setCompany({
             name: apiCompany.name || '',
@@ -199,7 +236,6 @@ export default function CompanySetupPage() {
             finance_structure: apiCompany.finance_structure || '',
             ownership_structure: apiCompany.ownership_structure || '',
             change_appetite: apiCompany.change_appetite || '',
-            // VS-27: Business Dynamics fields (backwards compatible)
             revenue_trajectory: apiCompany.revenue_trajectory || '',
             debt_pressure: apiCompany.debt_pressure || '',
             ma_intensity: apiCompany.ma_intensity || '',
@@ -256,12 +292,57 @@ export default function CompanySetupPage() {
     setError(null);
 
     try {
-      // Save company context to localStorage for pillar page to combine
-      localStorage.setItem(`setup_company_${runId}`, JSON.stringify(company));
-      // Pass review=true if we're in review mode so PillarSetupPage doesn't redirect
+      const headers = await getAuthHeaders();
+
+      // VS-27c: Create or update company profile via API
+      // Profile is single source of truth for company context
+      let profile;
+
+      if (companyProfileId) {
+        // PUT to update existing profile (triggers re-classification, clears override)
+        console.log('[CompanySetupPage] Updating existing profile:', companyProfileId);
+        const response = await fetch(`${API_BASE_URL}/api/company-profiles/${companyProfileId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ context: company })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to update company profile');
+        }
+        profile = await response.json();
+      } else {
+        // POST to create new profile + link to diagnostic run
+        console.log('[CompanySetupPage] Creating new profile for run:', runId);
+        const response = await fetch(`${API_BASE_URL}/api/company-profiles`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            context: company,
+            diagnostic_run_id: runId  // Link immediately in database
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to create company profile');
+        }
+        profile = await response.json();
+        setCompanyProfileId(profile.id);
+      }
+
+      console.log('[CompanySetupPage] Profile saved with classification:', {
+        id: profile.id,
+        persona: profile.classification?.persona,
+        confidence: profile.classification?.confidence
+      });
+
+      // Navigate to persona confirmation page (no localStorage needed)
       const reviewParam = isReviewMode ? '?review=true' : '';
-      navigate(`/run/${runId}/setup/pillar${reviewParam}`);
+      navigate(`/run/${runId}/setup/persona${reviewParam}`);
     } catch (err) {
+      console.error('[CompanySetupPage] Save error:', err);
       setError(err.message);
       setSaving(false);
     }

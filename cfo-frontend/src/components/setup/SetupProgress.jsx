@@ -4,8 +4,10 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 
+// VS-27c: Added persona step between company and pillar
 const STEPS = [
   { key: 'company', label: 'Company' },
+  { key: 'persona', label: 'Persona' },
   { key: 'pillar', label: 'FP&A' }
 ];
 
