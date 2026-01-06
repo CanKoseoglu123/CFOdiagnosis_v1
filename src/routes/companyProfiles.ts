@@ -97,7 +97,7 @@ router.post('/', async (req: Request, res: Response) => {
         .from('diagnostic_runs')
         .update({ company_profile_id: data.id })
         .eq('id', diagnostic_run_id)
-        .eq('user_id', req.userId); // Security: only link own runs
+        .eq('owner_id', req.userId); // Security: only link own runs (owner_id, not user_id)
 
       if (linkError) {
         console.error('Error linking profile to diagnostic run:', linkError);
