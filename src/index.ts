@@ -154,6 +154,23 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Debug endpoint to check admin configuration (remove in production)
+app.get("/admin/debug-config", (_req, res) => {
+  const keyLength = supabaseServiceRoleKey?.length || 0;
+  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
+  const keyPreview = supabaseServiceRoleKey?.substring(0, 20) + "..." || "NOT_SET";
+  const hasAdmin = supabaseAdmin !== null;
+
+  res.json({
+    hasServiceRoleKey: keyLength > 0,
+    keyLength,
+    isJWT,
+    keyPreview,
+    supabaseAdminInitialized: hasAdmin,
+    supabaseUrl: supabaseUrl?.substring(0, 30) + "..."
+  });
+});
+
 // ------------------------------------------------------------------
 // Spec endpoints (public - no auth needed)
 // ------------------------------------------------------------------
