@@ -106,6 +106,7 @@ declare global {
   namespace Express {
     interface Request {
       userId?: string;
+      userEmail?: string;
       supabase: SupabaseClient;  // Each request gets its own client
     }
   }
@@ -130,6 +131,7 @@ async function createSupabaseMiddleware(req: Request, _res: Response, next: Next
       const { data: { user } } = await req.supabase.auth.getUser(token);
       if (user) {
         req.userId = user.id;
+        req.userEmail = user.email || undefined;
       }
     } catch (err) {
       console.error("Auth check failed", err);
@@ -237,6 +239,7 @@ app.post("/diagnostic-runs", async (req, res) => {
       status: "created",
       spec_version: DEFAULT_SPEC_VERSION,
       owner_id: req.userId || null,
+      user_email: req.userEmail || null,
     })
     .select()
     .single();
@@ -1587,6 +1590,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
     .select(`
       id,
       owner_id,
+      user_email,
       status,
       spec_version,
       context,
@@ -1643,11 +1647,14 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   console.log(`[Admin] Loaded ${totalUsersLoaded} users, mapped ${userMap.size} emails, error=${userFetchError}`);
 
   // Enrich sessions with user email and name
+  // Priority: stored user_email > Auth Admin API lookup > "unknown"
   const enrichedData = (data || []).map((session: any) => {
     const userData = userMap.get(session.owner_id);
+    // Use stored email from DB first, then fall back to Auth lookup for older records
+    const email = session.user_email || userData?.email || "unknown";
     return {
       ...session,
-      user_email: userData?.email || "unknown",
+      user_email: email,
       user_name: userData?.name || null,
       company_name: session.context?.company?.name || session.context?.company_name || null,
       industry: session.context?.company?.industry || session.context?.industry || null,
