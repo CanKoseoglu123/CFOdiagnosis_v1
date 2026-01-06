@@ -289,10 +289,17 @@ export default function PillarReport() {
   // ─────────────────────────────────────────────────────────────────────────
   const isFinalized = !!report?.finalized_at;
 
-  // VS-39: Callback for ActionPlanTab - refetch report + auto-switch to Executive tab
+  // VS-45: Redirect to Executive Report page when finalized
+  useEffect(() => {
+    if (isFinalized) {
+      navigate(`/report/${runId}/executive`, { replace: true });
+    }
+  }, [isFinalized, runId, navigate]);
+
+  // VS-39: Callback for ActionPlanTab - navigate to Executive Report page
   async function handleFinalized() {
     await fetchReport();
-    setActiveTab('executive');
+    // Navigation will happen automatically via the useEffect above
   }
 
   // ─────────────────────────────────────────────────────────────────────────
