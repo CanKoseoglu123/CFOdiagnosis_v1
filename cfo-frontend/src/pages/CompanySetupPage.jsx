@@ -7,7 +7,9 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Building2, Users, Euro, GitBranch, Zap, Briefcase,
-  ArrowRight, Loader, AlertCircle, Check, Info
+  ArrowRight, Loader, AlertCircle, Check, Info,
+  // VS-27: Icons for Business Dynamics section
+  TrendingUp, GitMerge, Percent, Shield, Landmark, Database
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -16,7 +18,10 @@ import SetupProgress from '../components/setup/SetupProgress';
 import {
   INDUSTRIES, REVENUE_RANGES, EMPLOYEE_COUNTS,
   FINANCE_STRUCTURES, OWNERSHIP_STRUCTURES, CHANGE_APPETITES,
-  FINANCE_FTE_RANGES, LEGAL_ENTITY_RANGES
+  FINANCE_FTE_RANGES, LEGAL_ENTITY_RANGES,
+  // VS-27: Business Dynamics classification inputs
+  REVENUE_TRAJECTORY, DEBT_PRESSURE, MA_INTENSITY,
+  GROSS_MARGIN_BAND, AUDIT_RIGOR, ERP_STRATEGY
 } from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -136,7 +141,14 @@ export default function CompanySetupPage() {
     legal_entities: '',
     finance_structure: '',
     ownership_structure: '',
-    change_appetite: ''
+    change_appetite: '',
+    // VS-27: Business Dynamics classification inputs
+    revenue_trajectory: '',
+    debt_pressure: '',
+    ma_intensity: '',
+    gross_margin_band: '',
+    audit_rigor: '',
+    erp_strategy: ''
   });
 
   const getAuthHeaders = async () => {
@@ -168,12 +180,13 @@ export default function CompanySetupPage() {
           return;
         }
 
-        // Pre-fill if v1 context exists
-        if (run.context?.version === 'v1' && run.context.company) {
+        // Pre-fill if context exists (works for v1 and v2)
+        if (run.context?.company) {
           const apiCompany = run.context.company;
           console.log('[CompanySetupPage] Loading from API:', {
             ownership_structure: apiCompany.ownership_structure,
             finance_structure: apiCompany.finance_structure,
+            revenue_trajectory: apiCompany.revenue_trajectory,
             full_company: apiCompany
           });
           setCompany({
@@ -185,7 +198,14 @@ export default function CompanySetupPage() {
             legal_entities: apiCompany.legal_entities || '',
             finance_structure: apiCompany.finance_structure || '',
             ownership_structure: apiCompany.ownership_structure || '',
-            change_appetite: apiCompany.change_appetite || ''
+            change_appetite: apiCompany.change_appetite || '',
+            // VS-27: Business Dynamics fields (backwards compatible)
+            revenue_trajectory: apiCompany.revenue_trajectory || '',
+            debt_pressure: apiCompany.debt_pressure || '',
+            ma_intensity: apiCompany.ma_intensity || '',
+            gross_margin_band: apiCompany.gross_margin_band || '',
+            audit_rigor: apiCompany.audit_rigor || '',
+            erp_strategy: apiCompany.erp_strategy || ''
           });
         } else if (run.context?.company_name) {
           // Legacy context - pre-fill what we have
@@ -217,7 +237,9 @@ export default function CompanySetupPage() {
   const isValid = () => {
     return company.name && company.industry && company.revenue_range &&
            company.employee_count && company.finance_structure &&
-           company.ownership_structure && company.change_appetite;
+           company.ownership_structure && company.change_appetite &&
+           // VS-27: Revenue trajectory is required
+           company.revenue_trajectory;
   };
 
   const handleContinue = async () => {
@@ -388,6 +410,63 @@ export default function CompanySetupPage() {
               onChange={(v) => setCompany({ ...company, finance_structure: v })}
               options={FINANCE_STRUCTURES.map(f => ({ value: f.value, label: f.label }))}
               required
+            />
+          </div>
+
+          {/* VS-27: Business Dynamics Section */}
+          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
+            <div className="mb-5">
+              <h2 className="text-base font-bold text-blue-700">Business Dynamics</h2>
+              <p className="text-sm text-gray-500">Factors that shape your finance organization's priorities</p>
+            </div>
+
+            <ChipSelector
+              label="Revenue Trajectory (TTM)"
+              icon={TrendingUp}
+              value={company.revenue_trajectory}
+              onChange={(v) => setCompany({ ...company, revenue_trajectory: v })}
+              options={REVENUE_TRAJECTORY}
+              required
+            />
+
+            <ChipSelector
+              label="M&A Activity (Last 24 Months)"
+              icon={GitMerge}
+              value={company.ma_intensity}
+              onChange={(v) => setCompany({ ...company, ma_intensity: v })}
+              options={MA_INTENSITY}
+            />
+
+            <ChipSelector
+              label="Gross Margin Profile"
+              icon={Percent}
+              value={company.gross_margin_band}
+              onChange={(v) => setCompany({ ...company, gross_margin_band: v })}
+              options={GROSS_MARGIN_BAND}
+            />
+
+            <ChipSelector
+              label="External Audit Scope"
+              icon={Shield}
+              value={company.audit_rigor}
+              onChange={(v) => setCompany({ ...company, audit_rigor: v })}
+              options={AUDIT_RIGOR}
+            />
+
+            <ChipSelector
+              label="Debt & Covenant Pressure"
+              icon={Landmark}
+              value={company.debt_pressure}
+              onChange={(v) => setCompany({ ...company, debt_pressure: v })}
+              options={DEBT_PRESSURE}
+            />
+
+            <ChipSelector
+              label="ERP Landscape"
+              icon={Database}
+              value={company.erp_strategy}
+              onChange={(v) => setCompany({ ...company, erp_strategy: v })}
+              options={ERP_STRATEGY}
             />
           </div>
 

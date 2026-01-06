@@ -64,6 +64,65 @@ export const CHANGE_APPETITES = [
   }
 ];
 
+// ============================================
+// VS-27: BENCHMARKING CLASSIFICATION INPUTS
+// ============================================
+
+// Revenue Trajectory - 5 bands (ordered: decline to growth)
+export const REVENUE_TRAJECTORY = [
+  { value: 'severe_decline', label: 'Severe Decline (<-15%)' },
+  { value: 'decline', label: 'Decline (-3% to -15%)' },
+  { value: 'stable', label: 'Stable (-3% to +3%)' },
+  { value: 'growth', label: 'Growth (3-20% YoY)' },
+  { value: 'hyper_growth', label: 'Hyper-Growth (>20% YoY)' }
+];
+
+// Debt Pressure - 3 bands
+export const DEBT_PRESSURE = [
+  { value: 'none', label: 'No Significant Debt' },
+  { value: 'standard', label: 'Standard Leverage (Quarterly Reporting)' },
+  { value: 'restructuring', label: 'Restructuring / Intensive Monitoring' }
+];
+
+// M&A Intensity - 3 bands
+export const MA_INTENSITY = [
+  { value: 'none', label: 'None' },
+  { value: '1_2_deals', label: '1-2 Deals (Last 24 Months)' },
+  { value: '3_plus_deals', label: '3+ Deals (Last 24 Months)' }
+];
+
+// Gross Margin Band - 3 bands
+export const GROSS_MARGIN_BAND = [
+  { value: 'low', label: 'Low (<15%)' },
+  { value: 'medium', label: 'Medium (15-50%)' },
+  { value: 'high', label: 'High (>50%)' }
+];
+
+// Audit Rigor - 3 bands
+export const AUDIT_RIGOR = [
+  { value: 'none', label: 'No External Audit' },
+  { value: 'local_statutory', label: 'Local / Statutory Only' },
+  { value: 'group_global', label: 'Group / Global Audit' }
+];
+
+// ERP Strategy - 2 bands
+export const ERP_STRATEGY = [
+  { value: 'fragmented', label: 'Fragmented / Legacy Systems' },
+  { value: 'unified', label: 'Unified Platform' }
+];
+
+// Classification mapping for legal entities (VS-27)
+// Maps existing UI values to classification bands
+export function mapLegalEntitiesToClassification(value) {
+  const mapping = {
+    '1_3': 'under_6',
+    '4_10': '6_to_25',
+    '11_25': '6_to_25',
+    'over_25': 'over_25'
+  };
+  return mapping[value] || value;
+}
+
 // === FP&A PILLAR OPTIONS ===
 
 // Tool Categories
