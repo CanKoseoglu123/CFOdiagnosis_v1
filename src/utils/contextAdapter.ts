@@ -47,6 +47,7 @@ export interface NormalizedContext {
 /**
  * Normalize any context format to v1 structure.
  * Safe to call on already-normalized contexts.
+ * VS-27c: Also handles v2 format (pillar-only, company in company_profiles)
  */
 export function normalizeContext(raw: unknown): NormalizedContext {
   // Handle null/undefined
@@ -61,6 +62,26 @@ export function normalizeContext(raw: unknown): NormalizedContext {
     return {
       version: 'v1',
       company: normalizeCompany(ctx.company),
+      pillar: ctx.pillar ? normalizePillar(ctx.pillar) : null
+    };
+  }
+
+  // VS-27c: v2 format (pillar-only, company stored in company_profiles)
+  // Convert to v1 format with empty company (frontend fetches company separately)
+  if (ctx.version === 'v2') {
+    return {
+      version: 'v1',
+      company: {
+        name: 'Unknown',
+        industry: null,
+        revenue_range: null,
+        employee_count: null,
+        finance_ftes: null,
+        legal_entities: null,
+        finance_structure: null,
+        ownership_structure: null,
+        change_appetite: null
+      },
       pillar: ctx.pillar ? normalizePillar(ctx.pillar) : null
     };
   }
