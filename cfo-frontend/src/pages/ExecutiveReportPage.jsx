@@ -25,6 +25,25 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 // Brand colors
 const NAVY = '#1e3a5f';
+const GOLD = '#c9a050';
+
+// Logo component for PDF header
+function CFOLensLogo({ size = 36 }) {
+  return (
+    <div className="flex items-center gap-2">
+      <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+        <path d="M8 8 L42 8 L42 42 L8 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
+        <path d="M58 8 L92 8 L92 42 L58 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
+        <path d="M8 58 L42 58 L42 92 L8 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
+        <path d="M58 58 L92 58 L92 92 L58 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
+        <path d="M50 30 L70 50 L50 70 L30 50 Z" fill={GOLD}/>
+      </svg>
+      <span className="text-sm font-bold tracking-tight" style={{ color: NAVY }}>
+        CFO LENS AI
+      </span>
+    </div>
+  );
+}
 
 // Objective short names for radar chart
 const OBJECTIVE_SHORT_NAMES = {
@@ -87,7 +106,7 @@ function TimelineJourney({ today, at6m, at12m, at24m }) {
     <div className="flex items-center gap-1">
       {milestones.map((m, idx) => (
         <React.Fragment key={m.label}>
-          <div className="flex flex-col items-center w-11">
+          <div className="flex flex-col items-center w-9">
             <div className={`text-xs font-semibold ${m.value >= 80 ? 'text-emerald-600' : m.value < 40 ? 'text-red-600' : 'text-slate-700'}`}>
               {m.value}%
             </div>
@@ -322,12 +341,15 @@ export default function ExecutiveReportPage() {
         {/* PAGE 1: EXECUTIVE SUMMARY */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6">
-          {/* Page Header */}
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
-            <div>
-              <div className="text-xs text-slate-500 uppercase tracking-wide">FP&A Diagnostic</div>
-              <h1 className="text-xl font-bold text-slate-800">{companyName}</h1>
-              {industry && <div className="text-sm text-slate-500">{industry}</div>}
+          {/* Page Header with Logo */}
+          <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+            <div className="flex items-center gap-4">
+              <CFOLensLogo size={32} />
+              <div className="border-l border-slate-300 pl-4">
+                <div className="text-xs text-slate-500 uppercase tracking-wide">FP&A Diagnostic</div>
+                <h1 className="text-xl font-bold text-slate-800">{companyName}</h1>
+                {industry && <div className="text-sm text-slate-500">{industry}</div>}
+              </div>
             </div>
             <div className="text-right">
               <div className="text-xs text-slate-400">Finalized</div>
@@ -336,7 +358,7 @@ export default function ExecutiveReportPage() {
           </div>
 
           {/* KPI Tiles Row */}
-          <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-4 gap-3 mb-3">
             <div className="text-center p-3 border border-slate-200 bg-slate-50">
               <div className="text-3xl font-bold text-slate-800">{currentScore}%</div>
               <div className="text-xs font-semibold text-slate-500 uppercase">Execution Score</div>
@@ -357,82 +379,65 @@ export default function ExecutiveReportPage() {
             </div>
           </div>
 
-          {/* Two Column: Risks/Opportunities + Spider Chart */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            {/* Left: Critical Risks + High Value Opportunities */}
-            <div className="space-y-3">
-              {/* Critical Risks */}
-              <div className="border border-slate-300 p-3 border-l-4 border-l-red-500">
-                <div className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">
-                  Critical Risks
-                </div>
-                {criticalFixes.length > 0 ? (
-                  <ul className="text-xs text-slate-600 space-y-1">
-                    {criticalFixes.map(c => (
-                      <li key={c.id}>• {c.title}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-xs text-emerald-600">No critical failures</div>
-                )}
-              </div>
-
-              {/* High Value Opportunities */}
-              <div className="border border-slate-300 p-3 border-l-4 border-l-amber-500">
-                <div className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">
-                  High Value Opportunities
-                </div>
-                {topOpportunities.length > 0 ? (
-                  <ul className="text-xs text-slate-600 space-y-1">
-                    {topOpportunities.map(o => (
-                      <li key={o.id}>• {o.name} (+{o.uplift}%)</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-xs text-slate-400 italic">All objectives performing well</div>
-                )}
-              </div>
+          {/* Full-width Spider Chart Section */}
+          <div className="border border-slate-300 p-4 border-l-4 border-l-blue-500 mb-3">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+              Projected Outcome (24 Months)
             </div>
+            <div className="flex items-start gap-6">
+              {/* Left: Score projections and legend */}
+              <div className="w-48 shrink-0">
+                <div className="mb-4">
+                  <div className="text-xs text-slate-400 mb-1">Score Progression</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-slate-800">{currentScore}%</span>
+                    <span className="text-lg text-slate-400">→</span>
+                    <span className="text-2xl font-bold text-emerald-600">{projectedScore}%</span>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="text-xs text-slate-400 mb-1">Maturity Level</div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded font-medium text-sm ${
+                      currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                      currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+                      'bg-slate-100 text-slate-600'
+                    }`}>
+                      L{currentLevel}
+                    </span>
+                    <span className="text-slate-400">→</span>
+                    <span className={`px-2 py-0.5 rounded font-medium text-sm ${
+                      projectedLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                      projectedLevel >= 2 ? 'bg-blue-100 text-blue-700' :
+                      'bg-slate-100 text-slate-600'
+                    }`}>
+                      L{projectedLevel}
+                    </span>
+                  </div>
+                </div>
+                {/* Legend */}
+                <div className="text-xs space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-0.5 bg-slate-800 inline-block"></span>
+                    <span className="text-slate-600">Current</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-0.5 bg-emerald-500 inline-block"></span>
+                    <span className="text-slate-600">Full Plan (24m)</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* Right: Projected Outcome + Spider Chart */}
-            <div className="border border-slate-300 p-3">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Projected Outcome (24 Months)
-              </div>
-              <div className="flex items-center gap-4 mb-2">
-                <div>
-                  <span className="text-2xl font-bold text-slate-800">{currentScore}%</span>
-                  <span className="text-lg text-slate-400 mx-2">→</span>
-                  <span className="text-2xl font-bold text-emerald-600">{projectedScore}%</span>
-                </div>
-                <div className="text-sm">
-                  <span className={`px-2 py-0.5 rounded font-medium ${
-                    currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
-                    currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
-                    L{currentLevel}
-                  </span>
-                  <span className="text-slate-400 mx-1">→</span>
-                  <span className={`px-2 py-0.5 rounded font-medium ${
-                    projectedLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
-                    projectedLevel >= 2 ? 'bg-blue-100 text-blue-700' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
-                    L{projectedLevel}
-                  </span>
-                </div>
-              </div>
-              {/* Radar Chart */}
-              <div className="h-44">
+              {/* Right: Enlarged Radar Chart */}
+              <div className="flex-1 h-56">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <RadarChart cx="50%" cy="50%" outerRadius="85%" data={radarData}>
                     <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 9 }} />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 8 }} tickCount={5} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11 }} />
+                    <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={5} />
                     <Radar name="Current" dataKey="Current" stroke="#1e293b" fill="#1e293b" fillOpacity={0.1} strokeWidth={2} />
                     <Radar name="Full Plan" dataKey="Full Plan" stroke="#10b981" fill="#10b981" fillOpacity={0.1} strokeWidth={2} />
-                    <Tooltip contentStyle={{ fontSize: '10px' }} formatter={(value) => [`${value}%`]} />
+                    <Tooltip contentStyle={{ fontSize: '11px' }} formatter={(value) => [`${value}%`]} />
                   </RadarChart>
                 </ResponsiveContainer>
               </div>
@@ -444,12 +449,12 @@ export default function ExecutiveReportPage() {
             <table className="w-full text-sm objective-table">
               <thead className="bg-slate-100">
                 <tr className="border-b border-slate-300">
-                  <th className="text-left px-3 py-2 font-semibold text-slate-700">Objective</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-16">Importance</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700" style={{ width: '220px' }}>Score Journey</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-24">Level Journey</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-14">Actions</th>
-                  <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Status</th>
+                  <th className="text-left px-3 py-1.5 font-semibold text-slate-700">Objective</th>
+                  <th className="text-center px-3 py-1.5 font-semibold text-slate-700 w-16">Importance</th>
+                  <th className="text-center px-3 py-1.5 font-semibold text-slate-700" style={{ width: '200px' }}>Score Journey</th>
+                  <th className="text-center px-3 py-1.5 font-semibold text-slate-700 w-24">Level Journey</th>
+                  <th className="text-center px-3 py-1.5 font-semibold text-slate-700 w-14">Actions</th>
+                  <th className="text-center px-3 py-1.5 font-semibold text-slate-700 w-20">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -462,12 +467,12 @@ export default function ExecutiveReportPage() {
                     </tr>
                     {objectivesByTheme[theme]?.map(obj => (
                       <tr key={obj.id} className={`border-b border-slate-200 ${obj.status === 'critical' ? 'border-l-2 border-l-red-500' : ''}`}>
-                        <td className="px-3 py-2 text-slate-700">{obj.name}</td>
-                        <td className="px-3 py-2 text-center"><ImportanceDots level={obj.importance} /></td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-1.5 text-slate-700">{obj.name}</td>
+                        <td className="px-3 py-1.5 text-center"><ImportanceDots level={obj.importance} /></td>
+                        <td className="px-3 py-1.5">
                           <TimelineJourney today={obj.today} at6m={obj.at6m} at12m={obj.at12m} at24m={obj.at24m} />
                         </td>
-                        <td className="px-3 py-2 text-center">
+                        <td className="px-3 py-1.5 text-center">
                           <span className="inline-flex items-center gap-1 text-xs">
                             <span className={`px-1.5 py-0.5 rounded font-medium ${
                               obj.currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
@@ -480,12 +485,12 @@ export default function ExecutiveReportPage() {
                             }`}>L{obj.targetLevel}</span>
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-center">
+                        <td className="px-3 py-1.5 text-center">
                           <span className={`text-sm font-semibold ${obj.actionCount > 0 ? 'text-blue-600' : 'text-slate-300'}`}>
                             {obj.actionCount}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-center"><StatusBadge status={obj.status} /></td>
+                        <td className="px-3 py-1.5 text-center"><StatusBadge status={obj.status} /></td>
                       </tr>
                     ))}
                   </React.Fragment>
