@@ -1557,8 +1557,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       calibration,
       setup_completed_at,
       finalized_at,
-      created_at,
-      updated_at
+      created_at
     `)
     .order("created_at", { ascending: false });
 
