@@ -154,6 +154,14 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Temporary debug endpoint
+app.get("/admin/key-check", (_req, res) => {
+  const keyLength = supabaseServiceRoleKey?.length || 0;
+  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
+  const keyPreview = supabaseServiceRoleKey?.substring(0, 15) + "...";
+  res.json({ keyLength, isJWT, keyPreview, adminInitialized: supabaseAdmin !== null });
+});
+
 // ------------------------------------------------------------------
 // Spec endpoints (public - no auth needed)
 // ------------------------------------------------------------------
