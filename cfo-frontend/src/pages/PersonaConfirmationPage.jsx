@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import SetupProgress from '../components/setup/SetupProgress';
 import {
   Building2,
@@ -24,6 +24,15 @@ import {
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Auth helper - gets current session token
+const getAuthHeaders = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return {
+    'Content-Type': 'application/json',
+    ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` })
+  };
+};
 
 // Brand colors
 const NAVY = '#1e3a5f';
@@ -91,7 +100,6 @@ export default function PersonaConfirmationPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { session } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -106,16 +114,13 @@ export default function PersonaConfirmationPage() {
   // Fetch company profile via diagnostic run
   useEffect(() => {
     async function fetchProfile() {
-      if (!session?.access_token) return;
-
       try {
         setLoading(true);
         setError(null);
 
+        const headers = await getAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/company-profile`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
-          }
+          headers
         });
 
         if (!response.ok) {
@@ -135,7 +140,7 @@ export default function PersonaConfirmationPage() {
     }
 
     fetchProfile();
-  }, [runId, session]);
+  }, [runId]);
 
   // Classification data
   const classification = profile?.classification;
@@ -164,12 +169,10 @@ export default function PersonaConfirmationPage() {
     setError(null);
 
     try {
+      const headers = await getAuthHeaders();
       const response = await fetch(`${API_BASE_URL}/api/company-profiles/${profile.id}/persona`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
+        headers,
         body: JSON.stringify({
           selected_persona: alternativePersonaId,
           reason: switchReason || null
