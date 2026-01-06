@@ -191,6 +191,8 @@ export const IndustrySchema = z.enum([
   'fintech',
   'healthcare',
   'media',
+  'automotive',
+  'consumer_goods',
   'other'
 ]);
 
@@ -327,6 +329,7 @@ export const PainPointsSchema = z.enum([
   'scenario_planning',
   'communication',
   'realtime_visibility',
+  'data_silos',
   // Legacy values (backward compat)
   'long_cycles',
   'data_accuracy',
@@ -445,6 +448,8 @@ export const INDUSTRY_LABELS: Record<Industry, string> = {
   fintech: 'Fintech',
   healthcare: 'Healthcare',
   media: 'Media',
+  automotive: 'Automotive',
+  consumer_goods: 'Consumer Goods',
   other: 'Other'
 };
 
@@ -571,6 +576,7 @@ export const PAIN_POINTS_LABELS: Record<PainPoints, string> = {
   scenario_planning: 'Scenario planning gaps',
   communication: 'Communicating to non-finance execs',
   realtime_visibility: 'Real-time visibility gaps',
+  data_silos: 'Non-financial data sits in silos',
   // Legacy values
   long_cycles: 'Long budget/forecast cycles',
   data_accuracy: 'Data accuracy issues',
