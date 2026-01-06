@@ -159,7 +159,19 @@ app.get("/admin/key-check", (_req, res) => {
   const keyLength = supabaseServiceRoleKey?.length || 0;
   const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
   const keyPreview = supabaseServiceRoleKey?.substring(0, 15) + "...";
-  res.json({ keyLength, isJWT, keyPreview, adminInitialized: supabaseAdmin !== null });
+
+  // Decode JWT payload to check role
+  let role = "unknown";
+  if (isJWT && supabaseServiceRoleKey) {
+    try {
+      const payload = JSON.parse(Buffer.from(supabaseServiceRoleKey.split(".")[1], "base64").toString());
+      role = payload.role || "no role field";
+    } catch (e) {
+      role = "decode error";
+    }
+  }
+
+  res.json({ keyLength, isJWT, keyPreview, role, adminInitialized: supabaseAdmin !== null });
 });
 
 // ------------------------------------------------------------------
@@ -1595,8 +1607,8 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       });
 
       if (usersError) {
-        userFetchError = usersError.message;
-        console.error("[Admin] Error fetching users:", usersError.message);
+        userFetchError = `${usersError.message} (status: ${(usersError as any).status}, code: ${(usersError as any).code})`;
+        console.error("[Admin] Error fetching users:", JSON.stringify(usersError));
         break;
       }
 
