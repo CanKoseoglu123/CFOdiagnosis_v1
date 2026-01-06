@@ -1570,22 +1570,35 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   const userMap = new Map<string, string>();
   let page = 1;
   const perPage = 1000; // Max per request
+  let totalUsersLoaded = 0;
 
-  while (true) {
-    const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({
-      page,
-      perPage
-    });
+  try {
+    while (true) {
+      const { data: usersPage, error: usersError } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage
+      });
 
-    if (!usersPage?.users || usersPage.users.length === 0) break;
+      if (usersError) {
+        console.error("[Admin] Error fetching users:", usersError.message);
+        break;
+      }
 
-    usersPage.users.forEach((u: { id: string; email?: string }) => {
-      if (u.email) userMap.set(u.id, u.email);
-    });
+      if (!usersPage?.users || usersPage.users.length === 0) break;
 
-    if (usersPage.users.length < perPage) break; // Last page
-    page++;
+      usersPage.users.forEach((u: { id: string; email?: string }) => {
+        if (u.email) userMap.set(u.id, u.email);
+      });
+
+      totalUsersLoaded += usersPage.users.length;
+      if (usersPage.users.length < perPage) break; // Last page
+      page++;
+    }
+  } catch (err) {
+    console.error("[Admin] Exception fetching users:", err);
   }
+
+  console.log(`[Admin] Loaded ${totalUsersLoaded} users, mapped ${userMap.size} emails`);
 
   // Enrich sessions with user email
   const enrichedData = (data || []).map((session: any) => ({
@@ -1595,6 +1608,8 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
     industry: session.context?.company?.industry || session.context?.industry || null,
   }));
 
+  // Include debug info in response header
+  res.setHeader("X-Admin-Debug", `users=${totalUsersLoaded},mapped=${userMap.size}`);
   res.json(enrichedData);
 });
 
