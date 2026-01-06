@@ -266,7 +266,7 @@ export default function CompanySetupPage() {
             <Info size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-blue-800">Before We Begin</p>
-              <p className="text-sm text-blue-700">To ensure accurate benchmarking and tailored insights, please provide context on your organization's scale and structure.</p>
+              <p className="text-sm text-blue-700">A few questions about your organization will help set the context for your diagnostic assessment.</p>
             </div>
           </div>
 
