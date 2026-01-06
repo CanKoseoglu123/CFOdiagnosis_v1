@@ -239,7 +239,7 @@ app.post("/diagnostic-runs", async (req, res) => {
       status: "created",
       spec_version: DEFAULT_SPEC_VERSION,
       owner_id: req.userId || null,
-      user_email: req.userEmail || null,
+      // user_email: req.userEmail || null, // TODO: Enable after migration is applied to production
     })
     .select()
     .single();
