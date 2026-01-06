@@ -298,7 +298,12 @@ export default function CompanySetupPage() {
                 type="text"
                 value={company.name}
                 onChange={(e) => setCompany({ ...company, name: e.target.value })}
-                placeholder="e.g., Acme Corporation"
+                onFocus={(e) => {
+                  if (e.target.value.toLowerCase() === 'unknown') {
+                    setCompany({ ...company, name: '' });
+                  }
+                }}
+                placeholder="Enter your company name"
                 className="w-full px-4 py-3 border border-slate-300 rounded-sm text-sm
                   focus:border-primary-600 focus:ring-1 focus:ring-primary-600 outline-none"
                 required
