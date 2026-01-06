@@ -187,7 +187,7 @@ async function test() {
     ['Company profile created', !!profile.id],
     ['Classification assigned', !!profile.classification?.persona],
     ['Profile linked to run', verifiedRun.company_profile_id === profile.id],
-    ['Pillar saved (V2)', finalRun.context?.version === 'v2'],
+    ['Pillar preserved', !!finalRun.context?.pillar && finalRun.context.pillar.tools?.length > 0],
     ['Setup completed', !!finalRun.setup_completed_at]
   ];
 
