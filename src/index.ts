@@ -160,18 +160,28 @@ app.get("/admin/key-check", (_req, res) => {
   const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
   const keyPreview = supabaseServiceRoleKey?.substring(0, 15) + "...";
 
-  // Decode JWT payload to check role
+  // Decode JWT payload to check role and ref
   let role = "unknown";
+  let ref = "unknown";
   if (isJWT && supabaseServiceRoleKey) {
     try {
       const payload = JSON.parse(Buffer.from(supabaseServiceRoleKey.split(".")[1], "base64").toString());
       role = payload.role || "no role field";
+      ref = payload.ref || "no ref field";
     } catch (e) {
       role = "decode error";
     }
   }
 
-  res.json({ keyLength, isJWT, keyPreview, role, adminInitialized: supabaseAdmin !== null });
+  // Extract ref from URL for comparison
+  const urlRef = supabaseUrl?.match(/https:\/\/([^.]+)\.supabase/)?.[1] || "unknown";
+
+  res.json({
+    keyLength, isJWT, keyPreview, role, ref,
+    urlRef,
+    refsMatch: ref === urlRef,
+    adminInitialized: supabaseAdmin !== null
+  });
 });
 
 // ------------------------------------------------------------------
