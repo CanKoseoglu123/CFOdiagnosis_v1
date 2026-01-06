@@ -235,11 +235,18 @@ export default function CompanySetupPage() {
   }, []);
 
   const isValid = () => {
+    // VS-27b: All 9 classification fields are required for persona classification
     return company.name && company.industry && company.revenue_range &&
            company.employee_count && company.finance_structure &&
            company.ownership_structure && company.change_appetite &&
-           // VS-27: Revenue trajectory is required
-           company.revenue_trajectory;
+           // VS-27: Business Dynamics - all 9 required for classification
+           company.legal_entities &&
+           company.revenue_trajectory &&
+           company.debt_pressure &&
+           company.ma_intensity &&
+           company.gross_margin_band &&
+           company.audit_rigor &&
+           company.erp_strategy;
   };
 
   const handleContinue = async () => {
@@ -384,6 +391,7 @@ export default function CompanySetupPage() {
               value={company.legal_entities}
               onChange={(v) => setCompany({ ...company, legal_entities: v })}
               options={LEGAL_ENTITY_RANGES}
+              required
             />
           </div>
 
@@ -435,6 +443,7 @@ export default function CompanySetupPage() {
               value={company.ma_intensity}
               onChange={(v) => setCompany({ ...company, ma_intensity: v })}
               options={MA_INTENSITY}
+              required
             />
 
             <ChipSelector
@@ -443,6 +452,7 @@ export default function CompanySetupPage() {
               value={company.gross_margin_band}
               onChange={(v) => setCompany({ ...company, gross_margin_band: v })}
               options={GROSS_MARGIN_BAND}
+              required
             />
 
             <ChipSelector
@@ -451,6 +461,7 @@ export default function CompanySetupPage() {
               value={company.audit_rigor}
               onChange={(v) => setCompany({ ...company, audit_rigor: v })}
               options={AUDIT_RIGOR}
+              required
             />
 
             <ChipSelector
@@ -459,6 +470,7 @@ export default function CompanySetupPage() {
               value={company.debt_pressure}
               onChange={(v) => setCompany({ ...company, debt_pressure: v })}
               options={DEBT_PRESSURE}
+              required
             />
 
             <ChipSelector
@@ -467,6 +479,7 @@ export default function CompanySetupPage() {
               value={company.erp_strategy}
               onChange={(v) => setCompany({ ...company, erp_strategy: v })}
               options={ERP_STRATEGY}
+              required
             />
           </div>
 

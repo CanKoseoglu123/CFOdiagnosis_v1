@@ -362,7 +362,14 @@ export default function PillarSetupPage() {
             legal_entities: apiCompany.legal_entities || '',
             finance_structure: apiCompany.finance_structure || '',
             ownership_structure: apiCompany.ownership_structure || '',
-            change_appetite: apiCompany.change_appetite || ''
+            change_appetite: apiCompany.change_appetite || '',
+            // VS-27: Business Dynamics classification inputs
+            revenue_trajectory: apiCompany.revenue_trajectory || '',
+            debt_pressure: apiCompany.debt_pressure || '',
+            ma_intensity: apiCompany.ma_intensity || '',
+            gross_margin_band: apiCompany.gross_margin_band || '',
+            audit_rigor: apiCompany.audit_rigor || '',
+            erp_strategy: apiCompany.erp_strategy || ''
           });
         } else {
           // Normal flow: check localStorage for company data

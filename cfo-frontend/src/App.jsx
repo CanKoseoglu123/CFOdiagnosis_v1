@@ -14,6 +14,8 @@ import PillarSetupPage from './pages/PillarSetupPage'
 import IntroPage from './IntroPage'
 import SelectPillarPage from './pages/SelectPillarPage'
 import AdminPage from './pages/AdminPage'
+// VS-27b: Admin scoring matrix page
+import ScoringMatrixPage from './pages/admin/ScoringMatrixPage'
 // VS-44: Objective-based assessment page
 import AssessObjectivePage from './components/assessment/AssessObjectivePage'
 // VS-45: Executive Report page (post-finalization)
@@ -165,6 +167,12 @@ export default function App() {
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminPage />
+            </ProtectedRoute>
+          } />
+          {/* VS-27b: Admin scoring matrix management */}
+          <Route path="/admin/scoring-matrix" element={
+            <ProtectedRoute>
+              <ScoringMatrixPage />
             </ProtectedRoute>
           } />
         </Routes>

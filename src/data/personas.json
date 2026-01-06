@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "personas": {
+    "platform": {
+      "id": "platform",
+      "name": "Complex Multi-Entity",
+      "tagline": "Harmonizing complexity across entities and systems",
+      "description": "Organizations managing significant structural complexity — multiple legal entities, diverse ERP landscapes, or active M&A integration. Finance is constantly battling data fragmentation, reconciliation bottlenecks, and consolidation deadlines.",
+      "corePain": "Our close takes too long and data doesn't reconcile.",
+      "icon": "building-2",
+      "color": "#3B82F6"
+    },
+    "growth": {
+      "id": "growth",
+      "name": "High-Growth / Venture",
+      "tagline": "Prioritizing speed and capital allocation over rigid control",
+      "description": "Fast-scaling organizations where the finance function is racing to keep pace with the business. Investor expectations drive a relentless reporting cadence. Cash runway visibility is existential.",
+      "corePain": "Investors want answers faster than we can produce them.",
+      "icon": "trending-up",
+      "color": "#10B981"
+    },
+    "margin": {
+      "id": "margin",
+      "name": "Margin-Focused Operator",
+      "tagline": "Maximizing value through unit economics and efficiency",
+      "description": "Businesses where margin discipline is the primary value lever — whether scaling steadily, holding position, or fighting decline. The CFO is a margin guardian, obsessing over cost allocation accuracy and working capital optimization.",
+      "corePain": "We don't know our true cost-to-serve.",
+      "icon": "calculator",
+      "color": "#F59E0B"
+    },
+    "governance": {
+      "id": "governance",
+      "name": "Governance-First",
+      "tagline": "Auditability and compliance as a competitive foundation",
+      "description": "Organizations where regulatory requirements, audit scrutiny, or public market obligations make control and documentation non-negotiable. Every process needs a paper trail; every model needs version control.",
+      "corePain": "We can't afford audit findings or control gaps.",
+      "icon": "shield-check",
+      "color": "#6366F1"
+    },
+    "stewardship": {
+      "id": "stewardship",
+      "name": "Long-Term Steward",
+      "tagline": "Sustainable value and resilience across generations",
+      "description": "Family-owned or closely-held private businesses with a multi-generational perspective. Speed matters less than sustainability. The CFO serves as guardian of long-term value, balancing family dynamics with business discipline.",
+      "corePain": "We need to balance family priorities with business discipline.",
+      "icon": "landmark",
+      "color": "#8B5CF6"
+    },
+    "resilience": {
+      "id": "resilience",
+      "name": "Liquidity & Resilience",
+      "tagline": "Navigating transition with radical transparency and control",
+      "description": "Organizations facing financial pressure — whether from market headwinds, operational challenges, or capital structure strain. Cash is oxygen. The finance function shifts from business partnering to survival mode.",
+      "corePain": "Will we make payroll? Are we covenant compliant?",
+      "icon": "life-buoy",
+      "color": "#EF4444"
+    }
+  }
+}

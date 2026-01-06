@@ -1,0 +1,112 @@
+{
+  "version": "1.0",
+  "inputs": [
+    {
+      "id": "revenue_trajectory",
+      "label": "Revenue Trend",
+      "values": [
+        { "value": "hyper_growth", "label": "Hyper-Growth (>20%)", "scores": { "platform": 0, "growth": 6, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 0 } },
+        { "value": "growth", "label": "Growth (3-20%)", "scores": { "platform": 1, "growth": 3, "margin": 2, "governance": 0, "stewardship": 1, "resilience": 0 } },
+        { "value": "stable", "label": "Stable (-3% to +3%)", "scores": { "platform": 0, "growth": 0, "margin": 2, "governance": 1, "stewardship": 4, "resilience": 0 } },
+        { "value": "decline", "label": "Decline (-3% to -15%)", "scores": { "platform": 0, "growth": 0, "margin": 3, "governance": 0, "stewardship": 1, "resilience": 1 } },
+        { "value": "severe_decline", "label": "Severe Decline (<-15%)", "scores": { "platform": 0, "growth": 0, "margin": 3, "governance": 0, "stewardship": 0, "resilience": 6 } }
+      ]
+    },
+    {
+      "id": "debt_pressure",
+      "label": "Debt Pressure",
+      "values": [
+        { "value": "restructuring", "label": "Restructuring / Covenant Breach", "scores": { "platform": 0, "growth": 0, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 6 } },
+        { "value": "standard", "label": "PE/Standard Leveraged", "scores": { "platform": 1, "growth": 1, "margin": 1, "governance": 1, "stewardship": 0, "resilience": 1 } },
+        { "value": "none", "label": "No Significant Debt", "scores": { "platform": 0, "growth": 1, "margin": 1, "governance": 0, "stewardship": 2, "resilience": 0 } }
+      ]
+    },
+    {
+      "id": "legal_entities",
+      "label": "Entity Complexity",
+      "values": [
+        { "value": "over_25", "label": "25+ Entities", "scores": { "platform": 5, "growth": 0, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 } },
+        { "value": "6_to_25", "label": "6-25 Entities", "scores": { "platform": 2, "growth": 0, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 } },
+        { "value": "under_6", "label": "< 6 Entities", "scores": { "platform": 0, "growth": 2, "margin": 2, "governance": 0, "stewardship": 2, "resilience": 0 } },
+        { "value": "1_5", "label": "1-5 (Legacy)", "scores": { "platform": 0, "growth": 2, "margin": 2, "governance": 0, "stewardship": 2, "resilience": 0 }, "hidden": true },
+        { "value": "6_10", "label": "6-10 (Legacy)", "scores": { "platform": 2, "growth": 0, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 }, "hidden": true },
+        { "value": "11_25", "label": "11-25 (Legacy)", "scores": { "platform": 2, "growth": 0, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 }, "hidden": true },
+        { "value": "26_50", "label": "26-50 (Legacy)", "scores": { "platform": 5, "growth": 0, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 }, "hidden": true },
+        { "value": "50_plus", "label": "50+ (Legacy)", "scores": { "platform": 5, "growth": 0, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 }, "hidden": true }
+      ]
+    },
+    {
+      "id": "ma_intensity",
+      "label": "M&A Intensity",
+      "values": [
+        { "value": "3_plus_deals", "label": "3+ Deals (24mo)", "scores": { "platform": 6, "growth": 1, "margin": 0, "governance": 1, "stewardship": 0, "resilience": 0 } },
+        { "value": "1_2_deals", "label": "1-2 Deals", "scores": { "platform": 2, "growth": 1, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 0 } },
+        { "value": "none", "label": "None", "scores": { "platform": 0, "growth": 0, "margin": 1, "governance": 0, "stewardship": 1, "resilience": 0 } }
+      ]
+    },
+    {
+      "id": "ownership_structure",
+      "label": "Ownership",
+      "values": [
+        { "value": "public", "label": "Public / Listed", "scores": { "platform": 0, "growth": 0, "margin": 0, "governance": 4, "stewardship": 0, "resilience": 0 } },
+        { "value": "pe_backed", "label": "PE-Backed", "scores": { "platform": 2, "growth": 2, "margin": 1, "governance": 1, "stewardship": 0, "resilience": 0 } },
+        { "value": "vc_backed", "label": "VC-Backed", "scores": { "platform": 0, "growth": 5, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 0 } },
+        { "value": "family_owned", "label": "Family-Owned", "scores": { "platform": 0, "growth": 0, "margin": 1, "governance": 0, "stewardship": 5, "resilience": 0 } },
+        { "value": "private", "label": "Private (Other)", "scores": { "platform": 0, "growth": 1, "margin": 2, "governance": 0, "stewardship": 2, "resilience": 0 } }
+      ]
+    },
+    {
+      "id": "change_appetite",
+      "label": "Change Appetite",
+      "values": [
+        { "value": "transform", "label": "Transform", "scores": { "platform": 1, "growth": 3, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 0 } },
+        { "value": "optimize", "label": "Optimize", "scores": { "platform": 0, "growth": 1, "margin": 2, "governance": 1, "stewardship": 1, "resilience": 0 } },
+        { "value": "maintain", "label": "Maintain", "scores": { "platform": 0, "growth": 0, "margin": 1, "governance": 1, "stewardship": 3, "resilience": 1 } }
+      ]
+    },
+    {
+      "id": "gross_margin_band",
+      "label": "Gross Margin",
+      "values": [
+        { "value": "high", "label": "High (>50%)", "scores": { "platform": 0, "growth": 3, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 0 } },
+        { "value": "medium", "label": "Medium (15-50%)", "scores": { "platform": 1, "growth": 1, "margin": 1, "governance": 1, "stewardship": 1, "resilience": 0 } },
+        { "value": "low", "label": "Low (<15%)", "scores": { "platform": 0, "growth": 0, "margin": 4, "governance": 0, "stewardship": 1, "resilience": 1 } }
+      ]
+    },
+    {
+      "id": "audit_rigor",
+      "label": "Audit Rigor",
+      "values": [
+        { "value": "group_global", "label": "Group / Global Audit", "scores": { "platform": 2, "growth": 0, "margin": 0, "governance": 5, "stewardship": 0, "resilience": 1 } },
+        { "value": "local_statutory", "label": "Local / Statutory Only", "scores": { "platform": 0, "growth": 1, "margin": 1, "governance": 1, "stewardship": 2, "resilience": 0 } },
+        { "value": "none", "label": "No External Audit", "scores": { "platform": 0, "growth": 2, "margin": 1, "governance": 0, "stewardship": 1, "resilience": 0 } }
+      ]
+    },
+    {
+      "id": "erp_strategy",
+      "label": "ERP Strategy",
+      "values": [
+        { "value": "fragmented", "label": "Fragmented / Legacy", "scores": { "platform": 4, "growth": 0, "margin": 0, "governance": 0, "stewardship": 0, "resilience": 1 } },
+        { "value": "unified", "label": "Unified Platform", "scores": { "platform": 0, "growth": 2, "margin": 2, "governance": 1, "stewardship": 2, "resilience": 0 } }
+      ]
+    }
+  ],
+  "flags": {
+    "threshold": 0.75,
+    "definitions": {
+      "resilience": { "label": "Distress Flag", "effect": "Elevated targets for cash visibility and scenario planning" },
+      "platform": { "label": "Complexity Flag", "effect": "Elevated targets for consolidation and data management" },
+      "growth": { "label": "Velocity Flag", "effect": "Elevated targets for forecasting agility" },
+      "governance": { "label": "Compliance Flag", "effect": "Elevated targets for controls and documentation" },
+      "stewardship": { "label": "Stewardship Flag", "effect": "Elevated focus on strategic influence and long-term planning" }
+    }
+  },
+  "modifiers": {
+    "pe_vc_velocity": {
+      "trigger": ["pe_backed", "vc_backed"],
+      "triggerField": "ownership_structure",
+      "boost": 1.0,
+      "description": "PE/VC Velocity Boost — Elevated reporting expectations"
+    }
+  }
+}

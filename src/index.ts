@@ -30,6 +30,10 @@ import {
 } from "./specs/schemas";
 import { normalizeContext } from "./utils/contextAdapter";
 
+// VS-27b: Company Profile Classification routes
+import companyProfilesRoutes from "./routes/companyProfiles";
+import adminRoutes from "./routes/admin";
+
 const app = express();
 
 // CORS: Allow production domains and Vercel preview deployments
@@ -1426,6 +1430,12 @@ app.post("/feedback", async (req, res) => {
 // VS-32: Simplified Interpretation Routes
 // ------------------------------------------------------------------
 app.use("/diagnostic-runs", interpretationRoutesV32);
+
+// ------------------------------------------------------------------
+// VS-27b: Company Profile Classification Routes
+// ------------------------------------------------------------------
+app.use("/api/company-profiles", companyProfilesRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ------------------------------------------------------------------
 // Admin Routes - Email whitelist protected
