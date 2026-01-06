@@ -104,8 +104,6 @@ export default function PersonaConfirmationPage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showSwitch, setShowSwitch] = useState(false);
-  const [switchReason, setSwitchReason] = useState('');
   const [switching, setSwitching] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -161,9 +159,9 @@ export default function PersonaConfirmationPage() {
   const alternativePersonaId = sortedPersonas[1]?.[0];
   const alternativePersona = PERSONAS[alternativePersonaId];
 
-  // Handle persona switch
+  // Handle persona switch - direct switch without requiring reason
   const handleSwitch = async () => {
-    if (!alternativePersonaId || !profile?.id) return;
+    if (!alternativePersonaId || !profile?.id || switching) return;
 
     setSwitching(true);
     setError(null);
@@ -175,7 +173,7 @@ export default function PersonaConfirmationPage() {
         headers,
         body: JSON.stringify({
           selected_persona: alternativePersonaId,
-          reason: switchReason || null
+          reason: null
         })
       });
 
@@ -185,8 +183,6 @@ export default function PersonaConfirmationPage() {
 
       const updated = await response.json();
       setProfile(updated);
-      setShowSwitch(false);
-      setSwitchReason('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -205,8 +201,8 @@ export default function PersonaConfirmationPage() {
     navigate(`/run/${runId}/setup/company?review=true`);
   };
 
-  // Render persona card
-  const renderPersonaCard = (persona, isPrimary = false, score = 0) => {
+  // Render persona card - always shows full description
+  const renderPersonaCard = (persona, isPrimary = false, showFullDescription = false) => {
     if (!persona) return null;
     const Icon = persona.icon;
 
@@ -238,21 +234,13 @@ export default function PersonaConfirmationPage() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-600 mb-3">{persona.tagline}</p>
-            <p className="text-sm text-gray-500 italic">"{persona.corePain}"</p>
-            {score > 0 && (
-              <div className="mt-3 text-xs text-gray-400">
-                Classification score: {score} points
-              </div>
+            <p className="text-sm text-gray-600 mb-2">{persona.tagline}</p>
+            {/* Always show description for detailed understanding */}
+            {showFullDescription && (
+              <p className="text-sm text-gray-500 mt-2">{persona.description}</p>
             )}
           </div>
         </div>
-
-        {showDetails && isPrimary && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">{persona.description}</p>
-          </div>
-        )}
       </div>
     );
   };
@@ -304,9 +292,16 @@ export default function PersonaConfirmationPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Your Organization's Persona
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             Based on your inputs, we've identified the finance archetype that best matches your organization.
           </p>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-left">
+            <p className="text-sm text-slate-700">
+              <strong>Why this matters:</strong> Your persona helps us deliver benchmarks and recommendations
+              specifically tailored to organizations like yours. Finance teams with similar profiles face
+              common challenges — we use this classification to surface the most relevant insights for your situation.
+            </p>
+          </div>
         </div>
 
         {/* Confidence Warning */}
@@ -336,88 +331,51 @@ export default function PersonaConfirmationPage() {
           </div>
         )}
 
-        {/* Primary Persona */}
+        {/* Primary Persona - always show full description when alternatives exist */}
         <div className="mb-6">
-          {renderPersonaCard(primaryPersona, true, topScore)}
+          {renderPersonaCard(primaryPersona, true, showAlternative || showDetails)}
         </div>
 
-        {/* Show Details Toggle */}
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 mx-auto"
-        >
-          {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          {showDetails ? 'Hide details' : 'Show more details'}
-        </button>
+        {/* Show Details Toggle - only show if no alternatives */}
+        {!showAlternative && (
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 mx-auto"
+          >
+            {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {showDetails ? 'Hide details' : 'Show more details'}
+          </button>
+        )}
 
-        {/* Alternative Persona (if close scores) */}
-        {showAlternative && !showSwitch && (
+        {/* Alternative Persona (if close scores) - show detailed descriptions for both */}
+        {showAlternative && (
           <div className="mb-6">
-            <p className="text-sm text-gray-500 mb-3 text-center">
-              Alternative persona ({scoreGap} point{scoreGap !== 1 ? 's' : ''} behind):
-            </p>
-            <div
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setShowSwitch(true)}
-            >
-              {renderPersonaCard(alternativePersona, false, secondScore)}
+            <div className="border-t border-gray-200 pt-6 mt-2">
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                Alternative classification:
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Your inputs also align with this persona. Review both options and select
+                the one that best represents your organization's current priorities and challenges.
+              </p>
+              <div
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={handleSwitch}
+              >
+                {renderPersonaCard(alternativePersona, false, true)}
+              </div>
+              <p className="text-xs text-gray-400 text-center mt-2">
+                Click to switch to this persona
+              </p>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-2">
-              Click to switch to this persona
-            </p>
           </div>
         )}
 
-        {/* Switch Dialog */}
-        {showSwitch && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Switch to {alternativePersona?.name}?
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              This will change how benchmarks and recommendations are tailored for your organization.
-            </p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for switching (optional)
-              </label>
-              <textarea
-                value={switchReason}
-                onChange={(e) => setSwitchReason(e.target.value)}
-                placeholder="e.g., We're currently going through a growth phase..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowSwitch(false);
-                  setSwitchReason('');
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
-                disabled={switching}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSwitch}
-                disabled={switching}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-              >
-                {switching ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    Switching...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw size={16} />
-                    Confirm Switch
-                  </>
-                )}
-              </button>
-            </div>
+        {/* Switching indicator */}
+        {switching && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center justify-center gap-3">
+            <Loader className="w-5 h-5 animate-spin text-blue-600" />
+            <span className="text-sm text-blue-700">Switching persona...</span>
           </div>
         )}
 

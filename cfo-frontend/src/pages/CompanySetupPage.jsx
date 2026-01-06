@@ -587,7 +587,7 @@ export default function CompanySetupPage() {
               </>
             ) : (
               <>
-                Continue to FP&A Context
+                Continue
                 <ArrowRight size={18} />
               </>
             )}
