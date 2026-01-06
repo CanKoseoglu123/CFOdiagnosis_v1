@@ -257,7 +257,7 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
   // Fetch run details
   const { data: run, error } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, setup_completed_at, created_at, finalized_at")
+    .select("id, status, spec_version, context, setup_completed_at, created_at, finalized_at, company_profile_id")
     .eq("id", runId)
     .single();
 

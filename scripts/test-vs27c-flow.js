@@ -48,6 +48,7 @@ async function test() {
     // VS-27b: 9 classification inputs
     ownership_structure: 'pe_backed',
     change_appetite: 'standardize',
+    legal_entities: '6_10',
     revenue_trajectory: 'stable',
     debt_pressure: 'moderate',
     ma_intensity: 'low',
