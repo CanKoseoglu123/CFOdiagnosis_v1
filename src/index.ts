@@ -1571,6 +1571,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   let page = 1;
   const perPage = 1000; // Max per request
   let totalUsersLoaded = 0;
+  let userFetchError: string | null = null;
 
   try {
     while (true) {
@@ -1580,6 +1581,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       });
 
       if (usersError) {
+        userFetchError = usersError.message;
         console.error("[Admin] Error fetching users:", usersError.message);
         break;
       }
@@ -1594,11 +1596,12 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       if (usersPage.users.length < perPage) break; // Last page
       page++;
     }
-  } catch (err) {
+  } catch (err: any) {
+    userFetchError = err?.message || String(err);
     console.error("[Admin] Exception fetching users:", err);
   }
 
-  console.log(`[Admin] Loaded ${totalUsersLoaded} users, mapped ${userMap.size} emails`);
+  console.log(`[Admin] Loaded ${totalUsersLoaded} users, mapped ${userMap.size} emails, error=${userFetchError}`);
 
   // Enrich sessions with user email
   const enrichedData = (data || []).map((session: any) => ({
@@ -1609,7 +1612,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
   }));
 
   // Include debug info in response header
-  res.setHeader("X-Admin-Debug", `users=${totalUsersLoaded},mapped=${userMap.size}`);
+  res.setHeader("X-Admin-Debug", `users=${totalUsersLoaded},mapped=${userMap.size},err=${userFetchError || 'none'}`);
   res.json(enrichedData);
 });
 
