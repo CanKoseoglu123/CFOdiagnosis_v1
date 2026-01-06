@@ -69,6 +69,7 @@ app.use(express.json());
 // ------------------------------------------------------------------
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
@@ -76,6 +77,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Global anon client - ONLY for unauthenticated routes (health checks)
 const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey);
+
+// Service role client - Bypasses RLS, for admin operations only
+// This is optional - admin features will be limited without it
+const supabaseAdmin = supabaseServiceRoleKey
+  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : null;
+
+if (!supabaseAdmin) {
+  console.warn("WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Admin features will be limited.");
+}
 
 // ------------------------------------------------------------------
 // Layer 3: Auth middleware - creates authenticated client
@@ -228,19 +244,90 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// VS18/VS25 — Complete setup (save context, mark setup complete)
-// Accepts either legacy format { company_name, industry } or v1 format { company, pillar }
+// VS-27c — Get company profile linked to a diagnostic run
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/company-profile", async (req, res) => {
+  const runId = req.params.id;
+
+  // Fetch run with company_profile_id
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, company_profile_id")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (!run.company_profile_id) {
+    return res.status(404).json({ error: "No company profile linked to this run" });
+  }
+
+  // Fetch the company profile
+  const { data: profile, error: profileError } = await req.supabase
+    .from("company_profiles")
+    .select("*")
+    .eq("id", run.company_profile_id)
+    .single();
+
+  if (profileError || !profile) {
+    return res.status(404).json({ error: "Company profile not found" });
+  }
+
+  res.json(profile);
+});
+
+// ------------------------------------------------------------------
+// VS18/VS25/VS27c — Complete setup (save context, mark setup complete)
+// Accepts:
+//   - Legacy format: { company_name, industry }
+//   - V1 format: { company, pillar }
+//   - V2 format (VS-27c): { pillar } - company already linked via company_profile_id
 // ------------------------------------------------------------------
 app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   const runId = req.params.id;
   const body = req.body;
 
-  // Detect format: v1 has 'company' object, legacy has 'company_name' string
+  // Verify run exists first (needed for V2 format check)
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, setup_completed_at, company_profile_id")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Detect format:
+  // - V2: pillar only (no company) + company_profile_id linked
+  // - V1: has 'company' object
+  // - Legacy: has 'company_name' string
+  const isV2Format = body.pillar && !body.company && !body.company_name;
   const isV1Format = body.company && typeof body.company === 'object';
 
-  let context: DiagnosticContextV1 | { company_name: string; industry: string };
+  let context: Record<string, unknown>;
 
-  if (isV1Format) {
+  if (isV2Format) {
+    // VS-27c: Pillar-only format (company is in company_profiles)
+    if (!run.company_profile_id) {
+      return res.status(400).json({
+        error: "V2 format requires a linked company profile. Create company profile first via POST /api/company-profiles"
+      });
+    }
+
+    if (!body.pillar || typeof body.pillar !== 'object') {
+      return res.status(400).json({
+        error: "pillar object is required for v2 format"
+      });
+    }
+
+    context = {
+      version: 'v2',
+      pillar: body.pillar
+    };
+  } else if (isV1Format) {
     // VS25: Full v1 context validation
     const result = DiagnosticContextV1Schema.safeParse({
       version: 'v1',
@@ -264,22 +351,11 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
 
     if (!company_name || !industry) {
       return res.status(400).json({
-        error: "company_name and industry are required (legacy format), or provide company and pillar objects (v1 format)",
+        error: "company_name and industry are required (legacy format), or provide company and pillar objects (v1 format), or provide pillar only (v2 format with linked company profile)",
       });
     }
 
     context = { company_name, industry };
-  }
-
-  // Verify run exists
-  const { data: run, error: runError } = await req.supabase
-    .from("diagnostic_runs")
-    .select("id, setup_completed_at")
-    .eq("id", runId)
-    .single();
-
-  if (runError || !run) {
-    return res.status(404).json({ error: "Run not found" });
   }
 
   // Update context and mark setup complete
@@ -1462,7 +1538,15 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
 
 // GET /admin/sessions - List all diagnostic runs
 app.get("/admin/sessions", requireAdmin, async (req, res) => {
-  const { data, error } = await req.supabase
+  // Require service role client to bypass RLS and list all users
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  // Use admin client to bypass RLS and see all runs
+  const { data, error } = await supabaseAdmin
     .from("diagnostic_runs")
     .select(`
       id,
@@ -1482,21 +1566,22 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  // Get user emails for each session
-  const userIds = [...new Set(data.map(r => r.owner_id).filter(Boolean))];
-  const { data: users } = await req.supabase.auth.admin.listUsers();
+  // Get user emails using admin client (requires service role)
+  const { data: users } = await supabaseAdmin.auth.admin.listUsers();
 
-  const userMap = new Map();
+  const userMap = new Map<string, string>();
   if (users?.users) {
-    users.users.forEach(u => userMap.set(u.id, u.email));
+    users.users.forEach((u: { id: string; email?: string }) => {
+      if (u.email) userMap.set(u.id, u.email);
+    });
   }
 
   // Enrich sessions with user email
-  const enrichedData = data.map(session => ({
+  const enrichedData = (data || []).map((session: any) => ({
     ...session,
     user_email: userMap.get(session.owner_id) || "unknown",
-    company_name: session.context?.company?.name || null,
-    industry: session.context?.company?.industry || null,
+    company_name: session.context?.company?.name || session.context?.company_name || null,
+    industry: session.context?.company?.industry || session.context?.industry || null,
   }));
 
   res.json(enrichedData);
@@ -1504,17 +1589,23 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
 
 // DELETE /admin/sessions/:id - Delete a diagnostic run
 app.delete("/admin/sessions/:id", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
   const { id } = req.params;
 
-  // Delete related data first (cascade doesn't always work with RLS)
-  await req.supabase.from("diagnostic_inputs").delete().eq("run_id", id);
-  await req.supabase.from("diagnostic_scores").delete().eq("run_id", id);
-  await req.supabase.from("interpretation_sessions").delete().eq("run_id", id);
-  await req.supabase.from("interpretation_reports").delete().eq("run_id", id);
-  await req.supabase.from("action_plans").delete().eq("run_id", id);
+  // Delete related data first using admin client (bypass RLS)
+  await supabaseAdmin.from("diagnostic_inputs").delete().eq("run_id", id);
+  await supabaseAdmin.from("diagnostic_scores").delete().eq("run_id", id);
+  await supabaseAdmin.from("interpretation_sessions").delete().eq("run_id", id);
+  await supabaseAdmin.from("interpretation_reports").delete().eq("run_id", id);
+  await supabaseAdmin.from("action_plans").delete().eq("run_id", id);
 
   // Delete the run itself
-  const { error } = await req.supabase
+  const { error } = await supabaseAdmin
     .from("diagnostic_runs")
     .delete()
     .eq("id", id);
@@ -1528,7 +1619,13 @@ app.delete("/admin/sessions/:id", requireAdmin, async (req, res) => {
 
 // GET /admin/feedback - List all feedback
 app.get("/admin/feedback", requireAdmin, async (req, res) => {
-  const { data, error } = await req.supabase
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  const { data, error } = await supabaseAdmin
     .from("feedback")
     .select("*")
     .order("created_at", { ascending: false });
@@ -1537,14 +1634,20 @@ app.get("/admin/feedback", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  res.json(data);
+  res.json(data || []);
 });
 
 // DELETE /admin/feedback/:id - Delete feedback
 app.delete("/admin/feedback/:id", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
   const { id } = req.params;
 
-  const { error } = await req.supabase
+  const { error } = await supabaseAdmin
     .from("feedback")
     .delete()
     .eq("id", id);
