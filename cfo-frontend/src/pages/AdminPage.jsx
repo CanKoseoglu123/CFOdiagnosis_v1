@@ -304,7 +304,12 @@ export default function AdminPage() {
                     sessions.map((session) => (
                       <tr key={session.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-slate-800">{session.user_email}</div>
+                          <div className="font-medium text-slate-800">
+                            {session.user_name || session.user_email}
+                          </div>
+                          {session.user_name && (
+                            <div className="text-xs text-slate-500">{session.user_email}</div>
+                          )}
                           <div className="text-xs text-slate-400 font-mono">{session.id.slice(0, 8)}...</div>
                         </td>
                         <td className="px-4 py-3">

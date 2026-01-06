@@ -1601,9 +1601,9 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  // Get user emails using admin client (requires service role)
+  // Get user emails and names using admin client (requires service role)
   // Paginate through all users (default limit is 50)
-  const userMap = new Map<string, string>();
+  const userMap = new Map<string, { email: string; name: string | null }>();
   let page = 1;
   const perPage = 1000; // Max per request
   let totalUsersLoaded = 0;
@@ -1624,8 +1624,11 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
 
       if (!usersPage?.users || usersPage.users.length === 0) break;
 
-      usersPage.users.forEach((u: { id: string; email?: string }) => {
-        if (u.email) userMap.set(u.id, u.email);
+      usersPage.users.forEach((u: { id: string; email?: string; user_metadata?: { full_name?: string; name?: string } }) => {
+        if (u.email) {
+          const name = u.user_metadata?.full_name || u.user_metadata?.name || null;
+          userMap.set(u.id, { email: u.email, name });
+        }
       });
 
       totalUsersLoaded += usersPage.users.length;
@@ -1639,13 +1642,17 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
 
   console.log(`[Admin] Loaded ${totalUsersLoaded} users, mapped ${userMap.size} emails, error=${userFetchError}`);
 
-  // Enrich sessions with user email
-  const enrichedData = (data || []).map((session: any) => ({
-    ...session,
-    user_email: userMap.get(session.owner_id) || "unknown",
-    company_name: session.context?.company?.name || session.context?.company_name || null,
-    industry: session.context?.company?.industry || session.context?.industry || null,
-  }));
+  // Enrich sessions with user email and name
+  const enrichedData = (data || []).map((session: any) => {
+    const userData = userMap.get(session.owner_id);
+    return {
+      ...session,
+      user_email: userData?.email || "unknown",
+      user_name: userData?.name || null,
+      company_name: session.context?.company?.name || session.context?.company_name || null,
+      industry: session.context?.company?.industry || session.context?.industry || null,
+    };
+  });
 
   // Include debug info in response header
   res.setHeader("X-Admin-Debug", `users=${totalUsersLoaded},mapped=${userMap.size},err=${userFetchError || 'none'}`);
