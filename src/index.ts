@@ -92,11 +92,11 @@ const supabaseAdmin = supabaseServiceRoleKey
 if (!supabaseAdmin) {
   console.warn("WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Admin features will be limited.");
 } else {
-  // Log service role key info for debugging (masked)
-  const keyPreview = supabaseServiceRoleKey?.substring(0, 10) + "...";
-  const keyLength = supabaseServiceRoleKey?.length || 0;
+  // Validate service role key is a JWT (not old format)
   const isJWT = supabaseServiceRoleKey?.startsWith("eyJ");
-  console.log(`[Admin] Service role key configured: length=${keyLength}, isJWT=${isJWT}, preview=${keyPreview}`);
+  if (!isJWT) {
+    console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY must be a JWT (starts with 'eyJ'). Current key format is invalid.");
+  }
 }
 
 // ------------------------------------------------------------------
@@ -152,23 +152,6 @@ app.use(createSupabaseMiddleware);
 // ------------------------------------------------------------------
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
-});
-
-// Debug endpoint to check admin configuration (remove in production)
-app.get("/admin/debug-config", (_req, res) => {
-  const keyLength = supabaseServiceRoleKey?.length || 0;
-  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
-  const keyPreview = supabaseServiceRoleKey?.substring(0, 20) + "..." || "NOT_SET";
-  const hasAdmin = supabaseAdmin !== null;
-
-  res.json({
-    hasServiceRoleKey: keyLength > 0,
-    keyLength,
-    isJWT,
-    keyPreview,
-    supabaseAdminInitialized: hasAdmin,
-    supabaseUrl: supabaseUrl?.substring(0, 30) + "..."
-  });
 });
 
 // ------------------------------------------------------------------
