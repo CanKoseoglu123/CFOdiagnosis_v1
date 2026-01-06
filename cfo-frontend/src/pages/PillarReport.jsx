@@ -99,6 +99,18 @@ export default function PillarReport() {
     return { totalPractices, evidencedPractices: evidenced, partialPractices: partial, gapPractices: gaps };
   }, [report?.maturity_footprint?.levels]);
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // VS-39: FINALIZATION STATE - MUST be before early returns (React hooks rule)
+  // ─────────────────────────────────────────────────────────────────────────
+  const isFinalized = !!report?.finalized_at;
+
+  // VS-45: Redirect to Executive Report page when finalized
+  useEffect(() => {
+    if (isFinalized) {
+      navigate(`/report/${runId}/executive`, { replace: true });
+    }
+  }, [isFinalized, runId, navigate]);
+
   async function fetchReport() {
     try {
       setLoading(true);
@@ -283,18 +295,6 @@ export default function PillarReport() {
   objectives.forEach(obj => {
     objectiveScores[obj.id] = obj.score;
   });
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // VS-39: FINALIZATION STATE (derived, NOT separate state)
-  // ─────────────────────────────────────────────────────────────────────────
-  const isFinalized = !!report?.finalized_at;
-
-  // VS-45: Redirect to Executive Report page when finalized
-  useEffect(() => {
-    if (isFinalized) {
-      navigate(`/report/${runId}/executive`, { replace: true });
-    }
-  }, [isFinalized, runId, navigate]);
 
   // VS-39: Callback for ActionPlanTab - navigate to Executive Report page
   async function handleFinalized() {
