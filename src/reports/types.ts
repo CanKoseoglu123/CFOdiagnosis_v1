@@ -5,6 +5,7 @@
 // V2.1: Added PrioritizedInitiative, P1/P2/P3 grouping
 
 import { ActionPlanItem, DerivedAction, PrioritizedAction, PrioritizedInitiative } from "../actions/types";
+import type { TargetsResult } from "../utils/targetCalculation";
 
 // === Maturity Status ===
 
@@ -125,6 +126,9 @@ export interface FinanceReportDTO {
 
   // VS-32: Raw inputs for frontend calculations (execution scores, spider diagrams)
   inputs?: { question_id: string; value: unknown }[];
+
+  // VS-27f: Persona-specific maturity targets (objective + practice)
+  targets?: TargetsResult;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

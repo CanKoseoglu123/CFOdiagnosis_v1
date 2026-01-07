@@ -8,6 +8,7 @@
 import { calculateExecutionScore, calculateMaturityV2, getFailedCriticals, Answer } from '../maturity';
 import { calculateObjectiveScores } from '../scoring/objectiveScoring';
 import { prioritizeActions } from '../actions/prioritizeActions';
+import { L1_CRITICALS, L2_CRITICALS } from '../gates';
 import SPEC from '../specs/v2.7.0';
 
 let passed = 0;
@@ -140,8 +141,7 @@ const questions = SPEC.questions.map(q => ({
 
 console.log('\n--- Critical Cap Logic ---');
 
-const L1_CRITICALS = ['fpa_l1_q01', 'fpa_l1_q02', 'fpa_l1_q05', 'fpa_l1_q09'];
-const L2_CRITICALS = ['fpa_l2_q01', 'fpa_l2_q02', 'fpa_l2_q06', 'fpa_l2_q07'];
+// L1_CRITICALS and L2_CRITICALS imported from '../gates' (SSOT: content/gates.json)
 
 // L1 critical fail + 80% score → capped at L1
 {
@@ -159,7 +159,7 @@ const L2_CRITICALS = ['fpa_l2_q01', 'fpa_l2_q02', 'fpa_l2_q06', 'fpa_l2_q07'];
 {
   const answers: Answer[] = SPEC.questions.map((q) => ({
     question_id: q.id,
-    value: q.id === 'fpa_l2_q07' ? false : true, // Fail one L2 critical
+    value: q.id === 'fpa_l2_q08' ? false : true, // Fail one L2 critical
   }));
   const result = calculateMaturityV2({ answers, questions });
   test('L2 critical fail + high score → capped at L2', result.actual_level === 2);

@@ -22,6 +22,7 @@ import { CalibrationData, PillarContext } from "../actions/types";  // VS21: Cal
 import { deriveCriticalRisks as deriveRisksFromEngine } from "../risks";
 import { calculateObjectiveScores } from "../scoring/objectiveScoring";
 import { buildMaturityFootprint } from "../maturity/footprint";  // VS23: Maturity Footprint
+import { calculateTargets, Classification, CompanyContext, TargetsResult } from "../utils/targetCalculation";
 
 // ------------------------------------------------------------------
 // Input Types
@@ -39,6 +40,8 @@ export interface BuildReportInput {
   inputs: DiagnosticInput[];        // Raw user answers
   calibration?: CalibrationData | null;  // VS21: Optional calibration data
   pillarContext?: PillarContext | null;  // VS26: Optional pillar context for pain point boosting
+  classification?: Classification | null; // VS-27f: Optional persona classification
+  companyContext?: CompanyContext | null; // VS-27f: Optional company context for target modifiers
 }
 
 // ------------------------------------------------------------------
@@ -46,7 +49,7 @@ export interface BuildReportInput {
 // ------------------------------------------------------------------
 
 export function buildReport(input: BuildReportInput): FinanceReportDTO {
-  const { run_id, spec, aggregateResult, inputs, calibration, pillarContext } = input;
+  const { run_id, spec, aggregateResult, inputs, calibration, pillarContext, classification, companyContext } = input;
 
   // Build input lookup map
   const inputMap = new Map<string, unknown>(
@@ -176,6 +179,16 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
   }));
   const maturityFootprint = buildMaturityFootprint(footprintAnswers, footprintQuestions);
 
+  // VS-27f: Calculate persona-specific targets (optional)
+  let targets: TargetsResult | undefined;
+  if (classification && companyContext) {
+    try {
+      targets = calculateTargets(classification, companyContext);
+    } catch {
+      targets = undefined;
+    }
+  }
+
   return {
     ...reportWithoutActions,
     actions,
@@ -193,6 +206,8 @@ export function buildReport(input: BuildReportInput): FinanceReportDTO {
       question_id: i.question_id,
       value: i.value,
     })),
+    // VS-27f: Persona-specific targets (objective + practice)
+    targets,
   };
 }
 

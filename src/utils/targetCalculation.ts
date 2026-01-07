@@ -36,12 +36,12 @@ interface Practice {
   capability_tags: string[];
 }
 
-interface CompanyContext {
+export interface CompanyContext {
   ownership_structure?: string;
   [key: string]: unknown;
 }
 
-interface Classification {
+export interface Classification {
   persona: string;
   scores: Record<string, number>;
   confidence: number;

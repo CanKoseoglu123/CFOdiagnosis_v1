@@ -4,20 +4,13 @@
 // V2: Added execution score and cap logic
 
 import { MaturityGate, MaturityResult, MaturityResultV2, Answer } from "./types";
+import { L1_CRITICALS, L2_CRITICALS, SCORE_THRESHOLDS, LEVEL_NAMES } from "../gates";
 
 // =============================================================================
-// V2 CONSTANTS: Critical Questions
+// V2 CONSTANTS: Loaded from gates module (SSOT: content/gates.json)
 // =============================================================================
 
-const L1_CRITICALS = ['fpa_l1_q01', 'fpa_l1_q02', 'fpa_l1_q05', 'fpa_l1_q09'];
-const L2_CRITICALS = ['fpa_l2_q01', 'fpa_l2_q02', 'fpa_l2_q06', 'fpa_l2_q07'];
-
-const LEVEL_LABELS: Record<number, string> = {
-  1: 'Emerging',
-  2: 'Defined',
-  3: 'Managed',
-  4: 'Optimized',
-};
+const LEVEL_LABELS: Record<number, string> = LEVEL_NAMES;
 
 // =============================================================================
 // V2: Execution Score Calculation
@@ -64,7 +57,7 @@ export function calculateExecutionScore(answers: Answer[]): number {
  */
 export function getFailedCriticals(
   answers: Answer[],
-  criticalIds: string[]
+  criticalIds: readonly string[]
 ): string[] {
   const answerMap = new Map<string, unknown>(
     answers.map((a) => [a.question_id, a.value])
@@ -112,11 +105,11 @@ export function calculateMaturityV2(input: CalculateMaturityV2Input): MaturityRe
   // Step 1: Calculate execution score
   const score = calculateExecutionScore(answers);
 
-  // Step 2: Determine potential level from score
+  // Step 2: Determine potential level from score (thresholds from gates.json)
   let potential: 1 | 2 | 3 | 4;
-  if (score < 50) potential = 1;
-  else if (score < 80) potential = 2;
-  else if (score < 95) potential = 3;
+  if (score < SCORE_THRESHOLDS.LEVEL_2) potential = 1;
+  else if (score < SCORE_THRESHOLDS.LEVEL_3) potential = 2;
+  else if (score < SCORE_THRESHOLDS.LEVEL_4) potential = 3;
   else potential = 4;
 
   // Step 3: Check critical failures

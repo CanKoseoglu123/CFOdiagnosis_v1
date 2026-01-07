@@ -80,6 +80,22 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
     tools: normalizedCtx.pillar.tools_with_effectiveness || undefined,
   } : null;
 
+  // VS-27f: Fetch company profile classification for targets (optional)
+  let classification: any = null;
+  let companyContext: any = null;
+  if (run.company_profile_id) {
+    const { data: profile } = await supabase
+      .from('company_profiles')
+      .select('context, classification')
+      .eq('id', run.company_profile_id)
+      .single();
+
+    if (profile?.classification) {
+      classification = profile.classification;
+      companyContext = profile.context || {};
+    }
+  }
+
   const report = buildReport({
     run_id: runId,
     spec,
@@ -87,6 +103,8 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
     inputs,
     calibration: run.calibration || null,
     pillarContext,  // VS26: Pass pillar context for pain point boosting
+    classification,
+    companyContext,
   });
 
   // Extract objectives with their importance from calibration

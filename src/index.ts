@@ -32,6 +32,8 @@ import { normalizeContext } from "./utils/contextAdapter";
 
 // VS-27e: Target calculation
 import { calculateTargets, getDefaultTargetMatrix, validateTargetMatrix, TargetsResult } from "./utils/targetCalculation";
+import { computeAchievedLevels } from "./benchmark/achievedLevels";
+import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/generator";
 
 // VS-27b: Company Profile Classification routes
 import companyProfilesRoutes from "./routes/companyProfiles";
@@ -377,6 +379,109 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
     const message = err instanceof Error ? err.message : "Target calculation failed";
     res.status(500).json({ error: message });
   }
+});
+
+// ------------------------------------------------------------------
+// VS-27d — Benchmark data + commentary (cached on diagnostic_runs)
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
+  const runId = req.params.id;
+  const refresh = String(req.query.refresh) === "true";
+
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, company_profile_id, benchmark_commentary")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed") {
+    return res.status(409).json({ error: "Run must be completed before benchmarking" });
+  }
+
+  if (!run.company_profile_id) {
+    return res.status(400).json({ error: "No company profile linked to this run" });
+  }
+
+  const { data: profile, error: profileError } = await req.supabase
+    .from("company_profiles")
+    .select("context, classification")
+    .eq("id", run.company_profile_id)
+    .single();
+
+  if (profileError || !profile) {
+    return res.status(404).json({ error: "Company profile not found" });
+  }
+
+  if (!profile.classification || !profile.classification.persona) {
+    return res.status(400).json({ error: "Company profile has no persona classification" });
+  }
+
+  const { data: inputs, error: inputsError } = await req.supabase
+    .from("diagnostic_inputs")
+    .select("question_id, value")
+    .eq("run_id", runId);
+
+  if (inputsError) {
+    return res.status(500).json({ error: inputsError.message });
+  }
+
+  const spec = SpecRegistry.getDefault();
+
+  let targets: TargetsResult;
+  try {
+    targets = calculateTargets(profile.classification, profile.context || {});
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Target calculation failed";
+    return res.status(500).json({ error: message });
+  }
+
+  const achieved = computeAchievedLevels(spec, inputs || []);
+  const objectiveTargetMap = new Map(
+    targets.objectiveTargets.map((t) => [t.objective_id, t.adjustedTarget])
+  );
+
+  const objectiveGaps: BenchmarkObjectiveGap[] = (spec.objectives || []).map((objective) => {
+    const achievedLevel = achieved.objectiveLevels[objective.id] ?? 0;
+    const targetLevel = objectiveTargetMap.get(objective.id) ?? 0;
+    return {
+      objective_id: objective.id,
+      objective_name: objective.name,
+      achieved_level: achievedLevel,
+      target_level: targetLevel,
+      gap: Math.max(0, Number(targetLevel) - achievedLevel),
+    };
+  });
+
+  let commentary = run.benchmark_commentary;
+  if (!commentary || refresh) {
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        const companyName = profile.context?.name || profile.context?.company?.name || "The organization";
+        const persona = profile.classification.override || profile.classification.persona;
+        commentary = await generateBenchmarkCommentary(companyName, persona, objectiveGaps);
+
+        await req.supabase
+          .from("diagnostic_runs")
+          .update({ benchmark_commentary: commentary })
+          .eq("id", runId);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Benchmark commentary failed";
+        return res.status(500).json({ error: message });
+      }
+    }
+  }
+
+  res.json({
+    run_id: runId,
+    persona: targets.persona,
+    targets,
+    achieved,
+    commentary: commentary || null,
+  });
 });
 
 // ------------------------------------------------------------------
@@ -836,7 +941,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot")
+    .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot, company_profile_id")
     .eq("id", runId)
     .single();
 
@@ -881,6 +986,22 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     return res.status(500).json({ error: inputsError.message });
   }
 
+  // VS-27f: Fetch classification context for targets (optional)
+  let classification: any = null;
+  let companyContext: any = null;
+  if (run.company_profile_id) {
+    const { data: profile } = await req.supabase
+      .from("company_profiles")
+      .select("context, classification")
+      .eq("id", run.company_profile_id)
+      .single();
+
+    if (profile?.classification) {
+      classification = profile.classification;
+      companyContext = profile.context || {};
+    }
+  }
+
   const aggregateSpec = toAggregateSpec(spec);
   const aggregateResult = aggregateResults(aggregateSpec, scores);
 
@@ -901,6 +1022,8 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     })),
     calibration: run.calibration || null,  // VS21: Pass calibration data
     pillarContext,  // VS26: Pass pillar context for pain point boosting
+    classification,
+    companyContext,
   });
 
   // VS18: Include context in report response (normalized for backward compatibility)

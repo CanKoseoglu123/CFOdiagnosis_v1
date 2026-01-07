@@ -24,6 +24,7 @@ import PriorityMatrix from '../components/report/PriorityMatrix';
 import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
 import FinalReportTab from '../components/report/FinalReportTab';
+import BenchmarkTab from '../components/report/BenchmarkTab';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -57,6 +58,8 @@ export default function PillarReport() {
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
   const [actionPlan, setActionPlan] = useState({});
+  const [benchmarkData, setBenchmarkData] = useState(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -76,6 +79,7 @@ export default function PillarReport() {
       fetchReport();
       fetchSpec();
       fetchActionPlan();
+      fetchBenchmark();
     }
   }, [runId]);
 
@@ -179,6 +183,32 @@ export default function PillarReport() {
       }
     } catch (err) {
       console.error('Failed to fetch action plan:', err);
+    }
+  }
+
+  async function fetchBenchmark() {
+    try {
+      setBenchmarkLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/benchmark`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch benchmark: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setBenchmarkData(data);
+    } catch (err) {
+      console.error('Failed to fetch benchmark:', err);
+    } finally {
+      setBenchmarkLoading(false);
     }
   }
 
@@ -294,6 +324,12 @@ export default function PillarReport() {
   const objectiveScores = {};
   objectives.forEach(obj => {
     objectiveScores[obj.id] = obj.score;
+  });
+
+  // Build objective targets map for target markers (VS-27f)
+  const objectiveTargets = {};
+  (report.targets?.objectiveTargets || []).forEach(target => {
+    objectiveTargets[target.objective_id] = target.adjustedTarget;
   });
 
   // VS-39: Callback for ActionPlanTab - navigate to Executive Report page
@@ -448,6 +484,16 @@ export default function PillarReport() {
               Overview
             </button>
             <button
+              onClick={() => setActiveTab('benchmark')}
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+                activeTab === 'benchmark'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Benchmark
+            </button>
+            <button
               onClick={() => setActiveTab('footprint')}
               className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
                 activeTab === 'footprint'
@@ -499,6 +545,21 @@ export default function PillarReport() {
             </div>
           )}
 
+          {/* BENCHMARK TAB (VS-27d) */}
+          {activeTab === 'benchmark' && (
+            benchmarkLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-slate-500">Loading benchmarks...</div>
+              </div>
+            ) : (
+              <BenchmarkTab
+                report={report}
+                spec={spec}
+                benchmarkData={benchmarkData}
+              />
+            )
+          )}
+
           {/* MATURITY FOOTPRINT TAB - VS-33: Objectives & Priority Matrix */}
           {activeTab === 'footprint' && (
             <div className="space-y-4">
@@ -506,6 +567,7 @@ export default function PillarReport() {
               <ObjectivesPracticesOverview
                 levels={maturityLevels}
                 objectiveScores={objectiveScores}
+                objectiveTargets={objectiveTargets}
               />
 
               {/* VS-33: Priority Matrix (BCG-style triage) */}

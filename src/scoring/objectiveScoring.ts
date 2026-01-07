@@ -4,14 +4,11 @@
 
 import { ObjectiveScore } from "../reports/types";
 import { Spec, SpecQuestion, SpecObjective } from "../specs/types";
+import { ALL_CRITICALS } from "../gates";
 
 // =============================================================================
-// CRITICAL-TO-OBJECTIVE MAPPING
+// CRITICAL-TO-OBJECTIVE MAPPING (loaded from gates module - SSOT: content/gates.json)
 // =============================================================================
-
-const L1_CRITICALS = ['fpa_l1_q01', 'fpa_l1_q02', 'fpa_l1_q05', 'fpa_l1_q09'];
-const L2_CRITICALS = ['fpa_l2_q01', 'fpa_l2_q02', 'fpa_l2_q06', 'fpa_l2_q07'];
-const ALL_CRITICALS = [...L1_CRITICALS, ...L2_CRITICALS];
 
 // =============================================================================
 // OBJECTIVE SCORING

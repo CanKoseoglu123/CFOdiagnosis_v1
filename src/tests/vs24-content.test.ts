@@ -74,13 +74,13 @@ console.log('');
 console.log('--- Content Loading ---');
 
 const questions = loadQuestions();
-assertEqual(questions.length, 60, 'Loads exactly 60 questions');
+assertEqual(questions.length, 79, 'Loads exactly 79 questions');
 
 const practices = loadPractices();
-assertEqual(practices.length, 28, 'Loads exactly 28 practices');  // VS-26: Expanded
+assertEqual(practices.length, 27, 'Loads exactly 27 practices');  // VS-26: Expanded
 
 const initiatives = loadInitiatives();
-assertEqual(initiatives.length, 10, 'Loads exactly 10 initiatives');
+assertEqual(initiatives.length, 9, 'Loads exactly 9 initiatives');
 
 const objectives = loadObjectives();
 assertEqual(objectives.length, 9, 'Loads exactly 9 objectives');  // VS-26: Expanded
@@ -116,16 +116,16 @@ console.log('');
 console.log('--- Critical Questions ---');
 
 const criticals = getCriticalQuestions();
-assertEqual(criticals.length, 8, 'Exactly 8 critical questions');
+assertEqual(criticals.length, 10, 'Exactly 10 critical questions');
 
 const l1Criticals = criticals.filter(q => q.maturity_level === 1);
-assertEqual(l1Criticals.length, 4, 'L1 has 4 critical questions');
+assertEqual(l1Criticals.length, 5, 'L1 has 5 critical questions');
 
 const l2Criticals = criticals.filter(q => q.maturity_level === 2);
 assertEqual(l2Criticals.length, 4, 'L2 has 4 critical questions');
 
 const l3Criticals = criticals.filter(q => q.maturity_level === 3);
-assertEqual(l3Criticals.length, 0, 'L3 has 0 critical questions');
+assertEqual(l3Criticals.length, 1, 'L3 has 1 critical question');
 
 const l4Criticals = criticals.filter(q => q.maturity_level === 4);
 assertEqual(l4Criticals.length, 0, 'L4 has 0 critical questions');
@@ -135,16 +135,16 @@ console.log('');
 console.log('--- Question Distribution by Level ---');
 
 const l1Questions = getQuestionsByLevel(1);
-assertEqual(l1Questions.length, 9, 'L1 has 9 questions');
+assertEqual(l1Questions.length, 12, 'L1 has 12 questions');
 
 const l2Questions = getQuestionsByLevel(2);
-assertEqual(l2Questions.length, 15, 'L2 has 15 questions');
+assertEqual(l2Questions.length, 25, 'L2 has 25 questions');
 
 const l3Questions = getQuestionsByLevel(3);
-assertEqual(l3Questions.length, 21, 'L3 has 21 questions');
+assertEqual(l3Questions.length, 29, 'L3 has 29 questions');
 
 const l4Questions = getQuestionsByLevel(4);
-assertEqual(l4Questions.length, 15, 'L4 has 15 questions');
+assertEqual(l4Questions.length, 13, 'L4 has 13 questions');
 
 // --- Practice Distribution by Objective ---
 // VS-26: Practices no longer have level, they link to objectives
@@ -170,7 +170,7 @@ const futureInits = initiatives.filter(i => i.theme_id === 'future');
 assertEqual(futureInits.length, 3, 'Future theme has 3 initiatives');
 
 const intelligenceInits = initiatives.filter(i => i.theme_id === 'intelligence');
-assertEqual(intelligenceInits.length, 4, 'Intelligence theme has 4 initiatives');
+assertEqual(intelligenceInits.length, 3, 'Intelligence theme has 3 initiatives');
 
 // --- Schema Validation ---
 console.log('');

@@ -7,7 +7,7 @@
   },
   "critical_gates": {
     "l1_to_l2": ["fpa_l1_q01", "fpa_l1_q02", "fpa_l1_q05", "fpa_l1_q09"],
-    "l2_to_l3": ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q07"]
+    "l2_to_l3": ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q08"]
   },
   "level_names": {
     "1": "Emerging",
