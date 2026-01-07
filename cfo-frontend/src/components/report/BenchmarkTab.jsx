@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import personasData from '../../../../src/data/personas.json';
 
 const OBJECTIVE_ORDER = [
   'obj_budget_discipline',
@@ -12,65 +13,60 @@ const OBJECTIVE_ORDER = [
   'obj_operational_excellence'
 ];
 
-const CHART_HEIGHT = 160;
+const CHART_HEIGHT = 200;
 
-function ObjectiveBar({ label, achieved, target }) {
+const LEVEL_TICKS = [0, 1, 2, 3, 4];
+
+function splitLabel(label = '') {
+  const words = String(label).split(' ').filter(Boolean);
+  if (words.length <= 1) return [label, ''];
+  const mid = Math.ceil(words.length / 2);
+  return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+}
+
+function formatLevel(value, fallback = '-') {
+  if (value === null || value === undefined) return fallback;
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return fallback;
+  return `L${numeric % 1 === 0 ? numeric : numeric.toFixed(1)}`;
+}
+
+function ObjectiveBar({ label, achieved, target, isTotal, importance }) {
   const achievedHeight = Math.max(0, (achieved / 4) * CHART_HEIGHT);
-  const targetOffset = target ? Math.max(0, (target / 4) * CHART_HEIGHT) : null;
-  const gap = target ? Math.max(0, target - achieved) : null;
+  const targetOffset = target === null || target === undefined
+    ? null
+    : Math.max(0, (Number(target) / 4) * CHART_HEIGHT);
+  const [line1, line2] = splitLabel(label);
+  const barColor = isTotal ? 'bg-[#103b6d]' : 'bg-[#0b2d5b]';
+  const labelColor = isTotal ? 'text-slate-800 font-semibold' : 'text-slate-700';
+  const markerClass = importance === 5
+    ? 'bg-red-500'
+    : importance === 4
+      ? 'bg-amber-500'
+      : null;
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-14 h-[160px] border border-slate-200 bg-slate-50">
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative w-16 h-[200px] flex items-end justify-center">
         <div
-          className="absolute bottom-0 left-0 right-0 bg-blue-600"
+          className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-6 ${barColor}`}
           style={{ height: `${achievedHeight}px` }}
         />
         {targetOffset !== null && (
           <div
-            className="absolute left-0 right-0 border-t-2 border-amber-500"
-            style={{ bottom: `${targetOffset}px` }}
+            className="absolute left-1/2 -translate-x-1/2 w-7 h-2 bg-orange-500"
+            style={{ bottom: `${targetOffset - 2}px` }}
+          />
+        )}
+        {markerClass && (
+          <div
+            className={`absolute left-1/2 -translate-x-1/2 bottom-2 w-2.5 h-2.5 rounded-full ${markerClass}`}
           />
         )}
       </div>
-      <div className="text-[10px] text-slate-600 text-center leading-tight">
-        {label}
-      </div>
-      <div className="text-[11px] text-slate-500">
-        L{achieved}{target ? ` → L${target}` : ''}
-      </div>
-      {gap !== null && gap > 0 && (
-        <div className="text-[10px] text-amber-700">Gap {gap.toFixed(1)}</div>
-      )}
-    </div>
-  );
-}
-
-function CommentaryCard({ commentary, objectives }) {
-  if (!commentary) return null;
-
-  const notes = commentary.objectives || [];
-  const notesById = new Map(notes.map((n) => [n.objective_id, n.commentary]));
-
-  return (
-    <div className="border border-slate-300 bg-white rounded-sm p-4 space-y-3">
-      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-        Benchmark Commentary
-      </div>
-      <div className="text-sm text-slate-700">{commentary.summary}</div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {objectives.map((objective) => {
-          const note = notesById.get(objective.id);
-          if (!note) return null;
-          return (
-            <div key={objective.id} className="border border-slate-200 bg-slate-50 p-3">
-              <div className="text-xs font-semibold text-slate-600 mb-1">
-                {objective.name}
-              </div>
-              <div className="text-xs text-slate-600">{note}</div>
-            </div>
-          );
-        })}
+      <div className={`text-sm text-center leading-snug max-w-[120px] min-h-[36px] ${labelColor}`}>
+        <span className="block">{line1}</span>
+        <span className="block">{line2}</span>
       </div>
     </div>
   );
@@ -95,7 +91,7 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
 
   const practiceTargets = useMemo(() => {
     const targets = benchmarkData?.targets?.practiceTargets || [];
-    return new Map(targets.map((t) => [t.practice_id, t.target]));
+    return new Map(targets.map((t) => [t.practice_id, t]));
   }, [benchmarkData]);
 
   const achievedObjectives = benchmarkData?.achieved?.objectiveLevels || {};
@@ -118,94 +114,218 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
 
   const persona = benchmarkData?.persona || report?.targets?.persona || 'Unknown';
   const modifiers = benchmarkData?.targets?.modifiersApplied || [];
+  const personaDetails = personasData?.personas?.[persona] || null;
+  const commentary = benchmarkData?.commentary || null;
+  const importanceMap = report?.calibration?.importance_map || {};
+  const targetValues = Array.from(objectiveTargets.values())
+    .map((value) => Number(value))
+    .filter((value) => !Number.isNaN(value));
+  const achievedValues = orderedObjectives
+    .map((objective) => Number(achievedObjectives[objective.id]))
+    .filter((value) => !Number.isNaN(value));
+  const totalAchieved = report?.maturity_v2?.actual_level
+    ?? report?.maturity?.achieved_level
+    ?? (achievedValues.length > 0 ? Math.min(...achievedValues) : 0);
+  const totalTarget = targetValues.length > 0 ? Math.min(...targetValues) : null;
+  const chartObjectives = [
+    { id: 'total_company', name: 'Total Company' },
+    ...orderedObjectives
+  ];
+  const commentaryByObjective = useMemo(() => {
+    const notes = commentary?.objectives || [];
+    return new Map(notes.map((note) => [note.objective_id, note.commentary]));
+  }, [commentary]);
 
   return (
     <div className="space-y-4">
-      <div className="border border-slate-300 bg-white rounded-sm p-4">
-        <div className="flex items-start justify-between gap-4">
+      <div className="border border-slate-300 bg-white rounded-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
           <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              Enterprise DNA Benchmark
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
+              Maturity Benchmark
+            </h2>
+            <div className="text-sm text-slate-500 mt-1">
+              Maturity bars with target markers for each objective.
             </div>
-            <div className="text-lg font-semibold text-slate-800 mt-1">
-              Persona: {persona}
+          </div>
+          <div className="flex items-center gap-4 text-xs text-slate-500">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 bg-[#0b2d5b]" />
+              <span>Maturity</span>
             </div>
-            {modifiers.length > 0 && (
-              <div className="text-xs text-slate-500 mt-1">
-                Modifiers applied: {modifiers.join(', ')}
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-2 bg-orange-500" />
+              <span>Target</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span>High priority</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+              <span>Critical priority</span>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 pb-4 pt-8">
+        <div className="grid grid-cols-[60px_1fr] gap-5">
+          <div className="relative h-[200px] text-sm text-slate-400">
+            {LEVEL_TICKS.map((tick) => {
+              const offset = (tick / 4) * CHART_HEIGHT;
+              return (
+                <div
+                  key={tick}
+                  className="absolute left-0 right-0 flex items-center gap-2 translate-y-1/2"
+                  style={{ bottom: `${offset}px` }}
+                >
+                  <span className="w-8 text-right">{tick === 0 ? '' : `L${tick}`}</span>
+                  <div className="h-px w-3 bg-slate-300" />
+                </div>
+              );
+            })}
+          </div>
+          <div
+            className="relative h-[200px]"
+          >
+            {LEVEL_TICKS.map((tick) => {
+              const offset = (tick / 4) * CHART_HEIGHT;
+              return (
+                <div
+                  key={tick}
+                  className="absolute left-0 right-0 border-t border-slate-200/80"
+                  style={{ bottom: `${offset}px` }}
+                />
+              );
+            })}
+            <div className="flex items-end gap-8 px-2">
+              {chartObjectives.map((objective) => {
+                const isTotal = objective.id === 'total_company';
+                const achieved = isTotal
+                  ? totalAchieved
+                  : achievedObjectives[objective.id] ?? 0;
+                const target = isTotal
+                  ? totalTarget
+                  : objectiveTargets.get(objective.id);
+                const importance = isTotal ? null : importanceMap[objective.id];
+                return (
+                  <ObjectiveBar
+                    key={objective.id}
+                    label={objective.name}
+                    achieved={achieved}
+                    target={target}
+                    isTotal={isTotal}
+                    importance={importance}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="mt-16 border-t border-slate-200 pt-6">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            Benchmark Target Methodology
+          </div>
+          <div className="text-sm text-slate-600 mt-2 leading-relaxed">
+            Targets reflect persona-specific maturity expectations, calibrated by company context
+            modifiers. Practice targets inherit objective targets and are capped by practice maximums
+            to keep recommendations realistic.
+          </div>
+        </div>
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            Persona
+          </div>
+          <div className="text-sm text-slate-600 mt-2 leading-relaxed">
+            <span className="font-semibold text-slate-800">
+              {personaDetails?.name || persona}
+            </span>
+            {personaDetails?.tagline && (
+              <>
+                {' '}
+                <span className="text-slate-600">{personaDetails.tagline}</span>
+              </>
+            )}
+            {personaDetails?.description && (
+              <>
+                {' '}
+                {personaDetails.description}
+              </>
             )}
           </div>
-          <div className="text-xs text-slate-500">
-            Targets compared to achieved levels
-          </div>
+          {modifiers.length > 0 && (
+            <div className="text-xs text-slate-500 mt-2">
+              Modifiers applied: {modifiers.join(', ')}
+            </div>
+          )}
         </div>
       </div>
-
-      <div className="border border-slate-300 bg-white rounded-sm p-4">
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Maturity vs Targets
-        </div>
-        <div className="flex flex-wrap gap-4 justify-between">
-          {orderedObjectives.map((objective) => {
-            const achieved = achievedObjectives[objective.id] ?? 0;
-            const target = objectiveTargets.get(objective.id);
-            return (
-              <ObjectiveBar
-                key={objective.id}
-                label={objective.name}
-                achieved={achieved}
-                target={target}
-              />
-            );
-          })}
-        </div>
-        <div className="text-[10px] text-slate-500 mt-3">
-          Blue bar = achieved level. Amber line = target level.
-        </div>
       </div>
-
-      <CommentaryCard commentary={benchmarkData?.commentary} objectives={orderedObjectives} />
 
       <div className="border border-slate-300 bg-white rounded-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-            Practice-Level Comparison
-          </div>
-          <div className="text-sm text-slate-500 mt-1">
-            Achieved level by practice against persona target.
-          </div>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
+            Practice level details
+          </h2>
+          <div className="text-sm text-slate-500 mt-1">Practices grouped by objective.</div>
         </div>
         <div className="divide-y divide-slate-200">
           {orderedObjectives.map((objective) => {
             const objectivePractices = practicesByObjective[objective.id] || [];
+            const objectiveAchieved = achievedObjectives[objective.id] ?? 0;
+            const objectiveTarget = objectiveTargets.get(objective.id);
+            const objectiveGap = objectiveTarget !== undefined
+              ? Math.max(0, Number(objectiveTarget) - Number(objectiveAchieved))
+              : null;
+            const objectiveCommentary = commentaryByObjective.get(objective.id);
             return (
               <div key={objective.id} className="p-4">
-                <div className="text-sm font-semibold text-slate-700 mb-2">
-                  {objective.name}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {objectivePractices.map((practice) => {
-                    const achieved = achievedPractices[practice.id] ?? 0;
-                    const target = practiceTargets.get(practice.id);
-                    const gap = target ? Math.max(0, target - achieved) : 0;
-                    return (
-                      <div
-                        key={practice.id}
-                        className="border border-slate-200 bg-slate-50 p-3 flex items-center justify-between"
-                      >
-                        <div className="text-xs text-slate-600 pr-3">
-                          {practice.title}
-                        </div>
-                        <div className="text-xs text-slate-600 text-right">
-                          <div>L{achieved}{target ? ` → L${target}` : ''}</div>
-                          {gap > 0 && (
-                            <div className="text-[10px] text-amber-700">Gap {gap.toFixed(1)}</div>
-                          )}
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="border border-slate-200">
+                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-[11px] font-semibold text-slate-600 bg-slate-50">
+                      <div>Practice</div>
+                      <div className="text-center">Current Level</div>
+                      <div className="text-center">Max Level</div>
+                      <div className="text-center">Target Level</div>
+                      <div className="text-center">Gap</div>
+                    </div>
+                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-xs font-bold text-slate-700 uppercase tracking-wide border-t border-slate-200 bg-slate-100">
+                      <div>{objective.name}</div>
+                      <div className="text-center">{formatLevel(objectiveAchieved)}</div>
+                      <div className="text-center">{formatLevel(4)}</div>
+                      <div className="text-center">{formatLevel(objectiveTarget)}</div>
+                      <div className="text-center text-amber-700">
+                        {objectiveGap !== null ? objectiveGap.toFixed(1) : '-'}
                       </div>
-                    );
-                  })}
+                    </div>
+                    <div className="divide-y divide-slate-200">
+                      {objectivePractices.map((practice) => {
+                        const achieved = achievedPractices[practice.id] ?? 0;
+                        const practiceTarget = practiceTargets.get(practice.id);
+                        const maxLevel = practiceTarget?.practiceMax ?? practiceTarget?.target ?? 4;
+                        const target = practiceTarget?.target;
+                        return (
+                          <div
+                            key={practice.id}
+                            className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-[11px] text-slate-600 bg-white"
+                          >
+                            <div className="pr-3">{practice.title}</div>
+                            <div className="text-center">{formatLevel(achieved)}</div>
+                            <div className="text-center">{formatLevel(maxLevel)}</div>
+                            <div className="text-center">{formatLevel(target)}</div>
+                            <div className="text-center text-slate-300">-</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="border border-slate-200 bg-slate-50 p-4">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                      Commentary
+                    </div>
+                    <div className="text-sm text-slate-700 leading-relaxed">
+                      {objectiveCommentary || 'No commentary available for this objective.'}
+                    </div>
+                  </div>
                 </div>
               </div>
             );
