@@ -1,6 +1,6 @@
 // src/pages/ExecutiveReportPage.jsx
 // VS-45: Dedicated Executive Report page (post-finalization)
-// 4 pages, landscape, print-optimized for PDF export
+// 8 pages, landscape, print-optimized for PDF export
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import ActionPlanTable from '../components/report/ActionPlanTable';
 import PriorityMatrix from '../components/report/PriorityMatrix';
 import ObjectivesPracticesOverview from '../components/report/ObjectivesPracticesOverview';
 import BenchmarkTab from '../components/report/BenchmarkTab';
+import { Logo, BRAND_COLORS } from '../components/Logo';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -42,6 +43,30 @@ function CFOLensLogo({ size = 36 }) {
       <span className="text-sm font-bold tracking-tight" style={{ color: NAVY }}>
         CFO LENS AI
       </span>
+    </div>
+  );
+}
+
+function PrintFooter({ pageNumber, runId, printDate }) {
+  return (
+    <div className="print-footer">
+      <div className="print-footer-left">
+        <div className="print-footer-left-row text-[8px] text-slate-500">
+          <span className="text-[9px] font-semibold text-slate-600">{pageNumber}</span>
+          <span>RESTRICTED DISTRIBUTION © 2026 CFO-Lens AI and/or its affiliates. All rights reserved.</span>
+        </div>
+      </div>
+      <div className="print-footer-center text-[10px] text-slate-400">
+        <div>Run ID: {runId || 'Unknown'}</div>
+        <div>Print Date: {printDate}</div>
+      </div>
+      <div className="print-footer-right">
+        <img
+          src="/Logo horizontal.png"
+          alt="CFO Lens AI"
+          className="h-5 object-contain"
+        />
+      </div>
     </div>
   );
 }
@@ -292,6 +317,11 @@ export default function ExecutiveReportPage() {
     month: 'long',
     day: 'numeric'
   });
+  const printDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
   const {
     currentScore,
@@ -309,7 +339,6 @@ export default function ExecutiveReportPage() {
     actionCounts,
     commitmentRegister,
     strengths,
-    criticalFixes,
     topOpportunities
   } = reportData;
 
@@ -376,7 +405,62 @@ export default function ExecutiveReportPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 1: EXECUTIVE SUMMARY */}
+        {/* PRINT-ONLY COVER PAGE */}
+        <div className="executive-page p-10 print-only cover-page">
+          <div className="cover-accent">
+            <div className="cover-accent-navy" />
+            <div className="cover-accent-gold" />
+          </div>
+          <div className="mt-12 flex flex-col items-center text-center">
+            <Logo size="xl" className="mb-8" />
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: BRAND_COLORS.gold }}>
+              Executive Report
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight mb-3" style={{ color: BRAND_COLORS.navy }}>
+              FP&A Diagnostic
+            </h1>
+            <div className="text-2xl text-slate-700 mb-2">{companyName}</div>
+            <div className="text-sm text-slate-500">{runDate}</div>
+          </div>
+          <PrintFooter pageNumber={1} runId={runId} printDate={printDate} />
+        </div>
+
+        {/* PRINT-ONLY DISCLAIMER PAGE */}
+        <div className="executive-page p-10 page-break-before print-only">
+          <div className="border-b border-slate-200 pb-2 mb-4">
+            <h2 className="text-lg font-bold text-slate-800">Confidentiality and Intellectual Property</h2>
+          </div>
+          <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
+            <p>
+              These materials have been prepared by CFO-Lens AI and/or its affiliates ("CFO-Lens AI")
+              for the exclusive and individual use of our clients. These materials contain valuable
+              confidential and proprietary information belonging to CFO-Lens AI, and they may not be
+              shared with any third party (including independent contractors and consultants) without
+              the prior approval of CFO-Lens AI. CFO-Lens AI retains any and all intellectual property
+              rights in these materials and requires retention of the copyright mark on all pages reproduced.
+            </p>
+            <h3 className="text-sm font-semibold text-slate-800">Legal Caveat</h3>
+            <p>
+              CFO-Lens AI is not able to guarantee the accuracy of the information or analysis contained
+              in these materials. Furthermore, CFO-Lens AI is not engaged in rendering legal, accounting,
+              or any other professional services. CFO-Lens AI specifically disclaims liability for any damages,
+              claims, or losses that may arise from any errors or omissions in these materials, whether caused
+              by CFO-Lens AI or its sources, or reliance upon any recommendation made by CFO-Lens AI.
+            </p>
+            <h3 className="text-sm font-semibold text-slate-800">Disclaimer</h3>
+            <p>
+              Unless otherwise set forth in your Service Description or marked expressly for external use,
+              these items may be downloaded and customized for internal noncommercial use by the Client.
+              The items contained in this report may not be repackaged or resold. CFO-Lens AI makes no
+              representations or warranties as to the suitability of this report for any particular purpose,
+              and disclaims all liability for any damage or loss, whether direct, consequential, incidental
+              or special, arising out of the use of or inability to use this material or the information provided herein.
+            </p>
+          </div>
+          <PrintFooter pageNumber={2} runId={runId} printDate={printDate} />
+        </div>
+
+        {/* PAGE 3: EXECUTIVE SUMMARY */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6">
           {/* Page Header with Logo */}
@@ -482,7 +566,18 @@ export default function ExecutiveReportPage() {
             </div>
           </div>
 
-          {/* Objective Details Table */}
+          
+          <PrintFooter pageNumber={3} runId={runId} printDate={printDate} />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* PAGE 4: OBJECTIVE OVERVIEW */}
+        <div className="executive-page p-6 page-break-before">
+          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+            <h2 className="text-lg font-bold text-slate-800">Objective Overview</h2>
+            <div className="text-xs text-slate-400 print:hidden">Page 4 - {companyName}</div>
+          </div>
+          {/* Objective Overview Table */}
           <div className="border border-slate-300">
             <table className="w-full text-sm objective-table">
               <thead className="bg-slate-100">
@@ -536,14 +631,14 @@ export default function ExecutiveReportPage() {
               </tbody>
             </table>
           </div>
+          <PrintFooter pageNumber={4} runId={runId} printDate={printDate} />
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 2: MATURITY BENCHMARK */}
+        {/* PAGE 5: MATURITY BENCHMARK */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-800">Maturity Benchmark</h2>
-            <div className="text-xs text-slate-400">Page 5 ¶ú {companyName}</div>
+            <div className="text-xs text-slate-400 print:hidden">Page 5 - {companyName}</div>
           </div>
           {benchmarkLoading ? (
             <div className="text-slate-500 text-sm">Loading benchmark...</div>
@@ -558,30 +653,30 @@ export default function ExecutiveReportPage() {
               showPracticeDetails={false}
             />
           )}
+          <PrintFooter pageNumber={5} runId={runId} printDate={printDate} />
         </div>
 
-        {/* PAGE 3: ACTION PLAN */}
+        {/* PAGE 6: ACTION PLAN */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-800">Action Plan</h2>
-            <div className="text-xs text-slate-400">Page 2 · {companyName}</div>
+            <div className="text-xs text-slate-400 print:hidden">Page 6 - {companyName}</div>
           </div>
           <ActionPlanTable
             commitmentRegister={commitmentRegister}
             actionCounts={actionCounts}
-            criticalFixes={criticalFixes}
-            actionPlan={actionPlan}
           />
+          <PrintFooter pageNumber={6} runId={runId} printDate={printDate} />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 4: PRIORITY MATRIX */}
+        {/* PAGE 7: PRIORITY MATRIX */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-800">Priority Matrix</h2>
-            <div className="text-xs text-slate-400">Page 3 · {companyName}</div>
+            <div className="text-xs text-slate-400 print:hidden">Page 7 - {companyName}</div>
           </div>
           {spec && (
             <PriorityMatrix
@@ -592,24 +687,26 @@ export default function ExecutiveReportPage() {
               userLevel={currentLevel}
             />
           )}
+          <PrintFooter pageNumber={7} runId={runId} printDate={printDate} />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 5: MATURITY FOOTPRINT */}
+        {/* PAGE 8: MATURITY FOOTPRINT */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-800">Maturity Footprint</h2>
-            <div className="text-xs text-slate-400">Page 4 · {companyName}</div>
+            <div className="text-xs text-slate-400 print:hidden">Page 8 - {companyName}</div>
           </div>
           <ObjectivesPracticesOverview
             levels={maturityLevels}
             objectiveScores={objectiveScores}
           />
+          <PrintFooter pageNumber={8} runId={runId} printDate={printDate} />
         </div>
 
         {/* Document Footer */}
-        <div className="p-6 border-t border-slate-200 print:mt-8">
+        <div className="document-footer p-6 border-t border-slate-200 print:mt-8">
           <div className="flex justify-between text-xs text-slate-400">
             <div>Finance Diagnostic Platform — Executive Report</div>
             <div>Finalized {runDate}</div>
@@ -630,13 +727,38 @@ export default function ExecutiveReportPage() {
             background: white;
             margin-bottom: 1rem;
             border: 1px solid #e2e8f0;
+            position: relative;
+          }
+
+          .print-only {
+            display: none;
+          }
+
+          .print-footer {
+            display: none;
+          }
+
+          .cover-accent {
+            display: flex;
+            width: 100%;
+            height: 10px;
+          }
+
+          .cover-accent-navy {
+            flex: 1;
+            background: ${BRAND_COLORS.navy};
+          }
+
+          .cover-accent-gold {
+            width: 140px;
+            background: ${BRAND_COLORS.gold};
           }
 
           /* Print styles */
           @media print {
             @page {
               size: landscape;
-              margin: 0.4in;
+              margin: 0.2in 0.4in;
             }
 
             body {
@@ -652,6 +774,8 @@ export default function ExecutiveReportPage() {
               border: none;
               margin-bottom: 0;
               page-break-inside: avoid;
+              padding-bottom: 0.9in;
+              min-height: 8.1in;
             }
 
             .page-break-before {
@@ -667,6 +791,57 @@ export default function ExecutiveReportPage() {
             /* Hide print button */
             .print\\:hidden {
               display: none !important;
+            }
+
+            .print-only {
+              display: block;
+            }
+
+            .print-footer {
+              display: flex;
+              align-items: flex-end;
+              justify-content: space-between;
+              gap: 12px;
+              position: absolute;
+              bottom: -0.2in;
+              left: 0.4in;
+              right: 0.4in;
+            }
+
+            .print-footer-left-row {
+              display: flex;
+              align-items: baseline;
+              gap: 8px;
+            }
+
+            .print-footer-center {
+              text-align: center;
+              flex: 1;
+            }
+
+            .print-footer-right {
+              text-align: right;
+              min-width: 140px;
+            }
+
+            .print-footer-right img {
+              display: block;
+              margin-left: auto;
+            }
+
+            .document-footer {
+              display: none;
+            }
+
+            .objective-table {
+              font-size: 11px;
+              break-inside: avoid;
+            }
+
+            .objective-table th,
+            .objective-table td {
+              padding-top: 4px;
+              padding-bottom: 4px;
             }
 
             /* Ensure sections don't split */

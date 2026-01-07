@@ -10,14 +10,10 @@ import React from 'react';
  * @param {Object} props
  * @param {Array} props.commitmentRegister - Actions grouped by objective
  * @param {Object} props.actionCounts - Action counts by timeline
- * @param {Array} props.criticalFixes - Critical fix items
- * @param {Object} props.actionPlan - Full action plan map (for checking coverage)
  */
 export default function ActionPlanTable({
   commitmentRegister,
-  actionCounts,
-  criticalFixes = [],
-  actionPlan = {}
+  actionCounts
 }) {
   // Group actions by owner for accountability summary
   const actionsByOwner = React.useMemo(() => {
@@ -48,67 +44,6 @@ export default function ActionPlanTable({
 
   return (
     <div className="space-y-4">
-      {/* Action Plan Table */}
-      <div className="border border-slate-300">
-        <table className="w-full text-sm action-plan-table">
-          {/* thead displays on every printed page */}
-          <thead className="bg-slate-100">
-            <tr className="border-b border-slate-300">
-              <th className="text-left px-3 py-2 font-semibold text-slate-700">Action</th>
-              <th className="text-center px-3 py-2 font-semibold text-slate-700 w-32">Owner</th>
-              <th className="text-center px-3 py-2 font-semibold text-slate-700 w-24">Timeline</th>
-              <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Critical</th>
-            </tr>
-          </thead>
-          <tbody>
-            {commitmentRegister.map(group => (
-              <React.Fragment key={group.objectiveId}>
-                {/* Objective Header */}
-                <tr className="bg-slate-50 objective-header">
-                  <td colSpan={4} className="px-3 py-2 text-xs font-bold text-slate-600 uppercase tracking-wide">
-                    {group.objectiveName}
-                  </td>
-                </tr>
-                {/* Actions */}
-                {group.actions.map((action, idx) => (
-                  <tr
-                    key={action.id}
-                    className={`border-b border-slate-200 ${action.isCritical ? 'bg-red-50' : ''}`}
-                  >
-                    <td className="px-3 py-2 text-slate-700 pl-6">
-                      {idx + 1}. {action.title}
-                    </td>
-                    <td className="px-3 py-2 text-center text-slate-600">
-                      {action.owner || <span className="text-slate-400">—</span>}
-                    </td>
-                    <td className="px-3 py-2 text-center text-slate-600">
-                      {action.timeline ? (
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                          action.timeline === '6m' ? 'bg-blue-100 text-blue-700' :
-                          action.timeline === '12m' ? 'bg-blue-50 text-blue-600' :
-                          'bg-slate-100 text-slate-600'
-                        }`}>
-                          {action.timeline.replace('m', ' mo')}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {action.isCritical ? (
-                        <span className="text-red-600 font-bold">●</span>
-                      ) : (
-                        <span className="text-slate-300">○</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       {/* Accountability Summary + Timeline Distribution */}
       <div className="grid grid-cols-2 gap-4">
         {/* Accountability Summary */}
@@ -187,35 +122,68 @@ export default function ActionPlanTable({
           </div>
         </div>
       </div>
+      {/* Action Plan Table */}
+      <div className="border border-slate-300">
+        <table className="w-full text-sm action-plan-table">
+          {/* thead displays on every printed page */}
+          <thead className="bg-slate-100">
+            <tr className="border-b border-slate-300">
+              <th className="text-left px-3 py-2 font-semibold text-slate-700">Action</th>
+              <th className="text-center px-3 py-2 font-semibold text-slate-700 w-32">Owner</th>
+              <th className="text-center px-3 py-2 font-semibold text-slate-700 w-24">Timeline</th>
+              <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Critical</th>
+            </tr>
+          </thead>
+          <tbody>
+            {commitmentRegister.map(group => (
+              <React.Fragment key={group.objectiveId}>
+                {/* Objective Header */}
+                <tr className="bg-slate-50 objective-header">
+                  <td colSpan={4} className="px-3 py-2 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                    {group.objectiveName}
+                  </td>
+                </tr>
+                {/* Actions */}
+                {group.actions.map((action, idx) => (
+                  <tr
+                    key={action.id}
+                    className={`border-b border-slate-200 ${action.isCritical ? 'bg-red-50' : ''}`}
+                  >
+                    <td className="px-3 py-2 text-slate-700 pl-6">
+                      {idx + 1}. {action.title}
+                    </td>
+                    <td className="px-3 py-2 text-center text-slate-600">
+                      {action.owner || <span className="text-slate-400">—</span>}
+                    </td>
+                    <td className="px-3 py-2 text-center text-slate-600">
+                      {action.timeline ? (
+                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                          action.timeline === '6m' ? 'bg-blue-100 text-blue-700' :
+                          action.timeline === '12m' ? 'bg-blue-50 text-blue-600' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {action.timeline.replace('m', ' mo')}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      {action.isCritical ? (
+                        <span className="text-red-600 font-bold">●</span>
+                      ) : (
+                        <span className="text-slate-300">○</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Critical Coverage Check */}
-      {criticalFixes.length > 0 && (
-        <div className="border border-slate-300 p-4 border-l-4 border-l-red-500">
-          <div className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">
-            Critical Gap Coverage
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            {criticalFixes.map(fix => {
-              const isAddressed = !!actionPlan[fix.id];
-              return (
-                <div key={fix.id} className="flex items-center gap-2">
-                  <span className={isAddressed ? 'text-emerald-600' : 'text-red-600'}>
-                    {isAddressed ? '✓' : '✗'}
-                  </span>
-                  <span className={`text-slate-700 ${!isAddressed ? 'font-medium' : ''}`}>
-                    {fix.title}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-2 pt-2 border-t border-slate-200 text-xs">
-            <span className={criticalFixes.every(f => actionPlan[f.id]) ? 'text-emerald-600' : 'text-red-600'}>
-              {criticalFixes.filter(f => actionPlan[f.id]).length} of {criticalFixes.length} critical gaps addressed
-            </span>
-          </div>
-        </div>
-      )}
+
 
       {/* Print Styles for Action Plan Table */}
       <style>{`
