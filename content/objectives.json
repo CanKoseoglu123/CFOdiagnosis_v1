@@ -3,54 +3,63 @@
     "id": "obj_budget_discipline",
     "theme_id": "foundation",
     "title": "Budget Discipline",
+    "shortName": "Budget",
     "description": "Establish a baseline of financial accountability."
   },
   {
     "id": "obj_financial_controls",
     "theme_id": "foundation",
     "title": "Financial Controls",
+    "shortName": "Controls",
     "description": "Ensure analytical integrity through model governance and assumption management."
   },
   {
     "id": "obj_performance_monitoring",
     "theme_id": "foundation",
     "title": "Performance Monitoring",
+    "shortName": "Monitoring",
     "description": "Create feedback loops to track actuals against the plan."
   },
   {
     "id": "obj_forecasting_agility",
     "theme_id": "future",
     "title": "Forecasting Agility",
+    "shortName": "Forecast",
     "description": "Update the financial outlook frequently and efficiently."
   },
   {
     "id": "obj_driver_based_planning",
     "theme_id": "future",
     "title": "Driver-Based Planning",
+    "shortName": "Drivers",
     "description": "Link financial outcomes to operational inputs."
   },
   {
     "id": "obj_scenario_modeling",
     "theme_id": "future",
     "title": "Scenario Modeling",
+    "shortName": "Scenarios",
     "description": "Enable confident decision-making when conditions deviate from plan."
   },
   {
     "id": "obj_strategic_influence",
     "theme_id": "intelligence",
     "title": "Strategic Influence",
+    "shortName": "Strategy",
     "description": "Proactively shape commercial decisions through financial insight."
   },
   {
     "id": "obj_decision_support",
     "theme_id": "intelligence",
     "title": "Decision Support",
+    "shortName": "Decisions",
     "description": "Deliver accessible, actionable financial insights to decision-makers."
   },
   {
     "id": "obj_operational_excellence",
     "theme_id": "intelligence",
     "title": "Operational Excellence",
+    "shortName": "Operations",
     "description": "Run the finance function with maximum efficiency."
   }
 ]

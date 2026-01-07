@@ -30,6 +30,9 @@ import {
 } from "./specs/schemas";
 import { normalizeContext } from "./utils/contextAdapter";
 
+// VS-27e: Target calculation
+import { calculateTargets, getDefaultTargetMatrix, validateTargetMatrix, TargetsResult } from "./utils/targetCalculation";
+
 // VS-27b: Company Profile Classification routes
 import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
@@ -315,6 +318,65 @@ app.get("/diagnostic-runs/:id/company-profile", async (req, res) => {
   }
 
   res.json(profile);
+});
+
+// ------------------------------------------------------------------
+// VS-27e — Get persona-specific maturity targets for a diagnostic run
+// Returns objective targets and derived practice targets
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs/:id/targets", async (req, res) => {
+  const runId = req.params.id;
+
+  // Fetch run with company_profile_id
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, company_profile_id")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (!run.company_profile_id) {
+    return res.status(400).json({
+      error: "No company profile linked to this run. Complete company setup first."
+    });
+  }
+
+  // Fetch the company profile with classification
+  const { data: profile, error: profileError } = await req.supabase
+    .from("company_profiles")
+    .select("id, context, classification")
+    .eq("id", run.company_profile_id)
+    .single();
+
+  if (profileError || !profile) {
+    return res.status(404).json({ error: "Company profile not found" });
+  }
+
+  if (!profile.classification || !profile.classification.persona) {
+    return res.status(400).json({
+      error: "Company profile has no persona classification. Complete company setup first."
+    });
+  }
+
+  try {
+    // Calculate targets based on classification and context
+    const targets = calculateTargets(
+      profile.classification,
+      profile.context || {}
+    );
+
+    res.json({
+      run_id: runId,
+      company_profile_id: run.company_profile_id,
+      ...targets
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Target calculation failed";
+    res.status(500).json({ error: message });
+  }
 });
 
 // ------------------------------------------------------------------

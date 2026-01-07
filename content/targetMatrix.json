@@ -1,0 +1,88 @@
+{
+  "version": "1.0",
+  "description": "Persona-specific maturity targets for FP&A objectives",
+  "objectiveTargets": {
+    "platform": {
+      "obj_budget_discipline": 3.5,
+      "obj_financial_controls": 4.0,
+      "obj_performance_monitoring": 3.5,
+      "obj_forecasting_agility": 3.0,
+      "obj_driver_based_planning": 3.0,
+      "obj_scenario_modeling": 3.0,
+      "obj_strategic_influence": 3.5,
+      "obj_decision_support": 4.0,
+      "obj_operational_excellence": 4.0
+    },
+    "growth": {
+      "obj_budget_discipline": 2.5,
+      "obj_financial_controls": 2.5,
+      "obj_performance_monitoring": 3.5,
+      "obj_forecasting_agility": 4.0,
+      "obj_driver_based_planning": 3.5,
+      "obj_scenario_modeling": 4.0,
+      "obj_strategic_influence": 3.5,
+      "obj_decision_support": 4.0,
+      "obj_operational_excellence": 3.0
+    },
+    "margin": {
+      "obj_budget_discipline": 3.5,
+      "obj_financial_controls": 3.0,
+      "obj_performance_monitoring": 4.0,
+      "obj_forecasting_agility": 3.0,
+      "obj_driver_based_planning": 4.0,
+      "obj_scenario_modeling": 3.0,
+      "obj_strategic_influence": 3.0,
+      "obj_decision_support": 3.5,
+      "obj_operational_excellence": 3.5
+    },
+    "governance": {
+      "obj_budget_discipline": 4.0,
+      "obj_financial_controls": 4.0,
+      "obj_performance_monitoring": 3.5,
+      "obj_forecasting_agility": 2.5,
+      "obj_driver_based_planning": 2.5,
+      "obj_scenario_modeling": 3.0,
+      "obj_strategic_influence": 3.0,
+      "obj_decision_support": 3.0,
+      "obj_operational_excellence": 3.5
+    },
+    "stewardship": {
+      "obj_budget_discipline": 2.0,
+      "obj_financial_controls": 2.5,
+      "obj_performance_monitoring": 2.5,
+      "obj_forecasting_agility": 2.0,
+      "obj_driver_based_planning": 2.0,
+      "obj_scenario_modeling": 2.5,
+      "obj_strategic_influence": 3.5,
+      "obj_decision_support": 2.5,
+      "obj_operational_excellence": 2.0
+    },
+    "resilience": {
+      "obj_budget_discipline": 2.5,
+      "obj_financial_controls": 3.0,
+      "obj_performance_monitoring": 4.0,
+      "obj_forecasting_agility": 4.0,
+      "obj_driver_based_planning": 2.0,
+      "obj_scenario_modeling": 4.0,
+      "obj_strategic_influence": 1.5,
+      "obj_decision_support": 2.5,
+      "obj_operational_excellence": 2.0
+    }
+  },
+  "modifiers": {
+    "pe_vc_velocity": {
+      "description": "PE/VC-backed companies face elevated reporting expectations",
+      "trigger": {
+        "source": "company_profiles.context",
+        "field": "ownership_structure",
+        "values": ["pe_backed", "vc_backed"]
+      },
+      "adjustments": {
+        "obj_performance_monitoring": 0.5,
+        "obj_forecasting_agility": 0.5,
+        "obj_decision_support": 0.5
+      },
+      "maxTarget": 4.0
+    }
+  }
+}
