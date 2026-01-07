@@ -6,7 +6,7 @@
 // VS-39: Finalization workflow - locks Executive Report tab until finalized
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
@@ -56,7 +56,6 @@ const OBJECTIVE_THEME_MAP = {
 export default function PillarReport() {
   const { runId } = useParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
   const [actionPlan, setActionPlan] = useState({});
@@ -64,7 +63,10 @@ export default function PillarReport() {
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isBenchmarkMock = searchParams.get('benchmarkMock') === '1';
+  const benchmarkMockParam = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('benchmarkMock')
+    : null;
+  const isBenchmarkMock = benchmarkMockParam === '1';
   const [activeTab, setActiveTab] = useState(isBenchmarkMock ? 'benchmark' : 'overview');
   const [includeCommittedActions, setIncludeCommittedActions] = useState(isBenchmarkMock);
 
