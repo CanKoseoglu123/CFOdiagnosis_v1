@@ -6,7 +6,7 @@
 // VS-39: Finalization workflow - locks Executive Report tab until finalized
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
@@ -25,6 +25,7 @@ import InterpretationSection from '../components/report/InterpretationSection';
 import ActionPlanTab from '../components/report/ActionPlanTab';
 import FinalReportTab from '../components/report/FinalReportTab';
 import BenchmarkTab from '../components/report/BenchmarkTab';
+import useReportData from '../hooks/useReportData';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -55,6 +56,7 @@ const OBJECTIVE_THEME_MAP = {
 export default function PillarReport() {
   const { runId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
   const [actionPlan, setActionPlan] = useState({});
@@ -62,7 +64,9 @@ export default function PillarReport() {
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const isBenchmarkMock = searchParams.get('benchmarkMock') === '1';
+  const [activeTab, setActiveTab] = useState(isBenchmarkMock ? 'benchmark' : 'overview');
+  const [includeCommittedActions, setIncludeCommittedActions] = useState(isBenchmarkMock);
 
   // VS-41: State for finalization validation (reported from ActionPlanTab)
   const [finalizationState, setFinalizationState] = useState({
@@ -103,6 +107,14 @@ export default function PillarReport() {
     return { totalPractices, evidencedPractices: evidenced, partialPractices: partial, gapPractices: gaps };
   }, [report?.maturity_footprint?.levels]);
 
+  const reportData = useReportData({
+    report,
+    actionPlan,
+    objectives: spec?.objectives || [],
+    questions: spec?.questions || [],
+    practices: spec?.practices || []
+  });
+
   // ─────────────────────────────────────────────────────────────────────────
   // VS-39: FINALIZATION STATE - MUST be before early returns (React hooks rule)
   // ─────────────────────────────────────────────────────────────────────────
@@ -110,10 +122,10 @@ export default function PillarReport() {
 
   // VS-45: Redirect to Executive Report page when finalized
   useEffect(() => {
-    if (isFinalized) {
+    if (isFinalized && !isBenchmarkMock) {
       navigate(`/report/${runId}/executive`, { replace: true });
     }
-  }, [isFinalized, runId, navigate]);
+  }, [isFinalized, isBenchmarkMock, runId, navigate]);
 
   async function fetchReport() {
     try {
@@ -326,6 +338,14 @@ export default function PillarReport() {
     objectiveScores[obj.id] = obj.score;
   });
 
+  const projectedTargets = useMemo(() => {
+    const map = {};
+    reportData.objectiveData?.forEach(obj => {
+      map[obj.id] = obj.targetLevel;
+    });
+    return map;
+  }, [reportData.objectiveData]);
+
   // Build objective targets map for target markers (VS-27f)
   const objectiveTargets = {};
   (report.targets?.objectiveTargets || []).forEach(target => {
@@ -372,6 +392,9 @@ export default function PillarReport() {
       runId={runId}
       activeTab={activeTab}
       onTabChange={handleTabChange}
+      showBenchmarkToggle={activeTab === 'benchmark'}
+      includeCommittedActions={includeCommittedActions}
+      onToggleIncludeCommittedActions={() => setIncludeCommittedActions((prev) => !prev)}
       onFinalizeRequest={handleFinalizeRequest}
       canFinalize={finalizationState.canFinalize}
       incompleteCount={finalizationState.incompleteCount}
@@ -556,6 +579,9 @@ export default function PillarReport() {
                 report={report}
                 spec={spec}
                 benchmarkData={benchmarkData}
+                includeCommittedActions={includeCommittedActions}
+                projectedTargets={projectedTargets}
+                projectedTotal={reportData.projectedLevel}
               />
             )
           )}

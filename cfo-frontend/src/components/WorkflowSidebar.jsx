@@ -30,6 +30,9 @@ export default function WorkflowSidebar({
   runId,
   activeTab = 'overview',
   onTabChange,
+  showBenchmarkToggle = false,
+  includeCommittedActions = false,
+  onToggleIncludeCommittedActions,
   // VS-41: Finalization props (for Action Planning tab)
   onFinalizeRequest,
   canFinalize = false,
@@ -120,6 +123,28 @@ export default function WorkflowSidebar({
           })}
         </div>
       </div>
+
+      {showBenchmarkToggle && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between px-3 py-2 border border-slate-300 bg-white rounded-sm">
+            <span className="text-sm text-slate-600">Include committed actions</span>
+            <button
+              type="button"
+              onClick={onToggleIncludeCommittedActions}
+              aria-pressed={includeCommittedActions}
+              className={`relative w-10 h-5 border transition-colors ${
+                includeCommittedActions ? 'bg-emerald-500 border-emerald-600' : 'bg-slate-200 border-slate-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white border border-slate-200 transition-transform ${
+                  includeCommittedActions ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Divider */}
       <div className="border-t border-slate-200 my-6" />

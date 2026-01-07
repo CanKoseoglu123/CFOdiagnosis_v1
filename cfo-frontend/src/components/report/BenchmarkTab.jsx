@@ -31,11 +31,17 @@ function formatLevel(value, fallback = '-') {
   return `L${numeric % 1 === 0 ? numeric : numeric.toFixed(1)}`;
 }
 
-function ObjectiveBar({ label, achieved, target, isTotal, importance }) {
+function ObjectiveBar({ label, achieved, target, projected, isTotal, importance, showProjected }) {
   const achievedHeight = Math.max(0, (achieved / 4) * CHART_HEIGHT);
   const targetOffset = target === null || target === undefined
     ? null
     : Math.max(0, (Number(target) / 4) * CHART_HEIGHT);
+  const projectedHeight = projected === null || projected === undefined
+    ? null
+    : Math.max(0, (Number(projected) / 4) * CHART_HEIGHT);
+  const extensionHeight = projectedHeight !== null
+    ? Math.max(0, projectedHeight - achievedHeight)
+    : 0;
   const [line1, line2] = splitLabel(label);
   const barColor = isTotal ? 'bg-[#103b6d]' : 'bg-[#0b2d5b]';
   const labelColor = isTotal ? 'text-slate-800 font-semibold' : 'text-slate-700';
@@ -52,6 +58,12 @@ function ObjectiveBar({ label, achieved, target, isTotal, importance }) {
           className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-6 ${barColor}`}
           style={{ height: `${achievedHeight}px` }}
         />
+        {showProjected && extensionHeight > 0 && (
+          <div
+            className="absolute left-1/2 -translate-x-1/2 w-6 bg-emerald-400/70"
+            style={{ bottom: `${achievedHeight}px`, height: `${extensionHeight}px` }}
+          />
+        )}
         {targetOffset !== null && (
           <div
             className="absolute left-1/2 -translate-x-1/2 w-7 h-2 bg-orange-500"
@@ -72,7 +84,14 @@ function ObjectiveBar({ label, achieved, target, isTotal, importance }) {
   );
 }
 
-export default function BenchmarkTab({ report, spec, benchmarkData }) {
+export default function BenchmarkTab({
+  report,
+  spec,
+  benchmarkData,
+  includeCommittedActions = false,
+  projectedTargets = {},
+  projectedTotal = null
+}) {
   const objectives = spec?.objectives || [];
   const practices = spec?.practices || [];
 
@@ -157,6 +176,12 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
               <span className="w-7 h-2 bg-orange-500" />
               <span>Target</span>
             </div>
+            {includeCommittedActions && (
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-2 bg-emerald-400/70" />
+                <span>With committed actions</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
               <span>High priority</span>
@@ -206,6 +231,9 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
                 const target = isTotal
                   ? totalTarget
                   : objectiveTargets.get(objective.id);
+                const projected = isTotal
+                  ? projectedTotal
+                  : projectedTargets[objective.id];
                 const importance = isTotal ? null : importanceMap[objective.id];
                 return (
                   <ObjectiveBar
@@ -213,8 +241,10 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
                     label={objective.name}
                     achieved={achieved}
                     target={target}
+                    projected={projected}
                     isTotal={isTotal}
                     importance={importance}
+                    showProjected={includeCommittedActions}
                   />
                 );
               })}
