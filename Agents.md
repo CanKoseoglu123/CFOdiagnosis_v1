@@ -222,6 +222,7 @@ CFOdiagnosis_v1/
   - AI-generated executive summary
   - Top 3 strengths and critical risks
   - Action plan snapshot (frozen at finalization)
+  - Maturity Benchmark page (uses Benchmark tab view without practice detail tables)
 - Print button triggers browser print dialog for PDF export
 
 ---
@@ -352,11 +353,6 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-27d: Benchmark Tab | Targets vs actuals comparison with persona context, practice detail table, and "Include committed actions" toggle in the report sidebar |
 | VS-27f: Target Lines | Target lines in Objectives grid (Post-MVP, #75) |
 
----
-
-## Benchmark Preview (Mock)
-
-- Add `?benchmarkMock=1` to `/report/:runId` to land on the Benchmark tab with "Include committed actions" pre-enabled.
 
 ---
 
