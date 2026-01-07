@@ -555,6 +555,7 @@ export default function ExecutiveReportPage() {
               includeCommittedActions={true}
               projectedTargets={projectedTargets}
               projectedTotal={reportData.projectedLevel}
+              showPracticeDetails={false}
             />
           )}
         </div>

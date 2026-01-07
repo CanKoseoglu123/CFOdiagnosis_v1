@@ -95,7 +95,8 @@ export default function BenchmarkTab({
   benchmarkData,
   includeCommittedActions = false,
   projectedTargets = {},
-  projectedTotal = null
+  projectedTotal = null,
+  showPracticeDetails = true
 }) {
   const objectives = spec?.objectives || [];
   const practices = spec?.practices || [];
@@ -302,92 +303,94 @@ export default function BenchmarkTab({
       </div>
       </div>
 
-      <div className="border border-slate-300 bg-white rounded-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
-            Practice level details
-          </h2>
-          <div className="text-sm text-slate-500 mt-1">Practices grouped by objective.</div>
-        </div>
-        <div className="divide-y divide-slate-200">
-          {orderedObjectives.map((objective) => {
-            const objectivePractices = practicesByObjective[objective.id] || [];
-            const objectiveAchieved = achievedObjectives[objective.id] ?? 0;
-            const objectiveTarget = objectiveTargets.get(objective.id);
-            const objectiveGap = objectiveTarget !== undefined
-              ? Math.max(0, Number(objectiveTarget) - Number(objectiveAchieved))
-              : null;
-            const objectiveCommentary = commentaryByObjective.get(objective.id);
-            return (
-              <div key={objective.id} className="p-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="border border-slate-200">
-                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm font-semibold text-slate-600 bg-slate-50">
-                      <div className="leading-tight">
-                        <span className="block">&nbsp;</span>
-                        <span className="block">Objective / Practice</span>
+      {showPracticeDetails && (
+        <div className="border border-slate-300 bg-white rounded-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-slate-600">
+              Practice level details
+            </h2>
+            <div className="text-sm text-slate-500 mt-1">Practices grouped by objective.</div>
+          </div>
+          <div className="divide-y divide-slate-200">
+            {orderedObjectives.map((objective) => {
+              const objectivePractices = practicesByObjective[objective.id] || [];
+              const objectiveAchieved = achievedObjectives[objective.id] ?? 0;
+              const objectiveTarget = objectiveTargets.get(objective.id);
+              const objectiveGap = objectiveTarget !== undefined
+                ? Math.max(0, Number(objectiveTarget) - Number(objectiveAchieved))
+                : null;
+              const objectiveCommentary = commentaryByObjective.get(objective.id);
+              return (
+                <div key={objective.id} className="p-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="border border-slate-200">
+                      <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm font-semibold text-slate-600 bg-slate-50">
+                        <div className="leading-tight">
+                          <span className="block">&nbsp;</span>
+                          <span className="block">Objective / Practice</span>
+                        </div>
+                        <div className="text-center leading-tight">
+                          <span className="block">Current</span>
+                          <span className="block">Level</span>
+                        </div>
+                        <div className="text-center leading-tight">
+                          <span className="block">Max</span>
+                          <span className="block">Level</span>
+                        </div>
+                        <div className="text-center leading-tight">
+                          <span className="block">Target</span>
+                          <span className="block">Level</span>
+                        </div>
+                        <div className="text-center leading-tight">
+                          <span className="block">&nbsp;</span>
+                          <span className="block">Gap</span>
+                        </div>
                       </div>
-                      <div className="text-center leading-tight">
-                        <span className="block">Current</span>
-                        <span className="block">Level</span>
+                      <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm font-bold text-slate-700 uppercase tracking-wide border-t border-slate-200 bg-slate-100">
+                        <div>{objective.name}</div>
+                        <div className="text-center">{formatLevel(objectiveAchieved)}</div>
+                        <div className="text-center">{formatLevel(4)}</div>
+                        <div className="text-center">{formatLevel(objectiveTarget)}</div>
+                        <div className="text-center text-amber-700">
+                          {objectiveGap !== null ? objectiveGap.toFixed(1) : '-'}
+                        </div>
                       </div>
-                      <div className="text-center leading-tight">
-                        <span className="block">Max</span>
-                        <span className="block">Level</span>
-                      </div>
-                      <div className="text-center leading-tight">
-                        <span className="block">Target</span>
-                        <span className="block">Level</span>
-                      </div>
-                      <div className="text-center leading-tight">
-                        <span className="block">&nbsp;</span>
-                        <span className="block">Gap</span>
+                      <div className="divide-y divide-slate-200">
+                        {objectivePractices.map((practice) => {
+                          const achieved = achievedPractices[practice.id] ?? 0;
+                          const practiceTarget = practiceTargets.get(practice.id);
+                          const maxLevel = practiceTarget?.practiceMax ?? practiceTarget?.target ?? 4;
+                          const target = practiceTarget?.target;
+                          return (
+                            <div
+                              key={practice.id}
+                              className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm text-slate-600 bg-white"
+                            >
+                              <div className="pr-3">{practice.title}</div>
+                              <div className="text-center">{formatLevel(achieved)}</div>
+                              <div className="text-center">{formatLevel(maxLevel)}</div>
+                              <div className="text-center">{formatLevel(target)}</div>
+                              <div className="text-center text-slate-300">-</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm font-bold text-slate-700 uppercase tracking-wide border-t border-slate-200 bg-slate-100">
-                      <div>{objective.name}</div>
-                      <div className="text-center">{formatLevel(objectiveAchieved)}</div>
-                      <div className="text-center">{formatLevel(4)}</div>
-                      <div className="text-center">{formatLevel(objectiveTarget)}</div>
-                      <div className="text-center text-amber-700">
-                        {objectiveGap !== null ? objectiveGap.toFixed(1) : '-'}
+                    <div className="border border-slate-200 bg-slate-50 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                        Commentary
                       </div>
-                    </div>
-                    <div className="divide-y divide-slate-200">
-                      {objectivePractices.map((practice) => {
-                        const achieved = achievedPractices[practice.id] ?? 0;
-                        const practiceTarget = practiceTargets.get(practice.id);
-                        const maxLevel = practiceTarget?.practiceMax ?? practiceTarget?.target ?? 4;
-                        const target = practiceTarget?.target;
-                        return (
-                          <div
-                            key={practice.id}
-                            className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm text-slate-600 bg-white"
-                          >
-                            <div className="pr-3">{practice.title}</div>
-                            <div className="text-center">{formatLevel(achieved)}</div>
-                            <div className="text-center">{formatLevel(maxLevel)}</div>
-                            <div className="text-center">{formatLevel(target)}</div>
-                            <div className="text-center text-slate-300">-</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="border border-slate-200 bg-slate-50 p-4">
-                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                      Commentary
-                    </div>
-                    <div className="text-sm text-slate-700 leading-relaxed">
-                      {objectiveCommentary || 'No commentary available for this objective.'}
+                      <div className="text-sm text-slate-700 leading-relaxed">
+                        {objectiveCommentary || 'No commentary available for this objective.'}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
