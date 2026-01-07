@@ -405,22 +405,50 @@ export default function ExecutiveReportPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PRINT-ONLY COVER PAGE */}
-        <div className="executive-page p-10 print-only cover-page">
-          <div className="cover-accent">
-            <div className="cover-accent-navy" />
-            <div className="cover-accent-gold" />
-          </div>
-          <div className="mt-12 flex flex-col items-center text-center">
-            <Logo size="xl" className="mb-8" />
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style={{ color: BRAND_COLORS.gold }}>
-              Executive Report
+        {/* COVER PAGE - McKinsey/Gartner inspired bottom-heavy layout */}
+        <div className="executive-page cover-page print-only">
+          {/* Full page flex container - pushes content to bottom */}
+          <div className="cover-page-inner">
+            {/* Intentional whitespace - top 60% */}
+            <div className="cover-whitespace" />
+
+            {/* Content block - bottom 40% */}
+            <div className="cover-content">
+              {/* Label */}
+              <div className="cover-label">
+                EXECUTIVE REPORT
+              </div>
+
+              {/* Gold underline accent */}
+              <div className="cover-underline" />
+
+              {/* Main title */}
+              <h1 className="cover-title">
+                FP&A Maturity Diagnostic
+              </h1>
+
+              {/* Company name - the star */}
+              <div className="cover-company">
+                {companyName}
+              </div>
+
+              {/* Date */}
+              <div className="cover-date">
+                {new Date(report.finalized_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long'
+                })}
+              </div>
+
+              {/* Logo */}
+              <div className="cover-logo">
+                <img
+                  src="/Logo horizontal.png"
+                  alt="CFO Lens AI"
+                  className="h-10 object-contain"
+                />
+              </div>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight mb-3" style={{ color: BRAND_COLORS.navy }}>
-              FP&A Diagnostic
-            </h1>
-            <div className="text-2xl text-slate-700 mb-2">{companyName}</div>
-            <div className="text-sm text-slate-500">{runDate}</div>
           </div>
           <PrintFooter pageNumber={1} runId={runId} printDate={printDate} />
         </div>
@@ -754,6 +782,82 @@ export default function ExecutiveReportPage() {
             background: ${BRAND_COLORS.gold};
           }
 
+          /* Cover page - bottom-heavy McKinsey/Gartner layout */
+          .cover-page {
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .cover-page-inner {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: calc(8.1in - 0.9in);
+            position: relative;
+          }
+
+          .cover-whitespace {
+            flex: 6;
+          }
+
+          .cover-content {
+            flex: 3;
+            padding: 0 60px 40px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            border-left: 5px solid ${NAVY};
+            margin-left: 60px;
+            padding-left: 24px;
+          }
+
+          .cover-label {
+            color: ${GOLD};
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+          }
+
+          .cover-underline {
+            width: 80px;
+            height: 3px;
+            background: ${GOLD};
+            margin-bottom: 20px;
+          }
+
+          .cover-title {
+            color: ${NAVY};
+            font-size: 43px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            line-height: 1.2;
+          }
+
+          .cover-company {
+            color: #334155;
+            font-size: 29px;
+            font-weight: 600;
+            margin-bottom: 8px;
+          }
+
+          .cover-date {
+            color: #64748b;
+            font-size: 18px;
+            margin-bottom: 24px;
+          }
+
+          .cover-logo {
+            margin-bottom: 0;
+          }
+
+          .cover-logo img {
+            height: 53px;
+            object-fit: contain;
+          }
+
           /* Print styles */
           @media print {
             @page {
@@ -797,13 +901,36 @@ export default function ExecutiveReportPage() {
               display: block;
             }
 
+            /* Cover page print overrides */
+            .cover-page {
+              padding: 0 !important;
+              padding-bottom: 0.9in !important;
+            }
+
+            .cover-page-inner {
+              height: calc(8.1in - 0.9in);
+              min-height: calc(8.1in - 0.9in);
+            }
+
+            .cover-content {
+              border-left: 5px solid ${NAVY};
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
+            .cover-label,
+            .cover-underline {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
             .print-footer {
               display: flex;
               align-items: flex-end;
               justify-content: space-between;
               gap: 12px;
               position: absolute;
-              bottom: -0.2in;
+              bottom: -0.5in;
               left: 0.4in;
               right: 0.4in;
             }
