@@ -48,7 +48,15 @@ async function test() {
         employee_count: '201_1000',
         finance_structure: 'hybrid',
         ownership_structure: 'pe_backed', // Should trigger PE modifier
-        change_appetite: 'transform'
+        change_appetite: 'transform',
+        // Additional required classification fields
+        legal_entities: '11_25',
+        revenue_trajectory: 'growth_20_50',
+        debt_pressure: 'moderate',
+        ma_intensity: 'active',
+        gross_margin_band: 'above_50',
+        audit_rigor: 'big4',
+        erp_strategy: 'tier1'
       },
       diagnostic_run_id: run.id
     })
