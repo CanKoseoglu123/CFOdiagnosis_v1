@@ -60,8 +60,13 @@ function ObjectiveBar({ label, achieved, target, projected, isTotal, importance,
         />
         {showProjected && extensionHeight > 0 && (
           <div
-            className="absolute left-1/2 -translate-x-1/2 w-6 bg-emerald-400/70"
-            style={{ bottom: `${achievedHeight}px`, height: `${extensionHeight}px` }}
+            className="absolute left-1/2 -translate-x-1/2 w-6"
+            style={{
+              bottom: `${achievedHeight}px`,
+              height: `${extensionHeight}px`,
+              backgroundColor: 'rgba(11, 45, 91, 0.18)',
+              backgroundImage: 'repeating-linear-gradient(135deg, rgba(11, 45, 91, 0.6) 0 1px, rgba(11, 45, 91, 0.12) 1px 3px)'
+            }}
           />
         )}
         {targetOffset !== null && (
@@ -178,7 +183,13 @@ export default function BenchmarkTab({
             </div>
             {includeCommittedActions && (
               <div className="flex items-center gap-2">
-                <span className="w-4 h-2 bg-emerald-400/70" />
+                <span
+                  className="w-4 h-2 border border-slate-200"
+                  style={{
+                    backgroundColor: 'rgba(11, 45, 91, 0.18)',
+                    backgroundImage: 'repeating-linear-gradient(135deg, rgba(11, 45, 91, 0.6) 0 1px, rgba(11, 45, 91, 0.12) 1px 3px)'
+                  }}
+                />
                 <span>With committed actions</span>
               </div>
             )}

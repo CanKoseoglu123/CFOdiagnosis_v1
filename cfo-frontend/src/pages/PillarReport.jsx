@@ -63,12 +63,8 @@ export default function PillarReport() {
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const benchmarkMockParam = typeof window !== 'undefined'
-    ? new URLSearchParams(window.location.search).get('benchmarkMock')
-    : null;
-  const isBenchmarkMock = benchmarkMockParam === '1';
-  const [activeTab, setActiveTab] = useState(isBenchmarkMock ? 'benchmark' : 'overview');
-  const [includeCommittedActions, setIncludeCommittedActions] = useState(isBenchmarkMock);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [includeCommittedActions, setIncludeCommittedActions] = useState(false);
 
   // VS-41: State for finalization validation (reported from ActionPlanTab)
   const [finalizationState, setFinalizationState] = useState({
@@ -132,10 +128,10 @@ export default function PillarReport() {
 
   // VS-45: Redirect to Executive Report page when finalized
   useEffect(() => {
-    if (isFinalized && !isBenchmarkMock) {
+    if (isFinalized) {
       navigate(`/report/${runId}/executive`, { replace: true });
     }
-  }, [isFinalized, isBenchmarkMock, runId, navigate]);
+  }, [isFinalized, runId, navigate]);
 
   async function fetchReport() {
     try {
@@ -385,6 +381,9 @@ export default function PillarReport() {
     setActiveTab(tab);
   }
 
+  const showBenchmarkToggle = typeof window !== 'undefined'
+    && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   const sidebarContent = (
     <WorkflowSidebar
       currentStep={currentWorkflowStep}
@@ -394,7 +393,7 @@ export default function PillarReport() {
       runId={runId}
       activeTab={activeTab}
       onTabChange={handleTabChange}
-      showBenchmarkToggle={activeTab === 'benchmark'}
+      showBenchmarkToggle={showBenchmarkToggle && activeTab === 'benchmark'}
       includeCommittedActions={includeCommittedActions}
       onToggleIncludeCommittedActions={() => setIncludeCommittedActions((prev) => !prev)}
       onFinalizeRequest={handleFinalizeRequest}
