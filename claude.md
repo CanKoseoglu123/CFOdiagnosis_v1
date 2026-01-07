@@ -205,8 +205,9 @@ CFOdiagnosis_v1/
 |-------|-----|--------|-------------|
 | 1 | Executive Report | Locked until finalized | Final summary with action plan snapshot |
 | 2 | Overview | Default active | Executive summary, AI insights, risks |
-| 3 | Maturity Footprint | | Objectives grid, Priority Matrix |
-| 4 | Action Planning | | War room for gap selection, timelines, owners |
+| 3 | Benchmark | | Maturity benchmark vs targets, persona context, practice detail table |
+| 4 | Maturity Footprint | | Objectives grid, Priority Matrix |
+| 5 | Action Planning | | War room for gap selection, timelines, owners |
 
 **Finalization Requirements (VS-40):**
 - All selected actions must have a timeline (6m/12m/24m)
@@ -348,8 +349,14 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-27b: Classification Engine | 9-input persona classification → 6 finance archetypes |
 | VS-27c: Persona Confirmation | Frontend persona display with one-click switching |
 | VS-27e: Target Calculation | Persona-specific maturity targets per objective |
-| VS-27d: Benchmark Tab | Targets vs actuals comparison (Post-MVP, #74) |
+| VS-27d: Benchmark Tab | Targets vs actuals comparison with persona context, practice detail table, and "Include committed actions" toggle in the report sidebar |
 | VS-27f: Target Lines | Target lines in Objectives grid (Post-MVP, #75) |
+
+---
+
+## Benchmark Preview (Mock)
+
+- Append `?benchmarkMock=1` to `/report/:runId` to open the Benchmark tab with "Include committed actions" enabled.
 
 ---
 
