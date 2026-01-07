@@ -281,14 +281,29 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
               <div key={objective.id} className="p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="border border-slate-200">
-                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-[11px] font-semibold text-slate-600 bg-slate-50">
-                      <div>Practice</div>
-                      <div className="text-center">Current Level</div>
-                      <div className="text-center">Max Level</div>
-                      <div className="text-center">Target Level</div>
-                      <div className="text-center">Gap</div>
+                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm font-semibold text-slate-600 bg-slate-50">
+                      <div className="leading-tight">
+                        <span className="block">&nbsp;</span>
+                        <span className="block">Objective / Practice</span>
+                      </div>
+                      <div className="text-center leading-tight">
+                        <span className="block">Current</span>
+                        <span className="block">Level</span>
+                      </div>
+                      <div className="text-center leading-tight">
+                        <span className="block">Max</span>
+                        <span className="block">Level</span>
+                      </div>
+                      <div className="text-center leading-tight">
+                        <span className="block">Target</span>
+                        <span className="block">Level</span>
+                      </div>
+                      <div className="text-center leading-tight">
+                        <span className="block">&nbsp;</span>
+                        <span className="block">Gap</span>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-xs font-bold text-slate-700 uppercase tracking-wide border-t border-slate-200 bg-slate-100">
+                    <div className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm font-bold text-slate-700 uppercase tracking-wide border-t border-slate-200 bg-slate-100">
                       <div>{objective.name}</div>
                       <div className="text-center">{formatLevel(objectiveAchieved)}</div>
                       <div className="text-center">{formatLevel(4)}</div>
@@ -306,7 +321,7 @@ export default function BenchmarkTab({ report, spec, benchmarkData }) {
                         return (
                           <div
                             key={practice.id}
-                            className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-[11px] text-slate-600 bg-white"
+                            className="grid grid-cols-[1fr_repeat(4,_80px)] gap-2 px-3 py-2 text-sm text-slate-600 bg-white"
                           >
                             <div className="pr-3">{practice.title}</div>
                             <div className="text-center">{formatLevel(achieved)}</div>
