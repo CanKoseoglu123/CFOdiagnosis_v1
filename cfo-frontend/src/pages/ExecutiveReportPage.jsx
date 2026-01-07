@@ -20,6 +20,7 @@ import useReportData, { LEVEL_NAMES, OBJECTIVE_THEME_MAP } from '../hooks/useRep
 import ActionPlanTable from '../components/report/ActionPlanTable';
 import PriorityMatrix from '../components/report/PriorityMatrix';
 import ObjectivesPracticesOverview from '../components/report/ObjectivesPracticesOverview';
+import BenchmarkTab from '../components/report/BenchmarkTab';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -132,6 +133,8 @@ export default function ExecutiveReportPage() {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
+  const [benchmarkData, setBenchmarkData] = useState(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -139,6 +142,7 @@ export default function ExecutiveReportPage() {
     if (runId) {
       fetchReport();
       fetchSpec();
+      fetchBenchmark();
     }
   }, [runId]);
 
@@ -188,6 +192,32 @@ export default function ExecutiveReportPage() {
     }
   }
 
+  async function fetchBenchmark() {
+    try {
+      setBenchmarkLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/benchmark`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch benchmark: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setBenchmarkData(data);
+    } catch (err) {
+      console.error('Failed to fetch benchmark:', err);
+    } finally {
+      setBenchmarkLoading(false);
+    }
+  }
+
   // CRITICAL: Use frozen action_plan_snapshot after finalization
   const actionPlan = useMemo(() => {
     if (!report?.action_plan_snapshot) return {};
@@ -211,6 +241,14 @@ export default function ExecutiveReportPage() {
     questions: spec?.questions || [],
     practices: spec?.practices || []
   });
+
+  const projectedTargets = useMemo(() => {
+    const map = {};
+    reportData.objectiveData?.forEach(obj => {
+      map[obj.id] = obj.targetLevel;
+    });
+    return map;
+  }, [reportData.objectiveData]);
 
   // Loading state
   if (loading) {
@@ -501,7 +539,27 @@ export default function ExecutiveReportPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 2: ACTION PLAN */}
+        {/* PAGE 2: MATURITY BENCHMARK */}
+        <div className="executive-page p-6 page-break-before">
+          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+            <h2 className="text-lg font-bold text-slate-800">Maturity Benchmark</h2>
+            <div className="text-xs text-slate-400">Page 5 ¶ú {companyName}</div>
+          </div>
+          {benchmarkLoading ? (
+            <div className="text-slate-500 text-sm">Loading benchmark...</div>
+          ) : (
+            <BenchmarkTab
+              report={report}
+              spec={spec}
+              benchmarkData={benchmarkData}
+              includeCommittedActions={true}
+              projectedTargets={projectedTargets}
+              projectedTotal={reportData.projectedLevel}
+            />
+          )}
+        </div>
+
+        {/* PAGE 3: ACTION PLAN */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
@@ -517,7 +575,7 @@ export default function ExecutiveReportPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 3: PRIORITY MATRIX */}
+        {/* PAGE 4: PRIORITY MATRIX */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
@@ -536,7 +594,7 @@ export default function ExecutiveReportPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* PAGE 4: MATURITY FOOTPRINT */}
+        {/* PAGE 5: MATURITY FOOTPRINT */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
