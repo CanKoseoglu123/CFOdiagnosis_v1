@@ -117,6 +117,14 @@ export default function PillarReport() {
     practices: spec?.practices || []
   });
 
+  const projectedTargets = useMemo(() => {
+    const map = {};
+    reportData.objectiveData?.forEach(obj => {
+      map[obj.id] = obj.targetLevel;
+    });
+    return map;
+  }, [reportData.objectiveData]);
+
   // ─────────────────────────────────────────────────────────────────────────
   // VS-39: FINALIZATION STATE - MUST be before early returns (React hooks rule)
   // ─────────────────────────────────────────────────────────────────────────
@@ -339,14 +347,6 @@ export default function PillarReport() {
   objectives.forEach(obj => {
     objectiveScores[obj.id] = obj.score;
   });
-
-  const projectedTargets = useMemo(() => {
-    const map = {};
-    reportData.objectiveData?.forEach(obj => {
-      map[obj.id] = obj.targetLevel;
-    });
-    return map;
-  }, [reportData.objectiveData]);
 
   // Build objective targets map for target markers (VS-27f)
   const objectiveTargets = {};
