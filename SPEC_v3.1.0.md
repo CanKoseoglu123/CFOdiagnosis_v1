@@ -41,9 +41,10 @@ Pillar (FP&A)
 └── Theme 3: The Intelligence (Value & Influence)
     ├── Objective 7: Strategic Influence (4 Practices)*
     ├── Objective 8: Decision Support (3 Practices)
-    └── Objective 9: Operational Excellence (3 Practices)
+    └── Objective 9: Operational Excellence (2 Practices)
 
 * Strategic Influence includes 4th practice: Investment Rigor
+* Operational Excellence has 2 practices in v2.9.0 content
 ```
 
 ---
@@ -68,12 +69,13 @@ Aligned 3 per Theme:
 | The Future | Forecasting Agility, Driver-Based Planning, Scenario Modeling |
 | The Intelligence | Strategic Influence, Decision Support, Operational Excellence |
 
-### 2.3 Practices (28 Total)
+### 2.3 Practices (27 Total)
 
 - **Standard:** 3 Practices per Objective
 - **Asymmetry:** "Strategic Influence" contains a 4th practice: **Investment Rigor**
+- **Exception:** "Operational Excellence" has 2 practices in v2.9.0 content
 
-### 2.4 Questions (60 Total)
+### 2.4 Questions (79 Total)
 
 - **ID Format:** `fpa_l{level}_q{num}` (e.g., `fpa_l1_q01`, `fpa_l3_q53`)
 - **Fields:**
@@ -92,12 +94,14 @@ Aligned 3 per Theme:
 
 | File | Count | Purpose |
 |:-----|:------|:--------|
-| `themes.json` | 3 | Theme definitions with metadata |
 | `objectives.json` | 9 | Objective definitions linked to themes |
-| `practices.json` | 28 | Practice definitions linked to objectives |
-| `questions.json` | 60 | Assessment questions with scoring metadata |
-| `initiatives.json` | 10 | Strategic initiative groupings |
+| `practices.json` | 27 | Practice definitions linked to objectives |
+| `questions.json` | 79 | Assessment questions with scoring metadata |
+| `initiatives.json` | 9 | Strategic initiative groupings |
 | `gates.json` | 1 | Critical gates and score thresholds |
+| `targetMatrix.json` | 1 | Persona-specific maturity targets (VS-27e) |
+
+Themes are derived from `objectives.json` via `objective.theme_id` in the spec loader.
 
 ### 3.2 initiatives.json Schema
 
@@ -180,6 +184,11 @@ CREATE TABLE diagnostic_runs (
   
   -- VS-21: Calibration
   calibration JSONB,                       -- Objective importance weights
+
+  -- VS-27c: Persona classification link
+  company_profile_id UUID REFERENCES company_profiles(id),
+  -- VS-27d: Cached benchmark commentary
+  benchmark_commentary JSONB,
   
   -- Assessment State
   status TEXT CHECK (status IN ('draft', 'in_progress', 'completed')),
@@ -217,9 +226,40 @@ CREATE TABLE diagnostic_inputs (
 ```
 
 **Note:** The `value` field accepts:
-- `'true'` — Yes/Implemented
-- `'false'` — No/Not implemented
-- `'N/A'` — Not applicable
+- `'true'` - Yes/Implemented
+- `'false'` - No/Not implemented
+- `'N/A'` - Not applicable
+
+#### company_profiles (VS-27b/VS-27c)
+
+Stores company context and persona classification. This is the SSOT for company data after VS-27c.
+
+```sql
+CREATE TABLE company_profiles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  context JSONB NOT NULL DEFAULT '{}',     -- 9 classification inputs + company fields
+  classification JSONB,                   -- { persona, scores, flags, modifiers, confidence, personaDetails, computedAt, override }
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+#### scoring_matrix (VS-27b)
+
+Admin-editable persona scoring weights. Only one record should be active.
+
+```sql
+CREATE TABLE scoring_matrix (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  version VARCHAR(50) NOT NULL,
+  matrix JSONB NOT NULL,
+  active BOOLEAN DEFAULT false,
+  created_by VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
 #### action_plans
 
@@ -565,6 +605,9 @@ interface Context {
 }
 ```
 
+**VS-27c Note:** Company context is now stored in `company_profiles` (SSOT). New runs use a v2 context
+shape in `diagnostic_runs.context` that contains pillar data only.
+
 #### 7.2.1 Valid Pain Point Values
 
 | ID | Display Label |
@@ -742,6 +785,22 @@ Before finalization is allowed:
 | GET | `/diagnostic-runs/:id/calibration` | Get calibration state |
 | POST | `/diagnostic-runs/:id/calibration` | Save objective importance |
 
+### 11.2.1 Persona & Benchmarking (VS-27)
+
+| Method | Endpoint | Purpose |
+|:-------|:---------|:--------|
+| GET | `/diagnostic-runs/:id/company-profile` | Get linked company profile |
+| GET | `/diagnostic-runs/:id/targets` | Persona-specific maturity targets |
+| GET | `/diagnostic-runs/:id/benchmark` | Maturity benchmarks + commentary |
+| POST | `/api/company-profiles` | Create company profile + classify |
+| GET | `/api/company-profiles` | List company profiles |
+| GET | `/api/company-profiles/:id` | Get company profile |
+| PUT | `/api/company-profiles/:id` | Update company profile + reclassify |
+| POST | `/api/company-profiles/:id/reclassify` | Re-run classification |
+| PATCH | `/api/company-profiles/:id/persona` | Switch persona override |
+| GET | `/api/company-profiles/meta/personas` | Get persona definitions |
+| GET | `/api/company-profiles/meta/matrix` | Get scoring matrix |
+
 ### 11.3 Scoring & Results
 
 | Method | Endpoint | Purpose |
@@ -897,6 +956,8 @@ BCG-style 2×2 matrix grouping practices:
 | 007 | VS-39 | + finalized_at, action_plan_snapshot |
 | 008 | VS-101 | feedback |
 | 009 | VS-26 | Context schema update (tools format, pain_points mapping) |
+| 010 | VS-27b | company_profiles, scoring_matrix, diagnostic_runs.company_profile_id |
+| 011 | VS-27d | diagnostic_runs.benchmark_commentary |
 
 ---
 

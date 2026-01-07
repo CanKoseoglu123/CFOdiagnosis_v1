@@ -31,7 +31,7 @@ import {
 import { normalizeContext } from "./utils/contextAdapter";
 
 // VS-27e: Target calculation
-import { calculateTargets, getDefaultTargetMatrix, validateTargetMatrix, TargetsResult } from "./utils/targetCalculation";
+import { calculateTargets, getDefaultTargetMatrix, validateTargetMatrix, TargetsResult, getEffectivePersona } from "./utils/targetCalculation";
 import { computeAchievedLevels } from "./benchmark/achievedLevels";
 import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/generator";
 
@@ -461,7 +461,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
     if (process.env.OPENAI_API_KEY) {
       try {
         const companyName = profile.context?.name || profile.context?.company?.name || "The organization";
-        const persona = profile.classification.override || profile.classification.persona;
+        const persona = getEffectivePersona(profile.classification);
         commentary = await generateBenchmarkCommentary(companyName, persona, objectiveGaps);
 
         await req.supabase

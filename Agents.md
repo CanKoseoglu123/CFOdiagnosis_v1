@@ -51,7 +51,7 @@ CFOdiagnosis_v1/
 │
 ├── content/                      # JSON content catalog (v2.9.0)
 │   ├── questions.json            # 79 FP&A questions (practice_id linkage)
-│   ├── practices.json            # 28 practices
+│   ├── practices.json            # 27 practices
 │   ├── initiatives.json          # 9 initiatives
 │   ├── objectives.json           # 9 objectives
 │   └── gates.json                # Maturity gates
@@ -126,8 +126,16 @@ CFOdiagnosis_v1/
 | DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action item (VS28) | Yes |
 | POST | `/diagnostic-runs/:id/finalize` | Lock action plan, enable Executive Report (VS39) | Yes |
 | GET | `/diagnostic-runs/:id/company-profile` | Get linked company profile (VS-27c) | Yes |
+| GET | `/diagnostic-runs/:id/targets` | Persona-specific maturity targets (VS-27e) | Yes |
+| GET | `/diagnostic-runs/:id/benchmark` | Maturity benchmarks + commentary (VS-27d) | Yes |
 | POST | `/api/company-profiles` | Create company profile with persona classification (VS-27c) | Yes |
+| GET | `/api/company-profiles` | List company profiles (VS-27b) | Yes |
+| GET | `/api/company-profiles/:id` | Get company profile (VS-27b) | Yes |
+| PUT | `/api/company-profiles/:id` | Update company profile + reclassify (VS-27b) | Yes |
+| POST | `/api/company-profiles/:id/reclassify` | Re-run classification (VS-27b) | Yes |
 | PATCH | `/api/company-profiles/:id/persona` | Switch persona selection (VS-27c) | Yes |
+| GET | `/api/company-profiles/meta/personas` | Get persona definitions (VS-27b) | Yes |
+| GET | `/api/company-profiles/meta/matrix` | Get scoring matrix (VS-27b) | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -147,13 +155,14 @@ CFOdiagnosis_v1/
 - `company_profile_id` (FK): Links to company_profiles table (VS-27c)
 - `finalized_at` (TIMESTAMPTZ): When user locked their action plan (VS-39)
 - `action_plan_snapshot` (JSONB): Frozen action plan at finalization (VS-39)
+- `benchmark_commentary` (JSONB): Cached benchmark commentary (VS-27d)
 - `created_at`, `updated_at`
 
 **diagnostic_inputs** — Question answers per run
 
 **company_profiles** (VS-27c)
-- `id`, `owner_id`, `context` (JSONB): 9 classification fields
-- `classification` (JSONB): `{persona, scores, confidence, override}`
+- `id`, `user_id`, `context` (JSONB): 9 classification fields
+- `classification` (JSONB): `{persona, scores, flags, modifiers, confidence, personaDetails, computedAt, override}`
 - `diagnostic_run_id` (FK): Links profile to diagnostic run
 - `created_at`, `updated_at`
 
@@ -229,13 +238,13 @@ CFOdiagnosis_v1/
 
 ## Question Distribution (v2.9.0)
 
-| Level | Questions | Critical | Practices | Objectives |
-|-------|-----------|----------|-----------|------------|
-| L1 Emerging | 9 | 5 | 6 | Budget Foundation, Financial Controls |
-| L2 Defined | 15 | 4 | 7 | Variance Analysis, Forecasting |
-| L3 Managed | 21 | 1 | 9 | Driver-Based Planning, Scenario Modeling |
-| L4 Optimized | 15 | 0 | 6 | Integrated Planning, Predictive Analytics |
-| **Total** | **79** | **10** | **28** | **9** |
+| Level | Questions | Critical | Objectives |
+|-------|-----------|----------|------------|
+| L1 Emerging | 12 | 5 | Budget Foundation, Financial Controls |
+| L2 Defined | 25 | 4 | Variance Analysis, Forecasting |
+| L3 Managed | 29 | 0 | Driver-Based Planning, Scenario Modeling |
+| L4 Optimized | 13 | 0 | Integrated Planning, Predictive Analytics |
+| **Total** | **79** | **10** | **9** |
 
 ---
 
@@ -330,7 +339,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS19: Critical Risk Engine | "Silence is Risk" — missing criticals = risk |
 | VS20: Dynamic Action Engine | Objective-based actions with runtime priority |
 | VS21: Calibration Layer | User-declared importance (1-5) multiplies scores, full user control |
-| VS-23: Maturity Footprint | 21 practices grid with evidence states |
+| VS-23: Maturity Footprint | 27 practices grid with evidence states |
 | VS-24: JSON Content Catalog | Zod-validated content in `content/*.json` |
 | VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
 | VS-28: Action Planning | War room for gap selection, timelines, projections |

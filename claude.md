@@ -126,8 +126,16 @@ CFOdiagnosis_v1/
 | DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action item (VS28) | Yes |
 | POST | `/diagnostic-runs/:id/finalize` | Lock action plan, enable Executive Report (VS39) | Yes |
 | GET | `/diagnostic-runs/:id/company-profile` | Get linked company profile (VS-27c) | Yes |
+| GET | `/diagnostic-runs/:id/targets` | Persona-specific maturity targets (VS-27e) | Yes |
+| GET | `/diagnostic-runs/:id/benchmark` | Maturity benchmarks + commentary (VS-27d) | Yes |
 | POST | `/api/company-profiles` | Create company profile with persona classification (VS-27c) | Yes |
+| GET | `/api/company-profiles` | List company profiles (VS-27b) | Yes |
+| GET | `/api/company-profiles/:id` | Get company profile (VS-27b) | Yes |
+| PUT | `/api/company-profiles/:id` | Update company profile + reclassify (VS-27b) | Yes |
+| POST | `/api/company-profiles/:id/reclassify` | Re-run classification (VS-27b) | Yes |
 | PATCH | `/api/company-profiles/:id/persona` | Switch persona selection (VS-27c) | Yes |
+| GET | `/api/company-profiles/meta/personas` | Get persona definitions (VS-27b) | Yes |
+| GET | `/api/company-profiles/meta/matrix` | Get scoring matrix (VS-27b) | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -147,13 +155,14 @@ CFOdiagnosis_v1/
 - `company_profile_id` (FK): Links to company_profiles table (VS-27c)
 - `finalized_at` (TIMESTAMPTZ): When user locked their action plan (VS-39)
 - `action_plan_snapshot` (JSONB): Frozen action plan at finalization (VS-39)
+- `benchmark_commentary` (JSONB): Cached benchmark commentary (VS-27d)
 - `created_at`, `updated_at`
 
 **diagnostic_inputs** — Question answers per run
 
 **company_profiles** (VS-27c)
-- `id`, `owner_id`, `context` (JSONB): 9 classification fields
-- `classification` (JSONB): `{persona, scores, confidence, override}`
+- `id`, `user_id`, `context` (JSONB): 9 classification fields
+- `classification` (JSONB): `{persona, scores, flags, modifiers, confidence, personaDetails, computedAt, override}`
 - `diagnostic_run_id` (FK): Links profile to diagnostic run
 - `created_at`, `updated_at`
 
@@ -233,7 +242,7 @@ CFOdiagnosis_v1/
 |-------|-----------|----------|------------|
 | L1 Emerging | 12 | 5 | Budget Foundation, Financial Controls |
 | L2 Defined | 25 | 4 | Variance Analysis, Forecasting |
-| L3 Managed | 29 | 1 | Driver-Based Planning, Scenario Modeling |
+| L3 Managed | 29 | 0 | Driver-Based Planning, Scenario Modeling |
 | L4 Optimized | 13 | 0 | Integrated Planning, Predictive Analytics |
 | **Total** | **79** | **10** | **9** |
 

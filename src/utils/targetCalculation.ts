@@ -41,11 +41,18 @@ export interface CompanyContext {
   [key: string]: unknown;
 }
 
+export interface ClassificationOverride {
+  from_persona: string;
+  to_persona: string;
+  reason?: string | null;
+  switched_at?: string;
+}
+
 export interface Classification {
   persona: string;
   scores: Record<string, number>;
   confidence: number;
-  override?: string;
+  override?: string | ClassificationOverride | null;
 }
 
 export interface ObjectiveTarget {
@@ -121,7 +128,7 @@ export function calculateTargets(
   const practices = loadPractices();
 
   // Get effective persona (override takes precedence)
-  const persona = classification.override || classification.persona;
+  const persona = getEffectivePersona(classification);
 
   // Get base objective targets for this persona
   const personaTargets = matrix.objectiveTargets[persona];
@@ -215,6 +222,14 @@ export function calculateTargets(
     practiceTargets,
     modifiersApplied: appliedModifiers
   };
+}
+
+export function getEffectivePersona(classification: Classification): string {
+  const override = classification.override;
+  if (!override) return classification.persona;
+  if (typeof override === 'string') return override;
+  if (typeof override === 'object' && override.to_persona) return override.to_persona;
+  return classification.persona;
 }
 
 /**
