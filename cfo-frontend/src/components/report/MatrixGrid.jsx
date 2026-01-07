@@ -43,7 +43,7 @@ function MatrixCell({ practices, rowId, colId, colIndex, isFirstRow, isLastRow, 
   const cornerClass = isLastRow && isLastCol ? 'rounded-br' : '';
 
   return (
-    <div className={`p-3 min-h-[120px] ${background} ${borderClasses} ${cornerClass} relative`}>
+    <div className={`matrix-cell p-3 min-h-[120px] ${background} ${borderClasses} ${cornerClass} relative`}>
       {/* Zone label in top right */}
       <span className="absolute top-1 right-2 text-[10px] font-medium text-slate-500 uppercase tracking-wide">
         {zoneName}
@@ -67,7 +67,7 @@ function MatrixCell({ practices, rowId, colId, colIndex, isFirstRow, isLastRow, 
 
 export default function MatrixGrid({ columns, gridData }) {
   return (
-    <div className="rounded overflow-hidden">
+    <div className="matrix-grid rounded overflow-hidden">
       <div className="flex">
         {/* Left Axis Super-Column: PRIORITY LEVEL */}
         <div className="flex flex-col w-[40px]">

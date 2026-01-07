@@ -47,8 +47,8 @@ export default function ActionPlanTable({
       {/* Accountability Summary + Timeline Distribution */}
       <div className="grid grid-cols-2 gap-4">
         {/* Accountability Summary */}
-        <div className="border border-slate-300 p-4 bg-slate-50">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+        <div className="border border-slate-300 p-2 bg-slate-50">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
             Accountability Summary
           </div>
           <div className="space-y-2">
@@ -66,17 +66,14 @@ export default function ActionPlanTable({
               </div>
             ))}
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-500">
-            {actionCounts.withOwner} of {actionCounts.total} actions have owners assigned
-          </div>
         </div>
 
         {/* Timeline Distribution */}
-        <div className="border border-slate-300 p-4 bg-slate-50">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+        <div className="border border-slate-300 p-2 bg-slate-50">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
             Timeline Distribution
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* 6 months */}
             <div>
               <div className="flex justify-between text-sm mb-1">
@@ -116,9 +113,6 @@ export default function ActionPlanTable({
                 />
               </div>
             </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-500">
-            {actionCounts.withTimeline} of {actionCounts.total} actions have timelines assigned
           </div>
         </div>
       </div>

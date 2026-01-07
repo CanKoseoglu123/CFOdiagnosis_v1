@@ -4,24 +4,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  Tooltip
-} from 'recharts';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import WorkflowSidebar from '../components/WorkflowSidebar';
-import useReportData, { LEVEL_NAMES, OBJECTIVE_THEME_MAP } from '../hooks/useReportData';
+import useReportData, { LEVEL_NAMES } from '../hooks/useReportData';
 import ActionPlanTable from '../components/report/ActionPlanTable';
 import PriorityMatrix from '../components/report/PriorityMatrix';
 import ObjectivesPracticesOverview from '../components/report/ObjectivesPracticesOverview';
 import BenchmarkTab from '../components/report/BenchmarkTab';
-import { Logo, BRAND_COLORS } from '../components/Logo';
+import { BRAND_COLORS } from '../components/Logo';
+import { processInterpretationSections } from '../utils/evidence';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -70,19 +62,6 @@ function PrintFooter({ pageNumber, runId, printDate }) {
     </div>
   );
 }
-
-// Objective short names for radar chart
-const OBJECTIVE_SHORT_NAMES = {
-  'obj_budget_discipline': 'Budget',
-  'obj_financial_controls': 'Controls',
-  'obj_performance_monitoring': 'Monitoring',
-  'obj_forecasting_agility': 'Forecasting',
-  'obj_driver_based_planning': 'Driver-Based',
-  'obj_scenario_modeling': 'Scenarios',
-  'obj_strategic_influence': 'Strategy',
-  'obj_decision_support': 'Decisions',
-  'obj_operational_excellence': 'Operations'
-};
 
 // Importance dots component
 function ImportanceDots({ level }) {
@@ -153,6 +132,182 @@ function TimelineJourney({ today, at6m, at12m, at24m }) {
   );
 }
 
+function ExecutionSummaryCard({
+  executionScore,
+  projectedScore,
+  currentLevel,
+  projectedLevel,
+  levelName,
+  projectedLevelName
+}) {
+  const improvement = Math.max(0, projectedScore - executionScore);
+
+  return (
+    <div className="border border-slate-200 rounded-sm p-4 bg-white h-[280px] flex flex-col">
+      <div className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">
+        Execution Score
+      </div>
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-5xl font-bold text-slate-800">{executionScore}%</span>
+        {improvement > 0 && (
+          <span className="flex items-center gap-2 text-emerald-600">
+            <span className="text-2xl font-bold">-&gt;</span>
+            <span className="text-5xl font-bold">{projectedScore}%</span>
+          </span>
+        )}
+      </div>
+      {improvement > 0 && (
+        <div className="mb-3">
+          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-emerald-100 text-emerald-700">
+            +{improvement} points if completed
+          </span>
+        </div>
+      )}
+      <div className="mb-3" />
+      <div className="pt-3 border-t border-slate-100 mt-auto">
+        <div className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">
+          Maturity Level
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-center">
+            <span className={`inline-block px-4 py-2 rounded text-5xl font-bold ${
+              currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+              currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+              'bg-slate-100 text-slate-600'
+            }`}>
+              L{currentLevel}
+            </span>
+            <div className="text-[10px] text-slate-400 mt-1">{levelName}</div>
+          </div>
+          <span className={`text-2xl font-bold self-start mt-3 ${
+            projectedLevel > currentLevel ? 'text-emerald-500' : 'text-slate-300'
+          }`}>-&gt;</span>
+          <div className="text-center">
+            <span className={`inline-block px-4 py-2 rounded text-5xl font-bold ${
+              projectedLevel > currentLevel
+                ? (projectedLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
+                   projectedLevel >= 2 ? 'bg-amber-100 text-amber-700' :
+                   'bg-blue-100 text-blue-700')
+                : 'bg-slate-100 text-slate-500'
+            }`}>
+              L{projectedLevel}
+            </span>
+            <div className="text-[10px] text-slate-400 mt-1">{projectedLevelName}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriorityObjectivesChart({ objectives }) {
+  return (
+    <div className="border border-slate-200 rounded-sm p-4 bg-white h-[280px] flex flex-col">
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div>
+          <div className="text-sm font-bold uppercase tracking-wide text-slate-600">
+            Highest Priority Objectives
+          </div>
+          <div className="text-xs text-slate-500">
+            Maturity vs target, including committed action impact.
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-slate-500">
+          <div className="flex items-center gap-1">
+            <span className="w-3 h-3 bg-[#0b2d5b]" />
+            <span>Maturity</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span
+              className="w-3 h-3 border border-slate-200"
+              style={{
+                backgroundColor: 'rgba(11, 45, 91, 0.18)',
+                backgroundImage: 'repeating-linear-gradient(135deg, rgba(11, 45, 91, 0.6) 0 1px, rgba(11, 45, 91, 0.12) 1px 3px)'
+              }}
+            />
+            <span>With actions</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-4 h-1 bg-orange-500" />
+            <span>Target</span>
+          </div>
+        </div>
+      </div>
+      {objectives.length > 0 ? (
+        <>
+          <div className="flex-1 flex flex-col justify-between gap-2">
+            {objectives.map((obj) => {
+              const currentWidth = Math.max(0, (obj.currentLevel / 4) * 100);
+              const projectedWidth = Math.max(0, (obj.projectedLevel / 4) * 100);
+              const extension = Math.max(0, projectedWidth - currentWidth);
+              const targetLeft = obj.targetLevel ? Math.max(0, (obj.targetLevel / 4) * 100) : null;
+              const markerClass = obj.importance === 5
+                ? 'bg-red-500'
+                : obj.importance === 4
+                  ? 'bg-amber-500'
+                  : 'bg-slate-200';
+
+              return (
+                <div key={obj.id} className="grid grid-cols-[170px_1fr] items-center gap-3 h-8">
+                  <div className="text-xs text-slate-700 leading-tight font-semibold flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${markerClass}`} />
+                    <span>{obj.name}</span>
+                  </div>
+                  <div className="relative h-6">
+                    <div className="absolute inset-0 bg-slate-100 border border-slate-200" />
+                    {[1, 2, 3, 4].map((tick) => (
+                      <div
+                        key={tick}
+                        className="absolute top-0 bottom-0 w-px bg-slate-200"
+                        style={{ left: `${(tick / 4) * 100}%` }}
+                      />
+                    ))}
+                    <div
+                      className="absolute left-0 top-0 bottom-0 bg-[#0b2d5b]"
+                      style={{ width: `${currentWidth}%` }}
+                    />
+                    {extension > 0 && (
+                      <div
+                        className="absolute top-0 bottom-0"
+                        style={{
+                          left: `${currentWidth}%`,
+                          width: `${extension}%`,
+                          backgroundColor: 'rgba(11, 45, 91, 0.18)',
+                          backgroundImage: 'repeating-linear-gradient(135deg, rgba(11, 45, 91, 0.6) 0 1px, rgba(11, 45, 91, 0.12) 1px 3px)'
+                        }}
+                      />
+                    )}
+                    {targetLeft !== null && (
+                      <div
+                        className="absolute top-0 bottom-0 w-1 bg-orange-500"
+                        style={{ left: `calc(${targetLeft}% - 2px)` }}
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-2 grid grid-cols-[170px_1fr] items-center gap-3 text-[11px] font-semibold text-slate-600">
+            <div />
+            <div className="relative h-4 -mt-1">
+              <span className="absolute left-0 opacity-0">L0</span>
+              <span className="absolute left-1/4 -translate-x-1/2">L1</span>
+              <span className="absolute left-1/2 -translate-x-1/2">L2</span>
+              <span className="absolute left-3/4 -translate-x-1/2">L3</span>
+              <span className="absolute right-0">L4</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="text-sm text-slate-500">
+          No objectives marked as high or critical priority in calibration.
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ExecutiveReportPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
@@ -160,6 +315,8 @@ export default function ExecutiveReportPage() {
   const [spec, setSpec] = useState(null);
   const [benchmarkData, setBenchmarkData] = useState(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [aiSections, setAiSections] = useState([]);
+  const [aiStatus, setAiStatus] = useState('idle');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -168,6 +325,7 @@ export default function ExecutiveReportPage() {
       fetchReport();
       fetchSpec();
       fetchBenchmark();
+      fetchInterpretation();
     }
   }, [runId]);
 
@@ -243,6 +401,38 @@ export default function ExecutiveReportPage() {
     }
   }
 
+  async function fetchInterpretation() {
+    try {
+      setAiStatus('loading');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret-v32/status`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        setAiStatus('error');
+        return;
+      }
+
+      const data = await res.json();
+      if (data.status === 'completed') {
+        const processed = processInterpretationSections(data.report?.sections || []);
+        setAiSections(processed);
+        setAiStatus('complete');
+      } else {
+        setAiStatus('empty');
+      }
+    } catch (err) {
+      console.error('Failed to fetch interpretation:', err);
+      setAiStatus('error');
+    }
+  }
+
   // CRITICAL: Use frozen action_plan_snapshot after finalization
   const actionPlan = useMemo(() => {
     if (!report?.action_plan_snapshot) return {};
@@ -274,6 +464,48 @@ export default function ExecutiveReportPage() {
     });
     return map;
   }, [reportData.objectiveData]);
+
+  const objectiveTargets = useMemo(() => {
+    const targets = benchmarkData?.targets?.objectiveTargets || [];
+    return new Map(targets.map((t) => [t.objective_id, t.adjustedTarget]));
+  }, [benchmarkData]);
+
+  const priorityObjectives = useMemo(() => {
+    if (!reportData.objectiveData?.length) return [];
+    return reportData.objectiveData
+      .map((obj) => ({
+        ...obj,
+        targetLevel: objectiveTargets.get(obj.id) ?? obj.targetLevel,
+        projectedLevel: obj.targetLevel
+      }))
+      .filter((obj) => obj.importance >= 4)
+      .sort((a, b) => {
+        if (b.importance !== a.importance) return b.importance - a.importance;
+        return (b.targetLevel - b.currentLevel) - (a.targetLevel - a.currentLevel);
+      })
+      .slice(0, 5);
+  }, [reportData.objectiveData, objectiveTargets]);
+
+  const aiSummarySections = useMemo(() => {
+    const baseSections = aiSections.filter((section) => {
+      if (section.id === 'constraints') return false;
+      if (/constraint/i.test(section.title || '')) return false;
+      return true;
+    });
+
+    const topNames = reportData.topOpportunities?.map((o) => o.name).filter(Boolean);
+    const actionsSummary = reportData.actionCounts?.total
+      ? `Prioritize ${reportData.actionCounts.total} planned actions with focus on ${topNames?.length ? topNames.join(', ') : 'the highest uplift objectives'}. Near term actions (6m): ${reportData.actionCounts['6m']}, mid term (12m): ${reportData.actionCounts['12m']}, long term (24m): ${reportData.actionCounts['24m']}.`
+      : 'Prioritize the highest uplift objectives and formalize action owners and timelines to unlock measurable improvement.';
+
+    const outlookSummary = `If all planned actions are completed, execution score is projected to ${reportData.projectedScore}% with maturity level L${reportData.projectedLevel}.`;
+
+    return [
+      ...baseSections,
+      { id: 'actions', title: 'Actions', content: actionsSummary },
+      { id: 'outlook', title: '24 Month Outlook', content: outlookSummary }
+    ];
+  }, [aiSections, reportData]);
 
   // Loading state
   if (loading) {
@@ -327,19 +559,12 @@ export default function ExecutiveReportPage() {
     currentScore,
     currentLevel,
     levelName,
-    criticalRisks,
-    failedCriticalCount,
     projectedScore,
     projectedLevel,
-    projectedByTimeline,
-    confidence,
-    diagnosis,
     objectiveData,
     objectivesByTheme,
     actionCounts,
-    commitmentRegister,
-    strengths,
-    topOpportunities
+    commitmentRegister
   } = reportData;
 
   // Maturity footprint data
@@ -361,15 +586,6 @@ export default function ExecutiveReportPage() {
   objectiveData.forEach(obj => {
     objectiveScores[obj.id] = obj.today;
   });
-
-  // Build radar chart data
-  const radarData = objectiveData.map(obj => ({
-    subject: OBJECTIVE_SHORT_NAMES[obj.id] || obj.name,
-    Current: projectedByTimeline.current[obj.id] || 0,
-    '6 Months': projectedByTimeline['6m'][obj.id] || 0,
-    '12 Months': projectedByTimeline['12m'][obj.id] || 0,
-    'Full Plan': projectedByTimeline['24m'][obj.id] || 0
-  }));
 
   // Gaps count for Priority Matrix
   const gapsTotal = maturityLevels.reduce((sum, lvl) =>
@@ -460,29 +676,30 @@ export default function ExecutiveReportPage() {
           </div>
           <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
             <p>
-              These materials have been prepared by CFO-Lens AI and/or its affiliates ("CFO-Lens AI")
-              for the exclusive and individual use of our clients. These materials contain valuable
-              confidential and proprietary information belonging to CFO-Lens AI, and they may not be
-              shared with any third party (including independent contractors and consultants) without
-              the prior approval of CFO-Lens AI. CFO-Lens AI retains any and all intellectual property
-              rights in these materials and requires retention of the copyright mark on all pages reproduced.
-            </p>
-            <h3 className="text-sm font-semibold text-slate-800">Legal Caveat</h3>
-            <p>
-              CFO-Lens AI is not able to guarantee the accuracy of the information or analysis contained
-              in these materials. Furthermore, CFO-Lens AI is not engaged in rendering legal, accounting,
-              or any other professional services. CFO-Lens AI specifically disclaims liability for any damages,
-              claims, or losses that may arise from any errors or omissions in these materials, whether caused
-              by CFO-Lens AI or its sources, or reliance upon any recommendation made by CFO-Lens AI.
+              This report has been prepared by CFO Lens AI for the exclusive use of the client named herein.
+              The contents are confidential and proprietary to CFO Lens AI. This report may not be shared
+              with third parties, reproduced, or distributed without prior written consent from CFO Lens AI.
+              All intellectual property rights in the methodology, framework, and analysis contained herein
+              are retained by CFO Lens AI.
             </p>
             <h3 className="text-sm font-semibold text-slate-800">Disclaimer</h3>
             <p>
-              Unless otherwise set forth in your Service Description or marked expressly for external use,
-              these items may be downloaded and customized for internal noncommercial use by the Client.
-              The items contained in this report may not be repackaged or resold. CFO-Lens AI makes no
-              representations or warranties as to the suitability of this report for any particular purpose,
-              and disclaims all liability for any damage or loss, whether direct, consequential, incidental
-              or special, arising out of the use of or inability to use this material or the information provided herein.
+              This report is based on self-reported assessment data provided by the client. CFO Lens AI
+              does not independently verify the accuracy or completeness of client inputs. The analysis,
+              scores, and recommendations are generated algorithmically based on these inputs and should
+              be considered directional guidance rather than definitive conclusions.
+            </p>
+            <p>
+              CFO Lens AI is not engaged in rendering legal, accounting, tax, or other professional advisory services.
+            </p>
+            <h3 className="text-sm font-semibold text-slate-800">Limitation of Liability</h3>
+            <p>
+              CFO Lens AI disclaims all liability for any damages, losses, or claims arising from errors or omissions
+              in this report, reliance upon any recommendation made herein, or decisions made based on this analysis.
+              This report is provided "as is" without warranty of any kind, express or implied.
+            </p>
+            <p>
+              © 2026 CFO Lens AI. All rights reserved.
             </p>
           </div>
           <PrintFooter pageNumber={2} runId={runId} printDate={printDate} />
@@ -507,94 +724,49 @@ export default function ExecutiveReportPage() {
             </div>
           </div>
 
-          {/* KPI Tiles Row */}
-          <div className="grid grid-cols-4 gap-3 mb-3">
-            <div className="text-center p-3 border border-slate-200 bg-slate-50">
-              <div className="text-3xl font-bold text-slate-800">{currentScore}%</div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">Execution Score</div>
-            </div>
-            <div className="text-center p-3 border border-blue-200 bg-blue-50">
-              <div className="text-3xl font-bold text-blue-700">L{currentLevel}</div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">{levelName}</div>
-            </div>
-            <div className="text-center p-3 border border-slate-200 bg-slate-50">
-              <div className={`text-3xl font-bold ${failedCriticalCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                {failedCriticalCount}
-              </div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">Critical Gaps</div>
-            </div>
-            <div className="text-center p-3 border border-slate-200 bg-slate-50">
-              <div className="text-3xl font-bold text-slate-800">{actionCounts.total}</div>
-              <div className="text-xs font-semibold text-slate-500 uppercase">Actions Planned</div>
+          <div className="mb-3">
+            <h2 className="text-lg font-bold text-slate-800">Overall Results Summary</h2>
+            <div className="text-sm text-slate-500">
+              You are being evaluated on a scale ranging from L1 (lowest) to L4 (highest).
             </div>
           </div>
 
-          {/* Full-width Spider Chart Section */}
-          <div className="border border-slate-300 p-4 border-l-4 border-l-blue-500 mb-3">
+          <div className="grid grid-cols-[300px_1fr] gap-4 mb-4">
+            <ExecutionSummaryCard
+              executionScore={currentScore}
+              projectedScore={projectedScore}
+              currentLevel={currentLevel}
+              projectedLevel={projectedLevel}
+              levelName={levelName}
+              projectedLevelName={LEVEL_NAMES[projectedLevel]}
+            />
+            <PriorityObjectivesChart objectives={priorityObjectives} />
+          </div>
+
+          <div className="border border-slate-300 p-4">
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-              Projected Outcome (24 Months)
+              AI Summary
             </div>
-            <div className="flex items-start gap-6">
-              {/* Left: Score projections and legend */}
-              <div className="w-48 shrink-0">
-                <div className="mb-4">
-                  <div className="text-xs text-slate-400 mb-1">Score Progression</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-slate-800">{currentScore}%</span>
-                    <span className="text-lg text-slate-400">→</span>
-                    <span className="text-2xl font-bold text-emerald-600">{projectedScore}%</span>
+            {aiStatus === 'complete' && aiSummarySections.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {aiSummarySections.map((section) => (
+                  <div key={section.id} className="border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
+                      {section.title}
+                    </div>
+                    <div className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+                      {section.content}
+                    </div>
                   </div>
-                </div>
-                <div className="mb-4">
-                  <div className="text-xs text-slate-400 mb-1">Maturity Level</div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded font-medium text-sm ${
-                      currentLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
-                      currentLevel >= 2 ? 'bg-amber-100 text-amber-700' :
-                      'bg-slate-100 text-slate-600'
-                    }`}>
-                      L{currentLevel}
-                    </span>
-                    <span className="text-slate-400">→</span>
-                    <span className={`px-2 py-0.5 rounded font-medium text-sm ${
-                      projectedLevel >= 3 ? 'bg-emerald-100 text-emerald-700' :
-                      projectedLevel >= 2 ? 'bg-blue-100 text-blue-700' :
-                      'bg-slate-100 text-slate-600'
-                    }`}>
-                      L{projectedLevel}
-                    </span>
-                  </div>
-                </div>
-                {/* Legend */}
-                <div className="text-xs space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-0.5 bg-slate-800 inline-block"></span>
-                    <span className="text-slate-600">Current</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-0.5 bg-emerald-500 inline-block"></span>
-                    <span className="text-slate-600">Full Plan (24m)</span>
-                  </div>
-                </div>
+                ))}
               </div>
-
-              {/* Right: Enlarged Radar Chart */}
-              <div className="flex-1 h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="85%" data={radarData}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11 }} />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={5} />
-                    <Radar name="Current" dataKey="Current" stroke="#1e293b" fill="#1e293b" fillOpacity={0.1} strokeWidth={2} />
-                    <Radar name="Full Plan" dataKey="Full Plan" stroke="#10b981" fill="#10b981" fillOpacity={0.1} strokeWidth={2} />
-                    <Tooltip contentStyle={{ fontSize: '11px' }} formatter={(value) => [`${value}%`]} />
-                  </RadarChart>
-                </ResponsiveContainer>
+            ) : (
+              <div className="text-sm text-slate-500">
+                AI summary is not available yet for this report.
               </div>
-            </div>
+            )}
           </div>
 
-          
           <PrintFooter pageNumber={3} runId={runId} printDate={printDate} />
         </div>
 
@@ -701,20 +873,22 @@ export default function ExecutiveReportPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* PAGE 7: PRIORITY MATRIX */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <div className="executive-page p-6 page-break-before">
+        <div className="executive-page p-6 page-break-before priority-matrix-page">
           <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
             <h2 className="text-lg font-bold text-slate-800">Priority Matrix</h2>
             <div className="text-xs text-slate-400 print:hidden">Page 7 - {companyName}</div>
           </div>
-          {spec && (
-            <PriorityMatrix
-              footprintLevels={maturityFootprint?.levels}
-              specPractices={spec.practices}
-              specObjectives={spec.objectives}
-              calibration={report.calibration}
-              userLevel={currentLevel}
-            />
-          )}
+          <div className="priority-matrix-wrap">
+            {spec && (
+              <PriorityMatrix
+                footprintLevels={maturityFootprint?.levels}
+                specPractices={spec.practices}
+                specObjectives={spec.objectives}
+                calibration={report.calibration}
+                userLevel={currentLevel}
+              />
+            )}
+          </div>
           <PrintFooter pageNumber={7} runId={runId} printDate={printDate} />
         </div>
 
@@ -969,6 +1143,28 @@ export default function ExecutiveReportPage() {
             .objective-table td {
               padding-top: 4px;
               padding-bottom: 4px;
+            }
+
+            .benchmark-axis-tick {
+              transform: translateY(0) !important;
+            }
+
+            .priority-matrix-page {
+              padding: 0.35in 0.4in 0.9in !important;
+            }
+
+            .priority-matrix-page .matrix-grid {
+              transform: scale(0.93);
+              transform-origin: top left;
+            }
+
+            .priority-matrix-page .matrix-cell {
+              min-height: 80px !important;
+              padding: 6px !important;
+            }
+
+            .priority-matrix-page .priority-matrix-wrap {
+              padding-bottom: 0.15in;
             }
 
             /* Ensure sections don't split */

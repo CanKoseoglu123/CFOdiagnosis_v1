@@ -676,40 +676,13 @@ export default function FinalReportTab({
                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
                   Accountability Summary
                 </div>
-                <div className="grid grid-cols-3 gap-6 mb-4">
-                  <div>
-                    <div className="text-2xl font-bold text-slate-700">
-                      {actionCounts.withOwner} / {actionCounts.total}
-                    </div>
-                    <div className="text-xs text-slate-500">Owners assigned</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-slate-700">
-                      {actionCounts.withTimeline} / {actionCounts.total}
-                    </div>
-                    <div className="text-xs text-slate-500">Timelines assigned</div>
-                  </div>
+                <div className="grid grid-cols-1 gap-6">
                   <div>
                     <div className="text-2xl font-bold text-slate-700">
                       {criticalFixes.filter(c => actionPlan[c.id]).length} / {criticalFixes.length}
                     </div>
                     <div className="text-xs text-slate-500">Critical fixes covered</div>
                   </div>
-                </div>
-                <div className="text-sm text-slate-600 border-t border-slate-300 pt-3">
-                  {actionCounts.withOwner < actionCounts.total ? (
-                    <span>
-                      Assign owners to remaining {actionCounts.total - actionCounts.withOwner} actions to fully de-risk critical gaps.
-                    </span>
-                  ) : actionCounts.withTimeline < actionCounts.total ? (
-                    <span>
-                      Assign timelines to remaining {actionCounts.total - actionCounts.withTimeline} actions to complete the roadmap.
-                    </span>
-                  ) : (
-                    <span className="text-emerald-700 font-medium">
-                      All actions have owners and timelines assigned. Ready for execution.
-                    </span>
-                  )}
                 </div>
               </div>
             </>

@@ -212,7 +212,7 @@ export default function BenchmarkTab({
               return (
                 <div
                   key={tick}
-                  className="absolute left-0 right-0 flex items-center gap-2 translate-y-1/2"
+                  className="absolute left-0 right-0 flex items-center gap-2 translate-y-1/2 benchmark-axis-tick"
                   style={{ bottom: `${offset}px` }}
                 >
                   <span className="w-8 text-right">{tick === 0 ? '' : `L${tick}`}</span>
@@ -222,7 +222,7 @@ export default function BenchmarkTab({
             })}
           </div>
           <div
-            className="relative h-[200px]"
+            className="relative h-[200px] benchmark-chart"
           >
             {LEVEL_TICKS.map((tick) => {
               const offset = (tick / 4) * CHART_HEIGHT;
