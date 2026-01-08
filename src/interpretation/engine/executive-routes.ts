@@ -1,7 +1,7 @@
 /**
  * VS-45: Executive Commentary API Routes
  *
- * POST /diagnostic-runs/:id/interpret-executive     - Start generation
+ * POST /diagnostic-runs/:id/interpret-executive        - Start generation
  * GET  /diagnostic-runs/:id/interpret-executive/status - Get status + sections
  *
  * Auto-triggers on first view (post-finalization).
@@ -11,7 +11,7 @@
 import { Router, Request } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { precomputeExecutiveData } from './executive-precompute';
-import { generateExecutiveCommentary, ExecutiveSection } from './executive-generator';
+import { generateExecutiveCommentary } from './executive-generator';
 
 const router = Router();
 
