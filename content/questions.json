@@ -1249,7 +1249,7 @@
         "recommendation": "Identify the top 5 operational metrics that drive financial outcomes (e.g., pipeline value, headcount, utilization, NPS). Build automated feeds from source systems (CRM, HRIS, operations tools) into your FP&A data layer. Target: monthly reports should include both financial and operational context without manual data pulls.",
         "type": "structural"
       }
-    }
+    },
     {
       "id": "fpa_l3_q80",
       "practice_id": "prac_policy_&_governance",
