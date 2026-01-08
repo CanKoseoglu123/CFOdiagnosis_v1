@@ -75,7 +75,7 @@ Aligned 3 per Theme:
 - **Asymmetry:** "Strategic Influence" contains a 4th practice: **Investment Rigor**
 - **Exception:** "Operational Excellence" has 2 practices in v2.9.0 content
 
-### 2.4 Questions (79 Total)
+### 2.4 Questions (91 Total)
 
 - **ID Format:** `fpa_l{level}_q{num}` (e.g., `fpa_l1_q01`, `fpa_l3_q53`)
 - **Fields:**
@@ -96,7 +96,7 @@ Aligned 3 per Theme:
 |:-----|:------|:--------|
 | `objectives.json` | 9 | Objective definitions linked to themes |
 | `practices.json` | 27 | Practice definitions linked to objectives |
-| `questions.json` | 79 | Assessment questions with scoring metadata |
+| `questions.json` | 91 | Assessment questions with scoring metadata |
 | `initiatives.json` | 9 | Strategic initiative groupings |
 | `gates.json` | 1 | Critical gates and score thresholds |
 | `targetMatrix.json` | 1 | Persona-specific maturity targets (VS-27e) |

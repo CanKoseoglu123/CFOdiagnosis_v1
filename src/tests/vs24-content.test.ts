@@ -74,7 +74,7 @@ console.log('');
 console.log('--- Content Loading ---');
 
 const questions = loadQuestions();
-assertEqual(questions.length, 79, 'Loads exactly 79 questions');
+assertEqual(questions.length, 91, 'Loads exactly 91 questions');
 
 const practices = loadPractices();
 assertEqual(practices.length, 27, 'Loads exactly 27 practices');  // VS-26: Expanded
@@ -141,10 +141,10 @@ const l2Questions = getQuestionsByLevel(2);
 assertEqual(l2Questions.length, 25, 'L2 has 25 questions');
 
 const l3Questions = getQuestionsByLevel(3);
-assertEqual(l3Questions.length, 29, 'L3 has 29 questions');
+assertEqual(l3Questions.length, 35, 'L3 has 35 questions');
 
 const l4Questions = getQuestionsByLevel(4);
-assertEqual(l4Questions.length, 13, 'L4 has 13 questions');
+assertEqual(l4Questions.length, 19, 'L4 has 19 questions');
 
 // --- Practice Distribution by Objective ---
 // VS-26: Practices no longer have level, they link to objectives

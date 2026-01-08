@@ -50,7 +50,7 @@ CFOdiagnosis_v1/
 │   └── tests/                    # QA test suites
 │
 ├── content/                      # JSON content catalog (v2.9.0)
-│   ├── questions.json            # 79 FP&A questions (practice_id linkage)
+│   ├── questions.json            # 91 FP&A questions (practice_id linkage)
 │   ├── practices.json            # 27 practices
 │   ├── initiatives.json          # 9 initiatives
 │   ├── objectives.json           # 9 objectives
@@ -242,9 +242,9 @@ CFOdiagnosis_v1/
 |-------|-----------|----------|------------|
 | L1 Emerging | 12 | 5 | Budget Foundation, Financial Controls |
 | L2 Defined | 25 | 4 | Variance Analysis, Forecasting |
-| L3 Managed | 29 | 0 | Driver-Based Planning, Scenario Modeling |
-| L4 Optimized | 13 | 0 | Integrated Planning, Predictive Analytics |
-| **Total** | **79** | **10** | **9** |
+| L3 Managed | 35 | 1 | Driver-Based Planning, Scenario Modeling |
+| L4 Optimized | 19 | 0 | Integrated Planning, Predictive Analytics |
+| **Total** | **91** | **10** | **9** |
 
 ---
 

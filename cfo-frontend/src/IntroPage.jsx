@@ -15,7 +15,7 @@ const JOURNEY_STEPS = [
     step: 1,
     title: 'Assess',
     duration: '15 min',
-    description: '79 Yes/No questions across 9 objectives'
+    description: '91 Yes/No questions across 9 objectives'
   },
   {
     step: 2,
@@ -168,8 +168,8 @@ export default function IntroPage() {
 
               <div className="text-xs text-slate-500">
                 <span className="font-medium text-slate-700">9 Objectives</span> →
-                <span className="font-medium text-slate-700"> 28 Practices</span> →
-                <span className="font-medium text-slate-700"> 79 Questions</span>
+                <span className="font-medium text-slate-700"> 27 Practices</span> →
+                <span className="font-medium text-slate-700"> 91 Questions</span>
               </div>
               <div className="text-xs text-slate-400 mt-1">
                 Your calibration weights each objective. The insights are personalized to you.
