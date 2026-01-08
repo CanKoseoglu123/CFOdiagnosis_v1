@@ -96,4 +96,84 @@ export function clampToConstraint(practiceId: string, target: number): number {
  */
 export function clearConstraintsCache(): void {
   _constraintsCache = null;
+  _objectiveConstraintsCache = null;
+}
+
+// ============================================
+// Objective Constraints (derived from practices)
+// ============================================
+
+interface Practice {
+  id: string;
+  objective_id: string;
+  title: string;
+  capability_tags: string[];
+}
+
+interface ObjectiveConstraint {
+  min: number;
+  max: number;
+}
+
+let _objectiveConstraintsCache: Record<string, ObjectiveConstraint> | null = null;
+let _practicesCache: Practice[] | null = null;
+
+function loadPractices(): Practice[] {
+  if (!_practicesCache) {
+    const practicesPath = path.join(__dirname, '../../content/practices.json');
+    _practicesCache = JSON.parse(fs.readFileSync(practicesPath, 'utf-8'));
+  }
+  return _practicesCache!;
+}
+
+/**
+ * Derive objective constraints from practice constraints
+ * An objective's max level is the max of all its practices' max levels
+ */
+function deriveObjectiveConstraints(): Record<string, ObjectiveConstraint> {
+  const practiceConstraints = getPracticeConstraints();
+  const practices = loadPractices();
+
+  // Group practices by objective
+  const byObjective: Record<string, PracticeConstraint[]> = {};
+  for (const practice of practices) {
+    const constraint = practiceConstraints[practice.id];
+    if (constraint) {
+      if (!byObjective[practice.objective_id]) {
+        byObjective[practice.objective_id] = [];
+      }
+      byObjective[practice.objective_id].push(constraint);
+    }
+  }
+
+  // Calculate objective constraints
+  const objectiveConstraints: Record<string, ObjectiveConstraint> = {};
+  for (const [objectiveId, constraints] of Object.entries(byObjective)) {
+    const mins = constraints.map(c => c.min);
+    const maxes = constraints.map(c => c.max);
+    objectiveConstraints[objectiveId] = {
+      min: Math.min(...mins),
+      max: Math.max(...maxes)
+    };
+  }
+
+  return objectiveConstraints;
+}
+
+/**
+ * Get all objective constraints (cached)
+ */
+export function getObjectiveConstraints(): Record<string, ObjectiveConstraint> {
+  if (!_objectiveConstraintsCache) {
+    _objectiveConstraintsCache = deriveObjectiveConstraints();
+  }
+  return _objectiveConstraintsCache;
+}
+
+/**
+ * Get constraint for a specific objective
+ */
+export function getObjectiveConstraint(objectiveId: string): ObjectiveConstraint | undefined {
+  const constraints = getObjectiveConstraints();
+  return constraints[objectiveId];
 }

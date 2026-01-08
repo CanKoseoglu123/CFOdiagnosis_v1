@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { getPracticeConstraint, clampToConstraint } from './practiceConstraints';
+import { getPracticeConstraint, clampToConstraint, getObjectiveConstraint } from './practiceConstraints';
 
 // ============================================
 // Types
@@ -60,6 +60,8 @@ export interface ObjectiveTarget {
   baseTarget: number;
   adjustedTarget: number;
   modifiersApplied: string[];
+  objectiveMax?: number;
+  constrainedBy?: 'objective_max' | 'modifier_max';
 }
 
 export interface PracticeTarget {
