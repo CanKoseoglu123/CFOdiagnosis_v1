@@ -1266,5 +1266,197 @@
         "type": "structural"
       }
     }
+    {
+      "id": "fpa_l3_q80",
+      "practice_id": "prac_policy_&_governance",
+      "text": "Are budget templates formally structured to link every line-item request to a specific strategic pillar or initiative?",
+      "help": "This ensures the budget is an execution plan for the company strategy, not just a spreadsheet exercise. It forces managers to justify spending based on strategic value.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Link Budget to Strategy",
+        "recommendation": "Update budget submission templates to include a mandatory 'Strategic Alignment' dropdown for all material investments.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l4_q80",
+      "practice_id": "prac_policy_&_governance",
+      "text": "Does the organization utilize a 'Dynamic Capital Allocation' model where the Board can re-route funds mid-cycle based on real-time ROI?",
+      "help": "Highly mature organizations don't wait for the next annual cycle to move capital. They treat the budget as a fluid resource that flows toward the highest current ROI.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Enable Dynamic Allocation",
+        "recommendation": "Establish a 'Strategic Reserve' fund (5-10% of budget) that is unallocated at kickoff and deployed mid-year to high-performing initiatives.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l3_q81",
+      "practice_id": "prac_budget_ownership",
+      "text": "Do budget owners have real-time, self-service access to their 'Open-to-Buy' (remaining uncommitted) balance including pending POs?",
+      "help": "Managers cannot be held accountable for overspend if they only see it 15 days after the month ends. Real-time visibility enables proactive spending control.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement 'Open-to-Buy' Visibility",
+        "recommendation": "Connect the procurement system to a dashboard that shows 'Budget minus (Actuals + Open POs)' to every department head.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l4_q81",
+      "practice_id": "prac_budget_ownership",
+      "text": "Are budget owners empowered with automated reallocation authority within pre-defined system guardrails?",
+      "help": "Allowing managers to swap budget between categories (e.g., Travel to Software) without Finance intervention reduces friction and increases operational agility.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_budget_discipline",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Automate Budget Transfers",
+        "recommendation": "Configure your planning tool to allow 'self-service' transfers within a single cost center, up to a defined threshold (e.g., $50k).",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_l3_q82",
+      "practice_id": "prac_approval_workflows",
+      "text": "Are approval workflows dynamically routed based on risk scoring (e.g., vendor history, department budget status)?",
+      "help": "Static thresholds (e.g., $10k) are inefficient. Risk-based routing focuses senior leadership attention on high-risk or unbudgeted transactions only.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_financial_controls",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement Risk-Based Routing",
+        "recommendation": "Define 'Fast-Track' approval rules for recurring vendors and budgeted items, while triggering extra scrutiny for new vendors.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l4_q82",
+      "practice_id": "prac_approval_workflows",
+      "text": "Does the system use AI/ML-assisted anomaly detection to flag suspicious transactions *before* the approval workflow begins?",
+      "help": "AI can catch double-invoicing, unusual pricing, or compliance risks that human approvers might miss, providing a predictive layer of financial safety.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_financial_controls",
+      "impact": 3,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Deploy AI Anomaly Detection",
+        "recommendation": "Evaluate AI-first procurement layers (like Glean or Tipalti) that sit on top of the ERP to flag risks automatically.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l3_q83",
+      "practice_id": "prac_month_end_rigor",
+      "text": "Is the month-end close and reporting process completed within 3 business days while maintaining full accrual accuracy?",
+      "help": "The 'Fast Close' is a hallmark of efficient Finance. It frees up 10-15 days per month for the team to focus on analysis rather than accounting.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_financial_controls",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement 3-Day Fast Close",
+        "recommendation": "Move to a 'Hard Close' on sub-ledgers on Day 1 and use automated accrual engines for recurring expenses.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l4_q83",
+      "practice_id": "prac_month_end_rigor",
+      "text": "Does the organization maintain 'Continuous Close' capabilities, where books are reviewable at any point in the month within 24 hours?",
+      "help": "This represents the peak of accounting maturity. It requires total integration of systems where entries are recorded and reconciled in near real-time.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_financial_controls",
+      "impact": 5,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Achieve Continuous Close",
+        "recommendation": "Automate all bank reconciliations and inter-company eliminations to run daily rather than monthly.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l3_q84",
+      "practice_id": "prac_management_reporting",
+      "text": "Do monthly management reports systematically include 'Lead Indicators' (e.g., pipeline velocity) alongside historical variances?",
+      "help": "Historical data tells you what happened; lead indicators tell you what will happen. Combining them creates a complete performance story.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_feedback_loops",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Embed Lead Indicators",
+        "recommendation": "Collaborate with Sales and Operations to identify the top 3 lead indicators and add them to the standard monthly deck.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l4_q84",
+      "practice_id": "prac_management_reporting",
+      "text": "Are reports generated with AI-powered narrative commentary that is calibrated by Finance before distribution?",
+      "help": "Automated narratives eliminate the grunt work of writing 'variance explanations,' allowing the Finance team to focus on high-level strategic calibration.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_feedback_loops",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Implement AI-First Reporting",
+        "recommendation": "Use your BI tool's 'Smart Narrative' features to generate draft commentary, then have an analyst review it for 'So-What' insights.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_l3_q85",
+      "practice_id": "prac_variance_investigation",
+      "text": "Does variance analysis systematically decompose deviations into Volume, Price, Mix, and FX drivers?",
+      "help": "A net dollar variance is often misleading. Decomposing it reveals if the business is winning on volume but losing on price, which requires different actions.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_feedback_loops",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Standardize Variance Decomposition",
+        "recommendation": "Train the FP&A team on Price-Volume-Mix (PVM) logic and build standard templates to calculate these at the SKU or customer level.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_l4_q85",
+      "practice_id": "prac_variance_investigation",
+      "text": "Does Finance use predictive models to identify likely variances *before* the month-end close?",
+      "help": "Predictive monitoring allows Finance to flag issues during the month, giving the business time to pull operational levers before the period ends.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_feedback_loops",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement Predictive Monitoring",
+        "recommendation": "Develop simple trend-based models that forecast month-end landings based on Day 15 or Day 20 actuals.",
+        "type": "structural"
+      }
+    }
   ]
 }
