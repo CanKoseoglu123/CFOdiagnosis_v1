@@ -377,7 +377,7 @@ export default function BenchmarkTab({
                         {objectivePractices.map((practice) => {
                           const achieved = achievedPractices[practice.id] ?? 0;
                           const practiceTarget = practiceTargets.get(practice.id);
-                          const maxLevel = practiceTarget?.practiceMax ?? practiceTarget?.target ?? 4;
+                          const maxLevel = practiceTarget?.practiceMax ?? 4;
                           const target = practiceTarget?.target;
                           return (
                             <div
