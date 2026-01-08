@@ -895,7 +895,7 @@ Internal/admin endpoints for system management:
 
 > **Note:** Admin endpoints require elevated permissions and are not part of the public API contract.
 
-> **⚠️ Warning:** The `/admin/sessions/:id` endpoint is destructive — it removes the entire diagnostic run, not just the interpretation session. Use with caution.
+> **⚠️ Warning:** The `/admin/sessions/:id` endpoint is destructive — it removes the entire diagnostic run and all its related data, not just the interpretation session. Use with caution.
 
 ### 11.9 Spec & System
 
