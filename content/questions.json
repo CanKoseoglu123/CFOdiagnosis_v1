@@ -974,7 +974,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Implement Gate Reviews with Finance as Truthmeister",
-        "recommendation": "Establish formal 'Gate Reviews' at pre-defined project milestones (e.g., 3 months, 6 months, first revenue). Finance acts as the independent assessor—comparing actuals to the original business case. If ROI falls below threshold or milestones are missed, funding pauses AUTOMATICALLY until the project sponsor presents a credible recovery plan. Pre-agree these gates with the Board/CEO so kills aren't political battles. The key: Finance must have mandate to flag red, and leadership must have pre-committed to act on the data.",
+        "recommendation": "Establish formal 'Gate Reviews' at project milestones (e.g., 3/6 months). Finance acts as independent assessor—comparing actuals to the business case. If ROI falls below threshold or milestones are missed, funding pauses until the sponsor presents a recovery plan. Pre-agree gates with leadership so kills aren't political. Finance must flag red, and leadership must act on the data.",
         "type": "governance"
       }
     },

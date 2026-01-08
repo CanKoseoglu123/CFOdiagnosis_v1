@@ -22,7 +22,7 @@ interface DiagnosticInput {
 // PAIN POINT PRACTICE MAP (mirrors frontend contextOptions.js)
 // =============================================================================
 
-const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
+export const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
   data_wrangling: [
     'prac_collaborative_systems',
     'prac_process_automation',
@@ -148,7 +148,7 @@ function wasBoostedByContext(
  * @param context - Optional VS26 pillar context for pain point boosting
  * @returns Calculated score (rounded to 1 decimal)
  */
-function calculateScore(
+export function calculateScore(
   question: SpecQuestion,
   calibration?: CalibrationData | null,
   context?: PillarContext | null

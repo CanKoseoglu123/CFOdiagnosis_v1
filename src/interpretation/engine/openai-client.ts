@@ -1,10 +1,25 @@
 /**
  * VS-32: OpenAI Client with Retry Logic
+ * Uses lazy initialization to avoid errors when OPENAI_API_KEY is not set at startup
  */
 
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let _openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
+
+// Export a proxy that lazily initializes on first access
+export const openai = new Proxy({} as OpenAI, {
+  get(_, prop) {
+    return (getOpenAI() as any)[prop];
+  }
+});
 
 interface RetryConfig {
   maxRetries: number;
@@ -37,5 +52,3 @@ export async function callOpenAI<T>(
 
   throw lastError;
 }
-
-export { openai };

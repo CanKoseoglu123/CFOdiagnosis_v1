@@ -1756,9 +1756,37 @@ app.use("/api/admin", adminRoutes);
 app.get("/admin/sessions", requireAdmin, async (req, res) => {
   // Require service role client to bypass RLS and list all users
   if (!supabaseAdmin) {
-    return res.status(503).json({
-      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
-    });
+    const { data, error } = await req.supabase
+      .from("diagnostic_runs")
+      .select(`
+        id,
+        owner_id,
+        user_email,
+        status,
+        spec_version,
+        context,
+        calibration,
+        setup_completed_at,
+        finalized_at,
+        created_at
+      `)
+      .eq("owner_id", req.userId || "")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    const enrichedData = (data || []).map((session: any) => ({
+      ...session,
+      user_email: session.user_email || req.userEmail || "unknown",
+      user_name: null,
+      company_name: session.context?.company?.name || session.context?.company_name || null,
+      industry: session.context?.company?.industry || session.context?.industry || null,
+    }));
+
+    res.setHeader("X-Admin-Debug", "adminClient=missing,fallback=owner_only");
+    return res.json(enrichedData);
   }
 
   // Use admin client to bypass RLS and see all runs
@@ -2162,6 +2190,8 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
     .insert({
       status: "created",
       spec_version: DEFAULT_SPEC_VERSION,
+      owner_id: req.userId || null,
+      user_email: req.userEmail || null,
       context: {
         company: {
           name: `Test Company (${scenario.name})`,

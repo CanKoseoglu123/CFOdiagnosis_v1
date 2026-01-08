@@ -13,7 +13,7 @@ import PriorityMatrix from '../components/report/PriorityMatrix';
 import ObjectivesPracticesOverview from '../components/report/ObjectivesPracticesOverview';
 import BenchmarkTab from '../components/report/BenchmarkTab';
 import { BRAND_COLORS } from '../components/Logo';
-import { processInterpretationSections } from '../utils/evidence';
+// Executive commentary uses direct sections from API (no evidence processing needed)
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -406,12 +406,14 @@ export default function ExecutiveReportPage() {
       setAiStatus('loading');
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
+      const headers = {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        'Content-Type': 'application/json'
+      };
 
-      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret-v32/status`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          'Content-Type': 'application/json'
-        }
+      // Check executive interpretation status
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret-executive/status`, {
+        headers
       });
 
       if (!res.ok) {
@@ -420,15 +422,70 @@ export default function ExecutiveReportPage() {
       }
 
       const data = await res.json();
-      if (data.status === 'completed') {
-        const processed = processInterpretationSections(data.report?.sections || []);
-        setAiSections(processed);
+
+      if (data.status === 'completed' && data.sections?.length > 0) {
+        // Executive commentary ready
+        setAiSections(data.sections);
         setAiStatus('complete');
+      } else if (data.status === 'generating') {
+        // Poll for completion
+        pollExecutiveInterpretation(headers);
+      } else if (data.status === 'not_finalized') {
+        // Not finalized yet, hide section
+        setAiStatus('empty');
+      } else {
+        // Trigger generation
+        const startRes = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret-executive`, {
+          method: 'POST',
+          headers
+        });
+
+        if (startRes.ok) {
+          // Poll for completion
+          pollExecutiveInterpretation(headers);
+        } else {
+          setAiStatus('error');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch interpretation:', err);
+      setAiStatus('error');
+    }
+  }
+
+  async function pollExecutiveInterpretation(headers, attempts = 0) {
+    if (attempts > 30) {
+      // Max 30 attempts (60 seconds)
+      setAiStatus('error');
+      return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    try {
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/interpret-executive/status`, {
+        headers
+      });
+
+      if (!res.ok) {
+        setAiStatus('error');
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.status === 'completed' && data.sections?.length > 0) {
+        setAiSections(data.sections);
+        setAiStatus('complete');
+      } else if (data.status === 'generating') {
+        pollExecutiveInterpretation(headers, attempts + 1);
+      } else if (data.status === 'failed') {
+        setAiStatus('error');
       } else {
         setAiStatus('empty');
       }
     } catch (err) {
-      console.error('Failed to fetch interpretation:', err);
+      console.error('Poll failed:', err);
       setAiStatus('error');
     }
   }
@@ -486,26 +543,11 @@ export default function ExecutiveReportPage() {
       .slice(0, 5);
   }, [reportData.objectiveData, objectiveTargets]);
 
+  // Use executive commentary sections directly from API
+  // Sections: current_state, actions_committed, projected_state
   const aiSummarySections = useMemo(() => {
-    const baseSections = aiSections.filter((section) => {
-      if (section.id === 'constraints') return false;
-      if (/constraint/i.test(section.title || '')) return false;
-      return true;
-    });
-
-    const topNames = reportData.topOpportunities?.map((o) => o.name).filter(Boolean);
-    const actionsSummary = reportData.actionCounts?.total
-      ? `Prioritize ${reportData.actionCounts.total} planned actions with focus on ${topNames?.length ? topNames.join(', ') : 'the highest uplift objectives'}. Near term actions (6m): ${reportData.actionCounts['6m']}, mid term (12m): ${reportData.actionCounts['12m']}, long term (24m): ${reportData.actionCounts['24m']}.`
-      : 'Prioritize the highest uplift objectives and formalize action owners and timelines to unlock measurable improvement.';
-
-    const outlookSummary = `If all planned actions are completed, execution score is projected to ${reportData.projectedScore}% with maturity level L${reportData.projectedLevel}.`;
-
-    return [
-      ...baseSections,
-      { id: 'actions', title: 'Actions', content: actionsSummary },
-      { id: 'outlook', title: '24 Month Outlook', content: outlookSummary }
-    ];
-  }, [aiSections, reportData]);
+    return aiSections;
+  }, [aiSections]);
 
   // Loading state
   if (loading) {
