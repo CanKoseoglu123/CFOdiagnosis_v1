@@ -162,6 +162,44 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Admin-only debug endpoint (protected - does not expose secrets)
+// Note: This endpoint is defined before requireAdmin middleware is available,
+// so we define a minimal inline check. Full admin routes use requireAdmin below.
+app.get("/admin/key-check", async (req, res) => {
+  // Inline admin check (requireAdmin not yet defined at this point in file)
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  const { data: { user } } = await req.supabase.auth.getUser();
+  const adminEmails = (process.env.ADMIN_EMAILS || "koseoglucan@gmail.com").split(',').map(e => e.trim().toLowerCase());
+  if (!user?.email || !adminEmails.includes(user.email.toLowerCase())) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+
+  // Only expose non-sensitive configuration status (no key contents or previews)
+  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
+
+  // Check if refs match without exposing actual values
+  let refsMatch = false;
+  if (isJWT && supabaseServiceRoleKey) {
+    try {
+      const payload = JSON.parse(Buffer.from(supabaseServiceRoleKey.split(".")[1], "base64").toString());
+      const ref = payload.ref || "";
+      const urlRef = supabaseUrl?.match(/https:\/\/([^.]+)\.supabase/)?.[1] || "";
+      refsMatch = ref === urlRef && ref !== "";
+    } catch (e) {
+      // Decode error - refs don't match
+    }
+  }
+
+  res.json({
+    configured: supabaseServiceRoleKey !== undefined && supabaseServiceRoleKey.length > 0,
+    isJWT,
+    refsMatch,
+    adminInitialized: supabaseAdmin !== null
+  });
+});
+
 // ------------------------------------------------------------------
 // Spec endpoints (public - no auth needed)
 // ------------------------------------------------------------------
