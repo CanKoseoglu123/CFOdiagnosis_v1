@@ -891,9 +891,11 @@ Internal/admin endpoints for system management:
 |:-------|:---------|:--------|:-------|
 | GET | `/admin/feedback` | List all feedback (admin) | ✅ Implemented |
 | DELETE | `/admin/feedback/:id` | Delete feedback entry | ✅ Implemented |
-| DELETE | `/admin/sessions/:id` | Delete interpretation session | ✅ Implemented |
+| DELETE | `/admin/sessions/:id` | **⚠️ Delete diagnostic run and ALL related data** (inputs, scores, interpretation sessions/reports, action plans) | ✅ Implemented |
 
 > **Note:** Admin endpoints require elevated permissions and are not part of the public API contract.
+
+> **⚠️ Warning:** The `/admin/sessions/:id` endpoint is destructive — it removes the entire diagnostic run, not just the interpretation session. Use with caution.
 
 ### 11.9 Spec & System
 
@@ -1063,6 +1065,7 @@ Items identified in MVP code review and reconciled in this spec update:
 | Flow: Context → Calibration → Questions | Flow: Company Setup → Persona → Pillar → Assessment → Calibration | Updated Section 12.1 |
 | `current_tools` transformation | Code handles `tools` or `systems`, not `current_tools` | Updated Section 7.2.2 |
 | Spec registry returns v3.1.0 | API returns v2.9.0, content files have own versions | Added note in header |
+| `/admin/sessions/:id` deletes session | Actually deletes entire run + all related data | Added warning in Section 11.8 |
 
 ---
 
