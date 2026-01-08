@@ -97,7 +97,7 @@ function PracticeBox({ practice }) {
 // OBJECTIVE COLUMN - Card with header + practices stack (no lines)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function ObjectiveColumn({ objective, practices, score, target }) {
+function ObjectiveColumn({ objective, practices, score }) {
   return (
     <div className="flex flex-col flex-1 min-w-[105px] max-w-[143px] border border-slate-300 rounded bg-slate-50 overflow-hidden">
       {/* Objective header with score bubble */}
@@ -106,11 +106,6 @@ function ObjectiveColumn({ objective, practices, score, target }) {
         {score !== undefined && (
           <span className={`absolute -top-0 -right-0 w-6 h-6 ${getScoreColor(score)} text-white text-[9px] font-bold rounded-bl-lg flex items-center justify-center`}>
             {score}
-          </span>
-        )}
-        {target !== undefined && (
-          <span className="absolute bottom-0 right-0 px-1 py-0.5 text-[8px] font-semibold text-amber-200 bg-amber-700/60 rounded-tl">
-            T{Number(target).toFixed(1)}
           </span>
         )}
         <span className="text-[9px] font-semibold leading-tight pr-3">
@@ -157,7 +152,7 @@ function Legend() {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default function ObjectivesPracticesOverview({ levels, objectiveScores = {}, objectiveTargets = {} }) {
+export default function ObjectivesPracticesOverview({ levels, objectiveScores = {} }) {
   // Flatten all practices from all levels and add level info
   const allPractices = [];
   (levels || []).forEach(level => {
@@ -214,7 +209,6 @@ export default function ObjectivesPracticesOverview({ levels, objectiveScores = 
               objective={objective}
               practices={practicesByObjective[objective.id] || []}
               score={objectiveScores[objective.id]}
-              target={objectiveTargets[objective.id]}
             />
           ))}
         </div>

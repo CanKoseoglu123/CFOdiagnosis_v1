@@ -14,7 +14,6 @@ import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import ChapterHeader from '../components/ChapterHeader';
 import WorkflowSidebar from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
-import MaturityBanner from '../components/report/MaturityBanner';
 import SummaryTable from '../components/report/SummaryTable';
 import StrengthsBar from '../components/report/StrengthsBar';
 import CriticalRisksCard from '../components/report/CriticalRisksCard';
@@ -64,7 +63,7 @@ export default function PillarReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const [includeCommittedActions, setIncludeCommittedActions] = useState(false);
+  const [includeCommittedActions, setIncludeCommittedActions] = useState(true);
 
   // VS-41: State for finalization validation (reported from ActionPlanTab)
   const [finalizationState, setFinalizationState] = useState({
@@ -344,12 +343,6 @@ export default function PillarReport() {
     objectiveScores[obj.id] = obj.score;
   });
 
-  // Build objective targets map for target markers (VS-27f)
-  const objectiveTargets = {};
-  (report.targets?.objectiveTargets || []).forEach(target => {
-    objectiveTargets[target.objective_id] = target.adjustedTarget;
-  });
-
   // VS-39: Callback for ActionPlanTab - navigate to Executive Report page
   async function handleFinalized() {
     await fetchReport();
@@ -470,14 +463,6 @@ export default function PillarReport() {
             </div>
           </div>
 
-          {/* Maturity Banner */}
-          <MaturityBanner
-            execution_score={executionScore}
-            potential_level={potentialLevel}
-            actual_level={actualLevel}
-            capped_by={cappedBy}
-          />
-
           {/* ─────────────────────────────────────────────────────────────── */}
           {/* NAVIGATION TABS (secondary navigation, in body) */}
           {/* ─────────────────────────────────────────────────────────────── */}
@@ -594,7 +579,6 @@ export default function PillarReport() {
               <ObjectivesPracticesOverview
                 levels={maturityLevels}
                 objectiveScores={objectiveScores}
-                objectiveTargets={objectiveTargets}
               />
 
               {/* VS-33: Priority Matrix (BCG-style triage) */}
