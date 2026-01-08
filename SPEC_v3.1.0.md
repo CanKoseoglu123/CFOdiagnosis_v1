@@ -891,7 +891,7 @@ Internal/admin endpoints for system management:
 |:-------|:---------|:--------|:-------|
 | GET | `/admin/feedback` | List all feedback (admin) | ✅ Implemented |
 | DELETE | `/admin/feedback/:id` | Delete feedback entry | ✅ Implemented |
-| DELETE | `/admin/sessions/:id` | **⚠️ Delete diagnostic run and ALL related data** (inputs, scores, interpretation sessions/reports, action plans) | ✅ Implemented |
+| DELETE | `/admin/sessions/:id` | **⚠️ Delete diagnostic run and ALL related data** (inputs, scores, interpretation sessions and reports, action plans) | ✅ Implemented |
 
 > **Note:** Admin endpoints require elevated permissions and are not part of the public API contract.
 
