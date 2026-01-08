@@ -161,32 +161,40 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-// Temporary debug endpoint
-app.get("/admin/key-check", (_req, res) => {
-  const keyLength = supabaseServiceRoleKey?.length || 0;
-  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
-  const keyPreview = supabaseServiceRoleKey?.substring(0, 15) + "...";
+// Admin-only debug endpoint (protected - does not expose secrets)
+// Note: This endpoint is defined before requireAdmin middleware is available,
+// so we define a minimal inline check. Full admin routes use requireAdmin below.
+app.get("/admin/key-check", async (req, res) => {
+  // Inline admin check (requireAdmin not yet defined at this point in file)
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  const { data: { user } } = await req.supabase.auth.getUser();
+  const adminEmails = ["koseoglucan@gmail.com"];
+  if (!user?.email || !adminEmails.includes(user.email.toLowerCase())) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
 
-  // Decode JWT payload to check role and ref
-  let role = "unknown";
-  let ref = "unknown";
+  // Only expose non-sensitive configuration status (no key contents or previews)
+  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
+
+  // Check if refs match without exposing actual values
+  let refsMatch = false;
   if (isJWT && supabaseServiceRoleKey) {
     try {
       const payload = JSON.parse(Buffer.from(supabaseServiceRoleKey.split(".")[1], "base64").toString());
-      role = payload.role || "no role field";
-      ref = payload.ref || "no ref field";
+      const ref = payload.ref || "";
+      const urlRef = supabaseUrl?.match(/https:\/\/([^.]+)\.supabase/)?.[1] || "";
+      refsMatch = ref === urlRef && ref !== "";
     } catch (e) {
-      role = "decode error";
+      // Decode error - refs don't match
     }
   }
 
-  // Extract ref from URL for comparison
-  const urlRef = supabaseUrl?.match(/https:\/\/([^.]+)\.supabase/)?.[1] || "unknown";
-
   res.json({
-    keyLength, isJWT, keyPreview, role, ref,
-    urlRef,
-    refsMatch: ref === urlRef,
+    configured: supabaseServiceRoleKey !== undefined && supabaseServiceRoleKey.length > 0,
+    isJWT,
+    refsMatch,
     adminInitialized: supabaseAdmin !== null
   });
 });
