@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
-  AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings
+  AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings,
+  FlaskConical, Play, Loader2
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -19,6 +20,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(null);
+
+  // Test Runner state
+  const [testScenarios, setTestScenarios] = useState([]);
+  const [runningTest, setRunningTest] = useState(null);
+  const [testResult, setTestResult] = useState(null);
 
   // Fetch data on mount and tab change
   useEffect(() => {
@@ -55,7 +61,7 @@ export default function AdminPage() {
 
         if (!res.ok) throw new Error('Failed to fetch sessions');
         setSessions(await res.json());
-      } else {
+      } else if (activeTab === 'feedback') {
         const res = await fetch(`${API_URL}/admin/feedback`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -68,6 +74,19 @@ export default function AdminPage() {
 
         if (!res.ok) throw new Error('Failed to fetch feedback');
         setFeedback(await res.json());
+      } else if (activeTab === 'test-runner') {
+        const res = await fetch(`${API_URL}/admin/test-scenarios`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 403) {
+          setError('Admin access denied. Your email is not whitelisted.');
+          setLoading(false);
+          return;
+        }
+
+        if (!res.ok) throw new Error('Failed to fetch test scenarios');
+        setTestScenarios(await res.json());
       }
     } catch (err) {
       setError(err.message);
@@ -113,6 +132,35 @@ export default function AdminPage() {
       alert('Delete failed: ' + err.message);
     } finally {
       setDeleting(null);
+    }
+  }
+
+  async function runTestScenario(scenarioId) {
+    setRunningTest(scenarioId);
+    setTestResult(null);
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/admin/test-run`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ scenario_id: scenarioId })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to create test run');
+      }
+
+      const result = await res.json();
+      setTestResult(result);
+    } catch (err) {
+      setTestResult({ error: err.message });
+    } finally {
+      setRunningTest(null);
     }
   }
 
@@ -235,6 +283,17 @@ export default function AdminPage() {
               </span>
             </button>
             <button
+              onClick={() => setActiveTab('test-runner')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'test-runner'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              <FlaskConical className="w-4 h-4" />
+              Test Runner
+            </button>
+            <button
               onClick={() => navigate('/admin/scoring-matrix')}
               className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-800 transition-colors"
             >
@@ -250,7 +309,7 @@ export default function AdminPage() {
         {/* Toolbar */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-slate-800">
-            {activeTab === 'sessions' ? 'All Diagnostic Sessions' : 'User Feedback'}
+            {activeTab === 'sessions' ? 'All Diagnostic Sessions' : activeTab === 'feedback' ? 'User Feedback' : 'Test Scenario Runner'}
           </h2>
           <button
             onClick={fetchData}
@@ -428,6 +487,96 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Test Runner */}
+        {!loading && activeTab === 'test-runner' && (
+          <div className="space-y-4">
+            {/* Test Result Banner */}
+            {testResult && (
+              <div className={`p-4 rounded border ${testResult.error ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
+                {testResult.error ? (
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                    <span className="text-red-700">{testResult.error}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                      <div>
+                        <div className="font-medium text-emerald-800">Test run created successfully</div>
+                        <div className="text-sm text-emerald-600">
+                          {testResult.scenario} - {testResult.questions_answered} questions answered
+                        </div>
+                      </div>
+                    </div>
+                    <a
+                      href={testResult.report_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded hover:bg-emerald-700"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      View Report
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Scenario Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {testScenarios.map((scenario) => (
+                <div
+                  key={scenario.id}
+                  className="bg-white border border-slate-200 rounded p-4 hover:border-slate-300 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-medium text-slate-800">{scenario.name}</h3>
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded ${
+                      scenario.id === 'perfect' ? 'bg-emerald-100 text-emerald-700' :
+                      scenario.id === 'failing' ? 'bg-red-100 text-red-700' :
+                      scenario.id === 'critical_block' ? 'bg-amber-100 text-amber-700' :
+                      'bg-blue-100 text-blue-700'
+                    }`}>
+                      {scenario.id === 'perfect' ? 'L4' :
+                       scenario.id === 'failing' ? 'L1' :
+                       scenario.id === 'l2_ceiling' ? 'L2' :
+                       scenario.id === 'l3_ceiling' ? 'L3' :
+                       scenario.id === 'critical_block' ? 'Blocked' :
+                       'Random'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-500 mb-4">{scenario.description}</p>
+                  <button
+                    onClick={() => runTestScenario(scenario.id)}
+                    disabled={runningTest !== null}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 text-white text-sm font-medium rounded hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {runningTest === scenario.id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Run Scenario
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {testScenarios.length === 0 && (
+              <div className="bg-white border border-slate-200 rounded p-8 text-center">
+                <FlaskConical className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-slate-500">No test scenarios available</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Stats Footer */}
         {!loading && (
           <div className="mt-4 text-sm text-slate-500">
@@ -437,12 +586,14 @@ export default function AdminPage() {
                 {' '}{sessions.filter(s => s.status === 'in_progress').length} in progress,
                 {' '}{sessions.filter(s => s.status === 'draft').length} drafts
               </span>
-            ) : (
+            ) : activeTab === 'feedback' ? (
               <span>
                 {feedback.filter(f => f.type === 'bug').length} bugs,
                 {' '}{feedback.filter(f => f.type === 'suggestion').length} suggestions,
                 {' '}{feedback.filter(f => f.type === 'confusion').length} confusion reports
               </span>
+            ) : (
+              <span>{testScenarios.length} test scenarios available</span>
             )}
           </div>
         )}

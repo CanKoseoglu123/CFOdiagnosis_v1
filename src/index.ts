@@ -22,6 +22,7 @@ import {
 import { deriveCriticalRisks } from "./risks";
 import { calculateMaturityV2 } from "./maturity/engine";
 import interpretationRoutesV32 from "./interpretation/engine/routes";
+import executiveInterpretationRoutes from "./interpretation/engine/executive-routes";
 import {
   DiagnosticContextV1Schema,
   CompanyContextSchema,
@@ -42,10 +43,12 @@ import { requireAdmin } from "./middleware/adminAuth";
 
 const app = express();
 
-// CORS: Allow production domains and Vercel preview deployments
+// CORS: Allow production domains, Vercel preview deployments, and local dev
 const allowedOrigins = [
   "https://cfo-lens.com",
   "https://cfodiagnosisv1.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
   "http://localhost:5173", // dev
   "http://localhost:5174", // dev alternate port
 ];
@@ -1735,6 +1738,11 @@ app.post("/feedback", async (req, res) => {
 app.use("/diagnostic-runs", interpretationRoutesV32);
 
 // ------------------------------------------------------------------
+// VS-45: Executive Report AI Commentary Routes
+// ------------------------------------------------------------------
+app.use("/diagnostic-runs", executiveInterpretationRoutes);
+
+// ------------------------------------------------------------------
 // VS-27b: Company Profile Classification Routes
 // ------------------------------------------------------------------
 app.use("/api/company-profiles", companyProfilesRoutes);
@@ -1905,6 +1913,338 @@ app.delete("/admin/feedback/:id", requireAdmin, async (req, res) => {
   }
 
   res.json({ success: true, deleted: id });
+});
+
+// ------------------------------------------------------------------
+// Admin Test Runner - Generate test diagnostic runs
+// ------------------------------------------------------------------
+interface TestScenario {
+  id: string;
+  name: string;
+  description: string;
+  generateAnswers: (questions: any[]) => Map<string, boolean>;
+  calibrationProfile: Record<string, number>;
+}
+
+const L1_CRITICALS_TEST = ["fpa_l1_q01", "fpa_l1_q02", "fpa_l1_q05", "fpa_l1_q09"];
+const L2_CRITICALS_TEST = ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q08"];
+
+const TEST_SCENARIOS: TestScenario[] = [
+  {
+    id: "perfect",
+    name: "Perfect Score (L4 Optimized)",
+    description: "All questions answered Yes - shows ideal state report",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      questions.forEach((q) => answers.set(q.id, true));
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 5,
+      obj_financial_controls: 5,
+      obj_performance_monitoring: 5,
+      obj_forecasting_agility: 5,
+      obj_driver_based_planning: 5,
+      obj_scenario_modeling: 5,
+      obj_strategic_influence: 5,
+      obj_decision_support: 5,
+      obj_operational_excellence: 5,
+    },
+  },
+  {
+    id: "failing",
+    name: "Complete Failure (L1 Blocked)",
+    description: "All questions answered No - shows worst-case with critical risks",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      questions.forEach((q) => answers.set(q.id, false));
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 5,
+      obj_financial_controls: 5,
+      obj_performance_monitoring: 3,
+      obj_forecasting_agility: 3,
+      obj_driver_based_planning: 3,
+      obj_scenario_modeling: 3,
+      obj_strategic_influence: 3,
+      obj_decision_support: 3,
+      obj_operational_excellence: 3,
+    },
+  },
+  {
+    id: "l2_ceiling",
+    name: "L2 Ceiling (Defined)",
+    description: "Pass L1 criticals, fail L2 criticals, ~60% score - shows L2 maturity",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      questions.forEach((q) => {
+        // Pass all L1 criticals
+        if (L1_CRITICALS_TEST.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // Fail all L2 criticals
+        else if (L2_CRITICALS_TEST.includes(q.id)) {
+          answers.set(q.id, false);
+        }
+        // L1 questions: 80% yes
+        else if (q.maturity_level === 1) {
+          answers.set(q.id, Math.random() < 0.8);
+        }
+        // L2 questions: 60% yes
+        else if (q.maturity_level === 2) {
+          answers.set(q.id, Math.random() < 0.6);
+        }
+        // L3+ questions: 30% yes
+        else {
+          answers.set(q.id, Math.random() < 0.3);
+        }
+      });
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 4,
+      obj_financial_controls: 4,
+      obj_performance_monitoring: 3,
+      obj_forecasting_agility: 4,
+      obj_driver_based_planning: 3,
+      obj_scenario_modeling: 3,
+      obj_strategic_influence: 3,
+      obj_decision_support: 3,
+      obj_operational_excellence: 3,
+    },
+  },
+  {
+    id: "l3_ceiling",
+    name: "L3 Ceiling (Managed)",
+    description: "Pass L1 & L2 criticals, ~85% score - shows L3 maturity",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      questions.forEach((q) => {
+        // Pass all L1 and L2 criticals
+        if (L1_CRITICALS_TEST.includes(q.id) || L2_CRITICALS_TEST.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // L1-L2 questions: 95% yes
+        else if (q.maturity_level <= 2) {
+          answers.set(q.id, Math.random() < 0.95);
+        }
+        // L3 questions: 75% yes
+        else if (q.maturity_level === 3) {
+          answers.set(q.id, Math.random() < 0.75);
+        }
+        // L4 questions: 40% yes
+        else {
+          answers.set(q.id, Math.random() < 0.4);
+        }
+      });
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 4,
+      obj_financial_controls: 4,
+      obj_performance_monitoring: 4,
+      obj_forecasting_agility: 4,
+      obj_driver_based_planning: 4,
+      obj_scenario_modeling: 4,
+      obj_strategic_influence: 4,
+      obj_decision_support: 4,
+      obj_operational_excellence: 3,
+    },
+  },
+  {
+    id: "critical_block",
+    name: "High Score, Critical Block",
+    description: "High scores (80%+) but fail L1 criticals - tests critical gate blocking",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      questions.forEach((q) => {
+        // Fail L1 criticals specifically
+        if (L1_CRITICALS_TEST.includes(q.id)) {
+          answers.set(q.id, false);
+        }
+        // Everything else: 85% yes
+        else {
+          answers.set(q.id, Math.random() < 0.85);
+        }
+      });
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 5,
+      obj_financial_controls: 5,
+      obj_performance_monitoring: 4,
+      obj_forecasting_agility: 4,
+      obj_driver_based_planning: 4,
+      obj_scenario_modeling: 4,
+      obj_strategic_influence: 4,
+      obj_decision_support: 4,
+      obj_operational_excellence: 4,
+    },
+  },
+  {
+    id: "realistic",
+    name: "Realistic Distribution",
+    description: "Randomized realistic mix simulating typical user responses",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      questions.forEach((q) => {
+        // Realistic distribution based on maturity level
+        // L1: Most companies have basics (70%)
+        // L2: Many have defined processes (55%)
+        // L3: Fewer have managed practices (35%)
+        // L4: Few are optimized (15%)
+        const prob =
+          q.maturity_level === 1
+            ? 0.7
+            : q.maturity_level === 2
+              ? 0.55
+              : q.maturity_level === 3
+                ? 0.35
+                : 0.15;
+        answers.set(q.id, Math.random() < prob);
+      });
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 4,
+      obj_financial_controls: 3,
+      obj_performance_monitoring: 3,
+      obj_forecasting_agility: 4,
+      obj_driver_based_planning: 3,
+      obj_scenario_modeling: 2,
+      obj_strategic_influence: 3,
+      obj_decision_support: 4,
+      obj_operational_excellence: 3,
+    },
+  },
+];
+
+// GET /admin/test-scenarios - List available test scenarios
+app.get("/admin/test-scenarios", requireAdmin, (req, res) => {
+  const scenarios = TEST_SCENARIOS.map((s) => ({
+    id: s.id,
+    name: s.name,
+    description: s.description,
+  }));
+  res.json(scenarios);
+});
+
+// POST /admin/test-run - Create a test diagnostic run with pre-filled data
+app.post("/admin/test-run", requireAdmin, async (req, res) => {
+  const { scenario_id } = req.body;
+
+  if (!scenario_id) {
+    return res.status(400).json({ error: "scenario_id is required" });
+  }
+
+  const scenario = TEST_SCENARIOS.find((s) => s.id === scenario_id);
+  if (!scenario) {
+    return res.status(400).json({
+      error: `Invalid scenario_id. Valid options: ${TEST_SCENARIOS.map((s) => s.id).join(", ")}`,
+    });
+  }
+
+  // Get spec for questions
+  let spec;
+  try {
+    spec = SpecRegistry.get(DEFAULT_SPEC_VERSION);
+  } catch (err) {
+    return res.status(500).json({ error: String(err) });
+  }
+
+  // Generate answers for this scenario
+  const answers = scenario.generateAnswers(spec.questions);
+
+  // 1. Create diagnostic run
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .insert({
+      status: "created",
+      spec_version: DEFAULT_SPEC_VERSION,
+      context: {
+        company: {
+          name: `Test Company (${scenario.name})`,
+          industry: "Technology",
+          revenue_range: "$10M - $50M",
+          employee_count: "51-200",
+        },
+        pillar: {
+          model_count: 5,
+          finance_ftes: 3,
+          erp_system: "QuickBooks",
+          planning_tool: "Excel",
+        },
+      },
+      calibration: {
+        importance_map: scenario.calibrationProfile,
+        locked: [],
+      },
+    })
+    .select()
+    .single();
+
+  if (runError || !run) {
+    return res.status(500).json({ error: runError?.message || "Failed to create run" });
+  }
+
+  const runId = run.id;
+
+  // 2. Insert all diagnostic inputs
+  const inputs = Array.from(answers.entries()).map(([questionId, value]) => ({
+    run_id: runId,
+    question_id: questionId,
+    value,
+  }));
+
+  const { error: inputError } = await req.supabase.from("diagnostic_inputs").insert(inputs);
+
+  if (inputError) {
+    // Cleanup run on failure
+    await req.supabase.from("diagnostic_runs").delete().eq("id", runId);
+    return res.status(500).json({ error: inputError.message });
+  }
+
+  // 3. Mark as completed
+  const { error: completeError } = await req.supabase
+    .from("diagnostic_runs")
+    .update({ status: "completed" })
+    .eq("id", runId);
+
+  if (completeError) {
+    return res.status(500).json({ error: completeError.message });
+  }
+
+  // 4. Calculate and store scores (reusing VS4 scoreRun logic)
+  try {
+    const scores = await scoreRun(req.supabase, runId);
+
+    if (scores.length > 0) {
+      const { error: scoreError } = await req.supabase
+        .from("diagnostic_scores")
+        .insert(
+          scores.map((s) => ({
+            run_id: runId,
+            question_id: s.question_id,
+            score: s.score,
+          }))
+        );
+
+      if (scoreError) {
+        console.error("[Test Run] Score storage error:", scoreError);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      run_id: runId,
+      scenario: scenario.name,
+      questions_answered: inputs.length,
+      report_url: `/report/${runId}`,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || "Failed to calculate scores" });
+  }
 });
 
 // ------------------------------------------------------------------
