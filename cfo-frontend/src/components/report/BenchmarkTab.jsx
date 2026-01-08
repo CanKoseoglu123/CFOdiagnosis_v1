@@ -42,9 +42,7 @@ function ObjectiveBar({ label, achieved, target, projected, isTotal, importance,
   const extensionHeight = projectedHeight !== null
     ? Math.max(0, projectedHeight - achievedHeight)
     : 0;
-  const [line1, line2] = splitLabel(label);
   const barColor = isTotal ? 'bg-[#103b6d]' : 'bg-[#0b2d5b]';
-  const labelColor = isTotal ? 'text-slate-800 font-semibold' : 'text-slate-700';
   const markerClass = importance === 5
     ? 'bg-red-500'
     : importance === 4
@@ -52,7 +50,7 @@ function ObjectiveBar({ label, achieved, target, projected, isTotal, importance,
       : null;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center w-20">
       <div className="relative w-16 h-[200px] flex items-end justify-center">
         <div
           className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-6 ${barColor}`}
@@ -81,10 +79,18 @@ function ObjectiveBar({ label, achieved, target, projected, isTotal, importance,
           />
         )}
       </div>
-      <div className={`text-sm text-center leading-snug max-w-[120px] min-h-[36px] ${labelColor}`}>
-        <span className="block">{line1}</span>
-        <span className="block">{line2}</span>
-      </div>
+    </div>
+  );
+}
+
+function ObjectiveLabel({ label, isTotal }) {
+  const [line1, line2] = splitLabel(label);
+  const labelColor = isTotal ? 'text-slate-800 font-semibold' : 'text-slate-700';
+
+  return (
+    <div className={`text-sm text-center leading-snug min-h-[36px] w-20 ${labelColor}`}>
+      <span className="block">{line1}</span>
+      <span className="block">{line2}</span>
     </div>
   );
 }
@@ -221,49 +227,61 @@ export default function BenchmarkTab({
               );
             })}
           </div>
-          <div
-            className="relative h-[200px] benchmark-chart"
-          >
-            {LEVEL_TICKS.map((tick) => {
-              const offset = (tick / 4) * CHART_HEIGHT;
-              return (
-                <div
-                  key={tick}
-                  className="absolute left-0 right-0 border-t border-slate-200/80"
-                  style={{ bottom: `${offset}px` }}
-                />
-              );
-            })}
-            <div className="flex items-end gap-8 px-2">
+          <div className="space-y-4">
+            <div className="relative h-[200px] benchmark-chart">
+              {LEVEL_TICKS.map((tick) => {
+                const offset = (tick / 4) * CHART_HEIGHT;
+                return (
+                  <div
+                    key={tick}
+                    className="absolute left-0 right-0 border-t border-slate-200/80"
+                    style={{ bottom: `${offset}px` }}
+                  />
+                );
+              })}
+              <div className="flex items-end gap-8 px-2 h-full">
+                {chartObjectives.map((objective) => {
+                  const isTotal = objective.id === 'total_company';
+                  const achieved = isTotal
+                    ? totalAchieved
+                    : achievedObjectives[objective.id] ?? 0;
+                  const target = isTotal
+                    ? totalTarget
+                    : objectiveTargets.get(objective.id);
+                  const projected = isTotal
+                    ? projectedTotal
+                    : projectedTargets[objective.id];
+                  const importance = isTotal ? null : importanceMap[objective.id];
+                  return (
+                    <ObjectiveBar
+                      key={objective.id}
+                      label={objective.name}
+                      achieved={achieved}
+                      target={target}
+                      projected={projected}
+                      isTotal={isTotal}
+                      importance={importance}
+                      showProjected={includeCommittedActions}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex items-start gap-8 px-2">
               {chartObjectives.map((objective) => {
                 const isTotal = objective.id === 'total_company';
-                const achieved = isTotal
-                  ? totalAchieved
-                  : achievedObjectives[objective.id] ?? 0;
-                const target = isTotal
-                  ? totalTarget
-                  : objectiveTargets.get(objective.id);
-                const projected = isTotal
-                  ? projectedTotal
-                  : projectedTargets[objective.id];
-                const importance = isTotal ? null : importanceMap[objective.id];
                 return (
-                  <ObjectiveBar
+                  <ObjectiveLabel
                     key={objective.id}
                     label={objective.name}
-                    achieved={achieved}
-                    target={target}
-                    projected={projected}
                     isTotal={isTotal}
-                    importance={importance}
-                    showProjected={includeCommittedActions}
                   />
                 );
               })}
             </div>
           </div>
         </div>
-        <div className="mt-16 border-t border-slate-200 pt-6">
+        <div className="mt-8 border-t border-slate-200 pt-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
             Benchmark Target Methodology
           </div>
