@@ -1,5 +1,5 @@
 {
-  "version": "2.17.0",
+  "version": "2.18.0",
   "pillar": "fpa",
   "questions": [
     {
@@ -357,16 +357,16 @@
     {
       "id": "fpa_l2_q05",
       "practice_id": "prac_budget_vs_actuals",
-      "text": "Are BvA reports distributed to budget owners within 5 business days of month-end close?",
-      "help": "Speed is critical for relevance. Delivering reports weeks after the month end reduces their value, as it's too late to influence the current month's actions.",
+      "text": "Are BvA and management reports distributed to budget owners within a defined SLA (e.g., 5 business days), consistently every month?",
+      "help": "Speed AND consistency are critical. Delivering reports weeks late reduces their value—it's too late to influence the current month. But inconsistent timing is equally damaging: if budget owners can't predict when reports arrive, they can't plan their reviews. Both speed and reliability signal process maturity.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Accelerate BvA Distribution",
-        "recommendation": "Automate the distribution. If you are copy-pasting into emails, you are too slow.",
+        "title": "Define and Hit Reporting SLA",
+        "recommendation": "Set and publish a delivery date (e.g., 'BvA by Day 5'). Track misses as a Finance KPI. Automate distribution—if you're copy-pasting into emails, you're too slow. Investigate root causes when deadlines slip. Consistency builds trust; occasional delays signal fragility.",
         "type": "structural"
       }
     },
@@ -467,6 +467,22 @@
       }
     },
     {
+      "id": "fpa_l3_q92",
+      "practice_id": "prac_cash_flow_visibility",
+      "text": "Does the short-term (13-week) cash forecast use the Direct Method—tracking actual receipts and payments—rather than deriving cash from P&L adjustments?",
+      "help": "The Indirect Method (starting from Net Income and adjusting for non-cash items) is fine for annual planning but useless for weekly liquidity management. The Direct Method tracks actual cash movements: when will customers pay? When do payroll and rent hit? For PE-backed or leveraged companies, this granularity is the difference between managing cash and being surprised by it.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Direct Method Cash Forecasting",
+        "recommendation": "Build a 13-week rolling cash forecast with actual receipt and payment line items: Customer Collections (by aging bucket), Payroll, Rent, AP by vendor/due date, Debt Service, CapEx. Update weekly. Tie the Week 1 forecast to actual bank movements to calibrate accuracy. This is the CFO's early warning system—if you can't see cash 13 weeks out, you're flying blind.",
+        "type": "structural"
+      }
+    },
+    {
       "id": "fpa_l2_q08",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Are working capital assumptions (DSO, DPO) explicitly modeled in the forecast?",
@@ -501,8 +517,8 @@
     {
       "id": "fpa_l2_q06",
       "practice_id": "prac_collaborative_systems",
-      "text": "Is the live forecast stored in a multi-user system rather than offline Excel files?",
-      "help": "Offline spreadsheets are prone to version errors and breakage. A multi-user system ensures a single source of truth and allows for real-time collaboration.",
+      "text": "Is the live forecast stored in a multi-user system that allows simultaneous updates without version conflicts?",
+      "help": "Offline spreadsheets are prone to version errors and breakage. A true collaborative system ensures single-source integrity AND allows multiple users to update their sections concurrently—Sales updating Revenue while HR updates Headcount. Without both, you have bottlenecks or chaos.",
       "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_forecast_infrastructure",
@@ -510,23 +526,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Migrate to Collaborative Planning",
-        "recommendation": "For sub-$100M revenue companies, cloud-based spreadsheets (Google Sheets, Excel Online) with strict cell-level protection and naming conventions may be more cost-effective than dedicated FP&A software. For $100M+, evaluate purpose-built tools (DataRails, Planful, Cube). The goal is single-source integrity and version control, not just tools.",
-        "type": "structural"
-      }
-    },
-    {
-      "id": "fpa_l2_q09",
-      "practice_id": "prac_collaborative_systems",
-      "text": "Can multiple users update their forecast inputs simultaneously without version conflicts?",
-      "help": "Simultaneous access speeds up the planning cycle. It prevents the bottleneck of waiting for one person to finish before another can start.",
-      "maturity_level": 2,
-      "is_critical": false,
-      "initiative_id": "init_forecast_infrastructure",
-      "impact": 4,
-      "complexity": 4,
-      "expert_action": {
-        "title": "Implement Concurrent Planning",
-        "recommendation": "Enable 'sheet protection' or database-level locking so Sales can update Revenue while HR updates Headcount simultaneously.",
+        "recommendation": "For sub-$100M revenue companies, cloud-based spreadsheets (Google Sheets, Excel Online) with strict cell-level protection and naming conventions may be more cost-effective than dedicated FP&A software. For $100M+, evaluate purpose-built tools (DataRails, Planful, Cube). Key test: can Sales and Finance update the same model at the same time without calling each other? The goal is single-source integrity AND concurrent access.",
         "type": "structural"
       }
     },
@@ -637,8 +637,8 @@
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Move to Continuous Planning",
-        "recommendation": "Stop 'freezing' the budget. Adopt a rolling view where the plan evolves with new information.",
+        "title": "Separate Budget from Latest View",
+        "recommendation": "Maintain the Budget as a FIXED anchor for accountability—it drives bonuses and Board commitments, so never overwrite it. But implement a separate 'Latest View' or 'Current Forecast' that floats with new information. Compare actuals against BOTH: Budget (for accountability) and Latest View (for operational relevance). This gives you the discipline of a fixed target AND the agility of continuous planning without the political chaos of moving goalposts.",
         "type": "behavioral"
       }
     },
@@ -973,8 +973,8 @@
       "impact": 5,
       "complexity": 5,
       "expert_action": {
-        "title": "Establish Kill Criteria",
-        "recommendation": "Pre-agree with the Board/CEO on specific milestones. If milestones aren't met by Date X, funding pauses automatically.",
+        "title": "Implement Gate Reviews with Finance as Truthmeister",
+        "recommendation": "Establish formal 'Gate Reviews' at pre-defined project milestones (e.g., 3 months, 6 months, first revenue). Finance acts as the independent assessor—comparing actuals to the original business case. If ROI falls below threshold or milestones are missed, funding pauses AUTOMATICALLY until the project sponsor presents a credible recovery plan. Pre-agree these gates with the Board/CEO so kills aren't political battles. The key: Finance must have mandate to flag red, and leadership must have pre-committed to act on the data.",
         "type": "governance"
       }
     },
@@ -1120,22 +1120,6 @@
         "title": "Automate Outlier Detection",
         "recommendation": "Implement statistical rules (e.g., +/- 2 standard deviations) to flag anomalies in user submissions before they roll up.",
         "type": "structural"
-      }
-    },
-    {
-      "id": "fpa_l2_q61",
-      "practice_id": "prac_process_automation",
-      "text": "Is the management reporting pack delivered within a defined SLA, every month without exception?",
-      "help": "Consistency builds trust. Occasional delays signal process fragility and reduce the relevance of financial information.",
-      "maturity_level": 2,
-      "is_critical": false,
-      "initiative_id": "init_operational_excellence",
-      "impact": 4,
-      "complexity": 2,
-      "expert_action": {
-        "title": "Define Reporting SLA",
-        "recommendation": "Set and publish a delivery date for the monthly pack. Track misses. Investigate root causes when deadlines slip.",
-        "type": "governance"
       }
     },
     {
