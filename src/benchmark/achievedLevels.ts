@@ -8,8 +8,12 @@ export interface AchievedLevelsResult {
 function getAchievedLevel(questions: SpecQuestion[], answers: Map<string, unknown>): number {
   if (questions.length === 0) return 0;
 
+  // Determine the max level present in questions for this practice
+  // This prevents advancing to levels that have no questions defined
+  const maxLevelPresent = Math.max(...questions.map((q) => q.level ?? 1));
+
   let achieved = 0;
-  for (let level = 1; level <= 4; level += 1) {
+  for (let level = 1; level <= maxLevelPresent; level += 1) {
     const eligible = questions.filter((q) => (q.level ?? 1) <= level);
     if (eligible.length === 0) {
       achieved = level;
