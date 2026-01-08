@@ -12,10 +12,20 @@ import { computeInputHash } from './precompute';
 
 const router = Router();
 
-// Service client for background operations (bypasses RLS)
+// Service client for background operations (bypasses RLS with service role)
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!;
-const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
+const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
+// Warn if service role key is not configured (interpretation will fail with RLS)
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Interpretation writes may fail due to RLS.');
+}
 
 /**
  * POST /diagnostic-runs/:id/interpret

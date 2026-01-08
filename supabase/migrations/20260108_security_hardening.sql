@@ -1,47 +1,30 @@
 -- Security Hardening Migration
 -- Date: January 8, 2026
 -- Addresses audit findings for RLS coverage and SECURITY DEFINER functions
+--
+-- NOTE: Service role clients (using SUPABASE_SERVICE_ROLE_KEY) automatically
+-- bypass RLS, so background workers using service role will continue to work.
 
 -- ============================================================
 -- 1. ENABLE RLS ON action_plans
 -- Previously relied only on API-level auth, now adds database-level protection
+-- Using FOR ALL with EXISTS for better performance
 -- ============================================================
 
 ALTER TABLE action_plans ENABLE ROW LEVEL SECURITY;
 
--- Users can view their own action plans (via run ownership)
-CREATE POLICY "Users can view their own action plans"
-  ON action_plans FOR SELECT
+CREATE POLICY "Users can manage their own action plans"
+  ON action_plans FOR ALL
   USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM diagnostic_runs
+      WHERE id = action_plans.run_id AND owner_id = auth.uid()
     )
-  );
-
--- Users can insert action plans for their own runs
-CREATE POLICY "Users can insert their own action plans"
-  ON action_plans FOR INSERT
+  )
   WITH CHECK (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
-    )
-  );
-
--- Users can update their own action plans
-CREATE POLICY "Users can update their own action plans"
-  ON action_plans FOR UPDATE
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
-    )
-  );
-
--- Users can delete their own action plans
-CREATE POLICY "Users can delete their own action plans"
-  ON action_plans FOR DELETE
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM diagnostic_runs
+      WHERE id = action_plans.run_id AND owner_id = auth.uid()
     )
   );
 
@@ -51,35 +34,18 @@ CREATE POLICY "Users can delete their own action plans"
 
 ALTER TABLE interpretation_sessions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own interpretation sessions"
-  ON interpretation_sessions FOR SELECT
+CREATE POLICY "Users can manage their own interpretation sessions"
+  ON interpretation_sessions FOR ALL
   USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM diagnostic_runs
+      WHERE id = interpretation_sessions.run_id AND owner_id = auth.uid()
     )
-  );
-
-CREATE POLICY "Users can insert their own interpretation sessions"
-  ON interpretation_sessions FOR INSERT
+  )
   WITH CHECK (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own interpretation sessions"
-  ON interpretation_sessions FOR UPDATE
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can delete their own interpretation sessions"
-  ON interpretation_sessions FOR DELETE
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM diagnostic_runs
+      WHERE id = interpretation_sessions.run_id AND owner_id = auth.uid()
     )
   );
 
@@ -90,43 +56,20 @@ CREATE POLICY "Users can delete their own interpretation sessions"
 
 ALTER TABLE interpretation_steps ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own interpretation steps"
-  ON interpretation_steps FOR SELECT
+CREATE POLICY "Users can manage their own interpretation steps"
+  ON interpretation_steps FOR ALL
   USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
+    EXISTS (
+      SELECT 1 FROM interpretation_sessions s
       JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
+      WHERE s.id = interpretation_steps.session_id AND r.owner_id = auth.uid()
     )
-  );
-
-CREATE POLICY "Users can insert their own interpretation steps"
-  ON interpretation_steps FOR INSERT
+  )
   WITH CHECK (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
+    EXISTS (
+      SELECT 1 FROM interpretation_sessions s
       JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own interpretation steps"
-  ON interpretation_steps FOR UPDATE
-  USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
-      JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can delete their own interpretation steps"
-  ON interpretation_steps FOR DELETE
-  USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
-      JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
+      WHERE s.id = interpretation_steps.session_id AND r.owner_id = auth.uid()
     )
   );
 
@@ -136,43 +79,20 @@ CREATE POLICY "Users can delete their own interpretation steps"
 
 ALTER TABLE interpretation_questions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own interpretation questions"
-  ON interpretation_questions FOR SELECT
+CREATE POLICY "Users can manage their own interpretation questions"
+  ON interpretation_questions FOR ALL
   USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
+    EXISTS (
+      SELECT 1 FROM interpretation_sessions s
       JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
+      WHERE s.id = interpretation_questions.session_id AND r.owner_id = auth.uid()
     )
-  );
-
-CREATE POLICY "Users can insert their own interpretation questions"
-  ON interpretation_questions FOR INSERT
+  )
   WITH CHECK (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
+    EXISTS (
+      SELECT 1 FROM interpretation_sessions s
       JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own interpretation questions"
-  ON interpretation_questions FOR UPDATE
-  USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
-      JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can delete their own interpretation questions"
-  ON interpretation_questions FOR DELETE
-  USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
-      JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
+      WHERE s.id = interpretation_questions.session_id AND r.owner_id = auth.uid()
     )
   );
 
@@ -182,35 +102,18 @@ CREATE POLICY "Users can delete their own interpretation questions"
 
 ALTER TABLE interpretation_reports ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own interpretation reports"
-  ON interpretation_reports FOR SELECT
+CREATE POLICY "Users can manage their own interpretation reports"
+  ON interpretation_reports FOR ALL
   USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM diagnostic_runs
+      WHERE id = interpretation_reports.run_id AND owner_id = auth.uid()
     )
-  );
-
-CREATE POLICY "Users can insert their own interpretation reports"
-  ON interpretation_reports FOR INSERT
+  )
   WITH CHECK (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own interpretation reports"
-  ON interpretation_reports FOR UPDATE
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can delete their own interpretation reports"
-  ON interpretation_reports FOR DELETE
-  USING (
-    run_id IN (
-      SELECT id FROM diagnostic_runs WHERE owner_id = auth.uid()
+    EXISTS (
+      SELECT 1 FROM diagnostic_runs
+      WHERE id = interpretation_reports.run_id AND owner_id = auth.uid()
     )
   );
 
@@ -220,43 +123,20 @@ CREATE POLICY "Users can delete their own interpretation reports"
 
 ALTER TABLE interpretation_ai_conversations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own ai conversations"
-  ON interpretation_ai_conversations FOR SELECT
+CREATE POLICY "Users can manage their own ai conversations"
+  ON interpretation_ai_conversations FOR ALL
   USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
+    EXISTS (
+      SELECT 1 FROM interpretation_sessions s
       JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
+      WHERE s.id = interpretation_ai_conversations.session_id AND r.owner_id = auth.uid()
     )
-  );
-
-CREATE POLICY "Users can insert their own ai conversations"
-  ON interpretation_ai_conversations FOR INSERT
+  )
   WITH CHECK (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
+    EXISTS (
+      SELECT 1 FROM interpretation_sessions s
       JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own ai conversations"
-  ON interpretation_ai_conversations FOR UPDATE
-  USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
-      JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can delete their own ai conversations"
-  ON interpretation_ai_conversations FOR DELETE
-  USING (
-    session_id IN (
-      SELECT s.id FROM interpretation_sessions s
-      JOIN diagnostic_runs r ON s.run_id = r.id
-      WHERE r.owner_id = auth.uid()
+      WHERE s.id = interpretation_ai_conversations.session_id AND r.owner_id = auth.uid()
     )
   );
 
@@ -362,9 +242,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER
 DROP TABLE IF EXISTS planning_context CASCADE;
 
 -- ============================================================
--- NOTES FOR OPERATIONAL SECURITY:
--- - The /admin/key-check endpoint in src/index.ts should be
---   removed or protected with admin auth before production
+-- NOTES:
+-- - Service role clients bypass RLS, so background workers
+--   (interpretation engine, etc.) will continue to function
 -- - feedback.user_email accepts raw client input; consider
 --   deriving from auth.uid() instead if not needed for
 --   anonymous feedback
