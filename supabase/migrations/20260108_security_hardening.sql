@@ -4,6 +4,7 @@
 --
 -- NOTE: Service role clients (using SUPABASE_SERVICE_ROLE_KEY) automatically
 -- bypass RLS, so background workers using service role will continue to work.
+-- See: src/interpretation/engine/routes.ts for service client usage.
 
 -- ============================================================
 -- 1. ENABLE RLS ON action_plans
