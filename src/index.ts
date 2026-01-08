@@ -38,6 +38,7 @@ import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/
 // VS-27b: Company Profile Classification routes
 import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
+import { requireAdmin } from "./middleware/adminAuth";
 
 const app = express();
 
@@ -763,14 +764,6 @@ app.post("/diagnostic-inputs", async (req, res) => {
   }
 
   res.status(201).json(data);
-});
-
-// ------------------------------------------------------------------
-// VS3 — Debug validation endpoint
-// ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/validate", async (req, res) => {
-  const result = await validateRun(req.supabase, req.params.id);
-  res.json(result);
 });
 
 // ------------------------------------------------------------------
@@ -1693,7 +1686,7 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
 // Beta Testing: Feedback collection
 // ------------------------------------------------------------------
 app.post("/feedback", async (req, res) => {
-  const { run_id, page, type, message, user_email, user_agent } = req.body;
+  const { run_id, page, type, message, user_agent } = req.body;
 
   if (!message || typeof message !== "string" || message.trim().length === 0) {
     return res.status(400).json({ error: "Message is required" });
@@ -1703,12 +1696,14 @@ app.post("/feedback", async (req, res) => {
   const validTypes = ["bug", "confusion", "suggestion", "general"];
   const feedbackType = validTypes.includes(type) ? type : "general";
 
+  // Use authenticated user email (server-side) - prevents spoofing
+  // Falls back to null for anonymous feedback
   const { data, error } = await req.supabase
     .from("feedback")
     .insert({
       run_id: run_id || null,
       user_id: req.userId || null,
-      user_email: user_email || null,
+      user_email: req.userEmail || null,
       page: page || null,
       type: feedbackType,
       message: message.trim(),
@@ -1746,27 +1741,8 @@ app.use("/api/company-profiles", companyProfilesRoutes);
 app.use("/api/admin", adminRoutes);
 
 // ------------------------------------------------------------------
-// Admin Routes - Email whitelist protected
+// Admin Routes - Email whitelist protected (via middleware/adminAuth.ts)
 // ------------------------------------------------------------------
-const ADMIN_EMAILS = [
-  "koseoglucan@gmail.com",
-  // Add more admin emails here
-];
-
-// Admin auth middleware
-async function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
-
-  // Get user email from Supabase
-  const { data: { user } } = await req.supabase.auth.getUser();
-  if (!user?.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-
-  next();
-}
 
 // GET /admin/sessions - List all diagnostic runs
 app.get("/admin/sessions", requireAdmin, async (req, res) => {
