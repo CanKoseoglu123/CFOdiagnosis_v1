@@ -38,6 +38,7 @@ import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/
 // VS-27b: Company Profile Classification routes
 import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
+import { requireAdmin } from "./middleware/adminAuth";
 
 const app = express();
 
@@ -161,32 +162,40 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-// Temporary debug endpoint
-app.get("/admin/key-check", (_req, res) => {
-  const keyLength = supabaseServiceRoleKey?.length || 0;
-  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
-  const keyPreview = supabaseServiceRoleKey?.substring(0, 15) + "...";
+// Admin-only debug endpoint (protected - does not expose secrets)
+// Note: This endpoint is defined before requireAdmin middleware is available,
+// so we define a minimal inline check. Full admin routes use requireAdmin below.
+app.get("/admin/key-check", async (req, res) => {
+  // Inline admin check (requireAdmin not yet defined at this point in file)
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  const { data: { user } } = await req.supabase.auth.getUser();
+  const adminEmails = (process.env.ADMIN_EMAILS || "koseoglucan@gmail.com").split(',').map(e => e.trim().toLowerCase());
+  if (!user?.email || !adminEmails.includes(user.email.toLowerCase())) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
 
-  // Decode JWT payload to check role and ref
-  let role = "unknown";
-  let ref = "unknown";
+  // Only expose non-sensitive configuration status (no key contents or previews)
+  const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
+
+  // Check if refs match without exposing actual values
+  let refsMatch = false;
   if (isJWT && supabaseServiceRoleKey) {
     try {
       const payload = JSON.parse(Buffer.from(supabaseServiceRoleKey.split(".")[1], "base64").toString());
-      role = payload.role || "no role field";
-      ref = payload.ref || "no ref field";
+      const ref = payload.ref || "";
+      const urlRef = supabaseUrl?.match(/https:\/\/([^.]+)\.supabase/)?.[1] || "";
+      refsMatch = ref === urlRef && ref !== "";
     } catch (e) {
-      role = "decode error";
+      // Decode error - refs don't match
     }
   }
 
-  // Extract ref from URL for comparison
-  const urlRef = supabaseUrl?.match(/https:\/\/([^.]+)\.supabase/)?.[1] || "unknown";
-
   res.json({
-    keyLength, isJWT, keyPreview, role, ref,
-    urlRef,
-    refsMatch: ref === urlRef,
+    configured: supabaseServiceRoleKey !== undefined && supabaseServiceRoleKey.length > 0,
+    isJWT,
+    refsMatch,
     adminInitialized: supabaseAdmin !== null
   });
 });
@@ -755,14 +764,6 @@ app.post("/diagnostic-inputs", async (req, res) => {
   }
 
   res.status(201).json(data);
-});
-
-// ------------------------------------------------------------------
-// VS3 — Debug validation endpoint
-// ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/validate", async (req, res) => {
-  const result = await validateRun(req.supabase, req.params.id);
-  res.json(result);
 });
 
 // ------------------------------------------------------------------
@@ -1685,7 +1686,7 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
 // Beta Testing: Feedback collection
 // ------------------------------------------------------------------
 app.post("/feedback", async (req, res) => {
-  const { run_id, page, type, message, user_email, user_agent } = req.body;
+  const { run_id, page, type, message, user_agent } = req.body;
 
   if (!message || typeof message !== "string" || message.trim().length === 0) {
     return res.status(400).json({ error: "Message is required" });
@@ -1695,12 +1696,14 @@ app.post("/feedback", async (req, res) => {
   const validTypes = ["bug", "confusion", "suggestion", "general"];
   const feedbackType = validTypes.includes(type) ? type : "general";
 
+  // Use authenticated user email (server-side) - prevents spoofing
+  // Falls back to null for anonymous feedback
   const { data, error } = await req.supabase
     .from("feedback")
     .insert({
       run_id: run_id || null,
       user_id: req.userId || null,
-      user_email: user_email || null,
+      user_email: req.userEmail || null,
       page: page || null,
       type: feedbackType,
       message: message.trim(),
@@ -1738,27 +1741,8 @@ app.use("/api/company-profiles", companyProfilesRoutes);
 app.use("/api/admin", adminRoutes);
 
 // ------------------------------------------------------------------
-// Admin Routes - Email whitelist protected
+// Admin Routes - Email whitelist protected (via middleware/adminAuth.ts)
 // ------------------------------------------------------------------
-const ADMIN_EMAILS = [
-  "koseoglucan@gmail.com",
-  // Add more admin emails here
-];
-
-// Admin auth middleware
-async function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
-
-  // Get user email from Supabase
-  const { data: { user } } = await req.supabase.auth.getUser();
-  if (!user?.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-
-  next();
-}
 
 // GET /admin/sessions - List all diagnostic runs
 app.get("/admin/sessions", requireAdmin, async (req, res) => {

@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 
 // Admin emails - can be extended via ADMIN_EMAILS env var
 // Format: comma-separated list of emails
-const DEFAULT_ADMIN_EMAILS = ['can@cfolens.com', 'can@cfo-lens.com'];
+const DEFAULT_ADMIN_EMAILS = ['can@cfolens.com', 'can@cfo-lens.com', 'koseoglucan@gmail.com'];
 
 function getAdminEmails(): string[] {
   const envEmails = process.env.ADMIN_EMAILS;
