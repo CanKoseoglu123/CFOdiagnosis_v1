@@ -170,7 +170,7 @@ app.get("/admin/key-check", async (req, res) => {
     return res.status(401).json({ error: "Authentication required" });
   }
   const { data: { user } } = await req.supabase.auth.getUser();
-  const adminEmails = ["koseoglucan@gmail.com"];
+  const adminEmails = (process.env.ADMIN_EMAILS || "koseoglucan@gmail.com").split(',').map(e => e.trim().toLowerCase());
   if (!user?.email || !adminEmails.includes(user.email.toLowerCase())) {
     return res.status(403).json({ error: "Admin access required" });
   }
