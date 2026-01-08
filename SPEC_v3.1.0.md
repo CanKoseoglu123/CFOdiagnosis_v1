@@ -1,11 +1,13 @@
 # 🚀 FINANCE DIAGNOSTIC PLATFORM — SYSTEM SPEC
 
-**Version:** v3.1.0  
-**Status:** FINAL / FROZEN  
-**Supersedes:** v3.0.0  
-**Audience:** Product, Engineering, Design, Content  
-**Change Type:** Context Modifier & Pain Point Mapping (VS-26)  
+**Version:** v3.1.0
+**Status:** FINAL / FROZEN
+**Supersedes:** v3.0.0
+**Audience:** Product, Engineering, Design, Content
+**Change Type:** Context Modifier & Pain Point Mapping (VS-26)
 **Engineering Review:** Complete — reflects actual implementation through VS-40, VS-26
+
+> **Implementation Note:** The deployed spec registry API currently returns `v2.9.0`. Content file versions: `questions.json` v2.17.0, `gates.json` v2.9.0. This spec document (v3.1.0) represents the target specification; version alignment is tracked as a future release task.
 
 ---
 
@@ -24,7 +26,9 @@ To support future scalability (e.g., adding Record-to-Report, Order-to-Cash), we
 To enable cross-functional reporting (e.g., "Show me all Automation maturity"), we add a metadata layer to Practices.
 
 - **Field:** `capability_tags` (Array of Strings)
-- **Standard Values:** `['People', 'Process', 'Technology', 'Data', 'Governance', 'Culture', 'Risk']`
+- **Standard Values:** `['People', 'Process', 'Technology', 'Data', 'Governance', 'Culture', 'Risk', 'Communication']`
+
+> **Note:** The tag list is extensible. Content authors may add domain-specific tags beyond the standard set.
 
 ### 1.3 The 3×3×3 Content Hierarchy
 
@@ -101,7 +105,7 @@ Aligned 3 per Theme:
 | `gates.json` | 1 | Critical gates and score thresholds |
 | `targetMatrix.json` | 1 | Persona-specific maturity targets (VS-27e) |
 
-Themes are derived from `objectives.json` via `objective.theme_id` in the spec loader.
+**Theme Source:** Themes are provided by `content/themes.json`. The API also maintains a fallback `THEMES` constant for responses when themes.json is unavailable. Theme IDs in `objectives.json` (`objective.theme_id`) reference these theme definitions.
 
 ### 3.2 initiatives.json Schema
 
@@ -191,7 +195,7 @@ CREATE TABLE diagnostic_runs (
   benchmark_commentary JSONB,
   
   -- Assessment State
-  status TEXT CHECK (status IN ('draft', 'in_progress', 'completed')),
+  status TEXT CHECK (status IN ('created', 'draft', 'in_progress', 'completed')),
   completed_at TIMESTAMPTZ,
   
   -- VS-39: Finalization
@@ -216,19 +220,20 @@ CREATE TABLE diagnostic_inputs (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   run_id UUID REFERENCES diagnostic_runs(id) ON DELETE CASCADE,
   question_id TEXT NOT NULL,               -- e.g., 'fpa_l1_q01'
-  value TEXT CHECK (value IS NULL OR value IN ('true', 'false', 'N/A')),
+  value TEXT,                              -- See note below for accepted values
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(run_id, question_id)
 );
 ```
 
-**Note:** The `value` field accepts:
-- `'true'` - Yes/Implemented
-- `'false'` - No/Not implemented
-- `'N/A'` - Not applicable
+**Note:** The `value` field accepts multiple formats for flexibility:
+- **Boolean:** `true` / `false` (UI sends native booleans)
+- **Text:** `'true'` / `'false'` / `'N/A'` (legacy/API compatibility)
+
+The scoring engine normalizes all inputs to boolean for calculation. `'N/A'` responses are excluded from scoring.
 
 #### company_profiles (VS-27b/VS-27c)
 
@@ -511,6 +516,9 @@ ContextModifier = min(2.0, 1.0 × 1.5^matching_count)
 | `scenario_planning` | Scenario planning gaps | prac_rapid_what_if_capability, prac_multi_scenario_management, prac_stress_testing |
 | `communication` | Communicating to non-finance execs | prac_data_visualization, prac_board_level_impact, prac_operational_drivers |
 | `realtime_visibility` | Real-time visibility gaps | prac_month_end_rigor, prac_self_service_analytics, prac_management_reporting |
+| `data_silos` | Data silos across systems | prac_collaborative_systems, prac_chart_of_accounts, prac_self_service_analytics |
+
+> **Note:** The `data_silos` pain point is supported in the UI/schema but does not currently receive context boosting in the backend scoring engine. This is a known gap tracked for future enhancement.
 
 ### 5.7 Combined Multiplier Cap
 
@@ -621,32 +629,55 @@ shape in `diagnostic_runs.context` that contains pillar data only.
 | `scenario_planning` | Scenario planning gaps |
 | `communication` | Communicating to non-finance execs |
 | `realtime_visibility` | Real-time visibility gaps |
+| `data_silos` | Data silos across systems |
 
 See Section 5.6.3 for mapping to practices.
 
+> **Legacy Values:** The UI/schema may contain additional legacy pain point identifiers for backward compatibility. New implementations should use the values listed above.
+
 ### 7.2.2 Legacy Data Transformation
 
-For backward compatibility with runs created before VS-26, loaders must transform legacy `current_tools` (string array) to the new `tools` (object array) format:
+For backward compatibility with runs created before VS-26, the context normalizer handles multiple input formats:
 
 ```typescript
-// Legacy Transformation (loader responsibility)
-function transformLegacyTools(context: any): Context {
-  if (Array.isArray(context.current_tools) && !context.tools) {
-    context.tools = context.current_tools.map(tool => ({
-      tool: tool,
-      effectiveness: 'medium'  // Safe default assumption
+// Context Normalization (loader responsibility)
+function normalizeContext(context: any): Context {
+  // Handle tools in multiple formats
+  if (context.tools) {
+    // Case 1: Already in object format [{tool, effectiveness}]
+    if (Array.isArray(context.tools) && context.tools[0]?.tool) {
+      // Already normalized
+    }
+    // Case 2: Simple string array ['Excel', 'Anaplan']
+    else if (Array.isArray(context.tools)) {
+      context.tools = context.tools.map(tool => ({
+        tool: typeof tool === 'string' ? tool : tool.tool,
+        effectiveness: 'medium'
+      }));
+    }
+  }
+  // Case 3: Legacy 'systems' field (v2 pillar-only context)
+  else if (context.systems) {
+    context.tools = context.systems.map(s => ({
+      tool: s,
+      effectiveness: 'medium'
     }));
-    delete context.current_tools;
+    delete context.systems;
   }
   return context;
 }
 ```
 
+**Accepted Input Formats:**
+- `tools: Array<{tool: string, effectiveness: 'low'|'medium'|'high'}>` — Current format
+- `tools: string[]` — Simple tool names, effectiveness defaults to 'medium'
+- `systems: string[]` — Legacy v2 format, transformed to `tools`
+
 **Rules:**
-- Legacy `current_tools: string[]` → Transform to `tools: Array<{tool, effectiveness}>`
 - Default effectiveness: `'medium'` (neutral assumption)
-- Transformation happens at read-time, not migration
-- New runs should only use the `tools` format
+- Transformation happens at read-time, not via migration
+- New runs should only use the object `tools` format
+- V2 "pillar-only" context (no company data) is supported for existing runs
 
 ### 7.3 Workflow
 
@@ -742,15 +773,19 @@ Before finalization is allowed:
 - [ ] All selected actions have timeline assigned
 - [ ] All selected actions have owner assigned (configurable)
 
+> **Current Implementation Status:** These validation rules are enforced **client-side only** in the current MVP. The server-side `/finalize` endpoint does not validate these rules before creating the snapshot. Server-side validation is planned for a future release. The `/finalize/validate` endpoint specified below is **not yet implemented**.
+
 ### 10.3 Finalization Flow
 
 ```
-1. Validate all rules pass
-2. Create action_plan_snapshot (JSONB copy of current plans)
-3. Set finalized_at timestamp
-4. Lock action_plans for this run (no edits)
-5. Unlock Executive Report tab
+1. [UI] Validate all rules pass (client-side)
+2. [API] Create action_plan_snapshot (JSONB copy of current plans)
+3. [API] Set finalized_at timestamp
+4. [UI] Lock action_plans for this run (no edits)
+5. [UI] Unlock Executive Report tab
 ```
+
+**Note:** Timeline and owner fields are optional in the `action_plans` table schema. The UI enforces these as required before allowing finalization.
 
 ### 10.4 Post-Finalization State
 
@@ -767,23 +802,24 @@ Before finalization is allowed:
 
 ### 11.1 Core CRUD
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| GET | `/diagnostic-runs` | List user's diagnostic runs |
-| POST | `/diagnostic-runs` | Create new diagnostic run |
-| GET | `/diagnostic-runs/:id` | Get single run with inputs |
-| DELETE | `/diagnostic-runs/:id` | Delete run and related data |
-| GET | `/diagnostic-inputs/:runId` | Get all inputs for a run |
-| POST | `/diagnostic-inputs` | Save/update input response |
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| GET | `/diagnostic-runs` | List user's diagnostic runs | 🔮 Planned |
+| POST | `/diagnostic-runs` | Create new diagnostic run | ✅ Implemented |
+| GET | `/diagnostic-runs/:id` | Get single run with inputs | ✅ Implemented |
+| DELETE | `/diagnostic-runs/:id` | Delete run and related data | 🔮 Planned |
+| GET | `/diagnostic-inputs/:runId` | Get all inputs for a run | 🔮 Planned |
+| POST | `/diagnostic-inputs` | Save/update input response | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/validate` | Debug: validate run state | ✅ Implemented (debug) |
 
 ### 11.2 Setup & Calibration
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| GET | `/diagnostic-runs/:id/setup` | Get context intake state |
-| POST | `/diagnostic-runs/:id/setup` | Save context intake |
-| GET | `/diagnostic-runs/:id/calibration` | Get calibration state |
-| POST | `/diagnostic-runs/:id/calibration` | Save objective importance |
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| GET | `/diagnostic-runs/:id/setup` | Get context intake state | 🔮 Planned |
+| POST | `/diagnostic-runs/:id/setup` | Save context intake | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/calibration` | Get calibration state | ✅ Implemented |
+| POST | `/diagnostic-runs/:id/calibration` | Save objective importance | ✅ Implemented |
 
 ### 11.2.1 Persona & Benchmarking (VS-27)
 
@@ -814,44 +850,60 @@ Before finalization is allowed:
 
 All interpretation endpoints are nested under `/diagnostic-runs/:id/`:
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| POST | `/diagnostic-runs/:id/interpret/start` | Begin interpretation session |
-| GET | `/diagnostic-runs/:id/interpret/status` | Get session status |
-| POST | `/diagnostic-runs/:id/interpret/answer` | Submit answer to critic question |
-| GET | `/diagnostic-runs/:id/interpret/report` | Get generated report |
-| POST | `/diagnostic-runs/:id/interpret/feedback` | Submit feedback on AI quality |
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| POST | `/diagnostic-runs/:id/interpret/start` | Begin interpretation session | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/interpret/status` | Get session status | ✅ Implemented |
+| POST | `/diagnostic-runs/:id/interpret/answer` | Submit answer to critic question | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/interpret/report` | Get generated report | ✅ Implemented |
+| POST | `/diagnostic-runs/:id/interpret/feedback` | Submit feedback on AI quality | ✅ Implemented |
+| POST | `/diagnostic-runs/:id/interpret-v32` | Begin v32 AI interpretation | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/interpret-v32/status` | Get v32 interpretation status | ✅ Implemented |
 
 ### 11.5 Action Planning (VS-28)
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| GET | `/diagnostic-runs/:id/action-plan` | Get current action plans |
-| POST | `/diagnostic-runs/:id/action-plan` | Create/update action plan |
-| DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action plan by question ID |
-| GET | `/diagnostic-runs/:id/action-plan/simulate` | Get projected scores |
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| GET | `/diagnostic-runs/:id/action-plan` | Get current action plans | ✅ Implemented |
+| POST | `/diagnostic-runs/:id/action-plan` | Create/update action plan | ✅ Implemented |
+| DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action plan by question ID | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/action-plan/simulate` | Get projected scores | 🔮 Planned |
 
 ### 11.6 Finalization (VS-39)
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| POST | `/diagnostic-runs/:id/finalize` | Lock action plan |
-| GET | `/diagnostic-runs/:id/finalize/validate` | Check if ready to finalize |
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| POST | `/diagnostic-runs/:id/finalize` | Lock action plan | ✅ Implemented |
+| GET | `/diagnostic-runs/:id/finalize/validate` | Check if ready to finalize | 🔮 Planned |
 
 ### 11.7 Feedback
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| POST | `/feedback` | Submit user feedback |
-| GET | `/feedback` | Get user's feedback history |
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| POST | `/feedback` | Submit user feedback | ✅ Implemented |
+| GET | `/feedback` | Get user's feedback history | 🔮 Planned |
 
-### 11.8 Spec & System
+### 11.8 Admin Endpoints
 
-| Method | Endpoint | Purpose |
-|:-------|:---------|:--------|
-| GET | `/api/spec` | Get full content spec |
-| GET | `/spec/questions` | Get questions only |
-| GET | `/supabase-health` | Health check |
+Internal/admin endpoints for system management:
+
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| GET | `/admin/feedback` | List all feedback (admin) | ✅ Implemented |
+| DELETE | `/admin/feedback/:id` | Delete feedback entry | ✅ Implemented |
+| DELETE | `/admin/sessions/:id` | **⚠️ Delete diagnostic run and ALL related data** (inputs, scores, interpretation sessions and reports, action plans) | ✅ Implemented |
+
+> **Note:** Admin endpoints require elevated permissions and are not part of the public API contract.
+
+> **⚠️ Warning:** The `/admin/sessions/:id` endpoint is destructive — it removes the entire diagnostic run and all its related data, not just the interpretation session. Use with caution.
+
+### 11.9 Spec & System
+
+| Method | Endpoint | Purpose | Status |
+|:-------|:---------|:--------|:-------|
+| GET | `/api/spec` | Get full content spec | ✅ Implemented |
+| GET | `/spec/questions` | Get questions only | ✅ Implemented |
+| GET | `/supabase-health` | Health check | ✅ Implemented |
 
 ---
 
@@ -860,9 +912,20 @@ All interpretation endpoints are nested under `/diagnostic-runs/:id/`:
 ### 12.1 Assessment Flow
 
 ```
-Context Intake → Calibration → Questions → Results → War Room → Executive Report
-     (VS-18)       (VS-21)       (Core)    (Core)    (VS-28)      (VS-39)
+Company Setup → Persona Confirmation → Pillar Setup → Intro → Objective Assessment → Calibration → Report
+   (VS-27c)          (VS-27b)           (VS-18)               (Core, per-objective)    (VS-21)     (VS-28/VS-39)
 ```
+
+**Flow Details:**
+1. **Company Setup** — User enters company information; system classifies persona
+2. **Persona Confirmation** — User reviews/adjusts persona classification
+3. **Pillar Setup** — User enters pillar-specific context (team size, tools, pain points)
+4. **Intro** — Assessment introduction screen
+5. **Objective Assessment** — Questions presented grouped by objective (not flat list)
+6. **Calibration** — User assigns importance weights to objectives
+7. **Report** — Results dashboard with embedded Action Planning (War Room) and Executive Report
+
+> **Note:** Action Planning is integrated within the Report view rather than as a separate step. The Executive Report unlocks after finalization.
 
 ### 12.2 Results Dashboard
 
@@ -986,9 +1049,28 @@ Items from v3.0.0 updated in v3.1.0:
 | `pain_points` freeform | Now 9 defined values with practice mappings |
 | Priority formula 4 factors | Now 5 factors (+ContextModifier) |
 
+### v3.1.0 Implementation Reconciliation (Post-Review)
+
+Items identified in MVP code review and reconciled in this spec update:
+
+| Spec Claim | Implementation Reality | Resolution |
+|:-----------|:----------------------|:-----------|
+| Themes derived from objectives | Themes from `content/themes.json` + fallback THEMES constant | Updated Section 3.1 |
+| `capability_tags` standard values | Implementation includes 'Communication' tag | Added to Section 1.2 |
+| 9 pain points only | UI/schema includes `data_silos` | Added to Sections 5.6.3, 7.2.1 |
+| `diagnostic_inputs.value` is text only | UI sends boolean values | Updated Section 4.1 to allow both |
+| Run status: draft/in_progress/completed | API uses 'created' status on creation | Added 'created' to Section 4.1 |
+| Server-side finalization validation | Validation is client-side only | Clarified in Section 10.2 |
+| All API endpoints implemented | Several endpoints are planned only | Added status column to Section 11 |
+| Flow: Context → Calibration → Questions | Flow: Company Setup → Persona → Pillar → Assessment → Calibration | Updated Section 12.1 |
+| `current_tools` transformation | Code handles `tools` or `systems`, not `current_tools` | Updated Section 7.2.2 |
+| Spec registry returns v3.1.0 | API returns v2.9.0, content files have own versions | Added note in header |
+| `/admin/sessions/:id` deletes session | Actually deletes entire run + all related data | Added warning in Section 11.8 |
+
 ---
 
 **END OF SPECIFICATION**
 
-*Document version: v3.1.0*  
+*Document version: v3.1.0*
 *Reflects implementation through VS-40, VS-26*
+*Updated: Post-MVP code review reconciliation*
