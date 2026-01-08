@@ -1,5 +1,5 @@
 {
-  "version": "2.16.0",
+  "version": "2.17.0",
   "pillar": "fpa",
   "questions": [
     {
@@ -309,32 +309,32 @@
     {
       "id": "fpa_l2_q04",
       "practice_id": "prac_management_reporting",
-      "text": "Do functional leaders use the management report as the primary data source for their own internal performance reviews?",
-      "help": "If leaders rely on their own 'shadow' spreadsheets, finance reports become irrelevant. Adoption of the central report as the single source of truth aligns the organization.",
+      "text": "Do functional leaders actively reference and discuss the Finance management report in their own team meetings and performance reviews?",
+      "help": "Adoption is measured by usage, not distribution. If the Finance report sits unopened while leaders discuss their own data, you have a relevance problem. The test: do they quote your numbers?",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Drive Adoption via Reviews",
-        "recommendation": "Sit in on functional QBRs. If they use their own spreadsheets instead of your deck, ask 'why?'. Fix the gap.",
+        "title": "Drive Active Adoption",
+        "recommendation": "Sit in on functional QBRs and weekly stand-ups. Listen for whether your report is referenced. If not, ask what data they ARE using and why. Adapt your report to answer the questions they actually ask.",
         "type": "behavioral"
       }
     },
     {
       "id": "fpa_l2_q67",
       "practice_id": "prac_management_reporting",
-      "text": "Do operational leaders rely on Finance's reports as their single source of truth, without maintaining parallel 'shadow' spreadsheets?",
-      "help": "Shadow spreadsheets signal a breakdown in trust or usability. If the business keeps parallel books, you have a credibility problem that no process improvement will fix.",
+      "text": "Has Finance successfully eliminated or absorbed the major 'shadow' spreadsheets that business units previously maintained for tracking their own performance?",
+      "help": "Shadow spreadsheets are symptoms of unmet needs. This question tests whether Finance has proactively identified, understood, and absorbed these parallel tracking systems into the official reporting suite. Success means the business no longer NEEDS to maintain their own books.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Co-Create the Single Source",
-        "recommendation": "First diagnose WHY the shadow sheet exists: Is it timing (your reports come too late)? Granularity (they need SKU-level, you provide category)? Format (they need it in their workflow)? Then absorb their specific requirements into your official system. Win them over by building what they actually need.",
+        "title": "Absorb Shadow Systems",
+        "recommendation": "Conduct a 'shadow audit': ask each department head what spreadsheets they maintain outside of Finance systems. For each one, diagnose the gap (timing, granularity, format, metrics) and build a plan to absorb the requirement into official reporting. Track shadow sheet elimination as an FP&A KPI.",
         "type": "behavioral"
       }
     },
@@ -1043,34 +1043,34 @@
       }
     },
     {
-      "id": "fpa_l4_q44",
+      "id": "fpa_l3_q44",
       "practice_id": "prac_data_visualization",
-      "text": "Can Finance instantly drill down from the P&L to transaction-level detail (customer/SKU) without running a new offline manual report?",
-      "help": "Drill-down capability turns static reports into interactive insights. Without it, answering 'why' questions requires manual queries that slow decision-making.",
-      "maturity_level": 4,
+      "text": "Can the FP&A team drill down from consolidated P&L to transaction-level detail (customer/SKU/invoice) within their own tools, without requesting IT support?",
+      "help": "This is a prerequisite for self-service analytics. Finance must first have seamless drill-down capability before it can be extended to the business. If FP&A still runs manual queries to answer 'why' questions, the data architecture isn't ready for broader access.",
+      "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_decision_support",
       "impact": 5,
-      "complexity": 5,
+      "complexity": 4,
       "expert_action": {
-        "title": "Integrate Transactional Data",
-        "recommendation": "Connect your BI tool directly to the ERP sub-ledgers. Don't rely on summarized GL exports.",
+        "title": "Build Finance Drill-Down Capability",
+        "recommendation": "Connect your BI tool directly to ERP sub-ledgers and transactional data. Create a unified data model that links GL summary to underlying transactions. Test: can an FP&A analyst answer 'what drove the variance in Line X?' in under 5 minutes without leaving their dashboard?",
         "type": "structural"
       }
     },
     {
       "id": "fpa_l4_q01",
       "practice_id": "prac_self_service_analytics",
-      "text": "Do dashboards allow users to drill down from summary to transaction level without asking Finance?",
-      "help": "Self-service empowers the business. It allows users to answer their own questions immediately, reducing the ad-hoc query burden on Finance.",
+      "text": "Can non-finance business users drill down from summary dashboards to transaction-level detail without requesting Finance support?",
+      "help": "This is the pinnacle of self-service analytics. Building on Finance's own drill-down capability (L3), the data architecture now supports secure, governed access for business users to answer their own 'why' questions. Finance shifts from query responder to insight partner.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_decision_support",
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Implement Self-Service BI",
-        "recommendation": "Deploy a BI tool (Power BI, Tableau) connected to your data. Train budget owners to answer their own 'what happened' questions.",
+        "title": "Enable Business Self-Service Drill-Down",
+        "recommendation": "Extend the Finance data model to business users via governed dashboards. Implement row-level security so users only see their own data. Train budget owners on how to navigate the drill-path. Success metric: reduce ad-hoc Finance queries by 50%.",
         "type": "structural"
       }
     },
@@ -1221,16 +1221,16 @@
     {
       "id": "fpa_l3_q62",
       "practice_id": "prac_service_level_agreements",
-      "text": "Does the FP&A team spend more time on analysis and insight generation than on data gathering and reconciliation?",
-      "help": "Time allocation reveals maturity. If most effort goes to data wrangling, there's no capacity left for value-add work.",
+      "text": "Does the FP&A team spend at least 70% of their time on analysis, insight generation, and business partnering (vs. data gathering and reconciliation)?",
+      "help": "At Level 3 maturity, FP&A should have moved decisively beyond data wrangling. The 70% threshold indicates the team has achieved the automation and data infrastructure needed to focus on strategic value-add. This is a step-up from the L2 baseline of <50% on data work.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Rebalance FP&A Capacity",
-        "recommendation": "Conduct a time study. Target 60%+ on analysis vs. data gathering. Automate or centralize data prep to shift the balance.",
+        "title": "Achieve 70% Analysis Time",
+        "recommendation": "Conduct a detailed time study across the team. Identify the remaining 30%+ spent on data work and systematically automate or outsource each task. Target: analysts should open their day with clean data ready for analysis, not data extraction.",
         "type": "behavioral"
       }
     },
@@ -1456,6 +1456,54 @@
         "title": "Implement Predictive Monitoring",
         "recommendation": "Develop simple trend-based models that forecast month-end landings based on Day 15 or Day 20 actuals.",
         "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l2_q90",
+      "practice_id": "prac_rolling_forecast_cadence",
+      "text": "Does Finance provide a weekly or bi-weekly 'flash' estimate of key financial metrics (Revenue, Gross Margin, EBITDA) to senior leadership?",
+      "help": "Monthly reporting creates blind spots. A weekly flash gives leadership an early pulse on performance, enabling mid-month course corrections and eliminating month-end surprises. This is the foundation of 'No Surprises' finance.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Implement Weekly Flash Reporting",
+        "recommendation": "Start simple: track 3-5 high-frequency metrics (daily sales, bookings, cash receipts) and produce a 1-page weekly summary. Automate data pulls where possible. The flash should take <2 hours to produce. Accuracy within +/-5% is acceptable—speed matters more than precision for early warning.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l3_q90",
+      "practice_id": "prac_rolling_forecast_cadence",
+      "text": "By Day 15 of each month, does Finance produce a 'landing zone' estimate projecting where key P&L lines will close?",
+      "help": "Waiting until month-end to know the result is too late. A mid-month landing zone estimate gives leadership 15 days to influence the outcome—adjust spending, accelerate collections, or push deals. This is proactive steering, not reactive reporting.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Day 15 Landing Zone",
+        "recommendation": "Build a simple model that takes actuals through Day 15, applies run-rate assumptions for remaining days, and adjusts for known timing items (large invoices, payroll dates). Present as a range (low/mid/high) rather than a point estimate. Share with leadership in a 15-minute stand-up call. Action items should focus on what can still be influenced.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_l3_q91",
+      "practice_id": "prac_stress_testing",
+      "text": "Does Finance maintain a formal 'risk register' that identifies, quantifies, and tracks potential P&L and cash flow impacts?",
+      "help": "Surprises happen when known risks aren't tracked. A risk register forces explicit documentation of threats (customer churn, supply chain issues, FX exposure) with quantified impact ranges. It transforms vague concerns into actionable monitoring items and pre-agreed response plans.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Establish Finance Risk Register",
+        "recommendation": "Create a simple risk log with columns: Risk Description, Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Mitigation Actions, and Status. Review monthly with leadership. Require business units to flag new risks as part of forecast submission. Integrate top risks into scenario planning and Board reporting.",
+        "type": "governance"
       }
     }
   ]
