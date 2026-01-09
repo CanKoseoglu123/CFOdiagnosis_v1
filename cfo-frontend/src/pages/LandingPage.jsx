@@ -18,6 +18,7 @@ import {
 import FeedbackButton from '../components/FeedbackButton';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const FIRST_OBJECTIVE = 'obj_budget_discipline';
 
 export default function LandingPage() {
   const { isAuthenticated, user, signOut, loading } = useAuth();
@@ -48,11 +49,8 @@ export default function LandingPage() {
 
         if (completedRun) {
           navigate(`/report/${completedRun.id}`);
-        } else if (inProgress) {
-          setInProgressRun(inProgress);
-          setShowIncompleteModal(true);
         } else {
-          setInProgressRun(null);
+          setInProgressRun(inProgress || null);
           setShowIncompleteModal(true);
         }
       } else {
@@ -70,6 +68,9 @@ export default function LandingPage() {
   async function handleResumeAssessment() {
     if (!inProgressRun) return;
 
+    // Default destination is the start of the assessment
+    let destination = `/assess/objective/${FIRST_OBJECTIVE}?runId=${inProgressRun.id}`;
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
@@ -84,25 +85,16 @@ export default function LandingPage() {
 
       if (res.ok) {
         const run = await res.json();
-        setShowIncompleteModal(false);
-
         if (!run.setup_completed_at) {
-          // Setup not completed - go to setup
-          navigate(`/run/${inProgressRun.id}/setup/company`);
-        } else {
-          // Setup completed - go to assessment (will auto-redirect to correct objective)
-          navigate(`/assess/objective/obj_budget_discipline?runId=${inProgressRun.id}`);
+          destination = `/run/${inProgressRun.id}/setup/company`;
         }
-      } else {
-        // Fallback - try assessment page
-        setShowIncompleteModal(false);
-        navigate(`/assess/objective/obj_budget_discipline?runId=${inProgressRun.id}`);
       }
     } catch (err) {
       console.error('Error resuming assessment:', err);
-      setShowIncompleteModal(false);
-      navigate(`/assess/objective/obj_budget_discipline?runId=${inProgressRun.id}`);
     }
+
+    setShowIncompleteModal(false);
+    navigate(destination);
   }
 
   if (loading) {
@@ -507,14 +499,15 @@ export default function LandingPage() {
             </div>
 
             <div className="p-6">
-              {inProgressRun ? (
-                <>
-                  <p className="text-slate-600 mb-6">
-                    You have an unfinished assessment. Would you like to continue
-                    where you left off, or start a new assessment?
-                  </p>
+              <p className="text-slate-600 mb-6">
+                {inProgressRun
+                  ? 'You have an unfinished assessment. Would you like to continue where you left off, or start a new assessment?'
+                  : "You haven't completed a diagnostic assessment yet. Complete the assessment to generate your personalized report and action plan."}
+              </p>
 
-                  <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3">
+                {inProgressRun ? (
+                  <>
                     <button
                       onClick={() => {
                         setShowIncompleteModal(false);
@@ -531,16 +524,9 @@ export default function LandingPage() {
                     >
                       Continue Assessment
                     </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-slate-600 mb-6">
-                    You haven't completed a diagnostic assessment yet. Complete the
-                    assessment to generate your personalized report and action plan.
-                  </p>
-
-                  <div className="flex justify-end gap-3">
+                  </>
+                ) : (
+                  <>
                     <button
                       onClick={() => setShowIncompleteModal(false)}
                       className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
@@ -555,9 +541,9 @@ export default function LandingPage() {
                     >
                       Start Assessment
                     </Link>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
