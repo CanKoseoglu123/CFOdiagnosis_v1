@@ -1,28 +1,55 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
+import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+
+// Eager load landing page (initial entry point)
 import LandingPage from './pages/LandingPage'
-import DiagnosticInput from './DiagnosticInput'
-import FinanceDiagnosticReport from './FinanceDiagnosticReport'
-import PillarReport from './pages/PillarReport'
-import CalibrationPage from './pages/CalibrationPage'
-import CompanySetupPage from './pages/CompanySetupPage'
-import PillarSetupPage from './pages/PillarSetupPage'
-// VS-27c: Persona Confirmation page (after company setup, before pillar setup)
-import PersonaConfirmationPage from './pages/PersonaConfirmationPage'
-import IntroPage from './IntroPage'
-import SelectPillarPage from './pages/SelectPillarPage'
-import AdminPage from './pages/AdminPage'
-// VS-27b: Admin scoring matrix page
-import ScoringMatrixPage from './pages/admin/ScoringMatrixPage'
-// VS-44: Objective-based assessment page
-import AssessObjectivePage from './components/assessment/AssessObjectivePage'
-// VS-45: Executive Report page (post-finalization)
-import ExecutiveReportPage from './pages/ExecutiveReportPage'
-import { useState } from 'react'
+
+// Lazy load all other pages for code splitting
+const DiagnosticInput = lazy(() => import('./DiagnosticInput'))
+const FinanceDiagnosticReport = lazy(() => import('./FinanceDiagnosticReport'))
+const PillarReport = lazy(() => import('./pages/PillarReport'))
+const CalibrationPage = lazy(() => import('./pages/CalibrationPage'))
+const CompanySetupPage = lazy(() => import('./pages/CompanySetupPage'))
+const PillarSetupPage = lazy(() => import('./pages/PillarSetupPage'))
+const PersonaConfirmationPage = lazy(() => import('./pages/PersonaConfirmationPage'))
+const IntroPage = lazy(() => import('./IntroPage'))
+const SelectPillarPage = lazy(() => import('./pages/SelectPillarPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
+const ScoringMatrixPage = lazy(() => import('./pages/admin/ScoringMatrixPage'))
+const AssessObjectivePage = lazy(() => import('./components/assessment/AssessObjectivePage'))
+const ExecutiveReportPage = lazy(() => import('./pages/ExecutiveReportPage'))
+
+// Loading fallback component
+function PageLoader() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#F8FAFC'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          width: 40,
+          height: 40,
+          border: '3px solid #E2E8F0',
+          borderTopColor: '#1e3a5f',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 12px'
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ color: '#64748B', fontSize: 14 }}>Loading...</div>
+      </div>
+    </div>
+  )
+}
 
 // Helper component to redirect while preserving query params
 function RedirectWithParams({ to }) {
@@ -103,6 +130,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -184,6 +212,7 @@ export default function App() {
             </ProtectedRoute>
           } />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   )

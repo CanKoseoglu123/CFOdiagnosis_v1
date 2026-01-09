@@ -21,6 +21,8 @@ const IMPORTANCE_CONFIG = {
 
 // Maximum number of "Top Priority" (level 5) selections allowed
 const MAX_TOP_PRIORITIES = 2;
+// Maximum combined High (4) + Top (5) priority selections
+const MAX_HIGH_PRIORITY_COMBINED = 4;
 
 // Theme configuration for grouping
 const THEME_CONFIG = {
@@ -30,7 +32,7 @@ const THEME_CONFIG = {
 };
 
 // ObjectiveImportanceCard Component
-function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriorityDisabled }) {
+function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriorityDisabled, highPriorityDisabled }) {
   return (
     <div className={`bg-white border border-slate-300 rounded-sm p-4 ${locked ? 'bg-red-50' : ''}`}>
       <div className="flex justify-between items-start mb-3">
@@ -57,14 +59,21 @@ function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriori
         {[1, 2, 3, 4, 5].map(level => {
           // Level 5 is disabled if max reached AND this objective isn't already at 5
           const isTopDisabled = level === 5 && topPriorityDisabled && value !== 5;
-          const isDisabled = locked || isTopDisabled;
+          // Level 4 is disabled if combined max reached AND this objective isn't already at 4 or 5
+          const isHighDisabled = level === 4 && highPriorityDisabled && value !== 4 && value !== 5;
+          const isDisabled = locked || isTopDisabled || isHighDisabled;
+
+          // Determine tooltip message
+          let tooltipMsg = IMPORTANCE_CONFIG[level].description;
+          if (isTopDisabled) tooltipMsg = 'Maximum 2 Top Priorities reached';
+          if (isHighDisabled) tooltipMsg = 'Maximum 4 High + Top Priorities reached';
 
           return (
             <button
               key={level}
               onClick={() => !isDisabled && onChange(level)}
               disabled={isDisabled}
-              title={isTopDisabled ? 'Maximum 2 Top Priorities reached' : IMPORTANCE_CONFIG[level].description}
+              title={tooltipMsg}
               className={`
                 flex-1 py-2 text-sm border rounded-sm transition-colors
                 ${value === level
@@ -95,40 +104,70 @@ function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriori
   );
 }
 
-// Top Priority Counter Component
-function TopPriorityCounter({ count, max }) {
-  const remaining = max - count;
-  const isFull = count >= max;
+// Priority Counter Component - shows both Top Priority and Combined caps
+function PriorityCounter({ topCount, maxTop, combinedCount, maxCombined }) {
+  const topRemaining = maxTop - topCount;
+  const combinedRemaining = maxCombined - combinedCount;
+  const isTopFull = topCount >= maxTop;
+  const isCombinedFull = combinedCount >= maxCombined;
 
   return (
-    <div className={`p-4 border rounded-sm mb-6 ${isFull ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-semibold text-slate-700">Top Priorities</span>
-        <span className={`text-sm font-bold ${isFull ? 'text-amber-600' : 'text-slate-600'}`}>
-          {count} / {max}
-        </span>
+    <div className="space-y-4 mb-6">
+      {/* Top Priority (Level 5) Counter */}
+      <div className={`p-4 border rounded-sm ${isTopFull ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-semibold text-slate-700">Top Priority</span>
+          <span className={`text-sm font-bold ${isTopFull ? 'text-amber-600' : 'text-slate-600'}`}>
+            {topCount} / {maxTop}
+          </span>
+        </div>
+        <div className="flex gap-1.5 mb-2">
+          {Array.from({ length: maxTop }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 flex-1 rounded-full transition-colors ${
+                i < topCount ? 'bg-amber-500' : 'bg-slate-200'
+              }`}
+            />
+          ))}
+        </div>
+        <p className="text-xs text-slate-500">
+          {isTopFull
+            ? 'All Top Priority slots used. Deselect one to choose another.'
+            : `Select ${topRemaining} more objective${topRemaining !== 1 ? 's' : ''} as Top Priority`}
+        </p>
       </div>
-      <div className="flex gap-1.5 mb-2">
-        {Array.from({ length: max }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-2 flex-1 rounded-full transition-colors ${
-              i < count ? 'bg-amber-500' : 'bg-slate-200'
-            }`}
-          />
-        ))}
+
+      {/* Combined High + Top Counter */}
+      <div className={`p-4 border rounded-sm ${isCombinedFull ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-semibold text-slate-700">High + Top Combined</span>
+          <span className={`text-sm font-bold ${isCombinedFull ? 'text-blue-600' : 'text-slate-600'}`}>
+            {combinedCount} / {maxCombined}
+          </span>
+        </div>
+        <div className="flex gap-1.5 mb-2">
+          {Array.from({ length: maxCombined }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 flex-1 rounded-full transition-colors ${
+                i < combinedCount ? 'bg-blue-500' : 'bg-slate-200'
+              }`}
+            />
+          ))}
+        </div>
+        <p className="text-xs text-slate-500">
+          {isCombinedFull
+            ? 'All High + Top Priority slots used. Deselect one to add another.'
+            : `${combinedRemaining} slot${combinedRemaining !== 1 ? 's' : ''} remaining for High or Top priorities`}
+        </p>
       </div>
-      <p className="text-xs text-slate-500">
-        {isFull
-          ? 'All Top Priority slots used. Deselect one to choose another.'
-          : `Select ${remaining} more objective${remaining !== 1 ? 's' : ''} as Top Priority`}
-      </p>
     </div>
   );
 }
 
 // Sidebar Component
-function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, onSubmit, onSkip }) {
+function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSkip }) {
   const totalObjectives = objectives.length;
   const configuredCount = Object.keys(importanceMap).length;
 
@@ -162,6 +201,28 @@ function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPr
         </p>
       </div>
 
+      {/* Combined High + Top Priority Status */}
+      <div className="p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-slate-600">High + Top</span>
+          <div className="flex gap-1">
+            {Array.from({ length: MAX_HIGH_PRIORITY_COMBINED }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-3 h-3 rounded-full ${
+                  i < combinedPriorityCount ? 'bg-blue-500' : 'bg-slate-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-slate-500">
+          {combinedPriorityCount >= MAX_HIGH_PRIORITY_COMBINED
+            ? 'Maximum reached'
+            : `${MAX_HIGH_PRIORITY_COMBINED - combinedPriorityCount} slot${MAX_HIGH_PRIORITY_COMBINED - combinedPriorityCount !== 1 ? 's' : ''} remaining`}
+        </p>
+      </div>
+
       {/* Info */}
       <div className="p-6 flex-1">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
@@ -173,8 +234,12 @@ function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPr
             Choose up to 2 Top Priorities (highest weight)
           </li>
           <li className="flex gap-2">
+            <span className="text-blue-500">•</span>
+            Choose up to 4 High + Top combined
+          </li>
+          <li className="flex gap-2">
             <span className="text-primary">•</span>
-            Rate other objectives from Min to High
+            Rate other objectives from Min to Med
           </li>
           <li className="flex gap-2">
             <span className="text-red-600">•</span>
@@ -302,6 +367,10 @@ export default function CalibrationPage() {
   const topPriorityCount = Object.values(importanceMap).filter(v => v === 5).length;
   const topPriorityDisabled = topPriorityCount >= MAX_TOP_PRIORITIES;
 
+  // Count how many objectives are set to level 4 or 5 (High + Top combined)
+  const combinedPriorityCount = Object.values(importanceMap).filter(v => v >= 4).length;
+  const highPriorityDisabled = combinedPriorityCount >= MAX_HIGH_PRIORITY_COMBINED;
+
   // Loading state
   if (loading) {
     return (
@@ -339,6 +408,7 @@ export default function CalibrationPage() {
       importanceMap={importanceMap}
       lockedObjectives={lockedObjectives}
       topPriorityCount={topPriorityCount}
+      combinedPriorityCount={combinedPriorityCount}
       onSubmit={handleSubmit}
       onSkip={handleSkip}
     />
@@ -355,8 +425,13 @@ export default function CalibrationPage() {
           This helps us prioritize your action plan.
         </p>
 
-        {/* Top Priority Counter */}
-        <TopPriorityCounter count={topPriorityCount} max={MAX_TOP_PRIORITIES} />
+        {/* Priority Counter */}
+        <PriorityCounter
+          topCount={topPriorityCount}
+          maxTop={MAX_TOP_PRIORITIES}
+          combinedCount={combinedPriorityCount}
+          maxCombined={MAX_HIGH_PRIORITY_COMBINED}
+        />
 
         {/* Objectives grouped by theme */}
         {Object.entries(objectivesByTheme).map(([themeId, themeObjectives]) => {
@@ -377,6 +452,7 @@ export default function CalibrationPage() {
                     onChange={(val) => handleImportanceChange(obj.id, val)}
                     locked={lockedObjectives.includes(obj.id)}
                     topPriorityDisabled={topPriorityDisabled}
+                    highPriorityDisabled={highPriorityDisabled}
                   />
                 ))}
               </div>
