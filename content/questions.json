@@ -1459,22 +1459,6 @@
       }
     },
     {
-      "id": "fpa_l3_q90",
-      "practice_id": "prac_rolling_forecast_cadence",
-      "text": "By Day 15 of each month, does Finance produce a 'landing zone' estimate projecting where key P&L lines will close?",
-      "help": "Waiting until month-end to know the result is too late. A mid-month landing zone estimate gives leadership 15 days to influence the outcome—adjust spending, accelerate collections, or push deals. This is proactive steering, not reactive reporting.",
-      "maturity_level": 3,
-      "is_critical": false,
-      "initiative_id": "init_forward_visibility",
-      "impact": 5,
-      "complexity": 3,
-      "expert_action": {
-        "title": "Implement Day 15 Landing Zone",
-        "recommendation": "Build a simple model that takes actuals through Day 15, applies run-rate assumptions for remaining days, and adjusts for known timing items (large invoices, payroll dates). Present as a range (low/mid/high) rather than a point estimate. Share with leadership in a 15-minute stand-up call. Action items should focus on what can still be influenced.",
-        "type": "structural"
-      }
-    },
-    {
       "id": "fpa_l3_q91",
       "practice_id": "prac_stress_testing",
       "text": "Does Finance maintain a formal 'risk register' that identifies, quantifies, and tracks potential P&L and cash flow impacts?",
