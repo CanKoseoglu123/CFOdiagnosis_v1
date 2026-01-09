@@ -10,7 +10,7 @@ import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
 import ActionPlanningWizard from './ActionPlanningWizard';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,6 +76,7 @@ export default function ActionPlanTab({
   // VS-46: Wizard state
   const [showWizard, setShowWizard] = useState(false);
   const [wizardSummary, setWizardSummary] = useState(null);
+  const [showIntroModal, setShowIntroModal] = useState(false);
 
   // VS-39: Derive finalization status from report (NOT separate state)
   const isFinalized = !!report?.finalized_at;
@@ -86,6 +87,17 @@ export default function ActionPlanTab({
       fetchActionPlan();
     }
   }, [runId]);
+
+  // VS-47: Show intro modal on first visit
+  useEffect(() => {
+    if (!runId || isFinalized) return;
+    const storageKey = `actionPlanIntroSeen:${runId}`;
+    const hasSeen = window.localStorage.getItem(storageKey);
+    if (!hasSeen) {
+      setShowIntroModal(true);
+      window.localStorage.setItem(storageKey, 'true');
+    }
+  }, [runId, isFinalized]);
 
   async function fetchActionPlan() {
     try {
@@ -586,6 +598,34 @@ export default function ActionPlanTab({
                 className="flex-1 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:opacity-50"
               >
                 {finalizing ? 'Finalizing...' : 'Yes, Finalize'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VS-47: Action Planning Intro Modal */}
+      {showIntroModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-sm max-w-lg border border-slate-300 shadow-xl">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <Info className="w-5 h-5 text-slate-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">Action Planning</h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Select your actions below. They are sorted by objective or initiative and show the same actions either way.
+                  You can also use the Action Planning Wizard to curate selections, then return to assign timelines and owners.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowIntroModal(false)}
+                className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
+              >
+                Got it
               </button>
             </div>
           </div>
