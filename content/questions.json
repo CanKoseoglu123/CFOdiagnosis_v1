@@ -1139,22 +1139,6 @@
       }
     },
     {
-      "id": "fpa_l2_q64",
-      "practice_id": "prac_process_automation",
-      "text": "Do FP&A analysts spend less than 50% of their time on data gathering, cleaning, and reconciliation?",
-      "help": "If analysts spend most of their time scrubbing data, there's no capacity for actual analysis. This is the #1 productivity killer in mid-market finance.",
-      "maturity_level": 2,
-      "is_critical": false,
-      "initiative_id": "init_operational_excellence",
-      "impact": 5,
-      "complexity": 4,
-      "expert_action": {
-        "title": "Reduce Data Wrangling Time",
-        "recommendation": "Conduct a time study. Identify the biggest data prep bottlenecks. Invest in automation, better extracts, or upstream data quality fixes.",
-        "type": "structural"
-      }
-    },
-    {
       "id": "fpa_l2_q66",
       "practice_id": "prac_process_automation",
       "text": "Does at least one FP&A team member have working proficiency in data extraction and analysis tools (e.g., SQL, Power BI, Python) beyond Excel?",
