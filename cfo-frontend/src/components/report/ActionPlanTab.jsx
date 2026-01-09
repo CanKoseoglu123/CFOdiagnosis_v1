@@ -10,7 +10,7 @@ import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
 import ActionPlanningWizard from './ActionPlanningWizard';
-import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Wand2 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -88,15 +88,10 @@ export default function ActionPlanTab({
     }
   }, [runId]);
 
-  // VS-47: Show intro modal on first visit
+  // VS-47: Show intro modal on entry
   useEffect(() => {
     if (!runId || isFinalized) return;
-    const storageKey = `actionPlanIntroSeen:${runId}`;
-    const hasSeen = window.localStorage.getItem(storageKey);
-    if (!hasSeen) {
-      setShowIntroModal(true);
-      window.localStorage.setItem(storageKey, 'true');
-    }
+    setShowIntroModal(true);
   }, [runId, isFinalized]);
 
   async function fetchActionPlan() {
@@ -608,24 +603,53 @@ export default function ActionPlanTab({
       {showIntroModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-sm max-w-lg border border-slate-300 shadow-xl">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                <Info className="w-5 h-5 text-slate-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800">Action Planning</h3>
-                <p className="text-sm text-slate-600 mt-1">
-                  Select your actions below. They are sorted by objective or initiative and show the same actions either way.
-                  You can also use the Action Planning Wizard to curate selections, then return to assign timelines and owners.
-                </p>
-              </div>
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-800">Action Planning</h3>
+              <p className="text-sm text-slate-600 mt-1">
+                We’ve curated actions that address your organization’s development opportunities.
+                Select the actions you want to pursue below.
+                You can view the same list grouped by Objective or Initiative using the toggle.
+                After selecting, assign timelines and owners.
+              </p>
+              <p className="text-sm text-slate-600 mt-2">
+                This is the last step before finalizing the pillar diagnostic.
+              </p>
+              <h4 className="text-base font-semibold text-violet-600 mt-3">Prefer assistance?</h4>
+              <p className="text-sm text-slate-600 mt-1">
+                Use the Action Planning Wizard below, or launch it anytime from the right-hand sidebar.
+              </p>
             </div>
-            <div className="flex justify-end">
+
+            <div className="border border-slate-200 rounded-sm p-4 bg-slate-50 mb-4">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center flex-shrink-0">
+                  <Wand2 className="w-5 h-5 text-violet-600" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-900">Smart Planning</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Build your plan with guided selection across pain points, priorities, quick wins, and critical risks.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowIntroModal(false);
+                  setShowWizard(true);
+                }}
+                className="w-full px-4 py-2 text-white text-sm font-medium rounded flex items-center justify-center gap-2 transition-colors bg-violet-600 hover:bg-violet-700"
+              >
+                <Wand2 className="w-4 h-4" />
+                <span>Action Planning Wizard</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => setShowIntroModal(false)}
                 className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
               >
-                Got it
+                Select Actions Manually
               </button>
             </div>
           </div>
