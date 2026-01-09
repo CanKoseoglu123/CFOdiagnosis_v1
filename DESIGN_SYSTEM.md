@@ -1,9 +1,10 @@
 
-# Pillar Report Visual Design System v2.0 — GARTNER ENTERPRISE
+# Pillar Report Visual Design System v2.1 — CFO LENS AI ENTERPRISE
 
-**Status:** CANONICAL / FROZEN
+**Status:** CANONICAL
 **Audience:** Product, Engineering, Design
-**Applies to:** All Pillar Reports, Assessments, Simulator, and Executive Views
+**Applies to:** All Pages, Reports, Assessments, Simulator, and Executive Views
+**Last Updated:** January 2026
 
 ---
 
@@ -51,6 +52,7 @@ Every page MUST declare exactly one max‑width.
 | Setup & Forms     | `max-w-5xl` (1024px) | Efficient 2‑column workflows |
 | Assessment        | `max-w-6xl` (1152px) | Split‑view readability       |
 | Reports / Cockpit | `max-w-7xl` (1280px) | High‑density analytics       |
+| Landing (public)  | `max-w-5xl` (1024px) | Marketing content            |
 
 **Rule:** No page may rely on implicit defaults or `w-full` layouts.
 
@@ -76,39 +78,164 @@ This shell is the **only allowed page wrapper**.
 
 ## 2. COLOR SYSTEM (STRICT ENTERPRISE)
 
-### 2.1 CSS Variables
+### 2.0 Reference Pages
+
+The following pages exemplify correct color usage and should be used as reference:
+- **Landing Page** — Brand colors, marketing sections
+- **Maturity Footprint Grid** — Evidence state colors, status indicators
+- **Benchmark Tab** — Data visualization, chart colors
+- **Executive Report Page** — Print-optimized, professional navy tones
+
+---
+
+### 2.1 Brand Colors (CANONICAL)
+
+These colors define the CFO Lens AI brand identity. Use via `BRAND_COLORS` import from `Logo.jsx`.
+
+```js
+// src/components/Logo.jsx
+export const BRAND_COLORS = {
+  navy: '#1a365d',    // Primary brand navy - headlines, buttons, dark UI
+  gold: '#c9a050',    // Accent gold - highlights, CTAs, premium feel
+  lightBlue: '#94a3b8' // Secondary - subtle backgrounds, disabled states
+};
+```
+
+| Color | Hex | Usage |
+|-------|-----|-------|
+| **Brand Navy** | `#1a365d` | Primary headlines, buttons, dark headers |
+| **Brand Gold** | `#c9a050` | Accent highlights, CTAs, premium indicators |
+| **Light Blue** | `#94a3b8` | Subtle backgrounds, disabled states |
+
+---
+
+### 2.2 Extended Navy Scale (Data Visualization)
+
+For charts, bars, and data-dense components (Benchmark, Footprint):
+
+| Name | Hex | Usage |
+|------|-----|-------|
+| **Navy Darkest** | `#001a33` | Objective headers (ObjectivesPracticesOverview) |
+| **Navy Dark** | `#003366` | Proven state, high-confidence data |
+| **Navy Medium** | `#0b2d5b` | Chart bars (BenchmarkTab) |
+| **Navy Light** | `#336699` | Partial state |
+| **Navy Lightest** | `#6699CC` | Gap/opportunity state |
+| **Navy Projection** | `rgba(11, 45, 91, 0.18)` | Projected improvements (hatched) |
+
+---
+
+### 2.3 UI Foundation Colors
 
 ```css
 :root {
-  --background: #F4F5F7;
-  --card: #FFFFFF;
-  --card-header: #F8F9FA;
+  /* === BACKGROUNDS === */
+  --background: #F4F5F7;     /* App background */
+  --card: #FFFFFF;           /* Card surfaces */
+  --card-header: #F8F9FA;    /* Card headers, table headers */
 
-  --navy: #172B4D;
-  --slate: #42526E;
-  --muted: #6B778C;
+  /* === TEXT === */
+  --navy: #172B4D;           /* Headlines, scores (legacy - prefer BRAND_COLORS.navy) */
+  --slate: #42526E;          /* Body text */
+  --muted: #6B778C;          /* Secondary text, labels */
 
-  --border: #DFE1E6;
-  --border-strong: #C1C7D0;
+  /* === BORDERS === */
+  --border: #DFE1E6;         /* Default borders */
+  --border-strong: #C1C7D0;  /* Emphasis borders, dividers */
 
-  --primary: #0052CC;
-  --primary-hover: #0747A6;
+  /* === PRIMARY ACTION === */
+  --primary: #0052CC;        /* Gartner Blue - interactive elements */
+  --primary-hover: #0747A6;  /* Hover state */
+  --primary-light: #DEEBFF;  /* Selected backgrounds */
+}
+```
 
+---
+
+### 2.4 Status Colors (Semantic)
+
+For maturity states, alerts, and validation feedback:
+
+```css
+:root {
+  /* === GREEN (Proven / Success / Strength) === */
   --status-green-text: #006644;
   --status-green-bg: #E3FCEF;
   --status-green-border: #ABF5D1;
 
+  /* === YELLOW/AMBER (Partial / Warning / Opportunity) === */
   --status-yellow-text: #FF991F;
   --status-yellow-bg: #FFFAE6;
   --status-yellow-border: #FFE380;
 
+  /* === RED (Gap / Error / Critical) === */
   --status-red-text: #DE350B;
   --status-red-bg: #FFEBE6;
   --status-red-border: #FFBDAD;
+
+  /* === ORANGE (Targets / Benchmarks) === */
+  --status-orange: #FF991F;  /* Target markers in charts */
 }
 ```
 
-No alternative palettes are permitted.
+---
+
+### 2.5 Evidence State Colors (Maturity Footprint)
+
+Consistent across all footprint/evidence visualizations:
+
+| State | Tailwind Classes | Hex Background |
+|-------|------------------|----------------|
+| **Proven** | `bg-emerald-50` / `bg-emerald-100` (critical) | Light green |
+| **Partial** | `bg-amber-50` / `bg-amber-100` (critical) | Light amber |
+| **Gap/Not Proven** | `bg-slate-50` / `bg-red-100` (critical) | Light gray / red |
+
+For the navy-based visualization (ObjectivesPracticesOverview):
+| State | Hex |
+|-------|-----|
+| **Proven** | `#003366` |
+| **Partial** | `#336699` |
+| **Gap** | `#6699CC` |
+
+---
+
+### 2.6 Chart Colors (Benchmark / Executive)
+
+```js
+// Benchmark bars
+const CHART_COLORS = {
+  achieved: '#0b2d5b',      // Solid navy bar
+  projected: 'rgba(11, 45, 91, 0.18)', // Hatched extension
+  target: '#FF991F',        // Orange target marker
+  criticalMarker: '#EF4444', // Red-500 for critical priority
+  highMarker: '#F59E0B'      // Amber-500 for high priority
+};
+```
+
+---
+
+### 2.7 Page-Specific Guidance
+
+| Page | Primary Colors | Notes |
+|------|----------------|-------|
+| **Landing** | BRAND_COLORS.navy, BRAND_COLORS.gold | White bg, marketing focus |
+| **Auth** | Should use `--primary` #0052CC | ⚠️ Currently uses Indigo - needs fix |
+| **Setup** | Blue-600, slate-800 header | Professional onboarding |
+| **Calibration** | Primary, amber-500 (Top Priority) | Interactive selections |
+| **Report/Overview** | Status colors, slate UI | Data presentation |
+| **Benchmark** | Navy scale, orange targets | Charts and comparisons |
+| **Footprint** | Evidence state colors | Maturity visualization |
+| **Executive** | BRAND_COLORS, print-optimized | PDF export ready |
+
+---
+
+### 2.8 Color Usage Rules
+
+1. **Never use inline hex values** — always reference CSS variables or BRAND_COLORS
+2. **Gold (#c9a050)** is reserved for premium highlights and CTAs
+3. **Primary blue (#0052CC)** is for interactive elements only
+4. **Status colors** must always include both text AND background
+5. **Navy variations** — use BRAND_COLORS.navy for UI, extended scale for charts
+6. **No gradients, no shadows** — borders only per design philosophy
 
 ---
 
@@ -252,6 +379,76 @@ Print output must be board‑ready without modification.
 | No implicit layouts    | Width must be declared |
 | No emoji               | Icons only             |
 | No freeform creativity | Follow system          |
+
+---
+
+## 11. KNOWN ISSUES & MIGRATION TASKS
+
+### 11.1 Color Inconsistencies to Fix
+
+| File | Issue | Fix Required |
+|------|-------|--------------|
+| `AuthPage.jsx` | Uses Indigo `#4F46E5` instead of Primary `#0052CC` | Replace with BRAND_COLORS.navy or --primary |
+| `CompanySetupPage.jsx` | Uses Tailwind `blue-600` inconsistently | Standardize to --primary or BRAND_COLORS |
+| `ExecutiveReportPage.jsx` | Defines local `NAVY = '#1e3a5f'` | Import from BRAND_COLORS instead |
+
+### 11.2 Navy Consolidation
+
+The codebase has 5+ navy shades. Consolidation plan:
+
+1. **UI/Headlines**: Use `BRAND_COLORS.navy` (`#1a365d`)
+2. **Charts/Data Viz**: Use Extended Navy Scale (Section 2.2)
+3. **Legacy CSS vars**: Keep `--navy: #172B4D` for backwards compatibility
+4. **Deprecate**: Inline hex values like `#1e3a5f`, `#103b6d`
+
+### 11.3 Files Using Correct Patterns ✅
+
+These files exemplify correct color usage:
+- `LandingPage.jsx` — Uses BRAND_COLORS consistently
+- `MaturityFootprintGrid.jsx` — Evidence states with Tailwind classes
+- `BenchmarkTab.jsx` — Chart colors with extended navy scale
+- `ObjectivesPracticesOverview.jsx` — Systematic navy gradation
+- `AppShell.css` — Design system colors documented in comments
+
+### 11.4 Migration Priority
+
+1. **High**: AuthPage (user-facing, brand inconsistency)
+2. **Medium**: Setup pages (onboarding flow)
+3. **Low**: Internal components using legacy --navy
+
+---
+
+## 12. APPENDIX: COLOR QUICK REFERENCE
+
+```
+BRAND IDENTITY
+━━━━━━━━━━━━━━
+Navy:  #1a365d  ████████  Headlines, Buttons, Dark UI
+Gold:  #c9a050  ████████  Accents, CTAs, Premium
+
+DATA VISUALIZATION (Navy Scale)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Darkest:  #001a33  ████████  Headers
+Dark:     #003366  ████████  Proven
+Medium:   #0b2d5b  ████████  Charts
+Light:    #336699  ████████  Partial
+Lightest: #6699CC  ████████  Gap
+
+STATUS COLORS
+━━━━━━━━━━━━━
+Green:  #006644 / #E3FCEF  ████████  Success, Proven
+Amber:  #FF991F / #FFFAE6  ████████  Warning, Partial
+Red:    #DE350B / #FFEBE6  ████████  Error, Critical
+
+UI FOUNDATION
+━━━━━━━━━━━━━
+Background: #F4F5F7  ████████
+Card:       #FFFFFF  ████████
+Border:     #DFE1E6  ████████
+Text:       #42526E  ████████
+Muted:      #6B778C  ████████
+Primary:    #0052CC  ████████
+```
 
 ---
 
