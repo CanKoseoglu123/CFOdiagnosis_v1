@@ -46,6 +46,7 @@ const app = express();
 // CORS: Allow production domains, Vercel preview deployments, and local dev
 const allowedOrigins = [
   "https://cfo-lens.com",
+  "https://www.cfo-lens.com",
   "https://cfodiagnosisv1.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000",
@@ -55,6 +56,7 @@ const allowedOrigins = [
 
 // Pattern for Vercel preview deployments (git branch previews)
 const vercelPreviewPattern = /^https:\/\/cfodiagnosisv1-git-[a-z0-9-]+(-cans-projects-[a-z0-9]+)?\.vercel\.app$/;
+const cfoLensPattern = /^https:\/\/(www\.)?cfo-lens\.com$/;
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -65,6 +67,10 @@ app.use(cors({
     }
     // Allow Vercel preview deployments
     if (vercelPreviewPattern.test(origin)) {
+      return callback(null, true);
+    }
+    // Allow cfo-lens.com and www.cfo-lens.com
+    if (cfoLensPattern.test(origin)) {
       return callback(null, true);
     }
     return callback(new Error("Not allowed by CORS"));
