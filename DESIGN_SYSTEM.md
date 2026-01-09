@@ -83,8 +83,11 @@ This shell is the **only allowed page wrapper**.
 The following pages exemplify correct color usage and should be used as reference:
 - **Landing Page** — Brand colors, marketing sections
 - **Maturity Footprint Grid** — Evidence state colors, status indicators
-- **Benchmark Tab** — Data visualization, chart colors
 - **Executive Report Page** — Print-optimized, professional navy tones
+
+**Note:** The following components use the correct navy scale concept but need migration to use CSS variables or CHART_COLORS constants instead of inline hex values:
+- `BenchmarkTab.jsx` — Chart bars and projections
+- `ObjectivesPracticesOverview.jsx` — Navy gradation for evidence states
 
 ---
 
@@ -185,9 +188,9 @@ Consistent across all footprint/evidence visualizations:
 
 | State | Tailwind Classes | Hex Background |
 |-------|------------------|----------------|
-| **Proven** | `bg-emerald-50` / `bg-emerald-100` (critical) | Light green |
-| **Partial** | `bg-amber-50` / `bg-amber-100` (critical) | Light amber |
-| **Gap/Not Proven** | `bg-slate-50` / `bg-red-100` (critical) | Light gray / red |
+| **Proven**         | `bg-emerald-50` (`bg-emerald-100` if critical) | Light green |
+| **Partial**        | `bg-amber-50` (`bg-amber-100` if critical)   | Light amber |
+| **Gap/Not Proven** | `bg-slate-50` (`bg-red-100` if critical)     | Light gray / red |
 
 For the navy-based visualization (ObjectivesPracticesOverview):
 | State | Hex |
@@ -203,12 +206,22 @@ For the navy-based visualization (ObjectivesPracticesOverview):
 ```js
 // Benchmark bars
 const CHART_COLORS = {
-  achieved: '#0b2d5b',      // Solid navy bar
-  projected: 'rgba(11, 45, 91, 0.18)', // Hatched extension
-  target: '#FF991F',        // Orange target marker
-  criticalMarker: '#EF4444', // Red-500 for critical priority
-  highMarker: '#F59E0B'      // Amber-500 for high priority
+  achieved: 'var(--chart-navy)',           // Solid navy bar (#0b2d5b)
+  projected: 'var(--chart-navy-light)',    // Hatched extension (rgba(11, 45, 91, 0.18))
+  target: 'var(--status-orange)',          // Orange target marker (#FF991F)
+  criticalMarker: 'var(--status-red-500)', // Red-500 for critical priority (#EF4444)
+  highMarker: 'var(--status-amber-500)'    // Amber-500 for high priority (#F59E0B)
 };
+```
+
+**Required CSS variables** (add to `:root` in index.css):
+```css
+:root {
+  --chart-navy: #0b2d5b;
+  --chart-navy-light: rgba(11, 45, 91, 0.18);
+  --status-red-500: #EF4444;
+  --status-amber-500: #F59E0B;
+}
 ```
 
 ---
@@ -218,7 +231,7 @@ const CHART_COLORS = {
 | Page | Primary Colors | Notes |
 |------|----------------|-------|
 | **Landing** | BRAND_COLORS.navy, BRAND_COLORS.gold | White bg, marketing focus |
-| **Auth** | Should use `--primary` #0052CC | ⚠️ Currently uses Indigo - needs fix |
+| **Auth** | Should use `BRAND_COLORS.navy` | ⚠️ Currently uses Indigo - needs fix to match Landing |
 | **Setup** | Blue-600, slate-800 header | Professional onboarding |
 | **Calibration** | Primary, amber-500 (Top Priority) | Interactive selections |
 | **Report/Overview** | Status colors, slate UI | Data presentation |
@@ -235,7 +248,7 @@ const CHART_COLORS = {
 3. **Primary blue (#0052CC)** is for interactive elements only
 4. **Status colors** must always include both text AND background
 5. **Navy variations** — use BRAND_COLORS.navy for UI, extended scale for charts
-6. **No gradients, no shadows** — borders only per design philosophy
+6. **No gradients, no shadows** — borders only per design philosophy. Exception: `repeating-linear-gradient` may be used to create hatched patterns for data visualizations.
 
 ---
 
@@ -388,7 +401,7 @@ Print output must be board‑ready without modification.
 
 | File | Issue | Fix Required |
 |------|-------|--------------|
-| `AuthPage.jsx` | Uses Indigo `#4F46E5` instead of Primary `#0052CC` | Replace with BRAND_COLORS.navy or --primary |
+| `AuthPage.jsx` | Uses Indigo `#4F46E5` instead of brand navy | Replace with `BRAND_COLORS.navy` to match Landing page |
 | `CompanySetupPage.jsx` | Uses Tailwind `blue-600` inconsistently | Standardize to --primary or BRAND_COLORS |
 | `ExecutiveReportPage.jsx` | Defines local `NAVY = '#1e3a5f'` | Import from BRAND_COLORS instead |
 
@@ -406,9 +419,13 @@ The codebase has 5+ navy shades. Consolidation plan:
 These files exemplify correct color usage:
 - `LandingPage.jsx` — Uses BRAND_COLORS consistently
 - `MaturityFootprintGrid.jsx` — Evidence states with Tailwind classes
-- `BenchmarkTab.jsx` — Chart colors with extended navy scale
-- `ObjectivesPracticesOverview.jsx` — Systematic navy gradation
 - `AppShell.css` — Design system colors documented in comments
+
+**Files needing migration:**
+- `BenchmarkTab.jsx` — Uses correct navy scale concept but with inline hex values
+- `ObjectivesPracticesOverview.jsx` — Uses systematic navy gradation but with inline hex values
+
+Both should be migrated to use CSS variables or CHART_COLORS constants.
 
 ### 11.4 Migration Priority
 
@@ -434,11 +451,11 @@ Medium:   #0b2d5b  ████████  Charts
 Light:    #336699  ████████  Partial
 Lightest: #6699CC  ████████  Gap
 
-STATUS COLORS
-━━━━━━━━━━━━━
-Green:  #006644 / #E3FCEF  ████████  Success, Proven
-Amber:  #FF991F / #FFFAE6  ████████  Warning, Partial
-Red:    #DE350B / #FFEBE6  ████████  Error, Critical
+STATUS COLORS (text / background)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Green:  #006644 / #E3FCEF  ████████ (text)  Success, Proven
+Amber:  #FF991F / #FFFAE6  ████████ (text)  Warning, Partial
+Red:    #DE350B / #FFEBE6  ████████ (text)  Error, Critical
 
 UI FOUNDATION
 ━━━━━━━━━━━━━
