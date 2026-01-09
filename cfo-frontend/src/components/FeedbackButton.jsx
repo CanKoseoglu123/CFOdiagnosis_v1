@@ -78,6 +78,7 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
           user_email: userEmail,
         });
         setIsSubmitted(true);
+        setFeedback('');
         setTimeout(() => {
           setIsOpen(false);
           setIsSubmitted(false);
@@ -87,6 +88,7 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
       console.error('Failed to submit feedback:', err);
       // Still show success - we'll capture from logs
       setIsSubmitted(true);
+      setFeedback('');
       setTimeout(() => {
         setIsOpen(false);
         setIsSubmitted(false);
