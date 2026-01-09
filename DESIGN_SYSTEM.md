@@ -84,9 +84,10 @@ The following pages exemplify correct color usage and should be used as referenc
 - **Landing Page** — Brand colors, marketing sections
 - **Maturity Footprint Grid** — Evidence state colors, status indicators
 - **Executive Report Page** — Print-optimized, professional navy tones
-- **ObjectivesPracticesOverview** — Systematic navy gradation for data viz
 
-**Note:** Benchmark Tab uses the correct navy scale concept but needs migration to use CHART_COLORS constants instead of inline hex values.
+**Note:** The following components use the correct navy scale concept but need migration to use CSS variables or CHART_COLORS constants instead of inline hex values:
+- `BenchmarkTab.jsx` — Chart bars and projections
+- `ObjectivesPracticesOverview.jsx` — Navy gradation for evidence states
 
 ---
 
@@ -205,12 +206,22 @@ For the navy-based visualization (ObjectivesPracticesOverview):
 ```js
 // Benchmark bars
 const CHART_COLORS = {
-  achieved: '#0b2d5b',      // Solid navy bar
-  projected: 'rgba(11, 45, 91, 0.18)', // Hatched extension
-  target: 'var(--status-orange)', // Orange target marker (#FF991F)
-  criticalMarker: '#EF4444', // Red-500 for critical priority
-  highMarker: '#F59E0B'      // Amber-500 for high priority
+  achieved: 'var(--chart-navy)',           // Solid navy bar (#0b2d5b)
+  projected: 'var(--chart-navy-light)',    // Hatched extension (rgba(11, 45, 91, 0.18))
+  target: 'var(--status-orange)',          // Orange target marker (#FF991F)
+  criticalMarker: 'var(--status-red-500)', // Red-500 for critical priority (#EF4444)
+  highMarker: 'var(--status-amber-500)'    // Amber-500 for high priority (#F59E0B)
 };
+```
+
+**Required CSS variables** (add to `:root` in index.css):
+```css
+:root {
+  --chart-navy: #0b2d5b;
+  --chart-navy-light: rgba(11, 45, 91, 0.18);
+  --status-red-500: #EF4444;
+  --status-amber-500: #F59E0B;
+}
 ```
 
 ---
@@ -408,10 +419,13 @@ The codebase has 5+ navy shades. Consolidation plan:
 These files exemplify correct color usage:
 - `LandingPage.jsx` — Uses BRAND_COLORS consistently
 - `MaturityFootprintGrid.jsx` — Evidence states with Tailwind classes
-- `ObjectivesPracticesOverview.jsx` — Systematic navy gradation
 - `AppShell.css` — Design system colors documented in comments
 
-**Note:** `BenchmarkTab.jsx` follows the extended navy scale concept but still uses inline hex values. It should be migrated to use CHART_COLORS constants.
+**Files needing migration:**
+- `BenchmarkTab.jsx` — Uses correct navy scale concept but with inline hex values
+- `ObjectivesPracticesOverview.jsx` — Uses systematic navy gradation but with inline hex values
+
+Both should be migrated to use CSS variables or CHART_COLORS constants.
 
 ### 11.4 Migration Priority
 
