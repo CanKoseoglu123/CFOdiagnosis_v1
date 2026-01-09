@@ -18,12 +18,14 @@ import {
 import FeedbackButton from '../components/FeedbackButton';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const FIRST_OBJECTIVE = 'obj_budget_discipline';
 
 export default function LandingPage() {
   const { isAuthenticated, user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [showIncompleteModal, setShowIncompleteModal] = useState(false);
   const [checkingRuns, setCheckingRuns] = useState(false);
+  const [inProgressRun, setInProgressRun] = useState(null);
 
   async function handleDashboardClick(e) {
     e.preventDefault();
@@ -43,21 +45,57 @@ export default function LandingPage() {
       if (res.ok) {
         const runs = await res.json();
         const completedRun = runs.find(r => r.status === 'completed' || r.status === 'locked');
+        const inProgress = runs.find(r => r.status === 'in_progress');
 
         if (completedRun) {
           navigate(`/report/${completedRun.id}`);
         } else {
+          setInProgressRun(inProgress);
           setShowIncompleteModal(true);
         }
       } else {
+        setInProgressRun(null);
         setShowIncompleteModal(true);
       }
     } catch (err) {
       console.error('Error checking runs:', err);
+      setInProgressRun(null);
       setShowIncompleteModal(true);
     } finally {
       setCheckingRuns(false);
     }
+  }
+
+  async function handleResumeAssessment() {
+    if (!inProgressRun) return;
+
+    // Default destination is the start of the assessment
+    let destination = `/assess/objective/${FIRST_OBJECTIVE}?runId=${inProgressRun.id}`;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        navigate('/login');
+        return;
+      }
+
+      // Fetch run to check if setup is completed
+      const res = await fetch(`${API_URL}/diagnostic-runs/${inProgressRun.id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (res.ok) {
+        const run = await res.json();
+        if (!run.setup_completed_at) {
+          destination = `/run/${inProgressRun.id}/setup/company`;
+        }
+      }
+    } catch (err) {
+      console.error('Error resuming assessment:', err);
+    }
+
+    setShowIncompleteModal(false);
+    navigate(destination);
   }
 
   if (loading) {
@@ -448,9 +486,9 @@ export default function LandingPage() {
           <div className="relative bg-white shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b border-slate-200">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-500" />
+                <AlertCircle className={`w-5 h-5 ${inProgressRun ? 'text-blue-500' : 'text-amber-500'}`} />
                 <h3 className="text-lg font-semibold text-slate-800">
-                  No Reports Available
+                  {inProgressRun ? 'Assessment In Progress' : 'No Reports Available'}
                 </h3>
               </div>
               <button
@@ -463,8 +501,9 @@ export default function LandingPage() {
 
             <div className="p-6">
               <p className="text-slate-600 mb-6">
-                You haven't completed a diagnostic assessment yet. Complete the
-                assessment to generate your personalized report and action plan.
+                {inProgressRun
+                  ? 'You have an unfinished assessment. Would you like to continue where you left off, or start a new assessment?'
+                  : "You haven't completed a diagnostic assessment yet. Complete the assessment to generate your personalized report and action plan."}
               </p>
 
               <div className="flex justify-end gap-3">
@@ -474,14 +513,33 @@ export default function LandingPage() {
                 >
                   Cancel
                 </button>
-                <Link
-                  to="/select-pillar"
-                  onClick={() => setShowIncompleteModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Start Assessment
-                </Link>
+                {inProgressRun ? (
+                  <>
+                    <Link
+                      to="/select-pillar"
+                      onClick={() => setShowIncompleteModal(false)}
+                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 hover:underline"
+                    >
+                      Start New
+                    </Link>
+                    <button
+                      onClick={handleResumeAssessment}
+                      className="px-4 py-2 text-sm font-medium text-white transition-colors"
+                      style={{ backgroundColor: BRAND_COLORS.navy }}
+                    >
+                      Continue Assessment
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/select-pillar"
+                    onClick={() => setShowIncompleteModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-white transition-colors"
+                    style={{ backgroundColor: BRAND_COLORS.navy }}
+                  >
+                    Start Assessment
+                  </Link>
+                )}
               </div>
             </div>
           </div>
