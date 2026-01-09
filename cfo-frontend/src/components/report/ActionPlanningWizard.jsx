@@ -2,7 +2,7 @@
 // VS-46: Action Planning Wizard - Guided action selection through curated lenses
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { X, Target, Star, Zap, AlertTriangle, Unlock, Check, ChevronRight, ChevronDown } from 'lucide-react';
+import { X, Target, Star, Zap, AlertTriangle, Unlock, Check, ChevronRight, ChevronDown, AlertCircle } from 'lucide-react';
 import {
   filterByPainPoints,
   filterByPriorities,
@@ -255,14 +255,14 @@ export default function ActionPlanningWizard({
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-200 rounded transition-colors"
+            className="p-2 hover:bg-slate-200 rounded-sm transition-colors"
           >
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 px-2 bg-white overflow-x-auto">
+        <div className="flex border-b border-slate-200 px-2 bg-white overflow-x-auto min-h-[52px] items-center">
           {TABS.map(tab => {
             const count = tabCounts[tab.id];
             const isActive = activeTab === tab.id;
@@ -272,7 +272,7 @@ export default function ActionPlanningWizard({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors h-full ${
                   isActive
                     ? 'text-slate-800 border-slate-800'
                     : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'
@@ -280,7 +280,7 @@ export default function ActionPlanningWizard({
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
-                <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
+                <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-sm ${
                   isActive ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500'
                 }`}>
                   {count}
@@ -304,7 +304,7 @@ export default function ActionPlanningWizard({
           <div className="flex-1 overflow-y-auto p-4">
             {currentActions.length === 0 ? (
               <div className="text-center py-12 text-slate-500">
-                <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                <div className="w-12 h-12 mx-auto rounded-sm bg-slate-100 flex items-center justify-center mb-3">
                   {activeTabConfig && <activeTabConfig.icon className="w-6 h-6 text-slate-400" />}
                 </div>
                 <p className="text-sm">Nothing to show here</p>
@@ -380,13 +380,13 @@ export default function ActionPlanningWizard({
                 <>
                   <button
                     onClick={handleSelectAll}
-                    className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded transition-colors"
+                    className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-sm transition-colors"
                   >
                     Select All
                   </button>
                   <button
                     onClick={handleClearAll}
-                    className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded transition-colors"
+                    className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-sm transition-colors"
                   >
                     Clear All
                   </button>
@@ -414,27 +414,27 @@ function GroupedSection({ title, subtitle, actions, wizardSelections, onToggle, 
   const selectedCount = actions.filter(a => wizardSelections.has(a.id)).length;
 
   return (
-    <div>
-      {/* Section header - matches CapabilitySection style */}
+    <div className="bg-white border border-slate-300 rounded-sm overflow-hidden">
+      {/* Section header - align with Action Planning objective headers */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-slate-600 text-white px-3 py-2 rounded-t flex items-center gap-2 hover:bg-slate-700 transition-colors"
+        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors bg-white"
       >
-        <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
-        <span className="text-sm font-semibold">{title}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+        <span className="text-sm font-semibold text-slate-700">{title}</span>
         {badge && (
-          <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${badgeColor}`}>
+          <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-sm ${badgeColor}`}>
             {badge}
           </span>
         )}
-        <span className="text-xs opacity-75 ml-auto">
+        <span className="text-xs text-slate-500 ml-auto">
           {selectedCount}/{actions.length} selected
         </span>
       </button>
 
-      {/* Actions list - matches CapabilitySection content area */}
+      {/* Actions list */}
       {isExpanded && (
-        <div className="border border-t-0 border-slate-200 rounded-b p-2 bg-white">
+        <div className="bg-slate-50 border-t border-slate-200 p-2">
           <div className="flex flex-col gap-1.5">
             {actions.map(question => (
               <ActionCard
@@ -459,28 +459,28 @@ function ActionCard({ question, isSelected, onToggle, showPainPoints, painPoints
   const addressedPains = showPainPoints ? getAddressedPainPoints(question, painPoints) : [];
   const isCritical = question.is_critical;
 
-  // Colors matching PracticeTileV2 pattern
+  // Colors aligned to Action Planning tab selection treatment
   let bgColor, borderColor, textColor;
   if (isSelected) {
-    bgColor = isCritical ? 'bg-emerald-100' : 'bg-emerald-50';
-    borderColor = 'border-emerald-300';
-    textColor = 'text-emerald-800';
+    bgColor = 'bg-blue-50';
+    borderColor = 'border-slate-200';
+    textColor = 'text-slate-700';
   } else {
-    bgColor = isCritical ? 'bg-amber-50' : 'bg-white';
-    borderColor = isCritical ? 'border-amber-200' : 'border-slate-200';
-    textColor = isCritical ? 'text-amber-800' : 'text-slate-700';
+    bgColor = 'bg-white';
+    borderColor = 'border-slate-200';
+    textColor = 'text-slate-700';
   }
 
   return (
     <div
       onClick={() => onToggle(question.id)}
-      className={`${bgColor} border ${borderColor} rounded px-3 py-2 cursor-pointer hover:opacity-90 transition-all`}
+      className={`${bgColor} border ${borderColor} rounded-sm px-3 py-2 cursor-pointer hover:opacity-90 transition-all`}
     >
       <div className="flex items-start gap-3">
         {/* Checkbox */}
-        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+        <div className={`w-5 h-5 rounded-sm border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
           isSelected
-            ? 'bg-emerald-600 border-emerald-600'
+            ? 'bg-blue-600 border-blue-600'
             : 'border-slate-300 bg-white'
         }`}>
           {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -491,7 +491,7 @@ function ActionCard({ question, isSelected, onToggle, showPainPoints, painPoints
           {/* Title */}
           <div className="flex items-center gap-2">
             {isCritical && (
-              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             )}
             <span className={`text-sm font-medium ${textColor}`}>
               {question.expert_action?.title || question.text}
@@ -507,14 +507,14 @@ function ActionCard({ question, isSelected, onToggle, showPainPoints, painPoints
 
           {/* Tags */}
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
-            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getImpactColor(question.impact)}`}>
+            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-sm ${getImpactColor(question.impact)}`}>
               Impact: {formatImpact(question.impact)}
             </span>
-            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getComplexityColor(question.complexity)}`}>
+            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-sm ${getComplexityColor(question.complexity)}`}>
               Complexity: {formatComplexity(question.complexity)}
             </span>
             {quickWin && (
-              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-700 text-white flex items-center gap-0.5">
+              <span className="px-1.5 py-0.5 text-[10px] font-medium rounded-sm bg-slate-700 text-white flex items-center gap-0.5">
                 <Zap className="w-2.5 h-2.5" />
                 Quick Win
               </span>
