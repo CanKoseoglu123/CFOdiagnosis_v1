@@ -121,6 +121,11 @@ export default function ActionPlanTable({
         <table className="w-full text-sm action-plan-table">
           {/* thead displays on every printed page */}
           <thead className="bg-slate-100">
+            <tr className="action-plan-continued-row bg-white">
+              <th colSpan={4} className="text-left px-3 py-2 text-lg font-bold text-slate-800">
+                Action Plan (continued)
+              </th>
+            </tr>
             <tr className="border-b border-slate-300">
               <th className="text-left px-3 py-2 font-semibold text-slate-700">Action</th>
               <th className="text-center px-3 py-2 font-semibold text-slate-700 w-32">Owner</th>
@@ -128,52 +133,50 @@ export default function ActionPlanTable({
               <th className="text-center px-3 py-2 font-semibold text-slate-700 w-20">Critical</th>
             </tr>
           </thead>
-          <tbody>
-            {commitmentRegister.map(group => (
-              <React.Fragment key={group.objectiveId}>
-                {/* Objective Header */}
-                <tr className="bg-slate-50 objective-header">
-                  <td colSpan={4} className="px-3 py-2 text-xs font-bold text-slate-600 uppercase tracking-wide">
-                    {group.objectiveName}
+          {commitmentRegister.map(group => (
+            <tbody key={group.objectiveId} className="action-plan-group">
+              {/* Objective Header */}
+              <tr className="bg-slate-50 objective-header">
+                <td colSpan={4} className="px-3 py-2 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                  {group.objectiveName}
+                </td>
+              </tr>
+              {/* Actions */}
+              {group.actions.map((action, idx) => (
+                <tr
+                  key={action.id}
+                  className={`border-b border-slate-200 ${action.isCritical ? 'bg-red-50' : ''}`}
+                >
+                  <td className="px-3 py-2 text-slate-700 pl-6">
+                    {idx + 1}. {action.title}
+                  </td>
+                  <td className="px-3 py-2 text-center text-slate-600">
+                    {action.owner || <span className="text-slate-400">-</span>}
+                  </td>
+                  <td className="px-3 py-2 text-center text-slate-600">
+                    {action.timeline ? (
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                        action.timeline === '6m' ? 'bg-blue-100 text-blue-700' :
+                        action.timeline === '12m' ? 'bg-blue-50 text-blue-600' :
+                        'bg-slate-100 text-slate-600'
+                      }`}>
+                        {action.timeline.replace('m', ' mo')}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    {action.isCritical ? (
+                      <span className="text-red-600 font-bold">*</span>
+                    ) : (
+                      <span className="text-slate-300">-</span>
+                    )}
                   </td>
                 </tr>
-                {/* Actions */}
-                {group.actions.map((action, idx) => (
-                  <tr
-                    key={action.id}
-                    className={`border-b border-slate-200 ${action.isCritical ? 'bg-red-50' : ''}`}
-                  >
-                    <td className="px-3 py-2 text-slate-700 pl-6">
-                      {idx + 1}. {action.title}
-                    </td>
-                    <td className="px-3 py-2 text-center text-slate-600">
-                      {action.owner || <span className="text-slate-400">—</span>}
-                    </td>
-                    <td className="px-3 py-2 text-center text-slate-600">
-                      {action.timeline ? (
-                        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                          action.timeline === '6m' ? 'bg-blue-100 text-blue-700' :
-                          action.timeline === '12m' ? 'bg-blue-50 text-blue-600' :
-                          'bg-slate-100 text-slate-600'
-                        }`}>
-                          {action.timeline.replace('m', ' mo')}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {action.isCritical ? (
-                        <span className="text-red-600 font-bold">●</span>
-                      ) : (
-                        <span className="text-slate-300">○</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
+              ))}
+            </tbody>
+          ))}
         </table>
       </div>
 
@@ -183,6 +186,13 @@ export default function ActionPlanTable({
       <style>{`
         /* Ensure thead repeats on each printed page */
         @media print {
+          .action-plan-continued-row {
+            display: table-row;
+          }
+          .action-plan-group {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
           .action-plan-table thead {
             display: table-header-group;
           }
@@ -197,6 +207,10 @@ export default function ActionPlanTable({
           .action-plan-table tr {
             break-inside: avoid;
           }
+        }
+
+        .action-plan-continued-row {
+          display: none;
         }
       `}</style>
     </div>
