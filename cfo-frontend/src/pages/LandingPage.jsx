@@ -50,7 +50,7 @@ export default function LandingPage() {
         if (completedRun) {
           navigate(`/report/${completedRun.id}`);
         } else {
-          setInProgressRun(inProgress || null);
+          setInProgressRun(inProgress);
           setShowIncompleteModal(true);
         }
       } else {
@@ -59,6 +59,7 @@ export default function LandingPage() {
       }
     } catch (err) {
       console.error('Error checking runs:', err);
+      setInProgressRun(null);
       setShowIncompleteModal(true);
     } finally {
       setCheckingRuns(false);
@@ -506,17 +507,21 @@ export default function LandingPage() {
               </p>
 
               <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowIncompleteModal(false)}
+                  className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+                >
+                  Cancel
+                </button>
                 {inProgressRun ? (
                   <>
-                    <button
-                      onClick={() => {
-                        setShowIncompleteModal(false);
-                        navigate('/select-pillar');
-                      }}
-                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+                    <Link
+                      to="/select-pillar"
+                      onClick={() => setShowIncompleteModal(false)}
+                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 hover:underline"
                     >
                       Start New
-                    </button>
+                    </Link>
                     <button
                       onClick={handleResumeAssessment}
                       className="px-4 py-2 text-sm font-medium text-white transition-colors"
@@ -526,22 +531,14 @@ export default function LandingPage() {
                     </button>
                   </>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => setShowIncompleteModal(false)}
-                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
-                    >
-                      Cancel
-                    </button>
-                    <Link
-                      to="/select-pillar"
-                      onClick={() => setShowIncompleteModal(false)}
-                      className="px-4 py-2 text-sm font-medium text-white transition-colors"
-                      style={{ backgroundColor: BRAND_COLORS.navy }}
-                    >
-                      Start Assessment
-                    </Link>
-                  </>
+                  <Link
+                    to="/select-pillar"
+                    onClick={() => setShowIncompleteModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-white transition-colors"
+                    style={{ backgroundColor: BRAND_COLORS.navy }}
+                  >
+                    Start Assessment
+                  </Link>
                 )}
               </div>
             </div>
