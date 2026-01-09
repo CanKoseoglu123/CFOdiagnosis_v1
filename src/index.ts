@@ -704,9 +704,9 @@ app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
     return res.status(404).json({ error: "Run not found", details: runError?.message });
   }
 
-  // If no calibration data, return defaults with locked objectives
+  // If no calibration data, return neutral defaults (all Medium)
   if (!run.calibration || Object.keys(run.calibration).length === 0) {
-    // Get the spec and inputs to determine locked objectives
+    // Get the spec for objective list
     let spec;
     try {
       spec = SpecRegistry.get(run.spec_version);
@@ -714,33 +714,15 @@ app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
       return res.status(500).json({ error: String(err) });
     }
 
-    const { data: inputs } = await req.supabase
-      .from("diagnostic_inputs")
-      .select("question_id, value")
-      .eq("run_id", runId);
-
-    // Find failed critical questions
-    const inputMap = new Map((inputs || []).map((i: any) => [i.question_id, i.value]));
-    const lockedObjectives = new Set<string>();
-
-    for (const q of spec.questions) {
-      if (q.is_critical && inputMap.get(q.id) !== true) {
-        const question = spec.questions.find((sq: any) => sq.id === q.id);
-        if (question?.objective_id) {
-          lockedObjectives.add(question.objective_id);
-        }
-      }
-    }
-
     // Build default importance map
     const defaultMap: Record<string, number> = {};
     for (const obj of spec.objectives || []) {
-      defaultMap[obj.id] = lockedObjectives.has(obj.id) ? 5 : 3;
+      defaultMap[obj.id] = 3;
     }
 
     return res.json({
       importance_map: defaultMap,
-      locked: Array.from(lockedObjectives),
+      locked: [],
     });
   }
 
