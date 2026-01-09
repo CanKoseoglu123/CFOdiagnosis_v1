@@ -1214,6 +1214,17 @@ export default function ExecutiveReportPage() {
               break-inside: avoid;
             }
 
+            /* Allow long action tables to flow across pages */
+            .action-plan-summary {
+              break-inside: avoid;
+            }
+
+            .action-plan-table-wrap,
+            .action-plan-table-wrap .border,
+            .action-plan-table {
+              break-inside: auto;
+            }
+
             /* Footer on each page */
             .executive-page::after {
               content: "";

@@ -45,7 +45,7 @@ export default function ActionPlanTable({
   return (
     <div className="space-y-4">
       {/* Accountability Summary + Timeline Distribution */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 action-plan-summary">
         {/* Accountability Summary */}
         <div className="border border-slate-300 p-2 bg-slate-50">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
@@ -117,7 +117,7 @@ export default function ActionPlanTable({
         </div>
       </div>
       {/* Action Plan Table */}
-      <div className="border border-slate-300">
+      <div className="border border-slate-300 action-plan-table-wrap">
         <table className="w-full text-sm action-plan-table">
           {/* thead displays on every printed page */}
           <thead className="bg-slate-100">
