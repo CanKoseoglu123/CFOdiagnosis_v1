@@ -156,7 +156,7 @@ export default function PersonaConfirmationPage() {
 
   const showCloseScoreWarning = scoreGap <= 2;
   const showAlternative = scoreGap <= 10 && sortedPersonas.length > 1;
-  const alternativePersonaId = sortedPersonas[1]?.[0];
+  const alternativePersonaId = sortedPersonas.find(([personaId]) => personaId !== primaryPersonaId)?.[0];
   const alternativePersona = PERSONAS[alternativePersonaId];
 
   // Handle persona switch - direct switch without requiring reason
