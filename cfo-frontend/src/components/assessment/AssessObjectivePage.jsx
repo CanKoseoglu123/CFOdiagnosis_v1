@@ -105,6 +105,7 @@ export default function AssessObjectivePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [showIntroModal, setShowIntroModal] = useState(false);
 
   const objectiveMeta = OBJECTIVE_META[objectiveId];
 
@@ -283,6 +284,17 @@ export default function AssessObjectivePage() {
     }
   }, [loading, spec, canAccessObjective, allObjectivesProgress, runId, navigate]);
 
+  // Show intro modal once per run on first MCQ page
+  useEffect(() => {
+    if (loading || !isFirstObjective || !runId) return;
+    const storageKey = `assessmentIntroSeen:${runId}`;
+    const hasSeen = window.localStorage.getItem(storageKey);
+    if (!hasSeen) {
+      setShowIntroModal(true);
+      window.localStorage.setItem(storageKey, 'true');
+    }
+  }, [loading, isFirstObjective, runId]);
+
   // Debounced save
   const saveAnswer = useCallback(
     debounce(async (questionId, value) => {
@@ -445,6 +457,35 @@ export default function AssessObjectivePage() {
   return (
     <AppShell sidebarContent={sidebarContent} mobileBottomNav={mobileBottomNav}>
       <div className="min-h-screen bg-slate-50">
+        {/* Intro Modal */}
+        {showIntroModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-6 rounded-sm max-w-lg w-full border border-slate-300 shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-800">Assessment Questions</h3>
+              <p className="text-sm text-slate-600 mt-2">
+                Thanks for providing contextual information. This will be valuable in the diagnostic and in deriving the right action plan.
+              </p>
+              <p className="text-sm text-slate-600 mt-2">
+                We now have a set of questions that will lead you to the reporting section. Thank you for your focus.
+              </p>
+              <p className="text-sm text-slate-600 mt-2">
+                We recommend completing the assessment in one sitting, but you can save and return at any time.
+              </p>
+              <p className="text-sm text-slate-600 mt-2">
+                If it’s not clear why a question is being asked, click the ? icon in the top right for an explanation.
+              </p>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowIntroModal(false)}
+                  className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
+                >
+                  Start Questions
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Chapter Header */}
         <ChapterHeader
           label={`Objective ${currentIndex + 1} of 9 | ${objectiveMeta?.themeLabel || ''}`}
