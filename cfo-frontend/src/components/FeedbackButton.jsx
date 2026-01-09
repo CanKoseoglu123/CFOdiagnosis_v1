@@ -102,7 +102,11 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
     <>
       {/* Floating Button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setFeedback('');
+          setIsSubmitted(false);
+          setIsOpen(true);
+        }}
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-blue-700 transition-colors"
       >
         <MessageSquare className="w-4 h-4" />
@@ -126,7 +130,12 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
                 Share Your Feedback
               </h3>
               <button
-                onClick={() => !isSubmitting && setIsOpen(false)}
+                onClick={() => {
+                  if (isSubmitting) return;
+                  setIsOpen(false);
+                  setFeedback('');
+                  setIsSubmitted(false);
+                }}
                 className="text-slate-400 hover:text-slate-600"
               >
                 <X className="w-5 h-5" />
@@ -196,7 +205,11 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => {
+                      setIsOpen(false);
+                      setFeedback('');
+                      setIsSubmitted(false);
+                    }}
                     disabled={isSubmitting}
                     className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
                   >
