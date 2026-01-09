@@ -229,8 +229,14 @@ export default function AssessmentSidebar({
 
       {/* Overall Progress */}
       <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Overall Progress
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            Overall Progress
+          </span>
+          <span className="flex items-center gap-1 text-xs text-emerald-600">
+            <CheckCircle2 className="w-3 h-3" />
+            Auto-saved
+          </span>
         </div>
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-slate-600">All Questions</span>

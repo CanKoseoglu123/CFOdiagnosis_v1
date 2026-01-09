@@ -24,6 +24,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showIncompleteModal, setShowIncompleteModal] = useState(false);
   const [checkingRuns, setCheckingRuns] = useState(false);
+  const [inProgressRun, setInProgressRun] = useState(null);
 
   async function handleDashboardClick(e) {
     e.preventDefault();
@@ -43,13 +44,19 @@ export default function LandingPage() {
       if (res.ok) {
         const runs = await res.json();
         const completedRun = runs.find(r => r.status === 'completed' || r.status === 'locked');
+        const inProgress = runs.find(r => r.status === 'in_progress');
 
         if (completedRun) {
           navigate(`/report/${completedRun.id}`);
+        } else if (inProgress) {
+          setInProgressRun(inProgress);
+          setShowIncompleteModal(true);
         } else {
+          setInProgressRun(null);
           setShowIncompleteModal(true);
         }
       } else {
+        setInProgressRun(null);
         setShowIncompleteModal(true);
       }
     } catch (err) {
@@ -57,6 +64,44 @@ export default function LandingPage() {
       setShowIncompleteModal(true);
     } finally {
       setCheckingRuns(false);
+    }
+  }
+
+  async function handleResumeAssessment() {
+    if (!inProgressRun) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        navigate('/login');
+        return;
+      }
+
+      // Fetch run to check if setup is completed
+      const res = await fetch(`${API_URL}/diagnostic-runs/${inProgressRun.id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (res.ok) {
+        const run = await res.json();
+        setShowIncompleteModal(false);
+
+        if (!run.setup_completed_at) {
+          // Setup not completed - go to setup
+          navigate(`/run/${inProgressRun.id}/setup/company`);
+        } else {
+          // Setup completed - go to assessment (will auto-redirect to correct objective)
+          navigate(`/assess/objective/obj_budget_discipline?runId=${inProgressRun.id}`);
+        }
+      } else {
+        // Fallback - try assessment page
+        setShowIncompleteModal(false);
+        navigate(`/assess/objective/obj_budget_discipline?runId=${inProgressRun.id}`);
+      }
+    } catch (err) {
+      console.error('Error resuming assessment:', err);
+      setShowIncompleteModal(false);
+      navigate(`/assess/objective/obj_budget_discipline?runId=${inProgressRun.id}`);
     }
   }
 
@@ -448,9 +493,9 @@ export default function LandingPage() {
           <div className="relative bg-white shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b border-slate-200">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-500" />
+                <AlertCircle className={`w-5 h-5 ${inProgressRun ? 'text-blue-500' : 'text-amber-500'}`} />
                 <h3 className="text-lg font-semibold text-slate-800">
-                  No Reports Available
+                  {inProgressRun ? 'Assessment In Progress' : 'No Reports Available'}
                 </h3>
               </div>
               <button
@@ -462,27 +507,57 @@ export default function LandingPage() {
             </div>
 
             <div className="p-6">
-              <p className="text-slate-600 mb-6">
-                You haven't completed a diagnostic assessment yet. Complete the
-                assessment to generate your personalized report and action plan.
-              </p>
+              {inProgressRun ? (
+                <>
+                  <p className="text-slate-600 mb-6">
+                    You have an unfinished assessment. Would you like to continue
+                    where you left off, or start a new assessment?
+                  </p>
 
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowIncompleteModal(false)}
-                  className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
-                >
-                  Cancel
-                </button>
-                <Link
-                  to="/select-pillar"
-                  onClick={() => setShowIncompleteModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Start Assessment
-                </Link>
-              </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        setShowIncompleteModal(false);
+                        navigate('/select-pillar');
+                      }}
+                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+                    >
+                      Start New
+                    </button>
+                    <button
+                      onClick={handleResumeAssessment}
+                      className="px-4 py-2 text-sm font-medium text-white transition-colors"
+                      style={{ backgroundColor: BRAND_COLORS.navy }}
+                    >
+                      Continue Assessment
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-slate-600 mb-6">
+                    You haven't completed a diagnostic assessment yet. Complete the
+                    assessment to generate your personalized report and action plan.
+                  </p>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowIncompleteModal(false)}
+                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+                    >
+                      Cancel
+                    </button>
+                    <Link
+                      to="/select-pillar"
+                      onClick={() => setShowIncompleteModal(false)}
+                      className="px-4 py-2 text-sm font-medium text-white transition-colors"
+                      style={{ backgroundColor: BRAND_COLORS.navy }}
+                    >
+                      Start Assessment
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
