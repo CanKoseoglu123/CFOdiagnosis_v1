@@ -1,9 +1,17 @@
 // src/components/report/CommandCenter.jsx
 // VS-28: Command Center - Actions/Initiatives list with controls
 // VS-39: Disabled state when finalized
+// VS-46: Added Impact/Complexity tags
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertCircle, Lock } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle, Lock, Zap } from 'lucide-react';
+import {
+  formatImpact,
+  formatComplexity,
+  getImpactColor,
+  getComplexityColor,
+  isQuickWin
+} from '../../utils/wizardUtils';
 
 // Timeline options
 const TIMELINE_OPTIONS = [
@@ -373,23 +381,33 @@ function ActionRow({
           {question.is_critical && (
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
           )}
-          <div>
+          <div className="flex-1">
             <div className="text-sm font-medium text-slate-700">
               {question.expert_action?.title || question.text}
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
+            <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">
               {question.expert_action?.recommendation || question.help}
             </div>
-            {question.expert_action?.type && (
-              <span className={`inline-block mt-1 px-1.5 py-0.5 text-[10px] font-medium rounded ${
-                question.expert_action.type === 'quick_win' ? 'bg-green-100 text-green-700' :
-                question.expert_action.type === 'structural' ? 'bg-blue-100 text-blue-700' :
-                question.expert_action.type === 'behavioral' ? 'bg-purple-100 text-purple-700' :
-                'bg-slate-100 text-slate-700'
-              }`}>
-                {question.expert_action.type.replace('_', ' ')}
+            {/* VS-46: Impact, Complexity, and Type tags */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getImpactColor(question.impact)}`}>
+                Impact: {formatImpact(question.impact)}
               </span>
-            )}
+              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${getComplexityColor(question.complexity)}`}>
+                Complexity: {formatComplexity(question.complexity)}
+              </span>
+              {isQuickWin(question) && (
+                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-700 text-white flex items-center gap-0.5">
+                  <Zap className="w-2.5 h-2.5" />
+                  Quick Win
+                </span>
+              )}
+              {question.expert_action?.type && question.expert_action.type !== 'quick_win' && (
+                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-slate-100 text-slate-600">
+                  {question.expert_action.type.replace('_', ' ')}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

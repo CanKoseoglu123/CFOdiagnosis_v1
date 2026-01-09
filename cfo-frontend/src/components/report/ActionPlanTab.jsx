@@ -1,6 +1,7 @@
 // src/components/report/ActionPlanTab.jsx
 // VS-28: Action Planning & Simulator - War Room for maturity improvement
 // VS-39: Added finalization modal and API call
+// VS-46: Added Action Planning Wizard integration
 // Includes ActionSidebar inside content container for interactive metrics
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -8,7 +9,8 @@ import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
-import { AlertTriangle } from 'lucide-react';
+import ActionPlanningWizard from './ActionPlanningWizard';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -70,6 +72,10 @@ export default function ActionPlanTab({
   // VS-39: Finalization modal state (LOCAL only - no prop drilling)
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+
+  // VS-46: Wizard state
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardSummary, setWizardSummary] = useState(null);
 
   // VS-39: Derive finalization status from report (NOT separate state)
   const isFinalized = !!report?.finalized_at;
@@ -223,6 +229,33 @@ export default function ActionPlanTab({
       setFinalizing(false);
     }
   }
+
+  // VS-46: Handle wizard selection apply
+  const handleWizardApply = useCallback(({ selections, added, removed, total }) => {
+    // Add new selections
+    added.forEach(questionId => {
+      const newData = { timeline: null, assigned_owner: null, status: 'planned' };
+      setActionPlan(prev => ({ ...prev, [questionId]: newData }));
+      saveAction(questionId, newData);
+    });
+
+    // Remove deselected items
+    removed.forEach(questionId => {
+      setActionPlan(prev => {
+        const next = { ...prev };
+        delete next[questionId];
+        return next;
+      });
+      saveAction(questionId, null);
+    });
+
+    // Show summary toast
+    setWizardSummary({ added: added.length, removed: removed.length, total });
+    setShowWizard(false);
+
+    // Clear summary after 5 seconds
+    setTimeout(() => setWizardSummary(null), 5000);
+  }, [saveAction]);
 
   // Get gaps (questions not answered yes)
   const gaps = useMemo(() => {
@@ -514,6 +547,8 @@ export default function ActionPlanTab({
           onSave={handleSidebarSave}
           saving={saving}
           isFinalized={isFinalized}
+          // VS-46: Wizard trigger
+          onOpenWizard={() => setShowWizard(true)}
         />
       </div>
 
@@ -553,6 +588,47 @@ export default function ActionPlanTab({
                 {finalizing ? 'Finalizing...' : 'Yes, Finalize'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* VS-46: Action Planning Wizard */}
+      <ActionPlanningWizard
+        isOpen={showWizard}
+        onClose={() => setShowWizard(false)}
+        gaps={gaps}
+        practices={practices}
+        objectives={objectives}
+        report={report}
+        actionPlan={actionPlan}
+        onApplySelections={handleWizardApply}
+      />
+
+      {/* VS-46: Wizard Summary Toast */}
+      {wizardSummary && (
+        <div className="fixed bottom-4 right-4 bg-white border border-slate-300 rounded-sm shadow-lg p-4 z-40 max-w-sm animate-in slide-in-from-bottom-2">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-slate-800">Action Plan Updated</h4>
+              <p className="text-xs text-slate-600 mt-1">
+                {wizardSummary.added > 0 && `${wizardSummary.added} action${wizardSummary.added > 1 ? 's' : ''} added`}
+                {wizardSummary.added > 0 && wizardSummary.removed > 0 && ', '}
+                {wizardSummary.removed > 0 && `${wizardSummary.removed} removed`}
+                {wizardSummary.added === 0 && wizardSummary.removed === 0 && 'No changes made'}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Review and assign timelines and owners below.
+              </p>
+            </div>
+            <button
+              onClick={() => setWizardSummary(null)}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}

@@ -1,9 +1,10 @@
 // src/components/report/ActionSidebar.jsx
 // VS-28: Universal sidebar for Action Planning - context, progress, and controls
 // VS-41: Removed Finalize button (moved to left sidebar), removed Back/Proceed, restored progress tracker
+// VS-46: Added Action Planning Wizard trigger
 
 import React from 'react';
-import { Save, Sparkles } from 'lucide-react';
+import { Save, Sparkles, Wand2 } from 'lucide-react';
 
 export default function ActionSidebar({
   companyName,
@@ -19,7 +20,9 @@ export default function ActionSidebar({
   // Actions
   onSave,
   saving = false,
-  isFinalized = false
+  isFinalized = false,
+  // VS-46: Wizard trigger
+  onOpenWizard
 }) {
   const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
   const timelinePercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
@@ -117,27 +120,29 @@ export default function ActionSidebar({
 
       {/* Actions */}
       <div className="px-4 py-3 space-y-3">
-        {/* Generate Action Plan - Coming Soon */}
+        {/* VS-46: Action Planning Wizard */}
         <div className="pb-3 border-b border-slate-200">
           <div className="flex items-start gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-violet-600" />
+              <Wand2 className="w-5 h-5 text-violet-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-slate-900">AI-Powered Analysis</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Generate a prioritized action plan</p>
+              <h4 className="text-sm font-semibold text-slate-900">Smart Planning</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Build your plan with guided selection</p>
             </div>
           </div>
           <button
-            disabled
-            className="w-full px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+            onClick={onOpenWizard}
+            disabled={isFinalized}
+            className={`w-full px-4 py-2 text-white text-sm font-medium rounded flex items-center justify-center gap-2 transition-colors ${
+              isFinalized
+                ? 'bg-slate-400 cursor-not-allowed'
+                : 'bg-violet-600 hover:bg-violet-700'
+            }`}
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Generate Action Plan</span>
+            <Wand2 className="w-4 h-4" />
+            <span>Action Planning Wizard</span>
           </button>
-          <div className="text-center mt-1.5">
-            <span className="text-xs text-slate-400">Coming Soon</span>
-          </div>
         </div>
 
         {/* Save Button */}
