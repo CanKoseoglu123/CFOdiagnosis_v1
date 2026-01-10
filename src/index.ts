@@ -2293,16 +2293,98 @@ function parseUserAgent(ua: string | undefined): { device_type: string; browser:
   return { device_type, browser, os };
 }
 
+// Simple in-memory rate limiter for /track endpoint
+const trackRateLimiter = new Map<string, { count: number; resetTime: number }>();
+const TRACK_RATE_LIMIT = 60; // requests per window
+const TRACK_RATE_WINDOW = 60000; // 1 minute in ms
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = trackRateLimiter.get(ip);
+
+  if (!record || now > record.resetTime) {
+    trackRateLimiter.set(ip, { count: 1, resetTime: now + TRACK_RATE_WINDOW });
+    return false;
+  }
+
+  record.count++;
+  if (record.count > TRACK_RATE_LIMIT) {
+    return true;
+  }
+
+  return false;
+}
+
+// Clean up old rate limit entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of trackRateLimiter.entries()) {
+    if (now > record.resetTime) {
+      trackRateLimiter.delete(ip);
+    }
+  }
+}, 60000);
+
+// Validation helpers
+const PAGE_PATH_REGEX = /^\/[a-zA-Z0-9/_-]*$/;
+const SESSION_ID_REGEX = /^session_[0-9]+_[a-z0-9]+$/;
+
+function validatePagePath(path: string): boolean {
+  return path === '/' || PAGE_PATH_REGEX.test(path);
+}
+
+function validateSessionId(id: string | undefined): boolean {
+  return !id || SESSION_ID_REGEX.test(id);
+}
+
+// Async geolocation lookup (non-blocking)
+async function lookupGeolocation(
+  ip: string,
+  visitorId: string,
+  client: SupabaseClient
+): Promise<void> {
+  try {
+    const geoRes = await fetch(
+      `https://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,lat,lon,timezone`
+    );
+    const data = await geoRes.json();
+
+    if (data.status === "success") {
+      await client
+        .from("visitors")
+        .update({
+          country: data.country || null,
+          country_code: data.countryCode || null,
+          region: data.region || null,
+          city: data.city || null,
+          latitude: data.lat || null,
+          longitude: data.lon || null,
+          timezone: data.timezone || null,
+        })
+        .eq("id", visitorId);
+    }
+  } catch (err) {
+    // Geolocation failed silently - visitor record still exists
+    console.debug("Geolocation lookup failed:", err);
+  }
+}
+
 // POST /track - Log a page visit (public endpoint, no auth required)
 app.post("/track", async (req, res) => {
   const { page_path, referrer, session_id } = req.body;
 
-  if (!page_path) {
+  // Basic validation
+  if (!page_path || typeof page_path !== "string") {
     return res.status(400).json({ error: "page_path is required" });
   }
 
-  const userAgent = req.headers["user-agent"] as string | undefined;
-  const { device_type, browser, os } = parseUserAgent(userAgent);
+  if (!validatePagePath(page_path)) {
+    return res.status(400).json({ error: "Invalid page_path format" });
+  }
+
+  if (!validateSessionId(session_id)) {
+    return res.status(400).json({ error: "Invalid session_id format" });
+  }
 
   // Get IP address (handle proxies)
   const forwardedFor = req.headers["x-forwarded-for"];
@@ -2310,61 +2392,50 @@ app.post("/track", async (req, res) => {
     ? forwardedFor.split(",")[0].trim()
     : req.socket.remoteAddress || null;
 
-  // IP geolocation using ip-api.com
-  // Note: Free tier is rate limited. Consider upgrading or self-hosting MaxMind GeoIP for high traffic.
-  let geoData: {
-    country?: string;
-    countryCode?: string;
-    region?: string;
-    city?: string;
-    lat?: number;
-    lon?: number;
-    timezone?: string;
-  } = {};
-
-  if (ip && ip !== "::1" && ip !== "127.0.0.1") {
-    try {
-      const geoRes = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,lat,lon,timezone`);
-      const data = await geoRes.json();
-      if (data.status === "success") {
-        geoData = data;
-      }
-    } catch (err) {
-      // Geolocation failed, continue without it
-      console.error("Geolocation lookup failed:", err);
-    }
+  // Rate limiting
+  if (ip && isRateLimited(ip)) {
+    return res.status(429).json({ error: "Too many requests" });
   }
+
+  const userAgent = req.headers["user-agent"] as string | undefined;
+  const { device_type, browser, os } = parseUserAgent(userAgent);
 
   // Use admin client if available (bypass RLS), otherwise use anon
   const client = supabaseAdmin || supabaseAnon;
 
+  // Insert visitor record immediately (without geolocation)
   const { data, error } = await client
     .from("visitors")
     .insert({
       session_id: session_id || null,
       user_id: req.userId || null,
       page_path,
-      referrer: referrer || null,
-      user_agent: userAgent || null,
+      referrer: typeof referrer === "string" ? referrer.slice(0, 2000) : null,
+      user_agent: userAgent?.slice(0, 500) || null,
       device_type,
-      browser,
-      os,
+      browser: browser.slice(0, 100),
+      os: os.slice(0, 100),
       ip_address: ip,
-      country: geoData.country || null,
-      country_code: geoData.countryCode || null,
-      region: geoData.region || null,
-      city: geoData.city || null,
-      latitude: geoData.lat || null,
-      longitude: geoData.lon || null,
-      timezone: geoData.timezone || null,
+      // Geolocation fields will be updated async
+      country: null,
+      country_code: null,
+      region: null,
+      city: null,
+      latitude: null,
+      longitude: null,
+      timezone: null,
     })
     .select("id")
     .single();
 
   if (error) {
     console.error("Failed to track visitor:", error);
-    // Don't expose internal errors, just acknowledge
     return res.status(200).json({ tracked: false });
+  }
+
+  // Fire-and-forget geolocation lookup (non-blocking)
+  if (ip && ip !== "::1" && ip !== "127.0.0.1" && data?.id) {
+    lookupGeolocation(ip, data.id, client).catch(() => {});
   }
 
   res.json({ tracked: true, id: data.id });
@@ -2412,7 +2483,7 @@ app.get("/admin/visitors", requireAdmin, async (req, res) => {
 });
 
 // GET /admin/visitors/stats - Get visitor statistics (admin only)
-// Uses SQL RPC functions for efficient database-level aggregation
+// Uses single SQL RPC function for efficient database-level aggregation
 app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
   if (!supabaseAdmin) {
     return res.status(503).json({
@@ -2421,63 +2492,38 @@ app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
   }
 
   try {
-    // Get counts using RPC function (single efficient query)
-    const { data: countsData, error: countsError } = await supabaseAdmin
-      .rpc("get_visitor_counts");
+    // Single RPC call gets all stats at once (efficient)
+    const { data, error } = await supabaseAdmin
+      .rpc("get_visitor_all_stats", { top_limit: 10 });
 
-    if (countsError) {
-      console.error("Failed to get visitor counts:", countsError);
-      throw countsError;
+    if (error) {
+      console.error("Failed to get visitor stats:", error);
+      throw error;
     }
 
-    const counts = countsData?.[0] || { total: 0, today: 0, last_7_days: 0 };
+    const stats = data || {
+      total: 0,
+      today: 0,
+      last_7_days: 0,
+      top_countries: [],
+      top_pages: [],
+      devices: {},
+    };
 
-    // Get top countries using RPC function
-    const { data: countryData, error: countryError } = await supabaseAdmin
-      .rpc("get_visitor_stats_by_column", { column_name: "country", limit_count: 10 });
-
-    if (countryError) {
-      console.error("Failed to get country stats:", countryError);
-    }
-
-    const topCountries = (countryData || []).map((row: { item: string; count: number }) => ({
-      country: row.item,
-      count: row.count,
-    }));
-
-    // Get top pages using RPC function
-    const { data: pageData, error: pageError } = await supabaseAdmin
-      .rpc("get_visitor_stats_by_column", { column_name: "page_path", limit_count: 10 });
-
-    if (pageError) {
-      console.error("Failed to get page stats:", pageError);
-    }
-
-    const topPages = (pageData || []).map((row: { item: string; count: number }) => ({
-      page: row.item,
-      count: row.count,
-    }));
-
-    // Get device breakdown using RPC function
-    const { data: deviceData, error: deviceError } = await supabaseAdmin
-      .rpc("get_visitor_device_stats");
-
-    if (deviceError) {
-      console.error("Failed to get device stats:", deviceError);
-    }
-
-    const deviceCounts: Record<string, number> = {};
-    (deviceData || []).forEach((row: { device_type: string; count: number }) => {
-      deviceCounts[row.device_type] = row.count;
-    });
-
+    // Transform to expected format
     res.json({
-      total: counts.total || 0,
-      today: counts.today || 0,
-      last_7_days: counts.last_7_days || 0,
-      top_countries: topCountries,
-      top_pages: topPages,
-      devices: deviceCounts,
+      total: stats.total || 0,
+      today: stats.today || 0,
+      last_7_days: stats.last_7_days || 0,
+      top_countries: (stats.top_countries || []).map((row: { item: string; count: number }) => ({
+        country: row.item,
+        count: row.count,
+      })),
+      top_pages: (stats.top_pages || []).map((row: { item: string; count: number }) => ({
+        page: row.item,
+        count: row.count,
+      })),
+      devices: stats.devices || {},
     });
   } catch (err) {
     console.error("Failed to get visitor stats:", err);

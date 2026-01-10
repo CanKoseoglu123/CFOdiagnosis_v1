@@ -10,7 +10,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 function getSessionId() {
   let sessionId = sessionStorage.getItem('visitor_session_id');
   if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Use substring instead of deprecated substr
+    sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     sessionStorage.setItem('visitor_session_id', sessionId);
   }
   return sessionId;
