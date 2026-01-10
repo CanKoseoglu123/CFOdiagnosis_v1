@@ -40,7 +40,7 @@ export const ExpertActionSchema = z.object({
 // === QUESTION ===
 
 export const QuestionSchema = z.object({
-  id: z.string().regex(/^fpa_l[1-4]_q\d{2}$/, 'Invalid question ID format'),
+  id: z.string().regex(/^fpa_q\d{3}$/, 'Invalid question ID format'),
   text: z.string().min(20).max(300),
   help: z.string().min(10).max(500),
   maturity_level: MaturityLevelSchema,
