@@ -203,7 +203,8 @@
       "Bash(railway service:*)",
       "Bash(git ls-tree:*)",
       "Bash(git log:*)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(npx cloc:*)"
     ]
   }
 }

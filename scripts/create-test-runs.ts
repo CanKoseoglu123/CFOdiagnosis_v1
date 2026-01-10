@@ -124,7 +124,7 @@ async function createTestRun(scenario: typeof scenarios[0], runNumber: number): 
         company: {
           name: `Test #${runNumber + 1} - ${scenario.name}`,
           industry: 'Technology',
-          revenue_range: '$10M - $50M',
+          revenue_range: '€50M - €100M',
           employee_count: '51-200',
         },
         pillar: {

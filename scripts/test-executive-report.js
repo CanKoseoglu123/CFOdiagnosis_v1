@@ -43,7 +43,7 @@ async function testExecutiveReport() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
       body: JSON.stringify({
-        company: { name: 'Executive Test Corp', industry: 'saas', revenue_range: '50m_250m', change_appetite: 'transform' },
+        company: { name: 'Executive Test Corp', industry: 'saas', revenue_range: '100m_250m', change_appetite: 'transform' },
         pillar: { tools: [{ tool: 'excel', effectiveness: 'medium' }] }
       })
     });

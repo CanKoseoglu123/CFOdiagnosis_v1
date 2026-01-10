@@ -68,7 +68,7 @@ async function setupRun(runId, name) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
     body: JSON.stringify({
-      company: { name, industry: 'saas', revenue_range: '50m_250m', change_appetite: 'standardize' },
+      company: { name, industry: 'saas', revenue_range: '100m_250m', change_appetite: 'standardize' },
       pillar: { tools: [{ tool: 'excel', effectiveness: 'medium' }] }
     })
   });

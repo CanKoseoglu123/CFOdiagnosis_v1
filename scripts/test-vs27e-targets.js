@@ -44,7 +44,7 @@ async function test() {
       context: {
         name: 'VS-27e Test Corp',
         industry: 'saas',
-        revenue_range: '50m_250m',
+        revenue_range: '100m_250m',
         employee_count: '201_1000',
         finance_structure: 'hybrid',
         ownership_structure: 'pe_backed', // Should trigger PE modifier

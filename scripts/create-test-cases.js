@@ -31,7 +31,7 @@ const TEST_CASES = [
     company: {
       name: 'TinyTech Startup',
       industry: 'saas',
-      revenue_range: 'under_10m',
+      revenue_range: 'under_50m',
       employee_count: '1_50',
       finance_ftes: '1_10',
       legal_entities: '1_3',
@@ -54,7 +54,7 @@ const TEST_CASES = [
     company: {
       name: 'Global Enterprise Corp',
       industry: 'manufacturing',
-      revenue_range: 'over_250m',
+      revenue_range: 'over_500m',
       employee_count: 'over_1000',
       finance_ftes: 'over_50',
       legal_entities: 'over_25',
@@ -77,7 +77,7 @@ const TEST_CASES = [
     company: {
       name: 'Risk Corp Ltd',
       industry: 'fintech',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '21_35',
       legal_entities: '4_10',
@@ -100,7 +100,7 @@ const TEST_CASES = [
     company: {
       name: 'Emerging Finance Co',
       industry: 'retail',
-      revenue_range: '10m_50m',
+      revenue_range: '50m_100m',
       employee_count: '51_200',
       finance_ftes: '1_10',
       legal_entities: '1_3',
@@ -123,7 +123,7 @@ const TEST_CASES = [
     company: {
       name: 'Border Case Inc',
       industry: 'services',
-      revenue_range: '10m_50m',
+      revenue_range: '50m_100m',
       employee_count: '51_200',
       finance_ftes: '10_20',
       legal_entities: '4_10',
@@ -146,7 +146,7 @@ const TEST_CASES = [
     company: {
       name: 'PE Portfolio Alpha',
       industry: 'consumer_goods',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '21_35',
       legal_entities: '11_25',
@@ -169,7 +169,7 @@ const TEST_CASES = [
     company: {
       name: 'Fragmented Holdings',
       industry: 'media',
-      revenue_range: 'over_250m',
+      revenue_range: 'over_500m',
       employee_count: 'over_1000',
       finance_ftes: 'over_50',
       legal_entities: 'over_25',
@@ -192,7 +192,7 @@ const TEST_CASES = [
     company: {
       name: 'Lean Operations Ltd',
       industry: 'saas',
-      revenue_range: '10m_50m',
+      revenue_range: '50m_100m',
       employee_count: '51_200',
       finance_ftes: '1_10',
       legal_entities: '1_3',
@@ -215,7 +215,7 @@ const TEST_CASES = [
     company: {
       name: 'MedTech Compliance Corp',
       industry: 'healthcare',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '21_35',
       legal_entities: '4_10',
@@ -238,7 +238,7 @@ const TEST_CASES = [
     company: {
       name: 'Bootstrap Ventures',
       industry: 'saas',
-      revenue_range: 'under_10m',
+      revenue_range: 'under_50m',
       employee_count: '1_50',
       finance_ftes: '1_10',
       legal_entities: '1_3',
@@ -261,7 +261,7 @@ const TEST_CASES = [
     company: {
       name: 'Troubled Transformation Inc',
       industry: 'retail',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '10_20',
       legal_entities: '11_25',
@@ -284,7 +284,7 @@ const TEST_CASES = [
     company: {
       name: 'PublicCo International',
       industry: 'manufacturing',
-      revenue_range: 'over_250m',
+      revenue_range: 'over_500m',
       employee_count: 'over_1000',
       finance_ftes: 'over_50',
       legal_entities: 'over_25',
@@ -309,7 +309,7 @@ const TEST_CASES = [
     company: {
       name: 'Midwest Manufacturing Co',
       industry: 'manufacturing',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '21_35',
       legal_entities: '4_10',
@@ -332,7 +332,7 @@ const TEST_CASES = [
     company: {
       name: 'CloudScale Software',
       industry: 'saas',
-      revenue_range: '10m_50m',
+      revenue_range: '50m_100m',
       employee_count: '51_200',
       finance_ftes: '10_20',
       legal_entities: '1_3',
@@ -355,7 +355,7 @@ const TEST_CASES = [
     company: {
       name: 'Advisory Partners LLP',
       industry: 'services',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '10_20',
       legal_entities: '4_10',
@@ -378,7 +378,7 @@ const TEST_CASES = [
     company: {
       name: 'FreshMart Retail Group',
       industry: 'retail',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '10_20',
       legal_entities: '4_10',
@@ -401,7 +401,7 @@ const TEST_CASES = [
     company: {
       name: 'PayFlow Technologies',
       industry: 'fintech',
-      revenue_range: '10m_50m',
+      revenue_range: '50m_100m',
       employee_count: '51_200',
       finance_ftes: '10_20',
       legal_entities: '1_3',
@@ -424,7 +424,7 @@ const TEST_CASES = [
     company: {
       name: 'HomeStyle Products Inc',
       industry: 'consumer_goods',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '21_35',
       legal_entities: '4_10',
@@ -447,7 +447,7 @@ const TEST_CASES = [
     company: {
       name: 'Regional Health Systems',
       industry: 'healthcare',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '21_35',
       legal_entities: '4_10',
@@ -470,7 +470,7 @@ const TEST_CASES = [
     company: {
       name: 'Precision Auto Parts',
       industry: 'automotive',
-      revenue_range: '50m_250m',
+      revenue_range: '100m_250m',
       employee_count: '201_1000',
       finance_ftes: '10_20',
       legal_entities: '4_10',

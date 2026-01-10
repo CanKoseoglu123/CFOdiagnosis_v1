@@ -17,10 +17,11 @@ export const INDUSTRIES = [
 ];
 
 export const REVENUE_RANGES = [
-  { value: 'under_10m', label: 'Under $10M' },
-  { value: '10m_50m', label: '$10M - $50M' },
-  { value: '50m_250m', label: '$50M - $250M' },
-  { value: 'over_250m', label: 'Over $250M' }
+  { value: 'under_50m', label: 'Under €50M' },
+  { value: '50m_100m', label: '€50M - €100M' },
+  { value: '100m_250m', label: '€100M - €250M' },
+  { value: '250m_500m', label: '€250M - €500M' },
+  { value: 'over_500m', label: 'Over €500M' }
 ];
 
 export const EMPLOYEE_COUNTS = [

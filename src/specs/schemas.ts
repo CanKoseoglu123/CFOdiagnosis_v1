@@ -198,10 +198,11 @@ export const IndustrySchema = z.enum([
 
 // Revenue ranges
 export const RevenueRangeSchema = z.enum([
-  'under_10m',
-  '10m_50m',
-  '50m_250m',
-  'over_250m'
+  'under_50m',
+  '50m_100m',
+  '100m_250m',
+  '250m_500m',
+  'over_500m'
 ]);
 
 export const EmployeeCountSchema = z.enum([
@@ -455,10 +456,11 @@ export const INDUSTRY_LABELS: Record<Industry, string> = {
 
 // Revenue labels
 export const REVENUE_RANGE_LABELS: Record<RevenueRange, string> = {
-  under_10m: 'Under $10M',
-  '10m_50m': '$10M - $50M',
-  '50m_250m': '$50M - $250M',
-  over_250m: 'Over $250M'
+  under_50m: 'Under €50M',
+  '50m_100m': '€50M - €100M',
+  '100m_250m': '€100M - €250M',
+  '250m_500m': '€250M - €500M',
+  over_500m: 'Over €500M'
 };
 
 export const EMPLOYEE_COUNT_LABELS: Record<EmployeeCount, string> = {

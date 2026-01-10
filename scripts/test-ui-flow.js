@@ -30,7 +30,7 @@ async function testUIFlow() {
   const company = {
     name: 'UI Flow Test Corp',
     industry: 'services',
-    revenue_range: '50m_250m',
+    revenue_range: '100m_250m',
     employee_count: '201_1000',
     finance_ftes: '21_35',
     legal_entities: '4_10',

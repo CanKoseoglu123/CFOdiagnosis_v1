@@ -68,7 +68,7 @@ async function createMidLevelReport() {
       company: {
         name: 'Acme Manufacturing Co.',
         industry: 'manufacturing',
-        revenue_range: '50m_250m',
+        revenue_range: '100m_250m',
         employee_count: '201_1000',
         finance_structure: 'hybrid',
         change_appetite: 'standardize'

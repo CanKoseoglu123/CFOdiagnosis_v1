@@ -47,9 +47,9 @@ const TEST_CASES = [
   { name: 'Fintech Startup', description: 'Fintech, advanced analytics', industry: 'fintech', pattern: { yes: [...L1_QUESTIONS, ...L2_QUESTIONS, ...L3_QUESTIONS, ...L4_QUESTIONS.slice(0, 5)] } },
 
   // Size-Based Cases
-  { name: 'Small Company', description: 'Under $10M revenue, basic', revenue: 'under_10m', pattern: { yes: L1_QUESTIONS.slice(0, 6) } },
-  { name: 'Mid-Market', description: '$50M-$250M, developing', revenue: '50m_250m', pattern: { yes: [...L1_QUESTIONS, ...L2_QUESTIONS.slice(0, 8)] } },
-  { name: 'Enterprise', description: 'Over $250M, mature', revenue: 'over_250m', pattern: { yes: [...L1_QUESTIONS, ...L2_QUESTIONS, ...L3_QUESTIONS] } },
+  { name: 'Small Company', description: 'Under €50M revenue, basic', revenue: 'under_50m', pattern: { yes: L1_QUESTIONS.slice(0, 6) } },
+  { name: 'Mid-Market', description: '€100M-€250M, developing', revenue: '100m_250m', pattern: { yes: [...L1_QUESTIONS, ...L2_QUESTIONS.slice(0, 8)] } },
+  { name: 'Enterprise', description: 'Over €500M, mature', revenue: 'over_500m', pattern: { yes: [...L1_QUESTIONS, ...L2_QUESTIONS, ...L3_QUESTIONS] } },
 
   // Edge Cases
   { name: 'Random 50%', description: '50% random answers', pattern: { yes: ALL_QUESTIONS.filter(() => Math.random() > 0.5) } },
@@ -81,7 +81,7 @@ async function createTestRun(testCase, index) {
     const company = {
       name: `Test ${index + 1}: ${testCase.name}`,
       industry: testCase.industry || 'saas',
-      revenue_range: testCase.revenue || '50m_250m',
+      revenue_range: testCase.revenue || '100m_250m',
       employee_count: '201_1000',
       finance_structure: 'hybrid',
       ownership_structure: 'pe_backed',
