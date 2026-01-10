@@ -5,6 +5,7 @@ import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import { useVisitorTracking } from './hooks/useVisitorTracking'
 
 // Eager load landing page (initial entry point)
 import LandingPage from './pages/LandingPage'
@@ -55,6 +56,12 @@ function PageLoader() {
 function RedirectWithParams({ to }) {
   const location = useLocation()
   return <Navigate to={`${to}${location.search}`} replace />
+}
+
+// Component to track visitor page views
+function VisitorTracker() {
+  useVisitorTracking()
+  return null
 }
 
 function LoginPage() {
@@ -130,6 +137,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <VisitorTracker />
         <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />

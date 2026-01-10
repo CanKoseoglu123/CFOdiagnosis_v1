@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import UAParser from "ua-parser-js";
 
 import { validateRun } from "./validateRun";
 import { scoreRun } from "./scoring/scoreRun";
@@ -2269,6 +2270,281 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || "Failed to calculate scores" });
+  }
+});
+
+// ------------------------------------------------------------------
+// Visitor Tracking - Public endpoint to log page visits
+// ------------------------------------------------------------------
+
+// Helper to parse user agent using ua-parser-js for accurate detection
+function parseUserAgent(ua: string | undefined): { device_type: string; browser: string; os: string } {
+  if (!ua) return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
+
+  const parser = new UAParser(ua);
+  const result = parser.getResult();
+
+  // Device type detection
+  let device_type = 'desktop';
+  const deviceType = result.device?.type;
+  if (deviceType === 'mobile') {
+    device_type = 'mobile';
+  } else if (deviceType === 'tablet') {
+    device_type = 'tablet';
+  }
+
+  // Browser and OS from parser
+  const browser = result.browser?.name || 'unknown';
+  const os = result.os?.name || 'unknown';
+
+  return { device_type, browser, os };
+}
+
+// Simple in-memory rate limiter for /track endpoint
+const trackRateLimiter = new Map<string, { count: number; resetTime: number }>();
+const TRACK_RATE_LIMIT = 60; // requests per window
+const TRACK_RATE_WINDOW = 60000; // 1 minute in ms
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = trackRateLimiter.get(ip);
+
+  if (!record || now > record.resetTime) {
+    trackRateLimiter.set(ip, { count: 1, resetTime: now + TRACK_RATE_WINDOW });
+    return false;
+  }
+
+  record.count++;
+  if (record.count > TRACK_RATE_LIMIT) {
+    return true;
+  }
+
+  return false;
+}
+
+// Clean up old rate limit entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of trackRateLimiter.entries()) {
+    if (now > record.resetTime) {
+      trackRateLimiter.delete(ip);
+    }
+  }
+}, 60000);
+
+// Validation helpers
+const PAGE_PATH_REGEX = /^\/[a-zA-Z0-9/_-]*$/;
+const SESSION_ID_REGEX = /^session_[0-9]+_[a-z0-9]+$/;
+
+function validatePagePath(path: string): boolean {
+  return path === '/' || PAGE_PATH_REGEX.test(path);
+}
+
+function validateSessionId(id: string | undefined): boolean {
+  return !id || SESSION_ID_REGEX.test(id);
+}
+
+// Async geolocation lookup (non-blocking)
+async function lookupGeolocation(
+  ip: string,
+  visitorId: string,
+  client: SupabaseClient
+): Promise<void> {
+  try {
+    const geoRes = await fetch(
+      `https://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,lat,lon,timezone`
+    );
+    const data = await geoRes.json();
+
+    if (data.status === "success") {
+      await client
+        .from("visitors")
+        .update({
+          country: data.country || null,
+          country_code: data.countryCode || null,
+          region: data.region || null,
+          city: data.city || null,
+          latitude: data.lat || null,
+          longitude: data.lon || null,
+          timezone: data.timezone || null,
+        })
+        .eq("id", visitorId);
+    }
+  } catch (err) {
+    // Geolocation failed silently - visitor record still exists
+    console.debug("Geolocation lookup failed:", err);
+  }
+}
+
+// POST /track - Log a page visit (public endpoint, no auth required)
+app.post("/track", async (req, res) => {
+  const { page_path, query_string, referrer, referrer_type, session_id } = req.body;
+
+  // Basic validation
+  if (!page_path || typeof page_path !== "string") {
+    return res.status(400).json({ error: "page_path is required" });
+  }
+
+  if (!validatePagePath(page_path)) {
+    return res.status(400).json({ error: "Invalid page_path format" });
+  }
+
+  if (!validateSessionId(session_id)) {
+    return res.status(400).json({ error: "Invalid session_id format" });
+  }
+
+  // Validate referrer_type if provided
+  if (referrer_type && !["external", "internal"].includes(referrer_type)) {
+    return res.status(400).json({ error: "Invalid referrer_type" });
+  }
+
+  // Get IP address (handle proxies)
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const ip = typeof forwardedFor === "string"
+    ? forwardedFor.split(",")[0].trim()
+    : req.socket.remoteAddress || null;
+
+  // Rate limiting
+  if (ip && isRateLimited(ip)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
+  const userAgent = req.headers["user-agent"] as string | undefined;
+  const { device_type, browser, os } = parseUserAgent(userAgent);
+
+  // Must use admin client for RLS-protected table
+  if (!supabaseAdmin) {
+    console.error("Visitor tracking requires SUPABASE_SERVICE_ROLE_KEY");
+    return res.status(200).json({ tracked: false });
+  }
+
+  // Insert visitor record immediately (without geolocation)
+  const { data, error } = await supabaseAdmin
+    .from("visitors")
+    .insert({
+      session_id: session_id || null,
+      user_id: req.userId || null,
+      page_path,
+      query_string: typeof query_string === "string" ? query_string.slice(0, 500) : null,
+      referrer: typeof referrer === "string" ? referrer.slice(0, 2000) : null,
+      referrer_type: referrer_type || null,
+      user_agent: userAgent?.slice(0, 500) || null,
+      device_type,
+      browser: browser.slice(0, 100),
+      os: os.slice(0, 100),
+      ip_address: ip,
+      // Geolocation fields will be updated async
+      country: null,
+      country_code: null,
+      region: null,
+      city: null,
+      latitude: null,
+      longitude: null,
+      timezone: null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("Failed to track visitor:", error);
+    return res.status(200).json({ tracked: false });
+  }
+
+  // Fire-and-forget geolocation lookup (non-blocking)
+  if (ip && ip !== "::1" && ip !== "127.0.0.1" && data?.id) {
+    lookupGeolocation(ip, data.id, supabaseAdmin).catch(() => {});
+  }
+
+  res.json({ tracked: true, id: data.id });
+});
+
+// GET /admin/visitors - List all visitor data (admin only)
+app.get("/admin/visitors", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  // Parse query params for filtering/pagination
+  const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
+  const offset = parseInt(req.query.offset as string) || 0;
+  const country = req.query.country as string | undefined;
+  const page_path = req.query.page_path as string | undefined;
+
+  let query = supabaseAdmin
+    .from("visitors")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (country) {
+    query = query.eq("country", country);
+  }
+  if (page_path) {
+    query = query.eq("page_path", page_path);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({
+    visitors: data || [],
+    total: count || 0,
+    limit,
+    offset,
+  });
+});
+
+// GET /admin/visitors/stats - Get visitor statistics (admin only)
+// Uses single SQL RPC function for efficient database-level aggregation
+app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  try {
+    // Single RPC call gets all stats at once (efficient)
+    const { data, error } = await supabaseAdmin
+      .rpc("get_visitor_all_stats", { top_limit: 10 });
+
+    if (error) {
+      console.error("Failed to get visitor stats:", error);
+      throw error;
+    }
+
+    const stats = data || {
+      total: 0,
+      today: 0,
+      last_7_days: 0,
+      top_countries: [],
+      top_pages: [],
+      devices: {},
+    };
+
+    // Transform to expected format
+    res.json({
+      total: stats.total || 0,
+      today: stats.today || 0,
+      last_7_days: stats.last_7_days || 0,
+      top_countries: (stats.top_countries || []).map((row: { item: string; count: number }) => ({
+        country: row.item,
+        count: row.count,
+      })),
+      top_pages: (stats.top_pages || []).map((row: { item: string; count: number }) => ({
+        page: row.item,
+        count: row.count,
+      })),
+      devices: stats.devices || {},
+    });
+  } catch (err) {
+    console.error("Failed to get visitor stats:", err);
+    return res.status(500).json({ error: "Failed to retrieve visitor statistics" });
   }
 });
 
