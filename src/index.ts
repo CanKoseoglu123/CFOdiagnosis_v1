@@ -1687,9 +1687,16 @@ app.post("/feedback", async (req, res) => {
   const validTypes = ["bug", "confusion", "suggestion", "general"];
   const feedbackType = validTypes.includes(type) ? type : "general";
 
+  // Use service role client to bypass RLS - feedback should always be saved
+  // regardless of user auth status
+  if (!supabaseAdmin) {
+    console.error("Feedback failed: SUPABASE_SERVICE_ROLE_KEY not configured");
+    return res.status(503).json({ error: "Feedback service unavailable" });
+  }
+
   // Use authenticated user email (server-side) - prevents spoofing
   // Falls back to null for anonymous feedback
-  const { data, error } = await req.supabase
+  const { data, error } = await supabaseAdmin
     .from("feedback")
     .insert({
       run_id: run_id || null,
@@ -2184,7 +2191,7 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
         company: {
           name: `Test Company (${scenario.name})`,
           industry: "Technology",
-          revenue_range: "$10M - $50M",
+            revenue_range: "€50M - €100M",
           employee_count: "51-200",
         },
         pillar: {
