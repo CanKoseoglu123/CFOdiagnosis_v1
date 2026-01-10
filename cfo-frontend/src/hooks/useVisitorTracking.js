@@ -17,8 +17,36 @@ function getSessionId() {
   return sessionId;
 }
 
+// Determine if a referrer is external (different origin) or internal
+function getReferrerType(referrer) {
+  if (!referrer) return null;
+
+  try {
+    // Internal paths start with /
+    if (referrer.startsWith('/')) {
+      return 'internal';
+    }
+
+    // Check if it's a full URL
+    const referrerUrl = new URL(referrer);
+    const currentOrigin = window.location.origin;
+
+    // Same origin = internal, different origin = external
+    return referrerUrl.origin === currentOrigin ? 'internal' : 'external';
+  } catch {
+    // If URL parsing fails, assume external if it looks like a URL
+    return referrer.includes('://') ? 'external' : 'internal';
+  }
+}
+
 // Track a page visit
-async function trackVisit(pagePath, referrer = null) {
+async function trackVisit(pagePath, queryString, referrer, referrerType) {
+  // Skip tracking if API_URL is not configured
+  if (!API_URL) {
+    console.debug('Visitor tracking disabled: VITE_API_URL not configured');
+    return;
+  }
+
   try {
     await fetch(`${API_URL}/track`, {
       method: 'POST',
@@ -27,7 +55,9 @@ async function trackVisit(pagePath, referrer = null) {
       },
       body: JSON.stringify({
         page_path: pagePath,
-        referrer: referrer || document.referrer || null,
+        query_string: queryString || null,
+        referrer: referrer || null,
+        referrer_type: referrerType,
         session_id: getSessionId(),
       }),
     });
@@ -47,18 +77,38 @@ export function useVisitorTracking() {
   const initialLoad = useRef(true);
 
   useEffect(() => {
-    // Don't track the same path twice in a row
-    if (location.pathname === lastTrackedPath.current) {
+    const fullPath = location.pathname + location.search;
+
+    // Don't track the same full path twice in a row
+    if (fullPath === lastTrackedPath.current) {
       return;
     }
 
-    // Track the visit
-    const referrer = initialLoad.current ? document.referrer : lastTrackedPath.current;
-    trackVisit(location.pathname, referrer);
+    // Determine referrer and type
+    let referrer;
+    let referrerType;
 
-    lastTrackedPath.current = location.pathname;
+    if (initialLoad.current) {
+      // First page load - use document.referrer (external source)
+      referrer = document.referrer || null;
+      referrerType = getReferrerType(referrer);
+    } else {
+      // Internal navigation - use previous path
+      referrer = lastTrackedPath.current;
+      referrerType = 'internal';
+    }
+
+    // Track the visit with separate path and query string
+    trackVisit(
+      location.pathname,
+      location.search || null,
+      referrer,
+      referrerType
+    );
+
+    lastTrackedPath.current = fullPath;
     initialLoad.current = false;
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 }
 
 export default useVisitorTracking;

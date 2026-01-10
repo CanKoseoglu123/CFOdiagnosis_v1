@@ -2371,7 +2371,7 @@ async function lookupGeolocation(
 
 // POST /track - Log a page visit (public endpoint, no auth required)
 app.post("/track", async (req, res) => {
-  const { page_path, referrer, session_id } = req.body;
+  const { page_path, query_string, referrer, referrer_type, session_id } = req.body;
 
   // Basic validation
   if (!page_path || typeof page_path !== "string") {
@@ -2384,6 +2384,11 @@ app.post("/track", async (req, res) => {
 
   if (!validateSessionId(session_id)) {
     return res.status(400).json({ error: "Invalid session_id format" });
+  }
+
+  // Validate referrer_type if provided
+  if (referrer_type && !["external", "internal"].includes(referrer_type)) {
+    return res.status(400).json({ error: "Invalid referrer_type" });
   }
 
   // Get IP address (handle proxies)
@@ -2400,17 +2405,22 @@ app.post("/track", async (req, res) => {
   const userAgent = req.headers["user-agent"] as string | undefined;
   const { device_type, browser, os } = parseUserAgent(userAgent);
 
-  // Use admin client if available (bypass RLS), otherwise use anon
-  const client = supabaseAdmin || supabaseAnon;
+  // Must use admin client for RLS-protected table
+  if (!supabaseAdmin) {
+    console.error("Visitor tracking requires SUPABASE_SERVICE_ROLE_KEY");
+    return res.status(200).json({ tracked: false });
+  }
 
   // Insert visitor record immediately (without geolocation)
-  const { data, error } = await client
+  const { data, error } = await supabaseAdmin
     .from("visitors")
     .insert({
       session_id: session_id || null,
       user_id: req.userId || null,
       page_path,
+      query_string: typeof query_string === "string" ? query_string.slice(0, 500) : null,
       referrer: typeof referrer === "string" ? referrer.slice(0, 2000) : null,
+      referrer_type: referrer_type || null,
       user_agent: userAgent?.slice(0, 500) || null,
       device_type,
       browser: browser.slice(0, 100),
@@ -2435,7 +2445,7 @@ app.post("/track", async (req, res) => {
 
   // Fire-and-forget geolocation lookup (non-blocking)
   if (ip && ip !== "::1" && ip !== "127.0.0.1" && data?.id) {
-    lookupGeolocation(ip, data.id, client).catch(() => {});
+    lookupGeolocation(ip, data.id, supabaseAdmin).catch(() => {});
   }
 
   res.json({ tracked: true, id: data.id });
