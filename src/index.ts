@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import UAParser from "ua-parser-js";
 
 import { validateRun } from "./validateRun";
 import { scoreRun } from "./scoring/scoreRun";
@@ -2269,31 +2270,25 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
 // Visitor Tracking - Public endpoint to log page visits
 // ------------------------------------------------------------------
 
-// Helper to parse user agent
+// Helper to parse user agent using ua-parser-js for accurate detection
 function parseUserAgent(ua: string | undefined): { device_type: string; browser: string; os: string } {
   if (!ua) return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
 
+  const parser = new UAParser(ua);
+  const result = parser.getResult();
+
   // Device type detection
   let device_type = 'desktop';
-  if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
-    device_type = /iPad|Tablet/i.test(ua) ? 'tablet' : 'mobile';
+  const deviceType = result.device?.type;
+  if (deviceType === 'mobile') {
+    device_type = 'mobile';
+  } else if (deviceType === 'tablet') {
+    device_type = 'tablet';
   }
 
-  // Browser detection
-  let browser = 'unknown';
-  if (ua.includes('Firefox')) browser = 'Firefox';
-  else if (ua.includes('Edg')) browser = 'Edge';
-  else if (ua.includes('Chrome')) browser = 'Chrome';
-  else if (ua.includes('Safari')) browser = 'Safari';
-  else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
-
-  // OS detection
-  let os = 'unknown';
-  if (ua.includes('Windows')) os = 'Windows';
-  else if (ua.includes('Mac OS')) os = 'macOS';
-  else if (ua.includes('Linux')) os = 'Linux';
-  else if (ua.includes('Android')) os = 'Android';
-  else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  // Browser and OS from parser
+  const browser = result.browser?.name || 'unknown';
+  const os = result.os?.name || 'unknown';
 
   return { device_type, browser, os };
 }
@@ -2315,8 +2310,8 @@ app.post("/track", async (req, res) => {
     ? forwardedFor.split(",")[0].trim()
     : req.socket.remoteAddress || null;
 
-  // We'll use a free IP geolocation API (ip-api.com) for location data
-  // Rate limited to 45 requests/minute, which should be fine for now
+  // IP geolocation using ip-api.com
+  // Note: Free tier is rate limited. Consider upgrading or self-hosting MaxMind GeoIP for high traffic.
   let geoData: {
     country?: string;
     countryCode?: string;
@@ -2329,7 +2324,7 @@ app.post("/track", async (req, res) => {
 
   if (ip && ip !== "::1" && ip !== "127.0.0.1") {
     try {
-      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,lat,lon,timezone`);
+      const geoRes = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,lat,lon,timezone`);
       const data = await geoRes.json();
       if (data.status === "success") {
         geoData = data;
@@ -2417,6 +2412,7 @@ app.get("/admin/visitors", requireAdmin, async (req, res) => {
 });
 
 // GET /admin/visitors/stats - Get visitor statistics (admin only)
+// Uses SQL RPC functions for efficient database-level aggregation
 app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
   if (!supabaseAdmin) {
     return res.status(503).json({
@@ -2424,79 +2420,69 @@ app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
     });
   }
 
-  // Get total count
-  const { count: total } = await supabaseAdmin
-    .from("visitors")
-    .select("*", { count: "exact", head: true });
+  try {
+    // Get counts using RPC function (single efficient query)
+    const { data: countsData, error: countsError } = await supabaseAdmin
+      .rpc("get_visitor_counts");
 
-  // Get today's count
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const { count: todayCount } = await supabaseAdmin
-    .from("visitors")
-    .select("*", { count: "exact", head: true })
-    .gte("created_at", today.toISOString());
-
-  // Get last 7 days count
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const { count: weekCount } = await supabaseAdmin
-    .from("visitors")
-    .select("*", { count: "exact", head: true })
-    .gte("created_at", weekAgo.toISOString());
-
-  // Get top countries
-  const { data: countryData } = await supabaseAdmin
-    .from("visitors")
-    .select("country")
-    .not("country", "is", null);
-
-  const countryCounts: Record<string, number> = {};
-  (countryData || []).forEach((v: { country: string | null }) => {
-    if (v.country) {
-      countryCounts[v.country] = (countryCounts[v.country] || 0) + 1;
+    if (countsError) {
+      console.error("Failed to get visitor counts:", countsError);
+      throw countsError;
     }
-  });
 
-  const topCountries = Object.entries(countryCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([country, count]) => ({ country, count }));
+    const counts = countsData?.[0] || { total: 0, today: 0, last_7_days: 0 };
 
-  // Get top pages
-  const { data: pageData } = await supabaseAdmin
-    .from("visitors")
-    .select("page_path");
+    // Get top countries using RPC function
+    const { data: countryData, error: countryError } = await supabaseAdmin
+      .rpc("get_visitor_stats_by_column", { column_name: "country", limit_count: 10 });
 
-  const pageCounts: Record<string, number> = {};
-  (pageData || []).forEach((v: { page_path: string }) => {
-    pageCounts[v.page_path] = (pageCounts[v.page_path] || 0) + 1;
-  });
+    if (countryError) {
+      console.error("Failed to get country stats:", countryError);
+    }
 
-  const topPages = Object.entries(pageCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([page, count]) => ({ page, count }));
+    const topCountries = (countryData || []).map((row: { item: string; count: number }) => ({
+      country: row.item,
+      count: row.count,
+    }));
 
-  // Get device breakdown
-  const { data: deviceData } = await supabaseAdmin
-    .from("visitors")
-    .select("device_type");
+    // Get top pages using RPC function
+    const { data: pageData, error: pageError } = await supabaseAdmin
+      .rpc("get_visitor_stats_by_column", { column_name: "page_path", limit_count: 10 });
 
-  const deviceCounts: Record<string, number> = {};
-  (deviceData || []).forEach((v: { device_type: string | null }) => {
-    const device = v.device_type || "unknown";
-    deviceCounts[device] = (deviceCounts[device] || 0) + 1;
-  });
+    if (pageError) {
+      console.error("Failed to get page stats:", pageError);
+    }
 
-  res.json({
-    total: total || 0,
-    today: todayCount || 0,
-    last_7_days: weekCount || 0,
-    top_countries: topCountries,
-    top_pages: topPages,
-    devices: deviceCounts,
-  });
+    const topPages = (pageData || []).map((row: { item: string; count: number }) => ({
+      page: row.item,
+      count: row.count,
+    }));
+
+    // Get device breakdown using RPC function
+    const { data: deviceData, error: deviceError } = await supabaseAdmin
+      .rpc("get_visitor_device_stats");
+
+    if (deviceError) {
+      console.error("Failed to get device stats:", deviceError);
+    }
+
+    const deviceCounts: Record<string, number> = {};
+    (deviceData || []).forEach((row: { device_type: string; count: number }) => {
+      deviceCounts[row.device_type] = row.count;
+    });
+
+    res.json({
+      total: counts.total || 0,
+      today: counts.today || 0,
+      last_7_days: counts.last_7_days || 0,
+      top_countries: topCountries,
+      top_pages: topPages,
+      devices: deviceCounts,
+    });
+  } catch (err) {
+    console.error("Failed to get visitor stats:", err);
+    return res.status(500).json({ error: "Failed to retrieve visitor statistics" });
+  }
 });
 
 // ------------------------------------------------------------------

@@ -7,8 +7,27 @@ import { supabase } from '../lib/supabase';
 import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
   AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings,
-  FlaskConical, Play, Loader2, Globe, MapPin, Monitor, Smartphone, Tablet
+  FlaskConical, Play, Loader2, Globe, MapPin, Monitor, Smartphone, Tablet,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
+
+// Device Badge component for consistent styling
+function DeviceBadge({ type }) {
+  const deviceType = type || 'desktop';
+  const config = {
+    mobile: { Icon: Smartphone, className: 'bg-purple-100 text-purple-700' },
+    tablet: { Icon: Tablet, className: 'bg-amber-100 text-amber-700' },
+    desktop: { Icon: Monitor, className: 'bg-slate-100 text-slate-600' },
+    unknown: { Icon: Monitor, className: 'bg-slate-100 text-slate-600' },
+  }[deviceType] || { Icon: Monitor, className: 'bg-slate-100 text-slate-600' };
+
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${config.className}`}>
+      <config.Icon className="w-3 h-3" />
+      {deviceType}
+    </span>
+  );
+}
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -30,11 +49,13 @@ export default function AdminPage() {
   const [visitors, setVisitors] = useState([]);
   const [visitorStats, setVisitorStats] = useState(null);
   const [visitorTotal, setVisitorTotal] = useState(0);
+  const [visitorPage, setVisitorPage] = useState(0);
+  const VISITORS_PER_PAGE = 50;
 
   // Fetch data on mount and tab change
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, visitorPage]);
 
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -94,8 +115,9 @@ export default function AdminPage() {
         setTestScenarios(await res.json());
       } else if (activeTab === 'visitors') {
         // Fetch visitors list and stats in parallel
+        const offset = visitorPage * VISITORS_PER_PAGE;
         const [visitorsRes, statsRes] = await Promise.all([
-          fetch(`${API_URL}/admin/visitors?limit=100`, {
+          fetch(`${API_URL}/admin/visitors?limit=${VISITORS_PER_PAGE}&offset=${offset}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
           fetch(`${API_URL}/admin/visitors/stats`, {
@@ -674,8 +696,8 @@ export default function AdminPage() {
                   </h3>
                   {visitorStats.top_countries?.length > 0 ? (
                     <div className="space-y-2">
-                      {visitorStats.top_countries.slice(0, 5).map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm">
+                      {visitorStats.top_countries.slice(0, 5).map((item) => (
+                        <div key={item.country} className="flex items-center justify-between text-sm">
                           <span className="text-slate-600">{item.country}</span>
                           <span className="font-medium text-slate-800">{item.count}</span>
                         </div>
@@ -694,8 +716,8 @@ export default function AdminPage() {
                   </h3>
                   {visitorStats.top_pages?.length > 0 ? (
                     <div className="space-y-2">
-                      {visitorStats.top_pages.slice(0, 5).map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm">
+                      {visitorStats.top_pages.slice(0, 5).map((item) => (
+                        <div key={item.page} className="flex items-center justify-between text-sm">
                           <span className="text-slate-600 truncate max-w-[200px]" title={item.page}>
                             {item.page}
                           </span>
@@ -756,16 +778,7 @@ export default function AdminPage() {
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${
-                              visitor.device_type === 'mobile' ? 'bg-purple-100 text-purple-700' :
-                              visitor.device_type === 'tablet' ? 'bg-amber-100 text-amber-700' :
-                              'bg-slate-100 text-slate-600'
-                            }`}>
-                              {visitor.device_type === 'mobile' ? <Smartphone className="w-3 h-3" /> :
-                               visitor.device_type === 'tablet' ? <Tablet className="w-3 h-3" /> :
-                               <Monitor className="w-3 h-3" />}
-                              {visitor.device_type || 'desktop'}
-                            </span>
+                            <DeviceBadge type={visitor.device_type} />
                           </td>
                           <td className="px-4 py-3 text-slate-600">
                             <div>{visitor.browser || '-'}</div>
@@ -782,10 +795,33 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Pagination info */}
-            {visitors.length > 0 && (
-              <div className="text-sm text-slate-500">
-                Showing {visitors.length} of {visitorTotal} visits
+            {/* Pagination controls */}
+            {visitorTotal > 0 && (
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-slate-500">
+                  Showing {visitorPage * VISITORS_PER_PAGE + 1} - {Math.min((visitorPage + 1) * VISITORS_PER_PAGE, visitorTotal)} of {visitorTotal} visits
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setVisitorPage(p => Math.max(0, p - 1))}
+                    disabled={visitorPage === 0}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  <span className="text-sm text-slate-600">
+                    Page {visitorPage + 1} of {Math.ceil(visitorTotal / VISITORS_PER_PAGE)}
+                  </span>
+                  <button
+                    onClick={() => setVisitorPage(p => p + 1)}
+                    disabled={(visitorPage + 1) * VISITORS_PER_PAGE >= visitorTotal}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
