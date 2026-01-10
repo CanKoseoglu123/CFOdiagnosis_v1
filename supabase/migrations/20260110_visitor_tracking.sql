@@ -152,7 +152,7 @@ BEGIN
     'top_countries', (
       SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
       FROM (
-        SELECT country AS item, COUNT(*) AS count
+        SELECT country, COUNT(*) AS count
         FROM visitors
         WHERE country IS NOT NULL
         GROUP BY country
@@ -163,7 +163,7 @@ BEGIN
     'top_pages', (
       SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
       FROM (
-        SELECT page_path AS item, COUNT(*) AS count
+        SELECT page_path AS page, COUNT(*) AS count
         FROM visitors
         WHERE page_path IS NOT NULL
         GROUP BY page_path

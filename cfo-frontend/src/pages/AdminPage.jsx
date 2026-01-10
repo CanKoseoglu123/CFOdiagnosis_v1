@@ -52,94 +52,168 @@ export default function AdminPage() {
   const [visitorPage, setVisitorPage] = useState(0);
   const VISITORS_PER_PAGE = 50;
 
-  // Fetch data on mount and tab change
-  useEffect(() => {
-    fetchData();
-  }, [activeTab, visitorPage]);
-
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
   }
 
-  async function fetchData() {
-    setLoading(true);
-    setError(null);
+  // Fetch visitor list (paginated)
+  async function fetchVisitorList(token) {
+    const offset = visitorPage * VISITORS_PER_PAGE;
+    const res = await fetch(`${API_URL}/admin/visitors?limit=${VISITORS_PER_PAGE}&offset=${offset}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    try {
-      const token = await getToken();
-      if (!token) {
-        setError('Not authenticated');
-        setLoading(false);
-        return;
-      }
+    if (res.status === 403) {
+      throw new Error('Admin access denied. Your email is not whitelisted.');
+    }
+    if (!res.ok) throw new Error('Failed to fetch visitors');
 
-      if (activeTab === 'sessions') {
-        const res = await fetch(`${API_URL}/admin/sessions`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+    const data = await res.json();
+    setVisitors(data.visitors || []);
+    setVisitorTotal(data.total || 0);
+  }
 
-        if (res.status === 403) {
-          setError('Admin access denied. Your email is not whitelisted.');
+  // Fetch visitor stats (only on tab change, not pagination)
+  async function fetchVisitorStats(token) {
+    const res = await fetch(`${API_URL}/admin/visitors/stats`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.status === 403) {
+      throw new Error('Admin access denied. Your email is not whitelisted.');
+    }
+    if (!res.ok) throw new Error('Failed to fetch visitor stats');
+
+    setVisitorStats(await res.json());
+  }
+
+  // Fetch data on tab change (stats + list for visitors)
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const token = await getToken();
+        if (!token) {
+          setError('Not authenticated');
           setLoading(false);
           return;
         }
 
+        if (activeTab === 'sessions') {
+          const res = await fetch(`${API_URL}/admin/sessions`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (res.status === 403) {
+            setError('Admin access denied. Your email is not whitelisted.');
+            setLoading(false);
+            return;
+          }
+
+          if (!res.ok) throw new Error('Failed to fetch sessions');
+          setSessions(await res.json());
+        } else if (activeTab === 'feedback') {
+          const res = await fetch(`${API_URL}/admin/feedback`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (res.status === 403) {
+            setError('Admin access denied. Your email is not whitelisted.');
+            setLoading(false);
+            return;
+          }
+
+          if (!res.ok) throw new Error('Failed to fetch feedback');
+          setFeedback(await res.json());
+        } else if (activeTab === 'test-runner') {
+          const res = await fetch(`${API_URL}/admin/test-scenarios`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (res.status === 403) {
+            setError('Admin access denied. Your email is not whitelisted.');
+            setLoading(false);
+            return;
+          }
+
+          if (!res.ok) throw new Error('Failed to fetch test scenarios');
+          setTestScenarios(await res.json());
+        } else if (activeTab === 'visitors') {
+          // Fetch both stats and list on tab change
+          await Promise.all([
+            fetchVisitorStats(token),
+            fetchVisitorList(token)
+          ]);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [activeTab]);
+
+  // Fetch visitor list only on pagination change (not stats)
+  useEffect(() => {
+    if (activeTab !== 'visitors' || visitorPage === 0) return;
+
+    async function fetchList() {
+      setLoading(true);
+      try {
+        const token = await getToken();
+        if (token) {
+          await fetchVisitorList(token);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchList();
+  }, [visitorPage]);
+
+  // Refresh function for manual refresh button
+  async function fetchData() {
+    const token = await getToken();
+    if (!token) {
+      setError('Not authenticated');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (activeTab === 'visitors') {
+        await Promise.all([
+          fetchVisitorStats(token),
+          fetchVisitorList(token)
+        ]);
+      } else if (activeTab === 'sessions') {
+        const res = await fetch(`${API_URL}/admin/sessions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (!res.ok) throw new Error('Failed to fetch sessions');
         setSessions(await res.json());
       } else if (activeTab === 'feedback') {
         const res = await fetch(`${API_URL}/admin/feedback`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (res.status === 403) {
-          setError('Admin access denied. Your email is not whitelisted.');
-          setLoading(false);
-          return;
-        }
-
         if (!res.ok) throw new Error('Failed to fetch feedback');
         setFeedback(await res.json());
       } else if (activeTab === 'test-runner') {
         const res = await fetch(`${API_URL}/admin/test-scenarios`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (res.status === 403) {
-          setError('Admin access denied. Your email is not whitelisted.');
-          setLoading(false);
-          return;
-        }
-
         if (!res.ok) throw new Error('Failed to fetch test scenarios');
         setTestScenarios(await res.json());
-      } else if (activeTab === 'visitors') {
-        // Fetch visitors list and stats in parallel
-        const offset = visitorPage * VISITORS_PER_PAGE;
-        const [visitorsRes, statsRes] = await Promise.all([
-          fetch(`${API_URL}/admin/visitors?limit=${VISITORS_PER_PAGE}&offset=${offset}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${API_URL}/admin/visitors/stats`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ]);
-
-        if (visitorsRes.status === 403 || statsRes.status === 403) {
-          setError('Admin access denied. Your email is not whitelisted.');
-          setLoading(false);
-          return;
-        }
-
-        if (!visitorsRes.ok) throw new Error('Failed to fetch visitors');
-        if (!statsRes.ok) throw new Error('Failed to fetch visitor stats');
-
-        const visitorsData = await visitorsRes.json();
-        const statsData = await statsRes.json();
-
-        setVisitors(visitorsData.visitors || []);
-        setVisitorTotal(visitorsData.total || 0);
-        setVisitorStats(statsData);
       }
     } catch (err) {
       setError(err.message);

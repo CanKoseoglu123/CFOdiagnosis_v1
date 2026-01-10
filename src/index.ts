@@ -2271,19 +2271,31 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
 // ------------------------------------------------------------------
 
 // Helper to parse user agent using ua-parser-js for accurate detection
-function parseUserAgent(ua: string | undefined): { device_type: string; browser: string; os: string } {
+type DeviceType = 'mobile' | 'tablet' | 'desktop' | 'unknown';
+
+function parseUserAgent(ua: string | undefined): { device_type: DeviceType; browser: string; os: string } {
   if (!ua) return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
 
   const parser = new UAParser(ua);
   const result = parser.getResult();
 
-  // Device type detection
-  let device_type = 'desktop';
+  // Device type detection - map ua-parser-js types to our schema
   const deviceType = result.device?.type;
-  if (deviceType === 'mobile') {
-    device_type = 'mobile';
-  } else if (deviceType === 'tablet') {
-    device_type = 'tablet';
+  let device_type: DeviceType;
+
+  switch (deviceType) {
+    case 'mobile':
+    case 'tablet':
+      device_type = deviceType;
+      break;
+    case undefined:
+      // When no device type is detected, it's typically a desktop browser
+      device_type = 'desktop';
+      break;
+    default:
+      // For other types like 'console', 'smarttv', 'wearable', etc.
+      device_type = 'unknown';
+      break;
   }
 
   // Browser and OS from parser
@@ -2294,6 +2306,8 @@ function parseUserAgent(ua: string | undefined): { device_type: string; browser:
 }
 
 // Simple in-memory rate limiter for /track endpoint
+// NOTE: This works because Railway runs persistent containers (not serverless).
+// For serverless deployments (Vercel, Lambda), use Redis or database-backed rate limiting.
 const trackRateLimiter = new Map<string, { count: number; resetTime: number }>();
 const TRACK_RATE_LIMIT = 60; // requests per window
 const TRACK_RATE_WINDOW = 60000; // 1 minute in ms
@@ -2520,19 +2534,13 @@ app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
       devices: {},
     };
 
-    // Transform to expected format
+    // Return stats directly - SQL now returns correct field names
     res.json({
       total: stats.total || 0,
       today: stats.today || 0,
       last_7_days: stats.last_7_days || 0,
-      top_countries: (stats.top_countries || []).map((row: { item: string; count: number }) => ({
-        country: row.item,
-        count: row.count,
-      })),
-      top_pages: (stats.top_pages || []).map((row: { item: string; count: number }) => ({
-        page: row.item,
-        count: row.count,
-      })),
+      top_countries: stats.top_countries || [],
+      top_pages: stats.top_pages || [],
       devices: stats.devices || {},
     });
   } catch (err) {
