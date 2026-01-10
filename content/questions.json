@@ -3,7 +3,7 @@
   "pillar": "fpa",
   "questions": [
     {
-      "id": "fpa_l1_q01",
+      "id": "fpa_q001",
       "practice_id": "prac_annual_budget_cycle",
       "text": "Does the company produce an approved annual budget before the fiscal year begins?",
       "help": "An approved budget provides a baseline for performance measurement. Without it, you cannot effectively track variance or hold teams accountable for spending.",
@@ -19,7 +19,7 @@
       }
     },
     {
-      "id": "fpa_l1_q02",
+      "id": "fpa_q002",
       "practice_id": "prac_annual_budget_cycle",
       "text": "Does the budget include a full P&L down to Net Income (not just Revenue/Opex)?",
       "help": "Tracking only Revenue and OpEx ignores critical costs like interest and taxes. A full P&L view ensures you are managing true profitability, not just operational margin.",
@@ -35,7 +35,7 @@
       }
     },
     {
-      "id": "fpa_l1_q03",
+      "id": "fpa_q003",
       "practice_id": "prac_budget_ownership",
       "text": "Can every line of controllable OpEx be mapped to a specific human owner (e.g., department head)?",
       "help": "When 'everyone' owns a budget line, no one does. Mapping controllable costs to specific owners ensures accountability and gives you a direct point of contact for variance investigation.",
@@ -51,7 +51,7 @@
       }
     },
     {
-      "id": "fpa_l1_q04",
+      "id": "fpa_q004",
       "practice_id": "prac_budget_ownership",
       "text": "Do cost center owners formally sign off on their OpEx budget before consolidation?",
       "help": "Without formal sign-off, managers claim 'Finance gave me this number' when they overspend. Sign-off creates documented accountability for spending decisions.",
@@ -67,7 +67,7 @@
       }
     },
     {
-      "id": "fpa_l1_q55",
+      "id": "fpa_q005",
       "practice_id": "prac_budget_ownership",
       "text": "Do commercial leaders formally commit to revenue targets with documented sign-off (not just verbal agreement in a meeting)?",
       "help": "Revenue sign-off addresses sandbagging. Without documented commitment, sales leaders can claim targets were 'imposed' when they miss. This is a different dynamic than cost accountability—it's about preventing under-commitment.",
@@ -83,7 +83,7 @@
       }
     },
     {
-      "id": "fpa_l1_q56",
+      "id": "fpa_q006",
       "practice_id": "prac_budget_ownership",
       "text": "Can every material CapEx line be mapped to a project owner?",
       "help": "CapEx often lacks clear ownership, leading to cost overruns and delayed projects. Every significant capital investment should have a named accountable owner.",
@@ -99,7 +99,7 @@
       }
     },
     {
-      "id": "fpa_l3_q81",
+      "id": "fpa_q007",
       "practice_id": "prac_budget_ownership",
       "text": "Do budget owners have real-time, self-service access to their remaining budget balance, including the impact of pending purchase orders?",
       "help": "Managers cannot be held accountable for overspend if they only see their position 15 days after the month ends. Real-time visibility—showing what's spent, what's committed (pending POs), and what remains—enables proactive spending control.",
@@ -115,7 +115,7 @@
       }
     },
     {
-      "id": "fpa_l4_q81",
+      "id": "fpa_q008",
       "practice_id": "prac_budget_ownership",
       "text": "Are budget owners empowered with automated reallocation authority within pre-defined system guardrails?",
       "help": "Allowing managers to swap budget between categories (e.g., Travel to Software) without Finance intervention reduces friction and increases operational agility.",
@@ -131,7 +131,7 @@
       }
     },
     {
-      "id": "fpa_l2_q12",
+      "id": "fpa_q009",
       "practice_id": "prac_policy_&_governance",
       "text": "Is there a single person clearly accountable for the integrity and delivery of the end-to-end budget process?",
       "help": "A budget process with shared ownership often leads to missed deadlines and version control errors. A single process owner ensures coordination and quality control.",
@@ -147,7 +147,7 @@
       }
     },
     {
-      "id": "fpa_l2_q50",
+      "id": "fpa_q010",
       "practice_id": "prac_policy_&_governance",
       "text": "Are the 'rules of engagement' for the budget (e.g., reallocation rights, hiring freezes) clearly communicated and enforced, preventing mid-cycle negotiation?",
       "help": "Ambiguous rules invite mid-cycle lobbying. Clear, enforced rules remove the noise and let managers focus on execution rather than renegotiation.",
@@ -163,7 +163,7 @@
       }
     },
     {
-      "id": "fpa_l2_q57",
+      "id": "fpa_q011",
       "practice_id": "prac_policy_&_governance",
       "text": "Does the organization consistently adhere to a published budget calendar with defined milestones?",
       "help": "Many organizations have a calendar that they ignore. Adherence to milestones (e.g., 'First Pass due Oct 15') is the true test of governance.",
@@ -179,7 +179,7 @@
       }
     },
     {
-      "id": "fpa_l2_q58",
+      "id": "fpa_q012",
       "practice_id": "prac_policy_&_governance",
       "text": "Is there a formal reconciliation between top-down targets and bottom-up budget submissions?",
       "help": "Without reconciliation, organizations often operate with two truths: what the board expects and what operations committed to. This creates accountability gaps.",
@@ -195,7 +195,7 @@
       }
     },
     {
-      "id": "fpa_l2_q70",
+      "id": "fpa_q013",
       "practice_id": "prac_policy_&_governance",
       "text": "Is the gap between top-down targets and bottom-up budget submissions typically resolved within one or two iteration rounds, without requiring CEO/Board escalation?",
       "help": "Protracted budget negotiations signal strategic misalignment or sandbagging culture. Healthy organizations achieve alignment quickly because planning assumptions are shared upfront and the process has clear escalation paths. If resolution routinely requires C-suite intervention, the planning process is broken regardless of the specific gap percentage.",
@@ -211,7 +211,7 @@
       }
     },
     {
-      "id": "fpa_l3_q80",
+      "id": "fpa_q014",
       "practice_id": "prac_policy_&_governance",
       "text": "Are budget templates formally structured to link every line-item request to a specific strategic pillar or initiative?",
       "help": "This ensures the budget is an execution plan for the company strategy, not just a spreadsheet exercise. It forces managers to justify spending based on strategic value.",
@@ -227,7 +227,7 @@
       }
     },
     {
-      "id": "fpa_l4_q80",
+      "id": "fpa_q015",
       "practice_id": "prac_policy_&_governance",
       "text": "Can the Board re-route capital or project funding mid-year to higher-performing initiatives, based on real-time ROI data rather than waiting for the next annual budget cycle?",
       "help": "Highly mature organizations don't treat the annual budget as fixed. They maintain flexibility to shift resources toward winning projects and away from underperformers—without waiting 12 months to course-correct.",
@@ -243,7 +243,7 @@
       }
     },
     {
-      "id": "fpa_l1_q05",
+      "id": "fpa_q016",
       "practice_id": "prac_chart_of_accounts",
       "text": "Is there a single, documented chart of accounts used by all business units?",
       "help": "A unified chart of accounts is the foundation of comparable reporting. Without it, consolidating data across business units becomes manual, error-prone, and slow.",
@@ -259,7 +259,7 @@
       }
     },
     {
-      "id": "fpa_l1_q07",
+      "id": "fpa_q017",
       "practice_id": "prac_chart_of_accounts",
       "text": "Are new GL account requests reviewed by a central controller before creation?",
       "help": "Uncontrolled creation of GL accounts leads to data clutter and inconsistent reporting. Central review ensures new accounts are necessary and properly classified.",
@@ -275,7 +275,7 @@
       }
     },
     {
-      "id": "fpa_l1_q06",
+      "id": "fpa_q018",
       "practice_id": "prac_approval_workflows",
       "text": "Is the ERP or procurement system configured to block unapproved spend by default?",
       "help": "Controls are only effective if enforced consistently. System-enforced blocks prevent unauthorized spend from entering the pipeline in the first place.",
@@ -291,7 +291,7 @@
       }
     },
     {
-      "id": "fpa_l2_q13",
+      "id": "fpa_q019",
       "practice_id": "prac_approval_workflows",
       "text": "Does the system prevent a PO from being raised if there is no remaining budget (hard or soft block)?",
       "help": "Preventative controls are cheaper than detective ones. Stopping unbudgeted spend before it happens is more effective than explaining a variance after the fact.",
@@ -307,7 +307,7 @@
       }
     },
     {
-      "id": "fpa_l3_q82",
+      "id": "fpa_q020",
       "practice_id": "prac_approval_workflows",
       "text": "Are approval workflows dynamically routed based on risk scoring (e.g., vendor history, department budget status)?",
       "help": "Static thresholds (e.g., $10k) are inefficient. Risk-based routing focuses senior leadership attention on high-risk or unbudgeted transactions only.",
@@ -323,7 +323,7 @@
       }
     },
     {
-      "id": "fpa_l4_q82",
+      "id": "fpa_q021",
       "practice_id": "prac_approval_workflows",
       "text": "Does the system use AI/ML-assisted anomaly detection to flag suspicious transactions *before* the approval workflow begins?",
       "help": "AI can catch double-invoicing, unusual pricing, or compliance risks that human approvers might miss, providing a predictive layer of financial safety.",
@@ -339,7 +339,7 @@
       }
     },
     {
-      "id": "fpa_l1_q08",
+      "id": "fpa_q022",
       "practice_id": "prac_month_end_rigor",
       "text": "Is the month-end close checklist documented and signed off each period?",
       "help": "A documented checklist ensures all necessary steps are completed for a reliable close. Sign-offs provide an audit trail and accountability for task completion.",
@@ -355,7 +355,7 @@
       }
     },
     {
-      "id": "fpa_l2_q51",
+      "id": "fpa_q023",
       "practice_id": "prac_month_end_rigor",
       "text": "Is there a formal 'hard close' of the books that prevents back-dated entries without Controller approval?",
       "help": "Allowing back-dated entries compromises historical data integrity. A hard close ensures that once a period is reported, the numbers remain static and reliable.",
@@ -371,7 +371,7 @@
       }
     },
     {
-      "id": "fpa_l3_q83",
+      "id": "fpa_q024",
       "practice_id": "prac_month_end_rigor",
       "text": "Is the month-end close and reporting process completed within 3 business days while maintaining full accrual accuracy?",
       "help": "The 'Fast Close' is a hallmark of efficient Finance. It frees up 10-15 days per month for the team to focus on analysis rather than accounting.",
@@ -387,7 +387,7 @@
       }
     },
     {
-      "id": "fpa_l4_q83",
+      "id": "fpa_q025",
       "practice_id": "prac_month_end_rigor",
       "text": "Does the organization maintain 'Continuous Close' capabilities, where books are reviewable at any point in the month within 24 hours?",
       "help": "This represents the peak of accounting maturity. It requires total integration of systems where entries are recorded and reconciled in near real-time.",
@@ -403,7 +403,7 @@
       }
     },
     {
-      "id": "fpa_l1_q09",
+      "id": "fpa_q026",
       "practice_id": "prac_management_reporting",
       "text": "Is a standard monthly management reporting package distributed to leadership?",
       "help": "Consistent reporting builds trust. A standard package ensures leadership receives the same key information each month, allowing for trend analysis and informed decision-making.",
@@ -419,7 +419,7 @@
       }
     },
     {
-      "id": "fpa_l2_q04",
+      "id": "fpa_q027",
       "practice_id": "prac_management_reporting",
       "text": "Do functional leaders actively reference and discuss the Finance management report in their own team meetings and performance reviews?",
       "help": "Adoption is measured by usage, not distribution. If the Finance report sits unopened while leaders discuss their own data, you have a relevance problem. The test: do they quote your numbers?",
@@ -435,7 +435,7 @@
       }
     },
     {
-      "id": "fpa_l2_q67",
+      "id": "fpa_q028",
       "practice_id": "prac_management_reporting",
       "text": "Has Finance successfully eliminated or absorbed the major 'shadow' spreadsheets that business units previously maintained for tracking their own performance?",
       "help": "Shadow spreadsheets are symptoms of unmet needs. This question tests whether Finance has proactively identified, understood, and absorbed these parallel tracking systems into the official reporting suite. Success means the business no longer NEEDS to maintain their own books.",
@@ -451,7 +451,7 @@
       }
     },
     {
-      "id": "fpa_l3_q84",
+      "id": "fpa_q029",
       "practice_id": "prac_management_reporting",
       "text": "Do monthly management reports systematically include 'Lead Indicators' (e.g., pipeline velocity) alongside historical variances?",
       "help": "Historical data tells you what happened; lead indicators tell you what will happen. Combining them creates a complete performance story.",
@@ -467,7 +467,7 @@
       }
     },
     {
-      "id": "fpa_l4_q84",
+      "id": "fpa_q030",
       "practice_id": "prac_management_reporting",
       "text": "Are reports generated with AI-powered narrative commentary that is calibrated by Finance before distribution?",
       "help": "Automated narratives eliminate the grunt work of writing 'variance explanations,' allowing the Finance team to focus on high-level strategic calibration.",
@@ -483,7 +483,7 @@
       }
     },
     {
-      "id": "fpa_l2_q01",
+      "id": "fpa_q031",
       "practice_id": "prac_budget_vs_actuals",
       "text": "Is a Budget vs. Actuals (BvA) report generated every month?",
       "help": "Regular BvA analysis identifies where the business is deviating from plan. It is the primary tool for catching overspend and understanding performance drivers.",
@@ -499,7 +499,7 @@
       }
     },
     {
-      "id": "fpa_l2_q05",
+      "id": "fpa_q032",
       "practice_id": "prac_budget_vs_actuals",
       "text": "Are BvA and management reports distributed to budget owners within a defined SLA (e.g., 5 business days), consistently every month?",
       "help": "Speed AND consistency are critical. Delivering reports weeks late reduces their value—it's too late to influence the current month. But inconsistent timing is equally damaging: if budget owners can't predict when reports arrive, they can't plan their reviews. Both speed and reliability signal process maturity.",
@@ -515,7 +515,7 @@
       }
     },
     {
-      "id": "fpa_l2_q02",
+      "id": "fpa_q033",
       "practice_id": "prac_variance_investigation",
       "text": "Are variances exceeding a defined threshold formally investigated?",
       "help": "Investigating significant variances separates noise from signal. Formal thresholds ensure focus is placed on material deviations that require explanation.",
@@ -531,7 +531,7 @@
       }
     },
     {
-      "id": "fpa_l2_q03",
+      "id": "fpa_q034",
       "practice_id": "prac_variance_investigation",
       "text": "Does the monthly review meeting result in documented action items for significant variances?",
       "help": "Analysis without action is wasted effort. Documenting action items ensures that insights from variance analysis lead to corrective measures.",
@@ -547,7 +547,7 @@
       }
     },
     {
-      "id": "fpa_l3_q85",
+      "id": "fpa_q035",
       "practice_id": "prac_variance_investigation",
       "text": "Does variance analysis systematically decompose deviations into Volume, Price, Mix, and FX drivers?",
       "help": "A net dollar variance is often misleading. Decomposing it reveals if the business is winning on volume but losing on price, which requires different actions.",
@@ -563,7 +563,7 @@
       }
     },
     {
-      "id": "fpa_l4_q85",
+      "id": "fpa_q036",
       "practice_id": "prac_variance_investigation",
       "text": "Does Finance use predictive models to identify likely variances *before* the month-end close?",
       "help": "Predictive monitoring allows Finance to flag issues during the month, giving the business time to pull operational levers before the period ends.",
@@ -579,7 +579,7 @@
       }
     },
     {
-      "id": "fpa_l2_q10",
+      "id": "fpa_q037",
       "practice_id": "prac_rolling_forecast_cadence",
       "text": "Is a full P&L re-forecast completed at least quarterly?",
       "help": "An annual budget becomes obsolete quickly. Quarterly re-forecasting allows the business to adjust resource allocation based on actual year-to-date performance.",
@@ -595,7 +595,7 @@
       }
     },
     {
-      "id": "fpa_l2_q90",
+      "id": "fpa_q038",
       "practice_id": "prac_rolling_forecast_cadence",
       "text": "Does Finance provide a weekly or bi-weekly 'flash' estimate of key financial metrics (Revenue, Gross Margin, EBITDA) to senior leadership?",
       "help": "Monthly reporting creates blind spots. A weekly flash gives leadership an early pulse on performance, enabling mid-month course corrections and eliminating month-end surprises. This is the foundation of 'No Surprises' finance.",
@@ -611,7 +611,7 @@
       }
     },
     {
-      "id": "fpa_l3_q11",
+      "id": "fpa_q039",
       "practice_id": "prac_rolling_forecast_cadence",
       "text": "Does Finance explicitly track and communicate systematic forecast bias (optimism/conservatism)?",
       "help": "Bias tracking improves accuracy. Identifying if a team is consistently optimistic or conservative allows for better calibration of future forecasts.",
@@ -627,7 +627,7 @@
       }
     },
     {
-      "id": "fpa_l3_q72",
+      "id": "fpa_q040",
       "practice_id": "prac_rolling_forecast_cadence",
       "text": "Does the rolling forecast extend beyond the current fiscal year end?",
       "help": "Business doesn't stop at year-end. A rolling forecast (e.g., 12 months out) provides continuous visibility, aiding in longer-term decision making.",
@@ -643,7 +643,7 @@
       }
     },
     {
-      "id": "fpa_l2_q08",
+      "id": "fpa_q041",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Are working capital assumptions (DSO, DPO) explicitly modeled in the forecast?",
       "help": "Working capital drivers directly impact cash flow. Modeling them explicitly allows you to see the cash impact of operational changes like collecting faster or paying slower. For midcaps, cash is king.",
@@ -659,7 +659,7 @@
       }
     },
     {
-      "id": "fpa_l2_q65",
+      "id": "fpa_q042",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Is covenant compliance forecasted at least 12 months out as part of the standard reporting package?",
       "help": "For PE-backed or leveraged companies, covenant breach is existential. Forecasting compliance ahead of time allows for proactive management of lender relationships.",
@@ -675,7 +675,7 @@
       }
     },
     {
-      "id": "fpa_l3_q07",
+      "id": "fpa_q043",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Does the forecast project cash flow and liquidity, not just P&L?",
       "help": "Profit is not cash. Forecasting liquidity ensures the business can meet its obligations and fund operations, which is critical for survival and growth.",
@@ -691,7 +691,7 @@
       }
     },
     {
-      "id": "fpa_l3_q92",
+      "id": "fpa_q044",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Does the short-term (13-week) cash forecast use the Direct Method—tracking actual receipts and payments—rather than deriving cash from P&L adjustments?",
       "help": "The Indirect Method (starting from Net Income and adjusting for non-cash items) is fine for annual planning but useless for weekly liquidity management. The Direct Method tracks actual cash movements: when will customers pay? When do payroll and rent hit? For PE-backed or leveraged companies, this granularity is the difference between managing cash and being surprised by it.",
@@ -707,7 +707,7 @@
       }
     },
     {
-      "id": "fpa_l1_q62",
+      "id": "fpa_q045",
       "practice_id": "prac_collaborative_systems",
       "text": "Do all Finance outputs (reports, decks, dashboards) pull from a single reconciled data source?",
       "help": "Multiple data sources create multiple truths. A single source eliminates reconciliation debates and version confusion. This is foundational—if the numbers are wrong, nothing else matters.",
@@ -723,7 +723,7 @@
       }
     },
     {
-      "id": "fpa_l2_q06",
+      "id": "fpa_q046",
       "practice_id": "prac_collaborative_systems",
       "text": "Is the live forecast stored in a multi-user system that allows simultaneous updates without version conflicts?",
       "help": "Offline spreadsheets are prone to version errors and breakage. A true collaborative system ensures single-source integrity AND allows multiple users to update their sections concurrently—Sales updating Revenue while HR updates Headcount. Without both, you have bottlenecks or chaos.",
@@ -739,7 +739,7 @@
       }
     },
     {
-      "id": "fpa_l2_q59",
+      "id": "fpa_q047",
       "practice_id": "prac_collaborative_systems",
       "text": "Are key forecast assumptions documented and accessible to all contributors?",
       "help": "Undocumented assumptions lead to inconsistent inputs and make it impossible to explain forecast changes. Central documentation ensures alignment.",
@@ -755,7 +755,7 @@
       }
     },
     {
-      "id": "fpa_l4_q10",
+      "id": "fpa_q048",
       "practice_id": "prac_collaborative_systems",
       "text": "Is the 'Financial Truth' stored in a robust system with version control, audit trails, and backup (vs. offline spreadsheets that are prone to breaking)?",
       "help": "Data integrity is paramount. Robust systems protect against data loss and provide an audit trail of changes, ensuring the numbers can be trusted.",
@@ -771,7 +771,7 @@
       }
     },
     {
-      "id": "fpa_l3_q08",
+      "id": "fpa_q049",
       "practice_id": "prac_operational_drivers",
       "text": "Do the monthly executive reports explicitly track the top 3 operational drivers against targets?",
       "help": "If drivers aren't in the report, they aren't being managed. Explicit tracking ensures leadership focuses on the levers that actually move financial outcomes.",
@@ -787,7 +787,7 @@
       }
     },
     {
-      "id": "fpa_l4_q09",
+      "id": "fpa_q050",
       "practice_id": "prac_operational_drivers",
       "text": "Can Finance explain the financial outlook primarily using operational drivers (e.g., volume, churn) rather than accounting variance?",
       "help": "Operational drivers are actionable; accounting variances are not. Explaining the 'why' in operational terms helps the business understand how to improve performance.",
@@ -803,7 +803,7 @@
       }
     },
     {
-      "id": "fpa_l4_q61",
+      "id": "fpa_q051",
       "practice_id": "prac_operational_drivers",
       "text": "Is non-financial data (CRM pipeline, HR headcount, operational KPIs) systematically integrated into financial performance reporting?",
       "help": "True performance management requires connecting financial outcomes to operational drivers. Without automated integration of non-financial data, FP&A spends excessive time manually gathering context and cannot provide real-time business intelligence.",
@@ -819,7 +819,7 @@
       }
     },
     {
-      "id": "fpa_l3_q14",
+      "id": "fpa_q052",
       "practice_id": "prac_dynamic_targets",
       "text": "Are targets dynamically adjusted based on external driver changes (e.g., inflation, commodity prices)?",
       "help": "Static targets in a dynamic world lose relevance. Adjusting for external factors keeps targets fair and achievable, maintaining motivation.",
@@ -835,7 +835,7 @@
       }
     },
     {
-      "id": "fpa_l3_q50",
+      "id": "fpa_q053",
       "practice_id": "prac_dynamic_targets",
       "text": "Does the model automatically update revenue projections when sales pipeline stages change?",
       "help": "Automating the link between sales pipeline and revenue forecast reduces manual work and ensures the forecast reflects the latest sales reality.",
@@ -851,7 +851,7 @@
       }
     },
     {
-      "id": "fpa_l3_q09",
+      "id": "fpa_q054",
       "practice_id": "prac_continuous_planning",
       "text": "Is the annual budget treated as just 'Forecast v1' rather than a static document?",
       "help": "Treating the budget as a living document allows for adaptation. It acknowledges that assumptions change and allows the business to pivot resources as needed.",
@@ -867,7 +867,7 @@
       }
     },
     {
-      "id": "fpa_l3_q51",
+      "id": "fpa_q055",
       "practice_id": "prac_continuous_planning",
       "text": "Does the planning process allow for off-cycle updates to the forecast when material business events occur?",
       "help": "Rigid planning cycles can miss major market shifts. Off-cycle updates ensure the forecast remains a relevant tool for decision support during volatile times.",
@@ -883,7 +883,7 @@
       }
     },
     {
-      "id": "fpa_l3_q15",
+      "id": "fpa_q056",
       "practice_id": "prac_rapid_what_if_capability",
       "text": "Can the model run a 'what-if' scenario on a key driver (e.g., volume -10%) in less than an hour?",
       "help": "Speed is essential for agility. If scenario analysis takes days, the opportunity to react may pass. Rapid modeling allows for real-time strategic discussions.",
@@ -899,7 +899,7 @@
       }
     },
     {
-      "id": "fpa_l3_q45",
+      "id": "fpa_q057",
       "practice_id": "prac_rapid_what_if_capability",
       "text": "Are sensitivity tables standard inclusions in executive forecast reviews?",
       "help": "Sensitivity analysis highlights risk. Showing how outcomes change with different assumptions prepares leadership for volatility and helps manage expectations.",
@@ -915,7 +915,7 @@
       }
     },
     {
-      "id": "fpa_l3_q52",
+      "id": "fpa_q058",
       "practice_id": "prac_multi_scenario_management",
       "text": "Does leadership actively review multiple scenarios when making significant decisions, rather than relying solely on the base case?",
       "help": "Having scenarios is useless if leadership ignores them. True scenario discipline means decision-makers consider alternatives before committing.",
@@ -931,7 +931,7 @@
       }
     },
     {
-      "id": "fpa_l4_q30",
+      "id": "fpa_q059",
       "practice_id": "prac_multi_scenario_management",
       "text": "Do you maintain at least three live scenarios (Base, Bull, Bear) during planning cycles?",
       "help": "The future is uncertain. Maintaining multiple scenarios ensures the business is prepared for different outcomes and has thought through response plans.",
@@ -947,7 +947,7 @@
       }
     },
     {
-      "id": "fpa_l3_q31",
+      "id": "fpa_q060",
       "practice_id": "prac_stress_testing",
       "text": "Are scenario triggers (e.g., 'If revenue drops 15%, we cut X') pre-agreed with the Board?",
       "help": "Pre-agreed triggers remove emotion from crisis decision-making. Knowing exactly what actions to take when a threshold is breached enables faster response.",
@@ -963,7 +963,7 @@
       }
     },
     {
-      "id": "fpa_l3_q32",
+      "id": "fpa_q061",
       "practice_id": "prac_stress_testing",
       "text": "Does Finance stress-test models to highlight exactly what happens to cash/profit if specific variables (e.g., volume, price) drop?",
       "help": "Stress testing identifies breaking points. Knowing how much volume can drop before cash runs out allows for proactive risk management.",
@@ -979,7 +979,7 @@
       }
     },
     {
-      "id": "fpa_l3_q91",
+      "id": "fpa_q062",
       "practice_id": "prac_stress_testing",
       "text": "Does Finance maintain a formal 'risk register' that identifies, quantifies, and tracks potential P&L and cash flow impacts?",
       "help": "Surprises happen when known risks aren't tracked. A risk register forces explicit documentation of threats (customer churn, supply chain issues, FX exposure) with quantified impact ranges. It transforms vague concerns into actionable monitoring items and pre-agreed response plans.",
@@ -995,7 +995,7 @@
       }
     },
     {
-      "id": "fpa_l3_q01",
+      "id": "fpa_q063",
       "practice_id": "prac_commercial_partnership",
       "text": "Is Finance consulted before major commercial decisions (new products, pricing changes, large deals) are finalized?",
       "help": "Finance needs to be involved upfront to ensure commercial viability. Early consultation ensures financial implications are considered before commitments are made.",
@@ -1011,7 +1011,7 @@
       }
     },
     {
-      "id": "fpa_l3_q02",
+      "id": "fpa_q064",
       "practice_id": "prac_commercial_partnership",
       "text": "Is Finance review mandatory for all commercial contracts that deviate from standard terms or pricing?",
       "help": "Standard terms protect margin and risk. Mandatory review for deviations ensures that exceptions are financially sound and approved by the right level.",
@@ -1027,7 +1027,7 @@
       }
     },
     {
-      "id": "fpa_l3_q03",
+      "id": "fpa_q065",
       "practice_id": "prac_commercial_partnership",
       "text": "Do business unit leaders proactively seek Finance advice on operational problems?",
       "help": "This indicates trust. When business leaders view Finance as problem solvers rather than just scorekeepers, the partnership is working.",
@@ -1043,7 +1043,7 @@
       }
     },
     {
-      "id": "fpa_l3_q06",
+      "id": "fpa_q066",
       "practice_id": "prac_commercial_partnership",
       "text": "Are Finance Business Partners measured on the performance of their supported units?",
       "help": "Shared KPIs create alignment. When Finance partners share the goals of their business unit, they are more motivated to drive operational success.",
@@ -1059,7 +1059,7 @@
       }
     },
     {
-      "id": "fpa_l3_q71",
+      "id": "fpa_q067",
       "practice_id": "prac_commercial_partnership",
       "text": "Has Finance successfully stopped or restructured a major commercial deal or initiative in the last 12 months based on negative ROI?",
       "help": "The ability to say 'no' is the ultimate test of Finance's influence. If you only approve, you are a rubber stamp, not a strategic partner.",
@@ -1075,7 +1075,7 @@
       }
     },
     {
-      "id": "fpa_l3_q05",
+      "id": "fpa_q068",
       "practice_id": "prac_strategic_alignment",
       "text": "Are Finance KPIs explicitly linked to the company's top 3 strategic initiatives?",
       "help": "Alignment ensures Finance is tracking what matters most. Linking KPIs to strategy focuses the function on driving the company's long-term goals.",
@@ -1091,7 +1091,7 @@
       }
     },
     {
-      "id": "fpa_l3_q70",
+      "id": "fpa_q069",
       "practice_id": "prac_strategic_alignment",
       "text": "Are business unit bonuses tied to forecast accuracy (e.g., hitting the commitment) rather than just 'beating' a sandbagged budget?",
       "help": "If bonuses are only tied to exceeding budget, managers will sandbag. Tying incentives to accuracy aligns everyone on hitting the 'real' number.",
@@ -1107,7 +1107,7 @@
       }
     },
     {
-      "id": "fpa_l4_q08",
+      "id": "fpa_q070",
       "practice_id": "prac_strategic_alignment",
       "text": "Does Finance communicate a profitability ranking of business streams/customers to make it clear where money is actually made?",
       "help": "Not all revenue is equal. Ranking profitability highlights where resources should be invested and where they might be wasted.",
@@ -1123,7 +1123,7 @@
       }
     },
     {
-      "id": "fpa_l3_q53",
+      "id": "fpa_q071",
       "practice_id": "prac_investment_rigor",
       "text": "Are all capital investments or unbudgeted initiatives above a defined threshold required to have a formal business case with calculated ROI/NPV?",
       "help": "Requiring a business case enforces discipline. It ensures that capital is deployed only to projects with a clear financial return and strategic fit.",
@@ -1139,7 +1139,7 @@
       }
     },
     {
-      "id": "fpa_l3_q54",
+      "id": "fpa_q072",
       "practice_id": "prac_investment_rigor",
       "text": "Does Finance perform post-investment reviews ('look-backs') on major projects to validate if the promised ROI was actually delivered?",
       "help": "Look-backs create accountability. They verify if the benefits promised in the business case were realized and provide learning for future investments.",
@@ -1155,7 +1155,7 @@
       }
     },
     {
-      "id": "fpa_l3_q73",
+      "id": "fpa_q073",
       "practice_id": "prac_investment_rigor",
       "text": "Does the organization promptly kill underperforming projects based on Finance data, or do they linger as 'zombie' initiatives?",
       "help": "Starting projects is easy; stopping them is hard. A mature org uses financial data to cut losses early, freeing up capital for better ideas.",
@@ -1171,7 +1171,7 @@
       }
     },
     {
-      "id": "fpa_l3_q04",
+      "id": "fpa_q074",
       "practice_id": "prac_board_level_impact",
       "text": "Does the CFO present a 'State of the Business' strategic view at every Board meeting?",
       "help": "The CFO should tell the financial story, not just read the numbers. A strategic view provides context and forward-looking insights that the Board needs.",
@@ -1187,7 +1187,7 @@
       }
     },
     {
-      "id": "fpa_l4_q04",
+      "id": "fpa_q075",
       "practice_id": "prac_board_level_impact",
       "text": "When the CFO presents to the board, are the numbers aligned with what other executives cite?",
       "help": "Conflicting numbers destroy credibility. Alignment ensures the management team is speaking with one voice and data source.",
@@ -1203,7 +1203,7 @@
       }
     },
     {
-      "id": "fpa_l4_q70",
+      "id": "fpa_q076",
       "practice_id": "prac_board_level_impact",
       "text": "When Finance and Sales present conflicting forecast numbers, does the CEO typically use the Finance view for Board reporting?",
       "help": "This is the ultimate credibility test. If the CEO trusts the Sales 'optimism' over Finance's 'realism', the finance function is weak.",
@@ -1219,7 +1219,7 @@
       }
     },
     {
-      "id": "fpa_l2_q60",
+      "id": "fpa_q077",
       "practice_id": "prac_data_visualization",
       "text": "Does Finance routinely perform profitability analysis at the customer, product, or channel level?",
       "help": "Understanding where money is made vs. lost is foundational. Without this analysis, commercial decisions are based on revenue, not profit.",
@@ -1235,7 +1235,7 @@
       }
     },
     {
-      "id": "fpa_l2_q68",
+      "id": "fpa_q078",
       "practice_id": "prac_data_visualization",
       "text": "Are shared cost allocations (IT, HR, Rent) based on clear, agreed-upon drivers (e.g., headcount, square footage) rather than arbitrary percentages?",
       "help": "Opaque allocations destroy trust. When business units don't understand or agree with how costs are allocated, they dismiss the numbers entirely.",
@@ -1251,7 +1251,7 @@
       }
     },
     {
-      "id": "fpa_l3_q13",
+      "id": "fpa_q079",
       "practice_id": "prac_data_visualization",
       "text": "Are reports primarily narrative and insight-driven, rather than just data dumps of tables and charts?",
       "help": "A chart without a 'so what' is just data. Mature reporting tells a story: What happened, Why it happened, and What we are doing about it.",
@@ -1267,7 +1267,7 @@
       }
     },
     {
-      "id": "fpa_l3_q44",
+      "id": "fpa_q080",
       "practice_id": "prac_data_visualization",
       "text": "Can the FP&A team drill down from consolidated P&L to transaction-level detail (customer/SKU/invoice) within their own tools, without requesting IT support?",
       "help": "This is a prerequisite for self-service analytics. Finance must first have seamless drill-down capability before it can be extended to the business. If FP&A still runs manual queries to answer 'why' questions, the data architecture isn't ready for broader access.",
@@ -1283,7 +1283,7 @@
       }
     },
     {
-      "id": "fpa_l3_q60",
+      "id": "fpa_q081",
       "practice_id": "prac_data_visualization",
       "text": "Does Finance proactively deliver analysis (including NPV/ROI) that influences commercial decisions such as pricing, promotions, or product mix?",
       "help": "Reactive Finance waits to be asked. Proactive Finance identifies opportunities and brings insight to the table before decisions are made.",
@@ -1299,7 +1299,7 @@
       }
     },
     {
-      "id": "fpa_l4_q01",
+      "id": "fpa_q082",
       "practice_id": "prac_self_service_analytics",
       "text": "Can non-finance business users drill down from summary dashboards to transaction-level detail without requesting Finance support?",
       "help": "This is the pinnacle of self-service analytics. Building on Finance's own drill-down capability (L3), the data architecture now supports secure, governed access for business users to answer their own 'why' questions. Finance shifts from query responder to insight partner.",
@@ -1315,7 +1315,7 @@
       }
     },
     {
-      "id": "fpa_l4_q05",
+      "id": "fpa_q083",
       "practice_id": "prac_self_service_analytics",
       "text": "Can non-finance leaders access their real-time spend vs. budget without emailing Finance?",
       "help": "Real-time access encourages ownership. When leaders can see their spend status anytime, they are better equipped to manage their own budgets.",
@@ -1331,7 +1331,7 @@
       }
     },
     {
-      "id": "fpa_l4_q43",
+      "id": "fpa_q084",
       "practice_id": "prac_predictive_analytics",
       "text": "Does Finance use any form of statistical or algorithmic forecasting to validate or challenge human inputs?",
       "help": "Even simple statistical methods (trend analysis, regression) provide an unbiased baseline. Using them to challenge human inputs helps identify sandbagging or over-optimism.",
@@ -1347,7 +1347,7 @@
       }
     },
     {
-      "id": "fpa_l4_q50",
+      "id": "fpa_q085",
       "practice_id": "prac_predictive_analytics",
       "text": "Does the system automatically flag forecast outliers based on historical trends?",
       "help": "Automated checks catch errors early. Flagging outliers saves review time and prevents unrealistic numbers from entering the consolidated plan.",
@@ -1363,7 +1363,7 @@
       }
     },
     {
-      "id": "fpa_l2_q63",
+      "id": "fpa_q086",
       "practice_id": "prac_process_automation",
       "text": "Is the annual budget cycle completed within a defined timeframe (e.g., 8 weeks) from kickoff to board approval?",
       "help": "Drawn-out budget processes exhaust the organization and produce stale assumptions. Efficiency signals process maturity.",
@@ -1379,7 +1379,7 @@
       }
     },
     {
-      "id": "fpa_l2_q66",
+      "id": "fpa_q087",
       "practice_id": "prac_process_automation",
       "text": "Does at least one FP&A team member have working proficiency in data extraction and analysis tools (e.g., SQL, Power BI, Python) beyond Excel?",
       "help": "Modern FP&A requires technical skills to access data independently. Reliance on IT for every data pull slows the team and limits analytical depth.",
@@ -1395,7 +1395,7 @@
       }
     },
     {
-      "id": "fpa_l3_q12",
+      "id": "fpa_q088",
       "practice_id": "prac_process_automation",
       "text": "Has Finance deliberately stopped or automated recurring reports to free up capacity?",
       "help": "Stopping low-value work is as important as starting new work. Regularly pruning reports frees up capacity for analysis and strategic support.",
@@ -1411,7 +1411,7 @@
       }
     },
     {
-      "id": "fpa_l3_q61",
+      "id": "fpa_q089",
       "practice_id": "prac_process_automation",
       "text": "Can the monthly close and reporting process run without key-person dependency?",
       "help": "If one person's absence breaks the process, you have a fragility problem. Mature processes are documented and transferable.",
@@ -1427,7 +1427,7 @@
       }
     },
     {
-      "id": "fpa_l3_q62",
+      "id": "fpa_q090",
       "practice_id": "prac_service_level_agreements",
       "text": "Does the FP&A team spend at least 70% of their time on analysis, insight generation, and business partnering (vs. data gathering and reconciliation)?",
       "help": "At Level 3 maturity, FP&A should have moved decisively beyond data wrangling. The 70% threshold indicates the team has achieved the automation and data infrastructure needed to focus on strategic value-add. This is a step-up from the L2 baseline of <50% on data work.",
@@ -1443,7 +1443,7 @@
       }
     },
     {
-      "id": "fpa_l4_q51",
+      "id": "fpa_q091",
       "practice_id": "prac_service_level_agreements",
       "text": "Does the business have a clear, reliable understanding of Finance turnaround times (e.g., 'AP queries are 48 hours'), or is it a black box?",
       "help": "Predictability matters more than formal SLAs. If the business knows what to expect, they can plan around it. If Finance is a black box, frustration builds.",

@@ -56,16 +56,28 @@ Practices are ordered by **logical flow**: what you do first → what depends on
 
 Questions within a practice are sorted by maturity level: **L1 → L2 → L3 → L4**
 
-Within the same level, sort by question ID number (e.g., `fpa_l1_q01` before `fpa_l1_q02`).
+Within the same level, questions maintain their relative order.
+
+---
+
+## ID Format
+
+Questions use sequential IDs: `fpa_q001` through `fpa_q091`
+
+The maturity level is stored in the `maturity_level` field, not embedded in the ID.
 
 ---
 
 ## Tooling
 
-Run the sort script to reorder questions.json:
-
+**Sort questions:**
 ```bash
 node scripts/sort-questions.js
+```
+
+**Renumber after sorting:**
+```bash
+node scripts/renumber-questions.js
 ```
 
 ---

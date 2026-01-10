@@ -6,8 +6,18 @@
     "level_4": 95
   },
   "critical_gates": {
-    "l1_to_l2": ["fpa_l1_q01", "fpa_l1_q02", "fpa_l1_q05", "fpa_l1_q09"],
-    "l2_to_l3": ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q08"]
+    "l1_to_l2": [
+      "fpa_q001",
+      "fpa_q002",
+      "fpa_q016",
+      "fpa_q026"
+    ],
+    "l2_to_l3": [
+      "fpa_q031",
+      "fpa_q033",
+      "fpa_q046",
+      "fpa_q041"
+    ]
   },
   "level_names": {
     "1": "Emerging",
