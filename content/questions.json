@@ -53,8 +53,8 @@
     {
       "id": "fpa_l1_q04",
       "practice_id": "prac_budget_ownership",
-      "text": "Do department heads formally sign off on their budget numbers before the year starts?",
-      "help": "Formal sign-off prevents the common excuse of 'Finance gave me this number.' It forces operational leaders to validate and commit to their targets.",
+      "text": "Do cost center owners formally sign off on their OpEx budget before consolidation?",
+      "help": "Without formal sign-off, managers claim 'Finance gave me this number' when they overspend. Sign-off creates documented accountability for spending decisions.",
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
@@ -69,8 +69,8 @@
     {
       "id": "fpa_l1_q55",
       "practice_id": "prac_budget_ownership",
-      "text": "Do revenue owners formally sign off on their top-line targets before the year starts?",
-      "help": "Revenue accountability is often assumed but rarely formalized. Without explicit sign-off, sales leaders can claim targets were imposed rather than committed to.",
+      "text": "Do commercial leaders formally commit to revenue targets with documented sign-off (not just verbal agreement in a meeting)?",
+      "help": "Revenue sign-off addresses sandbagging. Without documented commitment, sales leaders can claim targets were 'imposed' when they miss. This is a different dynamic than cost accountability—it's about preventing under-commitment.",
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
@@ -138,7 +138,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 2,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Clarify Budget Rules of Engagement",
@@ -181,8 +181,8 @@
     {
       "id": "fpa_l2_q70",
       "practice_id": "prac_policy_&_governance",
-      "text": "Is the initial bottom-up budget submission typically close to the top-down target (+/- 10%), without requiring massive negotiation?",
-      "help": "Large gaps between what leadership wants and what ops submits indicate 'sandbagging' or strategic misalignment. A mature process starts with alignment.",
+      "text": "Is the gap between top-down targets and bottom-up budget submissions typically resolved within one or two iteration rounds, without requiring CEO/Board escalation?",
+      "help": "Protracted budget negotiations signal strategic misalignment or sandbagging culture. Healthy organizations achieve alignment quickly because planning assumptions are shared upfront and the process has clear escalation paths. If resolution routinely requires C-suite intervention, the planning process is broken regardless of the specific gap percentage.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
@@ -1253,8 +1253,8 @@
     {
       "id": "fpa_l4_q80",
       "practice_id": "prac_policy_&_governance",
-      "text": "Does the organization utilize a 'Dynamic Capital Allocation' model where the Board can re-route funds mid-cycle based on real-time ROI?",
-      "help": "Highly mature organizations don't wait for the next annual cycle to move capital. They treat the budget as a fluid resource that flows toward the highest current ROI.",
+      "text": "Can the Board re-route capital or project funding mid-year to higher-performing initiatives, based on real-time ROI data rather than waiting for the next annual budget cycle?",
+      "help": "Highly mature organizations don't treat the annual budget as fixed. They maintain flexibility to shift resources toward winning projects and away from underperformers—without waiting 12 months to course-correct.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
@@ -1269,15 +1269,15 @@
     {
       "id": "fpa_l3_q81",
       "practice_id": "prac_budget_ownership",
-      "text": "Do budget owners have real-time, self-service access to their 'Open-to-Buy' (remaining uncommitted) balance including pending POs?",
-      "help": "Managers cannot be held accountable for overspend if they only see it 15 days after the month ends. Real-time visibility enables proactive spending control.",
+      "text": "Do budget owners have real-time, self-service access to their remaining budget balance, including the impact of pending purchase orders?",
+      "help": "Managers cannot be held accountable for overspend if they only see their position 15 days after the month ends. Real-time visibility—showing what's spent, what's committed (pending POs), and what remains—enables proactive spending control.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
       "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Implement 'Open-to-Buy' Visibility",
+        "title": "Implement Real-Time Budget Visibility",
         "recommendation": "Connect the procurement system to a dashboard that shows 'Budget minus (Actuals + Open POs)' to every department head.",
         "type": "structural"
       }
