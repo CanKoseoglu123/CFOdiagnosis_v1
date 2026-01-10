@@ -2,7 +2,7 @@ import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import UAParser from "ua-parser-js";
+import * as UAParserModule from "ua-parser-js";
 
 import { validateRun } from "./validateRun";
 import { scoreRun } from "./scoring/scoreRun";
@@ -2283,8 +2283,8 @@ type DeviceType = 'mobile' | 'tablet' | 'desktop' | 'unknown';
 function parseUserAgent(ua: string | undefined): { device_type: DeviceType; browser: string; os: string } {
   if (!ua) return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
 
-  const parser = new UAParser(ua);
-  const result = parser.getResult();
+  // UAParser v2.x: access via namespace
+  const result = UAParserModule.UAParser(ua);
 
   // Device type detection - map ua-parser-js types to our schema
   const deviceType = result.device?.type;
