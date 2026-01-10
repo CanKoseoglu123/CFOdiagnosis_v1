@@ -97,7 +97,8 @@ BEGIN
     column_name, column_name, column_name, limit_count
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+   SET search_path = public;
 
 -- Function to get device type breakdown
 CREATE OR REPLACE FUNCTION get_visitor_device_stats()
@@ -110,7 +111,8 @@ BEGIN
     GROUP BY v.device_type
     ORDER BY count DESC;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+   SET search_path = public;
 
 -- Function to get visitor counts (total, today, last 7 days)
 CREATE OR REPLACE FUNCTION get_visitor_counts()
@@ -129,7 +131,8 @@ BEGIN
       (SELECT COUNT(*) FROM visitors WHERE created_at >= today_start)::BIGINT AS today,
       (SELECT COUNT(*) FROM visitors WHERE created_at >= week_start)::BIGINT AS last_7_days;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+   SET search_path = public;
 
 -- Combined stats function for efficiency (single call instead of 4)
 CREATE OR REPLACE FUNCTION get_visitor_all_stats(
@@ -149,7 +152,7 @@ BEGIN
     'top_countries', (
       SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
       FROM (
-        SELECT country AS item, COUNT(*) AS count
+        SELECT country, COUNT(*) AS count
         FROM visitors
         WHERE country IS NOT NULL
         GROUP BY country
@@ -160,7 +163,7 @@ BEGIN
     'top_pages', (
       SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
       FROM (
-        SELECT page_path AS item, COUNT(*) AS count
+        SELECT page_path AS page, COUNT(*) AS count
         FROM visitors
         WHERE page_path IS NOT NULL
         GROUP BY page_path
@@ -188,9 +191,16 @@ BEGIN
 
   RETURN result;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+   SET search_path = public;
 
--- Grant execute permissions to service role only
+-- Revoke default PUBLIC execute and grant only to service_role
+-- PostgreSQL grants EXECUTE to PUBLIC by default - must explicitly revoke
+REVOKE EXECUTE ON FUNCTION get_visitor_stats_by_column FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION get_visitor_device_stats FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION get_visitor_counts FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION get_visitor_all_stats FROM PUBLIC;
+
 GRANT EXECUTE ON FUNCTION get_visitor_stats_by_column TO service_role;
 GRANT EXECUTE ON FUNCTION get_visitor_device_stats TO service_role;
 GRANT EXECUTE ON FUNCTION get_visitor_counts TO service_role;
