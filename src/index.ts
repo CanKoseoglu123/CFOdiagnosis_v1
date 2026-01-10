@@ -2266,6 +2266,240 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// Visitor Tracking - Public endpoint to log page visits
+// ------------------------------------------------------------------
+
+// Helper to parse user agent
+function parseUserAgent(ua: string | undefined): { device_type: string; browser: string; os: string } {
+  if (!ua) return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
+
+  // Device type detection
+  let device_type = 'desktop';
+  if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
+    device_type = /iPad|Tablet/i.test(ua) ? 'tablet' : 'mobile';
+  }
+
+  // Browser detection
+  let browser = 'unknown';
+  if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Edg')) browser = 'Edge';
+  else if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Safari')) browser = 'Safari';
+  else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
+
+  // OS detection
+  let os = 'unknown';
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac OS')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+  return { device_type, browser, os };
+}
+
+// POST /track - Log a page visit (public endpoint, no auth required)
+app.post("/track", async (req, res) => {
+  const { page_path, referrer, session_id } = req.body;
+
+  if (!page_path) {
+    return res.status(400).json({ error: "page_path is required" });
+  }
+
+  const userAgent = req.headers["user-agent"] as string | undefined;
+  const { device_type, browser, os } = parseUserAgent(userAgent);
+
+  // Get IP address (handle proxies)
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const ip = typeof forwardedFor === "string"
+    ? forwardedFor.split(",")[0].trim()
+    : req.socket.remoteAddress || null;
+
+  // We'll use a free IP geolocation API (ip-api.com) for location data
+  // Rate limited to 45 requests/minute, which should be fine for now
+  let geoData: {
+    country?: string;
+    countryCode?: string;
+    region?: string;
+    city?: string;
+    lat?: number;
+    lon?: number;
+    timezone?: string;
+  } = {};
+
+  if (ip && ip !== "::1" && ip !== "127.0.0.1") {
+    try {
+      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,lat,lon,timezone`);
+      const data = await geoRes.json();
+      if (data.status === "success") {
+        geoData = data;
+      }
+    } catch (err) {
+      // Geolocation failed, continue without it
+      console.error("Geolocation lookup failed:", err);
+    }
+  }
+
+  // Use admin client if available (bypass RLS), otherwise use anon
+  const client = supabaseAdmin || supabaseAnon;
+
+  const { data, error } = await client
+    .from("visitors")
+    .insert({
+      session_id: session_id || null,
+      user_id: req.userId || null,
+      page_path,
+      referrer: referrer || null,
+      user_agent: userAgent || null,
+      device_type,
+      browser,
+      os,
+      ip_address: ip,
+      country: geoData.country || null,
+      country_code: geoData.countryCode || null,
+      region: geoData.region || null,
+      city: geoData.city || null,
+      latitude: geoData.lat || null,
+      longitude: geoData.lon || null,
+      timezone: geoData.timezone || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("Failed to track visitor:", error);
+    // Don't expose internal errors, just acknowledge
+    return res.status(200).json({ tracked: false });
+  }
+
+  res.json({ tracked: true, id: data.id });
+});
+
+// GET /admin/visitors - List all visitor data (admin only)
+app.get("/admin/visitors", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  // Parse query params for filtering/pagination
+  const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
+  const offset = parseInt(req.query.offset as string) || 0;
+  const country = req.query.country as string | undefined;
+  const page_path = req.query.page_path as string | undefined;
+
+  let query = supabaseAdmin
+    .from("visitors")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (country) {
+    query = query.eq("country", country);
+  }
+  if (page_path) {
+    query = query.eq("page_path", page_path);
+  }
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({
+    visitors: data || [],
+    total: count || 0,
+    limit,
+    offset,
+  });
+});
+
+// GET /admin/visitors/stats - Get visitor statistics (admin only)
+app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  // Get total count
+  const { count: total } = await supabaseAdmin
+    .from("visitors")
+    .select("*", { count: "exact", head: true });
+
+  // Get today's count
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const { count: todayCount } = await supabaseAdmin
+    .from("visitors")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", today.toISOString());
+
+  // Get last 7 days count
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const { count: weekCount } = await supabaseAdmin
+    .from("visitors")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", weekAgo.toISOString());
+
+  // Get top countries
+  const { data: countryData } = await supabaseAdmin
+    .from("visitors")
+    .select("country")
+    .not("country", "is", null);
+
+  const countryCounts: Record<string, number> = {};
+  (countryData || []).forEach((v: { country: string | null }) => {
+    if (v.country) {
+      countryCounts[v.country] = (countryCounts[v.country] || 0) + 1;
+    }
+  });
+
+  const topCountries = Object.entries(countryCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([country, count]) => ({ country, count }));
+
+  // Get top pages
+  const { data: pageData } = await supabaseAdmin
+    .from("visitors")
+    .select("page_path");
+
+  const pageCounts: Record<string, number> = {};
+  (pageData || []).forEach((v: { page_path: string }) => {
+    pageCounts[v.page_path] = (pageCounts[v.page_path] || 0) + 1;
+  });
+
+  const topPages = Object.entries(pageCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([page, count]) => ({ page, count }));
+
+  // Get device breakdown
+  const { data: deviceData } = await supabaseAdmin
+    .from("visitors")
+    .select("device_type");
+
+  const deviceCounts: Record<string, number> = {};
+  (deviceData || []).forEach((v: { device_type: string | null }) => {
+    const device = v.device_type || "unknown";
+    deviceCounts[device] = (deviceCounts[device] || 0) + 1;
+  });
+
+  res.json({
+    total: total || 0,
+    today: todayCount || 0,
+    last_7_days: weekCount || 0,
+    top_countries: topCountries,
+    top_pages: topPages,
+    devices: deviceCounts,
+  });
+});
+
+// ------------------------------------------------------------------
 // Server
 // ------------------------------------------------------------------
 const PORT = process.env.PORT || 3000;
