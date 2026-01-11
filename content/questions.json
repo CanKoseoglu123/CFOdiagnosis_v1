@@ -590,8 +590,8 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Quarterly Reforecast",
-        "recommendation": "Move from annual budget to 3+9, 6+6, 9+3 forecasts. Update the view based on YTD reality.",
-        "type": "behavioral"
+        "recommendation": "FP&A should establish a quarterly re-forecasting rhythm (3+9, 6+6, 9+3) that updates the full-year view based on YTD actuals. Start by adding one formal re-forecast at Q1 close, then expand to quarterly. Assign one analyst as the forecast process owner. Complete when leadership receives an updated outlook within 10 days of each quarter close—enabling mid-year resource reallocation before it's too late.",
+        "type": "structural"
       }
     },
     {
@@ -621,8 +621,8 @@
       "impact": 3,
       "complexity": 2,
       "expert_action": {
-        "title": "Track Forecast Accuracy",
-        "recommendation": "Measure forecast vs. actual each month. Track bias (consistently high or low?) and absolute error. Share with leadership.",
+        "title": "Establish Forecast Accuracy Tracking",
+        "recommendation": "The FP&A lead should build a scorecard comparing forecast vs. actual by line item and by submitter, tracking whether each is consistently high or low. Present to leadership quarterly. Require forecast owners to explain persistent directional bias, not just dollar variance. Complete when chronic over/under-forecasters are identified and the pattern informs how Finance adjusts their inputs.",
         "type": "behavioral"
       }
     },
@@ -637,8 +637,8 @@
       "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Extend Forecast Horizon",
-        "recommendation": "Add 4 quarters to your view. This requires developing assumptions for the out-period (growth rates, cost inflation, headcount plans) and gaining stakeholder alignment on the extended horizon's purpose.",
+        "title": "Extend to Rolling Forecast",
+        "recommendation": "FP&A should expand the forecast model to always look 4 quarters ahead of the current period, regardless of fiscal year-end. This means in Q3, you're forecasting through Q3 of next year. Start by defining out-period assumptions (growth rates, inflation, headcount trajectory) with Finance leadership. Complete when the Board receives a continuous forward view—eliminating the artificial cliff where visibility drops to zero at year-end.",
         "type": "structural"
       }
     },
@@ -654,7 +654,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Model Working Capital Drivers",
-        "recommendation": "Don't just plug cash. Driver-based AR (Sales * DSO) and AP (COGS * DPO) gives you levers to pull.",
+        "recommendation": "FP&A should replace static balance sheet plugs with driver-based working capital. Link AR to revenue and collection days, AP to spend patterns and payment terms, and Inventory (if applicable) to volume and turns. Start with AR—it's typically the largest lever. Work with the Controller to document current days metrics and set improvement targets. Complete when leadership can answer \"what happens to cash if we collect 5 days faster?\"—enabling proactive working capital management.",
         "type": "structural"
       }
     },
@@ -670,7 +670,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Covenant Forecasting",
-        "recommendation": "Add covenant metrics (leverage ratio, interest coverage, etc.) to your monthly package. Forecast 12 months forward. Flag breaches early.",
+        "recommendation": "The Controller or FP&A lead should add covenant metrics (leverage ratio, interest coverage, fixed charge coverage) to the monthly reporting package with a 12-month forward view. Build a simple traffic-light indicator: green (>20% headroom), yellow (10-20%), red (<10%). Complete when leadership sees projected covenant position monthly—providing early warning to manage lender relationships proactively rather than scrambling at breach.",
         "type": "structural"
       }
     },
@@ -686,7 +686,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Add Cash Flow to Forecast",
-        "recommendation": "Build a 13-week cash flow model alongside your P&L forecast. Start with direct method: receipts and payments.",
+        "recommendation": "FP&A should build a 13-week rolling cash flow forecast using the direct method (actual receipts and payments, not P&L adjustments). Start by mapping the top 5 cash inflows and outflows: customer collections, payroll, rent, AP, and debt service. Update weekly. Complete when leadership receives a weekly cash position report—because profit doesn't pay bills, cash does.",
         "type": "structural"
       }
     },
@@ -702,7 +702,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Direct Method Cash Forecasting",
-        "recommendation": "Build a 13-week rolling cash forecast with actual receipt and payment line items: Customer Collections (by aging bucket), Payroll, Rent, AP by vendor/due date, Debt Service, CapEx. Update weekly. Tie the Week 1 forecast to actual bank movements to calibrate accuracy. This is the CFO's early warning system—if you can't see cash 13 weeks out, you're flying blind.",
+        "recommendation": "FP&A or Treasury should build a 13-week rolling cash forecast with actual receipt and payment line items: Customer Collections (by aging bucket), Payroll, Rent, AP by vendor/due date, Debt Service, CapEx. Update weekly. Tie the Week 1 forecast to actual bank movements to calibrate accuracy. Complete when Week 1 forecast variance to actual is consistently <5%—this is the CFO's early warning system for liquidity.",
         "type": "structural"
       }
     },
@@ -718,7 +718,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Establish Single Data Source",
-        "recommendation": "Identify and document the 'golden source' for each data element. When ERP, CRM, and BI tool show different numbers, establish a hierarchy (e.g., 'GL is always right for actuals, CRM is right for pipeline'). Create a conflict resolution protocol and assign a data steward to adjudicate disputes.",
+        "recommendation": "FP&A should identify and document the 'golden source' for each data element. When ERP, CRM, and BI tool show different numbers, establish a hierarchy (e.g., 'GL is always right for actuals, CRM is right for pipeline'). Create a conflict resolution protocol and assign a data steward to adjudicate disputes. Complete when Finance team can answer \"where does this number come from?\" instantly—eliminating reconciliation debates that waste time and erode credibility.",
         "type": "structural"
       }
     },
@@ -733,8 +733,8 @@
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Migrate to Collaborative Planning",
-        "recommendation": "For sub-$100M revenue companies, cloud-based spreadsheets (Google Sheets, Excel Online) with strict cell-level protection and naming conventions may be more cost-effective than dedicated FP&A software. For $100M+, evaluate purpose-built tools (DataRails, Planful, Cube). Key test: can Sales and Finance update the same model at the same time without calling each other? The goal is single-source integrity AND concurrent access.",
+        "title": "Enable Multi-User Forecasting",
+        "recommendation": "FP&A should eliminate version conflicts by moving to a collaborative platform. For sub-$100M companies: implement Google Sheets or Excel Online with strict cell-level protection. For $100M+: evaluate purpose-built tools (Pigment, Planful, Cube). Assign one person to manage access controls and version governance. Complete when Sales and Finance can update the same model at the same time without version conflicts—cutting forecast cycle time in half.",
         "type": "structural"
       }
     },
@@ -749,8 +749,8 @@
       "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Document Forecast Assumptions",
-        "recommendation": "Maintain a single assumptions log (inflation, FX, headcount rates, etc.) that all contributors reference. Update at each forecast cycle.",
+        "title": "Centralize Forecast Assumptions",
+        "recommendation": "FP&A should create and maintain a single assumptions document covering inflation, FX rates, headcount costs, and growth drivers. Publish to all forecast contributors at cycle start. Assign one person to own updates and communicate changes. Complete when everyone uses the same inputs—eliminating \"we used different assumptions\" as an excuse for forecast misalignment.",
         "type": "governance"
       }
     },
@@ -766,7 +766,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Achieve Always-On Forecast Readiness",
-        "recommendation": "Eliminate forecast 'spin-up' time by maintaining continuously updated driver inputs, automated data feeds from source systems, and pre-built consolidation logic. The goal: when leadership asks, FP&A assembles—not rebuilds. Establish a weekly rhythm of validating key assumptions so the model stays current between formal cycles. Test readiness monthly: can you produce a Board-ready view today?",
+        "recommendation": "The FP&A lead should eliminate forecast 'spin-up' time by maintaining continuously updated driver inputs, automated data feeds from source systems, and pre-built consolidation logic. Establish a weekly rhythm of validating key assumptions so the model stays current between formal cycles. Test readiness monthly: can you produce a Board-ready view today? Complete when the CEO can request an updated outlook and receive it by end of day—enabling real-time strategic pivots without waiting for the next forecast cycle.",
         "type": "structural"
       }
     },
