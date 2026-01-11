@@ -766,7 +766,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Define Core Operational Drivers",
-        "recommendation": "Convene with CFO and business leaders to identify 3-5 operational metrics that most directly drive financial outcomes: revenue per FTE, gross margin per unit, customer acquisition cost, plus one industry-specific metric (churn for SaaS, utilization for services, yield for manufacturing). Document in a one-page 'Driver Map' linking operational metrics to P&L lines. Complete when leadership agrees on which levers matter most—this becomes the vocabulary for forward-looking discussions.",
+        "recommendation": "FP&A should convene with CFO and business leaders to identify 3-5 operational metrics that most directly drive financial outcomes: revenue per FTE, gross margin per unit, customer acquisition cost, plus one industry-specific metric (churn for SaaS, utilization for services, yield for manufacturing). Document in a one-page 'Driver Map' linking operational metrics to P&L lines. Complete when leadership agrees on which levers matter most—this becomes the vocabulary for forward-looking discussions.",
         "type": "structural"
       }
     },
@@ -782,7 +782,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Embed Driver Tracking",
-        "recommendation": "Identify the 2-3 drivers that matter most (volume, price, churn, etc.). Add a dedicated section in the monthly pack tracking these against targets.",
+        "recommendation": "FP&A should add a dedicated 'Driver Performance' section to the monthly management pack showing the top 3 drivers (e.g., volume, price, churn) vs. target and vs. prior period. Include variance commentary explaining why drivers moved. Complete when leadership references driver performance—not just financial results—in monthly reviews, shifting conversations from 'what happened' to 'why it happened.'",
         "type": "structural"
       }
     },
@@ -798,7 +798,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Build Driver Deviation Alerts",
-        "recommendation": "Calculate historical variance bands for each key driver (e.g., +/-1 standard deviation from trend). Configure automated alerts in your BI tool or planning system that trigger when actuals breach these bands. Route alerts to the relevant FP&A analyst. Target: driver deviations flagged within 24 hours of detection.",
+        "recommendation": "FP&A and IT should calculate historical variance bands for each key driver (e.g., +/-1 standard deviation from trend). Configure automated alerts in your BI tool or planning system that trigger when actuals breach these bands. Route alerts to the relevant FP&A analyst. Target: driver deviations flagged within 24 hours of detection—catching forecast drift before it becomes a month-end surprise.",
         "type": "structural"
       }
     },
@@ -814,7 +814,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Build Integrated Performance Data Model",
-        "recommendation": "Identify the top 5 operational metrics that drive financial outcomes (e.g., pipeline value, headcount, utilization, NPS). Build automated feeds from source systems (CRM, HRIS, operations tools) into your FP&A data layer. Target: monthly reports should include both financial and operational context without manual data pulls.",
+        "recommendation": "FP&A and IT should identify the top 5 operational metrics that drive financial outcomes (e.g., pipeline value, headcount, utilization, NPS). Build automated feeds from source systems (CRM, HRIS, operations tools) into your FP&A data layer. Target: monthly reports include both financial and operational context without manual data pulls—freeing analysts from data gathering to focus on insight generation.",
         "type": "structural"
       }
     },
@@ -830,7 +830,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Implement Driver Assumption Validation",
-        "recommendation": "Add a formal validation step to the forecast process where each driver owner reviews and approves their assumptions. Create a simple sign-off matrix: Sales validates pipeline, HR validates headcount, Ops validates utilization. No forecast finalization without sign-off.",
+        "recommendation": "FP&A should add a formal validation step to the forecast process where each driver owner reviews and approves their assumptions. Create a simple sign-off matrix: Sales validates pipeline, HR validates headcount, Ops validates utilization. No forecast finalization without sign-off—ensuring the forecast reflects current operational reality and creating shared accountability for outcomes.",
         "type": "governance"
       }
     },
@@ -846,7 +846,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Build CRM-to-Forecast Integration",
-        "recommendation": "Connect CRM (Salesforce, HubSpot) directly to your forecasting tool via API or middleware. Configure probability weightings by pipeline stage. Set up daily or real-time sync. Validate by comparing automated forecast to manually-built version. Complete when FP&A no longer extracts CRM data manually.",
+        "recommendation": "FP&A and IT should connect CRM (Salesforce, HubSpot) directly to your forecasting tool via API or middleware. Configure probability weightings by pipeline stage. Set up daily or real-time sync. Validate by comparing automated forecast to manually-built version. Complete when FP&A no longer extracts CRM data manually—eliminating lag between pipeline changes and financial projections.",
         "type": "structural"
       }
     },
