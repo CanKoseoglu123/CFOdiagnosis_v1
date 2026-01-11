@@ -605,8 +605,8 @@
       "impact": 3,
       "complexity": 2,
       "expert_action": {
-        "title": "Establish Forecast Accuracy Tracking",
-        "recommendation": "The FP&A lead should build a scorecard comparing forecast vs. actual by line item and by submitter, tracking whether each is consistently high or low. Present to leadership quarterly. Require forecast owners to explain persistent directional bias, not just dollar variance. Complete when chronic over/under-forecasters are identified and the pattern informs how Finance adjusts their inputs.",
+        "title": "Identify and Correct Forecast Bias",
+        "recommendation": "The FP&A lead should build a scorecard comparing forecast vs. actual by line item and by submitter, tracking whether each is consistently high or low. Present to leadership quarterly. Require forecast owners to explain persistent directional bias, not just dollar variance. Complete when chronic over/under-forecasters are identified and the pattern informs how Finance adjusts their inputs—improving forecast reliability and reducing management time spent debating numbers.",
         "type": "behavioral"
       }
     },
@@ -685,8 +685,8 @@
       "impact": 5,
       "complexity": 3,
       "expert_action": {
-        "title": "Implement Direct Method Cash Forecasting",
-        "recommendation": "FP&A or Treasury should build a 13-week rolling cash forecast with actual receipt and payment line items: Customer Collections (by aging bucket), Payroll, Rent, AP by vendor/due date, Debt Service, CapEx. Update weekly. Tie the Week 1 forecast to actual bank movements to calibrate accuracy. Complete when Week 1 forecast variance to actual is consistently <5%—this is the CFO's early warning system for liquidity.",
+        "title": "Achieve Cash Forecast Precision",
+        "recommendation": "FP&A or Treasury should refine the cash forecast by breaking collections into aging buckets and AP into vendor-level detail. Tie Week 1 forecasts to actual bank movements and track variance weekly. Investigate and correct any deviation >5%. Complete when Week 1 forecast variance to actual is consistently <5%—this precision transforms cash forecasting from directional guidance into a reliable liquidity management tool.",
         "type": "structural"
       }
     },
@@ -734,7 +734,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Centralize Forecast Assumptions",
-        "recommendation": "FP&A should create and maintain a single assumptions document covering inflation, FX rates, headcount costs, and growth drivers. Publish to all forecast contributors at cycle start. Assign one person to own updates and communicate changes. Complete when everyone uses the same inputs—eliminating \"we used different assumptions\" as an excuse for forecast misalignment.",
+        "recommendation": "FP&A should create and maintain a single assumptions document covering inflation, FX rates, headcount costs, and growth drivers. Publish to all forecast contributors at cycle start. Assign one person to own updates and communicate changes. Complete when everyone uses the same inputs—reducing consolidation cycles and ensuring forecast changes reflect business reality, not assumption drift.",
         "type": "governance"
       }
     },
@@ -750,7 +750,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Achieve Always-On Forecast Readiness",
-        "recommendation": "Eliminate forecast 'spin-up' time by maintaining continuously updated driver inputs, automated data feeds, and pre-built consolidation logic. Validate key assumptions weekly to keep the model current. Test monthly: can you produce a Board-ready view today? Complete when leadership can request an updated outlook and receive it same-day—enabling real-time strategic pivots without waiting for the next cycle.",
+        "recommendation": "FP&A and IT should eliminate forecast 'spin-up' time by maintaining continuously updated driver inputs, automated data feeds, and pre-built consolidation logic. Validate key assumptions weekly to keep the model current. Test monthly: can you produce a Board-ready view today? Complete when leadership can request an updated outlook and receive it same-day—enabling real-time strategic pivots without waiting for the next cycle.",
         "type": "structural"
       }
     },
@@ -853,16 +853,16 @@
     {
       "id": "fpa_q095",
       "practice_id": "prac_rapid_what_if_capability",
-      "text": "Is the financial model structured so that key assumptions (volume, price, headcount) are input variables that can be changed without modifying formulas?",
-      "help": "A model where assumptions are buried in formulas cannot support scenario analysis. Separating inputs from calculations is the foundation of financial modeling—without it, every 'what-if' requires rebuilding the spreadsheet.",
+      "text": "Can FP&A change key forecast assumptions (volume, price, headcount growth) and see the financial impact immediately, without rebuilding or restructuring the model?",
+      "help": "Scenario-ready models allow leadership to ask 'what if volume drops 10%?' and get an answer in minutes, not days. If changing an assumption requires rework, you don't have a scenario capability—you have a one-time forecast.",
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Restructure Model for Scenario Readiness",
-        "recommendation": "Audit the current model: are key drivers (volume, price, growth rates, headcount) in dedicated input cells, or hardcoded in formulas? Create a single 'Assumptions' tab that feeds all calculations. This is prerequisite work—no scenario capability exists without it.",
+        "title": "Build Scenario-Ready Model Architecture",
+        "recommendation": "Ensure key drivers (volume, price, growth rates, headcount) flow through the entire P&L from a single input location. Test: can you answer 'what if volume drops 10%?' in under 5 minutes? If not, restructure the model to separate assumptions from calculations.",
         "type": "structural"
       }
     },
@@ -885,16 +885,16 @@
     {
       "id": "fpa_q057",
       "practice_id": "prac_rapid_what_if_capability",
-      "text": "Are sensitivity tables standard inclusions in executive forecast reviews?",
-      "help": "Sensitivity tables show how key outcomes (revenue, EBITDA, cash) change when assumptions vary (e.g., '+/-10% volume'). Including them prepares leadership for volatility and helps manage expectations around forecast uncertainty.",
+      "text": "Does FP&A include sensitivity analysis in forecast presentations, showing how key outcomes (revenue, EBITDA, cash) change when top drivers vary by +/-10%?",
+      "help": "A single-point forecast creates false precision. Sensitivity tables show the range of outcomes—if volume drops 10%, EBITDA falls from $50M to $42M. This prepares leadership for volatility and frames expectations around forecast uncertainty.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 3,
       "complexity": 2,
       "expert_action": {
-        "title": "Add Sensitivity Analysis",
-        "recommendation": "Include a standard 'Risk & Sensitivity' slide in every forecast deck showing +/- 10% on the top 3 drivers. This is foundational scenario communication—leadership should never see a single-point forecast without understanding the range.",
+        "title": "Add Sensitivity Analysis to Forecast Presentations",
+        "recommendation": "Include a standard sensitivity table in every forecast deck showing +/-10% on the top 3 drivers (typically volume, price, cost inflation) and their impact on Revenue, EBITDA, and Cash. Leadership should never see a single-point forecast without understanding the range.",
         "type": "quick_win"
       }
     },
@@ -997,16 +997,16 @@
     {
       "id": "fpa_q062",
       "practice_id": "prac_stress_testing",
-      "text": "Does FP&A maintain a formal risk register that identifies, quantifies, and tracks potential P&L and cash flow impacts?",
-      "help": "A risk register is a documented list of identified threats—customer concentration, supply chain disruption, FX exposure, key-person dependency—each with a probability estimate and quantified financial impact range. It transforms vague concerns into trackable items with owners and response plans. Surprises happen when known risks aren't written down.",
+      "text": "Does FP&A maintain a formal risks and opportunities register that identifies, quantifies, and tracks potential P&L and cash flow impacts—both downside threats and upside potential?",
+      "help": "A risks & opportunities register documents both threats (customer concentration, supply disruption, FX exposure) and upsides (new customer pipeline, pricing actions, cost savings initiatives)—each with probability estimates and quantified impact ranges. Tracking both ensures the forecast reflects the full range of outcomes, not just the base case.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Establish Finance Risk Register",
-        "recommendation": "Create a simple log: Risk Description, Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Mitigation Status. Review monthly with leadership. Require business units to flag new risks during forecast submission. Integrate top 5 risks into Board reporting.",
+        "title": "Establish Risks & Opportunities Register",
+        "recommendation": "Create a log with columns: Item Description, Type (Risk/Opportunity), Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Status. Review monthly with leadership. Require business units to flag both risks AND opportunities during forecast submission. Integrate top items into Board reporting.",
         "type": "governance"
       }
     },
