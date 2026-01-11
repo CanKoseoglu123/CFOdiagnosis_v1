@@ -899,7 +899,7 @@
       }
     },
     {
-      "id": "fpa_q056",
+      "id": "fpa_q094",
       "practice_id": "prac_rapid_what_if_capability",
       "text": "Can the model run a 'what-if' scenario on a key driver (e.g., volume -10%) in less than an hour?",
       "help": "Speed is essential for agility. If scenario analysis takes days, the opportunity to react may pass. Rapid modeling allows for real-time strategic discussions.",
