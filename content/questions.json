@@ -14,7 +14,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Annual Budget Cycle",
-        "recommendation": "Establish a formal budget calendar working backwards 3-4 months. Crucially, secure explicit leadership sponsorship to enforce deadlines. Assign clear ownership for timeline management.",
+        "recommendation": "Establish a formal budget calendar working backwards 3-4 months from fiscal year start. Secure leadership sponsorship to enforce deadlines and assign a single owner for timeline management. Done when the first budget is approved before the new fiscal year begins—this creates the baseline for all variance tracking and accountability.",
         "type": "structural"
       }
     },
@@ -30,7 +30,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Extend Budget to Full P&L",
-        "recommendation": "Add interest expense, tax provision, and below-the-line items to your budget template. Even rough estimates are better than ignoring these lines.",
+        "recommendation": "Finance should add interest expense, tax provision, and below-the-line items to the budget template. Even rough estimates are acceptable initially. This ensures you're managing true net income, not just operating margin—critical for accurate profitability tracking.",
         "type": "quick_win"
       }
     },
@@ -62,7 +62,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Implement Budget Sign-Off",
-        "recommendation": "Add a formal sign-off step before budget consolidation. Can be as simple as email confirmation, but documented.",
+        "recommendation": "FP&A should add a formal sign-off step before budget consolidation. Can be as simple as email confirmation from each cost center owner, but must be documented and stored.",
         "type": "quick_win"
       }
     },
@@ -78,7 +78,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Implement Revenue Sign-Off",
-        "recommendation": "Require Sales/Commercial leaders to formally approve revenue targets before budget finalization. Document the commitment.",
+        "recommendation": "Require Sales/Commercial leaders to formally approve revenue targets before budget finalization. Document the commitment in writing. This prevents 'the target was imposed on us' claims when revenue misses—creating real accountability for commercial performance.",
         "type": "governance"
       }
     },
@@ -94,7 +94,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Assign CapEx Ownership",
-        "recommendation": "Map every CapEx line item to a project owner and business sponsor. Include in the capital approval process.",
+        "recommendation": "Map every material CapEx line to a named project owner and business sponsor. Include this mapping in the capital approval process. Clear ownership prevents cost overruns and ensures someone is accountable for project delivery.",
         "type": "governance"
       }
     },
@@ -110,7 +110,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement Real-Time Budget Visibility",
-        "recommendation": "Connect the procurement system to a dashboard that shows 'Budget minus (Actuals + Open POs)' to every department head.",
+        "recommendation": "IT and Finance should collaborate to connect the procurement system to a self-service dashboard showing 'Budget minus (Actuals + Open POs)' for each department head. Real-time visibility enables proactive spending control—managers can course-correct before month-end, not after.",
         "type": "structural"
       }
     },
@@ -126,7 +126,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Automate Budget Transfers",
-        "recommendation": "Configure your planning tool to allow 'self-service' transfers within a single cost center, up to a defined threshold (e.g., $50k).",
+        "recommendation": "Configure your planning tool to allow self-service budget transfers within a single cost center, up to a defined threshold (e.g., $50k). This reduces approval bottlenecks and gives managers the agility to respond to changing priorities without waiting for Finance.",
         "type": "governance"
       }
     },
@@ -174,7 +174,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Enforce Budget Calendar",
-        "recommendation": "Secure CEO backing to treat missed deadlines as performance issues. Track 'on-time delivery' of budget submissions and report offenders to the executive committee.",
+        "recommendation": "Secure leadership backing to treat missed budget deadlines seriously. Track on-time delivery of submissions and escalate chronic offenders to department heads. Consistent enforcement is what separates a real calendar from a wishful timeline.",
         "type": "governance"
       }
     },
@@ -190,7 +190,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Reconcile Top-Down and Bottom-Up",
-        "recommendation": "Build a formal step where top-down targets and bottom-up submissions are compared and gaps are resolved before final approval.",
+        "recommendation": "Build a formal reconciliation step where top-down targets and bottom-up submissions are compared, gaps are documented, and resolution is signed off by both Finance and business leaders before final budget approval.",
         "type": "structural"
       }
     },
@@ -205,8 +205,8 @@
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Anchor the Discussion",
-        "recommendation": "Send out budget templates with targets hard-coded based on run-rate + strategy. Force business units to justify *deviations* from the target, rather than building from zero.",
+        "title": "Issue Target-Based Budget Templates",
+        "recommendation": "Send budget templates with targets pre-populated based on run-rate plus strategic adjustments. Require business units to justify deviations from the target rather than building from zero. This anchors the conversation and reduces sandbagging.",
         "type": "structural"
       }
     },
@@ -222,7 +222,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Link Budget to Strategy",
-        "recommendation": "Update budget submission templates to include a mandatory 'Strategic Alignment' dropdown for all material investments.",
+        "recommendation": "Update budget submission templates to include a mandatory 'Strategic Pillar' field for all material investments. Deploy for the next budget cycle and require 100% completion before consolidation. This ensures the budget is a strategy execution tool, not just a numbers exercise.",
         "type": "structural"
       }
     },
@@ -237,8 +237,8 @@
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Enable Dynamic Allocation",
-        "recommendation": "Establish a 'Strategic Reserve' fund (5-10% of budget) that is unallocated at kickoff and deployed mid-year to high-performing initiatives.",
+        "title": "Enable Dynamic Capital Reallocation",
+        "recommendation": "FP&A should establish quarterly capital performance reviews that compare project actuals to business case. Present reallocation recommendations to leadership—shifting resources from underperforming initiatives to higher-value opportunities. This makes capital allocation dynamic rather than fixed at budget time.",
         "type": "governance"
       }
     },
