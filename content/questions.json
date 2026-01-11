@@ -782,7 +782,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Define Core Operational Drivers",
-        "recommendation": "FP&A should convene with the CFO and business leaders to identify the 3-5 operational metrics that most directly drive financial outcomes. For most businesses: revenue per FTE, gross margin per unit, customer acquisition cost, and one industry-specific metric (churn for SaaS, utilization for services, yield for manufacturing). Document these in a one-page 'Driver Map' showing the linkage from operational metric to P&L line. Complete when leadership agrees on which levers matter most—this becomes the vocabulary for all forward-looking discussions.",
+        "recommendation": "Convene with CFO and business leaders to identify 3-5 operational metrics that most directly drive financial outcomes: revenue per FTE, gross margin per unit, customer acquisition cost, plus one industry-specific metric (churn for SaaS, utilization for services, yield for manufacturing). Document in a one-page 'Driver Map' linking operational metrics to P&L lines. Complete when leadership agrees on which levers matter most—this becomes the vocabulary for forward-looking discussions.",
         "type": "structural"
       }
     },
