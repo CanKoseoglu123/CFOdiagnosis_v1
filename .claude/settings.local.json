@@ -204,7 +204,9 @@
       "Bash(git ls-tree:*)",
       "Bash(git log:*)",
       "Bash(git cherry-pick:*)",
-      "Bash(npx cloc:*)"
+      "Bash(npx cloc:*)",
+      "Bash(gh pr close:*)",
+      "Bash(git for-each-ref:*)"
     ]
   }
 }
