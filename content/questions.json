@@ -851,18 +851,34 @@
       }
     },
     {
-      "id": "fpa_q094",
+      "id": "fpa_q095",
       "practice_id": "prac_rapid_what_if_capability",
-      "text": "Can the model run a 'what-if' scenario on a key driver (e.g., volume -10%) in less than an hour?",
-      "help": "Speed is essential for agility. If scenario analysis takes days, the opportunity to react may pass. Rapid modeling allows for real-time strategic discussions.",
-      "maturity_level": 3,
+      "text": "Is the financial model structured so that key assumptions (volume, price, headcount) are input variables that can be changed without modifying formulas?",
+      "help": "A model where assumptions are buried in formulas cannot support scenario analysis. Separating inputs from calculations is the foundation of financial modeling—without it, every 'what-if' requires rebuilding the spreadsheet.",
+      "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 5,
-      "complexity": 4,
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Restructure Model for Scenario Readiness",
+        "recommendation": "Audit the current model: are key drivers (volume, price, growth rates, headcount) in dedicated input cells, or hardcoded in formulas? Create a single 'Assumptions' tab that feeds all calculations. This is prerequisite work—no scenario capability exists without it.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q094",
+      "practice_id": "prac_rapid_what_if_capability",
+      "text": "Can FP&A run a 'what-if' scenario on a key driver (e.g., volume -10%) in less than one hour?",
+      "help": "Speed is essential for agility. If scenario analysis takes days, the opportunity to react may pass. Rapid modeling allows for real-time strategic discussions.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
       "expert_action": {
         "title": "Build Rapid Scenario Capability",
-        "recommendation": "Parameterize your model. 'Volume' should be a single input cell that flows through the entire P&L instantly.",
+        "recommendation": "Parameterize your model. 'Volume' should be a single input cell that flows through the entire P&L instantly. This is foundational model architecture—no advanced scenario work is possible without it.",
         "type": "structural"
       }
     },
@@ -870,55 +886,87 @@
       "id": "fpa_q057",
       "practice_id": "prac_rapid_what_if_capability",
       "text": "Are sensitivity tables standard inclusions in executive forecast reviews?",
-      "help": "Sensitivity analysis highlights risk. Showing how outcomes change with different assumptions prepares leadership for volatility and helps manage expectations.",
-      "maturity_level": 3,
+      "help": "Sensitivity tables show how key outcomes (revenue, EBITDA, cash) change when assumptions vary (e.g., '+/-10% volume'). Including them prepares leadership for volatility and helps manage expectations around forecast uncertainty.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Add Sensitivity Analysis",
-        "recommendation": "Include a standard 'Risk & Ops' slide in every deck showing +/- 10% on key drivers.",
+        "recommendation": "Include a standard 'Risk & Sensitivity' slide in every forecast deck showing +/- 10% on the top 3 drivers. This is foundational scenario communication—leadership should never see a single-point forecast without understanding the range.",
         "type": "quick_win"
+      }
+    },
+    {
+      "id": "fpa_q096",
+      "practice_id": "prac_multi_scenario_management",
+      "text": "Can FP&A produce a revised full-year forecast within five business days when leadership requests one?",
+      "help": "Scenario agility requires process speed. If producing a single revised view takes weeks, the organization cannot respond to changing conditions. This tests whether the forecast process is nimble enough to support scenario work.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Compress Reforecast Cycle",
+        "recommendation": "Map the current reforecast process end-to-end. Identify bottlenecks (usually waiting for inputs or manual consolidation). Set a 5-day target and work backwards to compress each phase. If you can't reforecast quickly, you can't do scenarios at all.",
+        "type": "structural"
       }
     },
     {
       "id": "fpa_q058",
       "practice_id": "prac_multi_scenario_management",
-      "text": "Does leadership actively review multiple scenarios when making significant decisions, rather than relying solely on the base case?",
-      "help": "Having scenarios is useless if leadership ignores them. True scenario discipline means decision-makers consider alternatives before committing.",
+      "text": "Does FP&A present scenario comparisons—not just the base case—for all major investment or resource allocation decisions?",
+      "help": "FP&A's role is to frame decisions with alternatives. If Finance only presents a single number, leadership can't weigh trade-offs. Scenario presentation is the mechanism through which Finance enables risk-aware decision-making.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Embed Scenario Discipline",
-        "recommendation": "Require scenario comparison for all major decisions. Ask 'what does this look like in the downside case?' before approval.",
+        "title": "Embed Scenario Presentation in Decision Flow",
+        "recommendation": "Establish a standard that all investment requests above a threshold include Base, Upside, and Downside views. Create a simple template showing key metrics under each scenario. Track adoption: if decisions are made without scenario context, diagnose why.",
         "type": "behavioral"
       }
     },
     {
       "id": "fpa_q059",
       "practice_id": "prac_multi_scenario_management",
-      "text": "Do you maintain at least three live scenarios (Base, Bull, Bear) during planning cycles?",
-      "help": "The future is uncertain. Maintaining multiple scenarios ensures the business is prepared for different outcomes and has thought through response plans.",
-      "maturity_level": 4,
+      "text": "Does FP&A maintain at least three scenarios (Base, Upside, Downside) that are updated with current assumptions each forecast cycle?",
+      "help": "The future is uncertain. Maintaining multiple scenarios—refreshed regularly, not static artifacts—ensures the business is prepared for different outcomes. 'Maintained' means assumptions are current, not that the scenario was built once and forgotten.",
+      "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Maintain Multi-Scenario Model",
-        "recommendation": "Don't save-as. Build scenario toggles directly into the core model.",
+        "recommendation": "Build scenario toggles directly into the core model rather than maintaining separate files. Update all three scenarios each forecast cycle. Establish clear definitions: Base = most likely, Upside = stretch but achievable, Downside = recession/risk materialization.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q097",
+      "practice_id": "prac_multi_scenario_management",
+      "text": "Does the planning system automatically generate or update scenario ranges based on external data feeds (market indices, commodity prices, FX rates)?",
+      "help": "L4 scenario capability means the model responds to the world without manual intervention. When oil prices spike or currency moves, the system should auto-populate updated scenarios—shifting FP&A from data entry to interpretation and response.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Implement Auto-Updating Scenario Inputs",
+        "recommendation": "Identify the 3-5 external variables that most impact your forecast (FX, commodity prices, interest rates). Connect live data feeds to your planning tool. Configure automatic scenario range updates when external variables move beyond thresholds. FP&A reviews outputs, not inputs.",
         "type": "structural"
       }
     },
     {
       "id": "fpa_q060",
       "practice_id": "prac_stress_testing",
-      "text": "Are scenario triggers (e.g., 'If revenue drops 15%, we cut X') pre-agreed with the Board?",
-      "help": "Pre-agreed triggers remove emotion from crisis decision-making. Knowing exactly what actions to take when a threshold is breached enables faster response.",
+      "text": "Has FP&A documented contingency triggers (e.g., 'If revenue drops 15%, initiate cost action X') that have been approved by leadership or the Board?",
+      "help": "Pre-agreed triggers remove emotion from crisis decision-making. FP&A's role is to define the thresholds and response playbook; leadership's role is to approve them. When a trigger is breached, the response is execution, not debate.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
@@ -926,31 +974,31 @@
       "complexity": 3,
       "expert_action": {
         "title": "Define Actionable Triggers",
-        "recommendation": "Pre-agree on cut lists for specific revenue thresholds. Removes emotion when the time comes.",
+        "recommendation": "FP&A should draft a contingency playbook with 3-5 triggers tied to specific actions (e.g., 'Revenue -10% → hiring freeze', 'Revenue -20% → RIF list activated'). Present to leadership for approval. Review triggers quarterly to ensure they remain relevant.",
         "type": "governance"
       }
     },
     {
       "id": "fpa_q061",
       "practice_id": "prac_stress_testing",
-      "text": "Does Finance stress-test models to highlight exactly what happens to cash/profit if specific variables (e.g., volume, price) drop?",
-      "help": "Stress testing identifies breaking points. Knowing how much volume can drop before cash runs out allows for proactive risk management.",
+      "text": "Does FP&A regularly stress-test the forecast to identify breaking points—the thresholds where covenants breach, cash runs out, or profitability turns negative?",
+      "help": "Stress testing goes beyond 'what-if' to find the edge of survivability. Knowing that a 20% volume drop breaches covenants—while 15% doesn't—enables precise contingency planning. This is about finding limits, not just exploring alternatives.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Implement Stress Testing",
-        "recommendation": "Run a 'Break the Bank' scenario quarterly. How much volume loss until we breach covenants?",
+        "title": "Implement Breaking Point Analysis",
+        "recommendation": "Run quarterly 'break the bank' analysis: How much can volume/price drop before covenants breach? Before cash runs negative? Before EBITDA turns negative? Document these thresholds and share with leadership. This becomes the foundation for contingency trigger design.",
         "type": "structural"
       }
     },
     {
       "id": "fpa_q062",
       "practice_id": "prac_stress_testing",
-      "text": "Does Finance maintain a formal 'risk register' that identifies, quantifies, and tracks potential P&L and cash flow impacts?",
-      "help": "Surprises happen when known risks aren't tracked. A risk register forces explicit documentation of threats (customer churn, supply chain issues, FX exposure) with quantified impact ranges. It transforms vague concerns into actionable monitoring items and pre-agreed response plans.",
+      "text": "Does FP&A maintain a formal risk register that identifies, quantifies, and tracks potential P&L and cash flow impacts?",
+      "help": "A risk register is a documented list of identified threats—customer concentration, supply chain disruption, FX exposure, key-person dependency—each with a probability estimate and quantified financial impact range. It transforms vague concerns into trackable items with owners and response plans. Surprises happen when known risks aren't written down.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
@@ -958,7 +1006,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Establish Finance Risk Register",
-        "recommendation": "Create a simple risk log with columns: Risk Description, Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Mitigation Actions, and Status. Review monthly with leadership. Require business units to flag new risks as part of forecast submission. Integrate top risks into scenario planning and Board reporting.",
+        "recommendation": "Create a simple log: Risk Description, Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Mitigation Status. Review monthly with leadership. Require business units to flag new risks during forecast submission. Integrate top 5 risks into Board reporting.",
         "type": "governance"
       }
     },
