@@ -1013,48 +1013,48 @@
     {
       "id": "fpa_q063",
       "practice_id": "prac_commercial_partnership",
-      "text": "Is Finance consulted before major commercial decisions (new products, pricing changes, large deals) are finalized?",
-      "help": "Finance needs to be involved upfront to ensure commercial viability. Early consultation ensures financial implications are considered before commitments are made.",
-      "maturity_level": 3,
+      "text": "Is Finance consulted before commercial decisions above a defined threshold (e.g., new products, pricing changes, deals over $X) are finalized?",
+      "help": "Finance involvement ensures commercial viability is validated before commitments are made. The threshold should be explicit—without it, 'major' is subjective and consultation becomes inconsistent.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
-        "title": "Insert Finance into Commercial Flow",
-        "recommendation": "Establish the norm that Finance reviews major deals before signing. Start informally, then formalize once trust is built.",
-        "type": "behavioral"
+        "title": "Define Commercial Consultation Policy",
+        "recommendation": "Establish clear thresholds (e.g., deals >$100K, pricing changes >5%, new product launches) that require Finance sign-off. Document in a policy and communicate to commercial teams. Track compliance.",
+        "type": "governance"
       }
     },
     {
       "id": "fpa_q064",
       "practice_id": "prac_commercial_partnership",
       "text": "Is Finance review mandatory for all commercial contracts that deviate from standard terms or pricing?",
-      "help": "Standard terms protect margin and risk. Mandatory review for deviations ensures that exceptions are financially sound and approved by the right level.",
-      "maturity_level": 3,
+      "help": "Standard terms protect margin and risk. Mandatory review for deviations ensures that exceptions are financially sound and approved at the right level. This is governance—without it, margin erosion happens deal by deal.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
-        "title": "Enforce Deal Desk Logic",
-        "recommendation": "Secure CEO mandate first: 'No signature without Finance approval.' Implement a 'Deal Desk' workflow in CRM to block non-standard terms.",
+        "title": "Implement Deal Desk Process",
+        "recommendation": "Define 'standard terms' explicitly. Create a simple approval workflow for deviations—Sales submits, Finance reviews within 24-48 hours. Track deviation frequency and margin impact quarterly.",
         "type": "governance"
       }
     },
     {
       "id": "fpa_q065",
       "practice_id": "prac_commercial_partnership",
-      "text": "Do business unit leaders proactively seek Finance advice on operational problems?",
-      "help": "This indicates trust. When business leaders view Finance as problem solvers rather than just scorekeepers, the partnership is working.",
+      "text": "Does FP&A proactively deliver operational insights to business unit leaders—without waiting to be asked?",
+      "help": "Strategic partnership means anticipating needs, not just responding to requests. If FP&A only answers questions, they're reactive. Proactive insight delivery—flagging issues, identifying opportunities—demonstrates value and builds trust.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Embed Finance in Ops Meetings",
-        "recommendation": "Stop waiting for them to come to you. Mandate FP&A attendance at weekly Ops meetings to listen. Pick one operational headache they mention and solve it with data by the next week.",
+        "title": "Implement Proactive Insight Delivery",
+        "recommendation": "Assign each Finance Business Partner a monthly deliverable: one unsolicited insight for their business unit (cost trend, margin erosion, efficiency opportunity). Track whether insights lead to action. If they don't, the insights aren't valuable enough.",
         "type": "behavioral"
       }
     },
@@ -1093,17 +1093,17 @@
     {
       "id": "fpa_q068",
       "practice_id": "prac_strategic_alignment",
-      "text": "Are Finance KPIs explicitly linked to the company's top 3 strategic initiatives?",
-      "help": "Alignment ensures Finance is tracking what matters most. Linking KPIs to strategy focuses the function on driving the company's long-term goals.",
-      "maturity_level": 3,
+      "text": "Are Finance KPIs explicitly linked to the company's top strategic initiatives?",
+      "help": "Alignment ensures Finance tracks what matters most. If Finance measures don't connect to strategy, the function optimizes the wrong things. This is foundational alignment—the starting point for strategic partnership.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Link KPIs to Strategy",
-        "recommendation": "Don't just track Revenue. Track 'Revenue from New Product X' if that is the strategy. Mirror the corporate scorecard.",
-        "type": "structural"
+        "title": "Map Finance KPIs to Strategy",
+        "recommendation": "List the company's top 3 strategic initiatives. For each, identify which Finance KPIs directly measure progress. If there's no link, either add a KPI or question whether Finance is tracking the right things.",
+        "type": "governance"
       }
     },
     {
@@ -1125,16 +1125,16 @@
     {
       "id": "fpa_q070",
       "practice_id": "prac_strategic_alignment",
-      "text": "Does Finance communicate a profitability ranking of business streams/customers to make it clear where money is actually made?",
-      "help": "Not all revenue is equal. Ranking profitability highlights where resources should be invested and where they might be wasted.",
-      "maturity_level": 4,
+      "text": "Does FP&A regularly communicate profitability rankings by business segment, product line, or customer tier to leadership?",
+      "help": "Not all revenue is equal. Profitability ranking highlights where resources should be invested and where they might be wasted. This analysis should drive portfolio decisions, not sit in a spreadsheet.",
+      "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Build Profitability Reporting",
-        "recommendation": "Create a ranked view of customer/product profitability. Update quarterly. Share with commercial teams to inform resource allocation.",
+        "title": "Build Profitability Ranking Report",
+        "recommendation": "Calculate fully-loaded profitability (including allocated overhead) by segment/product/customer. Rank from most to least profitable. Present quarterly to leadership with recommendations: invest more here, investigate this, consider exiting that.",
         "type": "structural"
       }
     },
@@ -1142,15 +1142,15 @@
       "id": "fpa_q071",
       "practice_id": "prac_investment_rigor",
       "text": "Are all capital investments or unbudgeted initiatives above a defined threshold required to have a formal business case with calculated ROI/NPV?",
-      "help": "Requiring a business case enforces discipline. It ensures that capital is deployed only to projects with a clear financial return and strategic fit.",
-      "maturity_level": 3,
+      "help": "Requiring a business case enforces discipline. It ensures capital is deployed only to projects with clear financial return and strategic fit. This is investment governance—the minimum standard for capital allocation.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
       "complexity": 3,
       "expert_action": {
-        "title": "Enforce Investment Logic",
-        "recommendation": "Require a standard 1-page business case for all significant spend. Must include NPV, payback period, and strategic alignment.",
+        "title": "Establish Business Case Policy",
+        "recommendation": "Define the threshold (e.g., >$50K capex or >$100K opex). Create a simple business case template with required fields: investment amount, expected benefits, ROI calculation, payback period, risks. Require Finance sign-off before approval.",
         "type": "governance"
       }
     },
@@ -1173,64 +1173,96 @@
     {
       "id": "fpa_q073",
       "practice_id": "prac_investment_rigor",
-      "text": "Does the organization promptly kill underperforming projects based on Finance data, or do they linger as 'zombie' initiatives?",
-      "help": "Starting projects is easy; stopping them is hard. A mature org uses financial data to cut losses early, freeing up capital for better ideas.",
+      "text": "Does FP&A formally flag underperforming projects with explicit 'continue/restructure/kill' recommendations to leadership?",
+      "help": "Starting projects is easy; stopping them is hard. FP&A's role is to provide the data AND the recommendation—not just report that a project is underperforming, but explicitly recommend what to do about it. This requires courage backed by analysis.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
-      "complexity": 5,
+      "complexity": 4,
       "expert_action": {
-        "title": "Implement Gate Reviews with Finance as Truthmeister",
-        "recommendation": "Establish formal 'Gate Reviews' at project milestones (e.g., 3/6 months). Finance acts as independent assessor—comparing actuals to the business case. If ROI falls below threshold or milestones are missed, funding pauses until the sponsor presents a recovery plan. Pre-agree gates with leadership so kills aren't political. Finance must flag red, and leadership must act on the data.",
+        "title": "Implement Project Health Reviews",
+        "recommendation": "Quarterly, review all projects >$X against their original business case. For each, FP&A must provide a recommendation: Continue (on track), Restructure (salvageable with changes), or Kill (cut losses). Track recommendation acceptance rate.",
         "type": "governance"
       }
     },
     {
       "id": "fpa_q074",
       "practice_id": "prac_board_level_impact",
-      "text": "Does the CFO present a 'State of the Business' strategic view at every Board meeting?",
-      "help": "The CFO should tell the financial story, not just read the numbers. A strategic view provides context and forward-looking insights that the Board needs.",
-      "maturity_level": 3,
+      "text": "Does FP&A prepare a strategic 'State of the Business' narrative—not just financial tables—for Board meetings?",
+      "help": "The Board needs context, not just numbers. FP&A's role is to tell the financial story: what happened, why, and what it means for the future. If FP&A only produces data tables, they're not adding strategic value.",
+      "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 4,
-      "complexity": 3,
+      "complexity": 2,
       "expert_action": {
-        "title": "Elevate Board Reporting",
-        "recommendation": "Move the 'Finance Update' to the start of the meeting. Focus on strategic implications of the numbers, not just the variance.",
-        "type": "behavioral"
+        "title": "Develop Board Narrative Template",
+        "recommendation": "Create a standard Board finance section with: 1-page executive summary, key variances with 'so what' commentary, forward-looking risks and opportunities, strategic initiative progress. Test: could a Board member understand the business health without asking clarifying questions?",
+        "type": "quick_win"
       }
     },
     {
       "id": "fpa_q075",
       "practice_id": "prac_board_level_impact",
-      "text": "When the CFO presents to the board, are the numbers aligned with what other executives cite?",
-      "help": "Conflicting numbers destroy credibility. Alignment ensures the management team is speaking with one voice and data source.",
-      "maturity_level": 4,
+      "text": "Is there a single source of truth for financial data that all executives use when presenting to the Board or external stakeholders?",
+      "help": "Conflicting numbers destroy credibility. A single source of truth—one system, one report, one version—ensures the management team speaks with one voice. This is foundational data governance.",
+      "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 3,
+      "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Enforce Single Source of Truth",
-        "recommendation": "Implement a mandatory 'Data Tie-Out' meeting 48 hours before Board decks go out. CEO must validate discrepancies.",
+        "title": "Establish Single Source of Truth",
+        "recommendation": "Designate one system (ERP, BI tool, or even a controlled Excel file) as the official source for Board-level metrics. Publish a 'numbers freeze' date before Board meetings. Ban executives from creating their own versions.",
         "type": "governance"
       }
     },
     {
       "id": "fpa_q076",
       "practice_id": "prac_board_level_impact",
-      "text": "When Finance and Sales present conflicting forecast numbers, does the CEO typically use the Finance view for Board reporting?",
-      "help": "This is the ultimate credibility test. If the CEO trusts the Sales 'optimism' over Finance's 'realism', the finance function is weak.",
+      "text": "When Finance and Sales forecasts diverge, does FP&A present a formal reconciliation showing the assumptions driving the difference?",
+      "help": "Conflicting numbers create confusion. FP&A's role is not to win the argument but to illuminate it—showing exactly why the forecasts differ (timing, probability weighting, deal inclusion). This transforms a credibility contest into a productive discussion about assumptions.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Create Forecast Reconciliation Process",
+        "recommendation": "When forecasts diverge by >5%, produce a bridge: Finance forecast → Sales forecast showing each assumption difference (deal timing, probability, pipeline inclusion). Present to leadership as 'here's why we differ' rather than 'we're right, they're wrong.'",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q098",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Is the CFO or Finance leader a member of the executive leadership team (or equivalent decision-making body)?",
+      "help": "Strategic influence requires structural access. If Finance isn't represented at the leadership table, influence is limited to reactive analysis requests. Membership ensures Finance perspective is heard when strategy is set, not after decisions are made.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 1,
+      "expert_action": {
+        "title": "Secure Leadership Team Membership",
+        "recommendation": "If the CFO isn't on the executive team, make the case: Finance provides the objective lens on strategy viability. Request membership or, at minimum, standing attendance at strategic discussions. Document the value Finance adds when present.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q099",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Does FP&A proactively model the financial implications of strategic alternatives (e.g., market entry, M&A, restructuring) before leadership requests the analysis?",
+      "help": "L4 influence means anticipating strategic questions, not waiting to be asked. When FP&A sees a strategic decision brewing—a competitor move, a market shift, an acquisition target—they should prepare the financial analysis before leadership asks for it. This shifts Finance from reactive support to strategic anticipation.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
       "impact": 5,
-      "complexity": 4,
+      "complexity": 5,
       "expert_action": {
-        "title": "Build Forecast Credibility",
-        "recommendation": "Track your forecast accuracy vs. Sales. If Sales misses by >X% twice, propose a governance rule: Finance forecast becomes the Board default.",
+        "title": "Build Strategic Anticipation Capability",
+        "recommendation": "Monitor strategic signals: Board discussions, competitor moves, market trends, CEO statements. When you see a strategic question emerging, build the analysis before being asked. Present it proactively: 'We noticed X and thought you'd want to see the financial implications of Y and Z options.'",
         "type": "behavioral"
       }
     },
