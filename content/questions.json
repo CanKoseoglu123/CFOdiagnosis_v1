@@ -789,7 +789,7 @@
     {
       "id": "fpa_q050",
       "practice_id": "prac_operational_drivers",
-      "text": "Do the monthly executive reports explicitly track the top 3 operational drivers against targets?",
+      "text": "Does FP&A explicitly track the top 3 operational drivers against targets in monthly executive reports?",
       "help": "If drivers aren't in the report, they aren't being managed. Explicit tracking ensures leadership focuses on the levers that actually move financial outcomes.",
       "maturity_level": 2,
       "is_critical": false,
@@ -805,17 +805,17 @@
     {
       "id": "fpa_q051",
       "practice_id": "prac_operational_drivers",
-      "text": "Can Finance explain the financial outlook primarily using operational drivers (e.g., volume, churn) rather than accounting variance?",
-      "help": "Operational drivers are actionable; accounting variances are not. Explaining the 'why' in operational terms helps the business understand how to improve performance.",
+      "text": "Does FP&A use predictive models to automatically quantify how changes in operational drivers (revenue per FTE, gross margin per unit, customer acquisition cost) will impact financial outcomes?",
+      "help": "Advanced FP&A teams move beyond explaining past performance to predicting future outcomes. ML-assisted driver sensitivity analysis enables rapid answers to questions like 'what happens to EBITDA if churn increases 2%?'—shifting Finance from reactive reporting to proactive guidance.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
-      "impact": 4,
-      "complexity": 3,
+      "impact": 5,
+      "complexity": 4,
       "expert_action": {
-        "title": "Shift to Driver-Based Narratives",
-        "recommendation": "Train FP&A to present in operational language. Replace accounting jargon with business metrics in all executive communications.",
-        "type": "behavioral"
+        "title": "Implement Predictive Driver Modeling",
+        "recommendation": "Build or procure a sensitivity engine that links operational drivers to P&L outcomes. Start with the top 3 drivers identified in your driver map. Configure the model to instantly show impact ranges when inputs change. Test by asking 'if CAC rises 20%, what happens to EBITDA?' The answer should take seconds, not hours.",
+        "type": "structural"
       }
     },
     {
@@ -837,64 +837,48 @@
     {
       "id": "fpa_q053",
       "practice_id": "prac_dynamic_targets",
-      "text": "Are targets dynamically adjusted based on external driver changes (e.g., inflation, commodity prices)?",
-      "help": "Static targets in a dynamic world lose relevance. Adjusting for external factors keeps targets fair and achievable, maintaining motivation.",
+      "text": "Does FP&A automatically adjust forecast assumptions when material external factors (FX rates, inflation, commodity prices) change by >5%?",
+      "help": "Static forecast assumptions become stale. When FX moves 10% or inflation spikes, mature FP&A teams recalibrate their models immediately rather than waiting for the next cycle. This keeps the forecast relevant as a decision-support tool.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
       "impact": 4,
-      "complexity": 4,
+      "complexity": 3,
       "expert_action": {
-        "title": "Link Targets to Drivers",
-        "recommendation": "Move from fixed $ targets to driver-based logic. 'If volume is X, budget is Y.' Removes the 'use it or lose it' mentality.",
+        "title": "Automate Assumption Refresh Triggers",
+        "recommendation": "Define thresholds for key external factors (e.g., FX +/-5%, inflation +/-2pp). Set up alerts or automated feeds that flag when thresholds are breached. Build a 'light touch' reforecast process that updates only the affected assumptions without a full bottom-up cycle. Goal: assumption refresh within 48 hours of material external shifts.",
         "type": "structural"
       }
     },
     {
       "id": "fpa_q054",
       "practice_id": "prac_dynamic_targets",
-      "text": "Does the model automatically update revenue projections when sales pipeline stages change?",
-      "help": "Automating the link between sales pipeline and revenue forecast reduces manual work and ensures the forecast reflects the latest sales reality.",
-      "maturity_level": 3,
+      "text": "Is the revenue forecast automatically refreshed via direct CRM data feeds when pipeline stages change, without manual FP&A extraction?",
+      "help": "Manual CRM-to-forecast processes introduce lag and error. L4 integration means pipeline changes flow directly into financial projections, enabling real-time revenue visibility and eliminating FP&A time spent on data extraction.",
+      "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
       "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Link CRM to Forecast",
-        "recommendation": "Connect CRM opportunities to the revenue model. Apply probability weightings based on pipeline stage (e.g., Stage 3 = 40%).",
+        "title": "Build CRM-to-Forecast Integration",
+        "recommendation": "Connect CRM (Salesforce, HubSpot) directly to your forecasting tool via API or middleware. Configure probability weightings by pipeline stage. Set up daily or real-time sync. Validate by comparing automated forecast to manually-built version. Complete when FP&A no longer extracts CRM data manually.",
         "type": "structural"
-      }
-    },
-    {
-      "id": "fpa_q055",
-      "practice_id": "prac_continuous_planning",
-      "text": "Is the annual budget treated as just 'Forecast v1' rather than a static document?",
-      "help": "Treating the budget as a living document allows for adaptation. It acknowledges that assumptions change and allows the business to pivot resources as needed.",
-      "maturity_level": 2,
-      "is_critical": false,
-      "initiative_id": "init_forward_visibility",
-      "impact": 4,
-      "complexity": 3,
-      "expert_action": {
-        "title": "Separate Budget from Latest View",
-        "recommendation": "Maintain the Budget as a FIXED anchor for accountability—it drives bonuses and Board commitments, so never overwrite it. But implement a separate 'Latest View' or 'Current Forecast' that floats with new information. Compare actuals against BOTH: Budget (for accountability) and Latest View (for operational relevance). This gives you the discipline of a fixed target AND the agility of continuous planning without the political chaos of moving goalposts.",
-        "type": "behavioral"
       }
     },
     {
       "id": "fpa_q056",
       "practice_id": "prac_continuous_planning",
-      "text": "Does the planning process allow for off-cycle updates to the forecast when material business events occur?",
-      "help": "Rigid planning cycles can miss major market shifts. Off-cycle updates ensure the forecast remains a relevant tool for decision support during volatile times.",
+      "text": "Can FP&A produce an updated forecast within one week when a major business event (e.g., lost customer, acquisition, market shift) occurs?",
+      "help": "Rigid planning cycles can miss major market shifts. The ability to rapidly update the forecast when material events occur ensures the financial outlook remains a relevant decision-support tool, not a stale artifact.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Enable Off-Cycle Adjustments",
-        "recommendation": "Create a 'light' forecast version that allows key driver updates (e.g., losing a major client) without triggering a full bottom-up cycle.",
+        "title": "Build Rapid Reforecast Capability",
+        "recommendation": "Create a streamlined 'event-triggered' reforecast process separate from the full quarterly cycle. Define what constitutes a 'major event' (e.g., customer loss >5% of revenue, M&A, regulatory change). Pre-build scenario templates for common events. Target: leadership receives updated outlook within 5 business days of any major event.",
         "type": "structural"
       }
     },
