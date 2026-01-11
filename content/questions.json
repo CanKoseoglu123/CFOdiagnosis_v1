@@ -1457,6 +1457,22 @@
         "recommendation": "Communicate expected turnaround times for common requests. Consistency matters more than speed. If AP is always 48 hours, the business can plan around it.",
         "type": "governance"
       }
+    },
+    {
+      "id": "fpa_q092",
+      "practice_id": "prac_process_automation",
+      "text": "Does FP&A have a defined cycle time target for quarterly reforecasts (e.g., 5 business days), and consistently meet it?",
+      "help": "Forecast cycle time is a direct measure of process efficiency. If each reforecast requires two weeks of data gathering, reconciliation, and manual consolidation, the organization can't iterate quickly. Mature FP&A teams set explicit targets, measure actual cycle time, and continuously improve. The target itself matters less than having one and hitting it.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Define and Measure Forecast Cycle Time",
+        "recommendation": "Map your current reforecast process end-to-end: data collection, departmental inputs, consolidation, review, and output. Measure elapsed time for each stage. Set a target cycle time (e.g., 5 business days for quarterly reforecast), assign clear deadlines for each stage, and track actual vs. target. Address bottlenecks—usually waiting for inputs or manual data manipulation. Review cycle time performance quarterly.",
+        "type": "structural"
+      }
     }
   ]
 }
