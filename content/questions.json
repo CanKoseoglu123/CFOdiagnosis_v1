@@ -757,16 +757,16 @@
     {
       "id": "fpa_q048",
       "practice_id": "prac_collaborative_systems",
-      "text": "When a material business event occurs, can FP&A produce an updated consolidated forecast within 24 hours because the planning infrastructure enables rapid cross-functional input collection?",
-      "help": "The ultimate test of collaborative planning maturity is response speed. When you lose a major customer or win a transformational deal, how fast can you show the Board an updated view? At L4 maturity, the answer is 'same day'—because the infrastructure, processes, and cross-functional collaboration are so well-established that rapid updates are routine, not heroic.",
+      "text": "Can leadership request an updated financial outlook from FP&A at any point in the month and receive a consolidated view within the same business day?",
+      "help": "The pinnacle of forecasting agility is perpetual readiness. At L4 maturity, the forecast isn't a periodic event—it's a living asset. When the CEO asks 'where do we stand?' on any given Tuesday, FP&A can deliver a consolidated answer by end of day because the infrastructure, data flows, and driver models are continuously maintained.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Enable Rapid-Response Forecasting",
-        "recommendation": "Build a 'light touch' reforecast capability: pre-defined driver inputs that business units can update in hours, automated consolidation, and a standing protocol for emergency forecast cycles. Test it quarterly with a fire drill. Target: Board-ready view within 24 hours of any material event.",
+        "title": "Achieve Always-On Forecast Readiness",
+        "recommendation": "Eliminate forecast 'spin-up' time by maintaining continuously updated driver inputs, automated data feeds from source systems, and pre-built consolidation logic. The goal: when leadership asks, FP&A assembles—not rebuilds. Establish a weekly rhythm of validating key assumptions so the model stays current between formal cycles. Test readiness monthly: can you produce a Board-ready view today?",
         "type": "structural"
       }
     },
