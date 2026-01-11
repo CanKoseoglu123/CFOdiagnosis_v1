@@ -414,7 +414,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Standardize Monthly Pack",
-        "recommendation": "Create a template that doesn't change month-to-month. Include: Executive Summary, P&L, KPIs, Capex, and Headcount.",
+        "recommendation": "Create a template that doesn't change month-to-month. Include: Executive Summary, P&L, KPIs, Capex, and Headcount. Consistency builds trust with leadership and enables month-over-month trend analysis.",
         "type": "structural"
       }
     },
@@ -446,7 +446,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Absorb Shadow Systems",
-        "recommendation": "Conduct a 'shadow audit': ask each department head what spreadsheets they maintain outside of Finance systems. For each one, diagnose the gap (timing, granularity, format, metrics) and build a plan to absorb the requirement into official reporting. Track shadow sheet elimination as an FP&A KPI.",
+        "recommendation": "Conduct a 'shadow audit': ask each department head what spreadsheets they maintain outside of Finance systems. For each one, diagnose the gap (timing, granularity, format, metrics) and build a plan to absorb the requirement into official reporting. Track shadow sheet elimination as an FP&A KPI. Reducing shadow systems prevents version conflicts and positions Finance as the authoritative data source.",
         "type": "behavioral"
       }
     },
@@ -462,7 +462,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Embed Lead Indicators",
-        "recommendation": "Collaborate with Sales and Operations to identify the top 3 lead indicators and add them to the standard monthly deck.",
+        "recommendation": "Partner with Sales and Operations to identify the top 3 lead indicators (e.g., pipeline coverage, order backlog, customer churn rate) that predict financial outcomes. Add these to the standard monthly deck alongside historical financials. This forward-looking view helps leadership anticipate issues before they hit the P&L.",
         "type": "structural"
       }
     },
@@ -494,7 +494,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Implement Monthly BvA",
-        "recommendation": "Make BvA the heartbeat of finance. If it's not produced, the month isn't closed.",
+        "recommendation": "Add BvA generation to the month-end close checklist as a required step before sign-off. Define the template: variance to budget, variance to prior month, and variance to prior year. Distribute to all budget owners within 5 business days of close. Without BvA, overspends go undetected until it's too late to course-correct.",
         "type": "structural"
       }
     },
@@ -526,7 +526,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Institutionalize Variance Reviews",
-        "recommendation": "Set the rule: >10% variance requires a written comment. No comment = incomplete report.",
+        "recommendation": "Set the rule: >10% variance requires a written comment. No comment = incomplete report. This forces accountability—budget owners must explain significant deviations rather than let them pass unquestioned.",
         "type": "behavioral"
       }
     },
@@ -542,7 +542,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Track Variance Actions",
-        "recommendation": "Maintain an 'Action Log' from the review meeting. 'John to investigate $50k software overspend by Friday.' Check it next month.",
+        "recommendation": "Maintain an 'Action Log' from the review meeting with named owners and deadlines (e.g., 'John to investigate $50k software overspend by Friday'). Review it at the start of each subsequent meeting. This closes the loop—variance analysis leads to corrective action, not just awareness.",
         "type": "behavioral"
       }
     },
@@ -558,7 +558,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Standardize Variance Decomposition",
-        "recommendation": "Train the FP&A team on Price-Volume-Mix (PVM) logic and build standard templates to calculate these at the SKU or customer level.",
+        "recommendation": "Train the FP&A team on Price-Volume-Mix (PVM) decomposition—breaking a dollar variance into its component drivers. Build standard templates that calculate these splits at the SKU or customer level. Require PVM commentary for all revenue variances >$100k. This reveals whether you're winning on volume but losing on price, which demands different corrective actions.",
         "type": "behavioral"
       }
     },
@@ -574,19 +574,19 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement Predictive Monitoring",
-        "recommendation": "Develop simple trend-based models that forecast month-end landings based on Day 15 or Day 20 actuals.",
+        "recommendation": "Build trend-based models that project month-end landings from Day 15 or Day 20 actuals. Start with top revenue and expense lines. Alert budget owners when projections deviate >5% from target. This shifts Finance from post-mortem analysis to in-month intervention—issues are flagged while there's still time to act.",
         "type": "structural"
       }
     },
     {
       "id": "fpa_q037",
       "practice_id": "prac_rolling_forecast_cadence",
-      "text": "Is a full P&L re-forecast completed at least quarterly?",
+      "text": "Does FP&A complete a full P&L re-forecast at least quarterly?",
       "help": "An annual budget becomes obsolete quickly. Quarterly re-forecasting allows the business to adjust resource allocation based on actual year-to-date performance.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 3,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Implement Quarterly Reforecast",
@@ -596,7 +596,7 @@
     },
     {
       "id": "fpa_q038",
-      "practice_id": "prac_rolling_forecast_cadence",
+      "practice_id": "prac_management_reporting",
       "text": "Does Finance provide a weekly or bi-weekly 'flash' estimate of key financial metrics (Revenue, Gross Margin, EBITDA) to senior leadership?",
       "help": "Monthly reporting creates blind spots. A weekly flash gives leadership an early pulse on performance, enabling mid-month course corrections and eliminating month-end surprises. This is the foundation of 'No Surprises' finance.",
       "maturity_level": 2,
@@ -629,12 +629,12 @@
     {
       "id": "fpa_q040",
       "practice_id": "prac_rolling_forecast_cadence",
-      "text": "Does the rolling forecast extend beyond the current fiscal year end?",
+      "text": "Does FP&A maintain a rolling forecast that extends beyond the current fiscal year end?",
       "help": "Business doesn't stop at year-end. A rolling forecast (e.g., 12 months out) provides continuous visibility, aiding in longer-term decision making.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 3,
+      "impact": 4,
       "complexity": 2,
       "expert_action": {
         "title": "Extend Forecast Horizon",
@@ -645,8 +645,8 @@
     {
       "id": "fpa_q041",
       "practice_id": "prac_cash_flow_visibility",
-      "text": "Are working capital assumptions (DSO, DPO) explicitly modeled in the forecast?",
-      "help": "Working capital drivers directly impact cash flow. Modeling them explicitly allows you to see the cash impact of operational changes like collecting faster or paying slower. For midcaps, cash is king.",
+      "text": "Are working capital assumptions (DSO, DIO, DPO) explicitly modeled in the forecast?",
+      "help": "Working capital drivers—Days Sales Outstanding (DSO), Days Inventory Outstanding (DIO), and Days Payable Outstanding (DPO)—directly impact cash flow. Modeling them explicitly allows you to see the cash impact of operational changes like collecting faster, turning inventory quicker, or extending payment terms. For midcaps, cash is king.",
       "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_forecast_infrastructure",
@@ -662,7 +662,7 @@
       "id": "fpa_q042",
       "practice_id": "prac_cash_flow_visibility",
       "text": "Is covenant compliance forecasted at least 12 months out as part of the standard reporting package?",
-      "help": "For PE-backed or leveraged companies, covenant breach is existential. Forecasting compliance ahead of time allows for proactive management of lender relationships.",
+      "help": "Covenants are binding financial commitments in debt agreements—typically ratios like leverage (Debt/EBITDA) or interest coverage that the borrower must maintain. For PE-backed or leveraged companies, covenant breach is existential: it can trigger default, accelerated repayment, or loss of control. Forecasting compliance ahead of time allows for proactive management of lender relationships and early warning of potential issues.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
@@ -677,9 +677,9 @@
     {
       "id": "fpa_q043",
       "practice_id": "prac_cash_flow_visibility",
-      "text": "Does the forecast project cash flow and liquidity, not just P&L?",
+      "text": "Does FP&A project cash flow and liquidity in the forecast, not just P&L?",
       "help": "Profit is not cash. Forecasting liquidity ensures the business can meet its obligations and fund operations, which is critical for survival and growth.",
-      "maturity_level": 3,
+      "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_forecast_infrastructure",
       "impact": 5,
@@ -693,7 +693,7 @@
     {
       "id": "fpa_q044",
       "practice_id": "prac_cash_flow_visibility",
-      "text": "Does the short-term (13-week) cash forecast use the Direct Method—tracking actual receipts and payments—rather than deriving cash from P&L adjustments?",
+      "text": "Does FP&A use the Direct Method—tracking actual receipts and payments—for the short-term (13-week) cash forecast, rather than deriving cash from P&L adjustments?",
       "help": "The Indirect Method (starting from Net Income and adjusting for non-cash items) is fine for annual planning but useless for weekly liquidity management. The Direct Method tracks actual cash movements: when will customers pay? When do payroll and rent hit? For PE-backed or leveraged companies, this granularity is the difference between managing cash and being surprised by it.",
       "maturity_level": 3,
       "is_critical": false,
@@ -709,7 +709,7 @@
     {
       "id": "fpa_q045",
       "practice_id": "prac_collaborative_systems",
-      "text": "Do all Finance outputs (reports, decks, dashboards) pull from a single reconciled data source?",
+      "text": "Has FP&A established a single reconciled data source from which all Finance outputs (reports, decks, dashboards) are derived?",
       "help": "Multiple data sources create multiple truths. A single source eliminates reconciliation debates and version confusion. This is foundational—if the numbers are wrong, nothing else matters.",
       "maturity_level": 1,
       "is_critical": true,
@@ -725,13 +725,13 @@
     {
       "id": "fpa_q046",
       "practice_id": "prac_collaborative_systems",
-      "text": "Is the live forecast stored in a multi-user system that allows simultaneous updates without version conflicts?",
-      "help": "Offline spreadsheets are prone to version errors and breakage. A true collaborative system ensures single-source integrity AND allows multiple users to update their sections concurrently—Sales updating Revenue while HR updates Headcount. Without both, you have bottlenecks or chaos.",
+      "text": "Can multiple contributors update the forecast simultaneously without creating version conflicts or data integrity issues?",
+      "help": "Effective collaboration requires that Sales, HR, and Operations can update their forecast sections concurrently without creating version chaos. The solution could be cloud spreadsheets, dedicated FP&A software, or well-governed offline processes—what matters is the outcome: no version conflicts, no lost work, no reconciliation debates.",
       "maturity_level": 2,
-      "is_critical": true,
+      "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 5,
-      "complexity": 5,
+      "impact": 4,
+      "complexity": 3,
       "expert_action": {
         "title": "Migrate to Collaborative Planning",
         "recommendation": "For sub-$100M revenue companies, cloud-based spreadsheets (Google Sheets, Excel Online) with strict cell-level protection and naming conventions may be more cost-effective than dedicated FP&A software. For $100M+, evaluate purpose-built tools (DataRails, Planful, Cube). Key test: can Sales and Finance update the same model at the same time without calling each other? The goal is single-source integrity AND concurrent access.",
@@ -741,7 +741,7 @@
     {
       "id": "fpa_q047",
       "practice_id": "prac_collaborative_systems",
-      "text": "Are key forecast assumptions documented and accessible to all contributors?",
+      "text": "Does FP&A maintain documented forecast assumptions that are accessible to all contributors?",
       "help": "Undocumented assumptions lead to inconsistent inputs and make it impossible to explain forecast changes. Central documentation ensures alignment.",
       "maturity_level": 2,
       "is_critical": false,
@@ -757,16 +757,16 @@
     {
       "id": "fpa_q048",
       "practice_id": "prac_collaborative_systems",
-      "text": "Is the 'Financial Truth' stored in a robust system with version control, audit trails, and backup (vs. offline spreadsheets that are prone to breaking)?",
-      "help": "Data integrity is paramount. Robust systems protect against data loss and provide an audit trail of changes, ensuring the numbers can be trusted.",
+      "text": "When a material business event occurs, can FP&A produce an updated consolidated forecast within 24 hours because the planning infrastructure enables rapid cross-functional input collection?",
+      "help": "The ultimate test of collaborative planning maturity is response speed. When you lose a major customer or win a transformational deal, how fast can you show the Board an updated view? At L4 maturity, the answer is 'same day'—because the infrastructure, processes, and cross-functional collaboration are so well-established that rapid updates are routine, not heroic.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 3,
-      "complexity": 2,
+      "impact": 5,
+      "complexity": 4,
       "expert_action": {
-        "title": "Implement Financial Data Governance",
-        "recommendation": "Establish version control, audit trails, and backup protocols for core financial models. Define who can modify model logic vs. inputs.",
+        "title": "Enable Rapid-Response Forecasting",
+        "recommendation": "Build a 'light touch' reforecast capability: pre-defined driver inputs that business units can update in hours, automated consolidation, and a standing protocol for emergency forecast cycles. Test it quarterly with a fire drill. Target: Board-ready view within 24 hours of any material event.",
         "type": "structural"
       }
     },
