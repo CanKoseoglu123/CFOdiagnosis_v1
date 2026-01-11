@@ -6,25 +6,37 @@
  */
 
 import { Router, Request } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { orchestrate } from './orchestrator';
 import { computeInputHash } from './precompute';
 
 const router = Router();
 
-// Service client for background operations (bypasses RLS with service role)
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
-const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+// Lazy-initialized service client (avoids crash at module load if env vars missing)
+let _serviceClient: SupabaseClient | null = null;
 
-// Warn if service role key is not configured (interpretation will fail with RLS)
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Interpretation writes may fail due to RLS.');
+function getServiceClient(): SupabaseClient {
+  if (!_serviceClient) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY for interpretation service');
+    }
+
+    // Warn if service role key is not configured (interpretation will fail with RLS)
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Interpretation writes may fail due to RLS.');
+    }
+
+    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+  return _serviceClient;
 }
 
 /**
@@ -37,7 +49,7 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
 
   try {
     // Check for existing in-progress generation (use service client for reports table)
-    const { data: existing } = await serviceClient
+    const { data: existing } = await getServiceClient()
       .from('interpretation_reports')
       .select('id, status')
       .eq('run_id', runId)
@@ -52,7 +64,7 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
     }
 
     // Get current version
-    const { data: latest } = await serviceClient
+    const { data: latest } = await getServiceClient()
       .from('interpretation_reports')
       .select('version, input_hash')
       .eq('run_id', runId)
@@ -62,7 +74,7 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
 
     // Check if regeneration allowed (hash changed) - use service client for consistency
     if (latest) {
-      const { data: run } = await serviceClient
+      const { data: run } = await getServiceClient()
         .from('diagnostic_runs')
         .select('*')
         .eq('id', runId)
@@ -73,7 +85,7 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
       }
 
       // Fetch inputs separately
-      const { data: inputs } = await serviceClient
+      const { data: inputs } = await getServiceClient()
         .from('diagnostic_inputs')
         .select('question_id, value')
         .eq('run_id', runId);
@@ -92,7 +104,7 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
     const newVersion = (latest?.version || 0) + 1;
 
     // Create report record (use service client)
-    const { data: report, error } = await serviceClient
+    const { data: report, error } = await getServiceClient()
       .from('interpretation_reports')
       .insert({
         run_id: runId,
@@ -131,7 +143,7 @@ async function generateAsync(runId: string, reportId: string) {
   try {
     const result = await orchestrate(runId);
 
-    await serviceClient
+    await getServiceClient()
       .from('interpretation_reports')
       .update({
         status: 'completed',
@@ -151,7 +163,7 @@ async function generateAsync(runId: string, reportId: string) {
 
   } catch (error: any) {
     console.error('Generation failed:', error);
-    await serviceClient
+    await getServiceClient()
       .from('interpretation_reports')
       .update({
         status: 'failed',
@@ -172,7 +184,7 @@ router.get('/:id/interpret-v32/status', async (req: Request, res) => {
 
   try {
     // Use service client for reports (no RLS on this table)
-    const { data: report } = await serviceClient
+    const { data: report } = await getServiceClient()
       .from('interpretation_reports')
       .select('*')
       .eq('run_id', runId)
@@ -187,7 +199,7 @@ router.get('/:id/interpret-v32/status', async (req: Request, res) => {
     // Check if regeneration allowed - use service client for consistency
     let can_regenerate = false;
     if (report.status === 'completed' || report.status === 'failed') {
-      const { data: run } = await serviceClient
+      const { data: run } = await getServiceClient()
         .from('diagnostic_runs')
         .select('*')
         .eq('id', runId)
@@ -195,7 +207,7 @@ router.get('/:id/interpret-v32/status', async (req: Request, res) => {
 
       if (run) {
         // Fetch inputs separately
-        const { data: inputs } = await serviceClient
+        const { data: inputs } = await getServiceClient()
           .from('diagnostic_inputs')
           .select('question_id, value')
           .eq('run_id', runId);

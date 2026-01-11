@@ -9,18 +9,30 @@
  */
 
 import { Router, Request } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { precomputeExecutiveData } from './executive-precompute';
 import { generateExecutiveCommentary } from './executive-generator';
 
 const router = Router();
 
-// Service client for background operations
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
-const serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+// Lazy-initialized service client (avoids crash at module load if env vars missing)
+let _serviceClient: SupabaseClient | null = null;
+
+function getServiceClient(): SupabaseClient {
+  if (!_serviceClient) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY for executive interpretation service');
+    }
+
+    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+  }
+  return _serviceClient;
+}
 
 // Schema version for executive commentary (distinct from overview interpretation)
 const EXECUTIVE_SCHEMA_VERSION = 2;
@@ -34,7 +46,7 @@ router.post('/:id/interpret-executive', async (req: Request, res) => {
 
   try {
     // Check run exists and is finalized
-    const { data: run, error: runError } = await serviceClient
+    const { data: run, error: runError } = await getServiceClient()
       .from('diagnostic_runs')
       .select('id, finalized_at, action_plan_snapshot')
       .eq('id', runId)
@@ -51,7 +63,7 @@ router.post('/:id/interpret-executive', async (req: Request, res) => {
     }
 
     // Check for existing executive report
-    const { data: existing } = await serviceClient
+    const { data: existing } = await getServiceClient()
       .from('interpretation_reports')
       .select('id, status, sections')
       .eq('run_id', runId)
@@ -79,7 +91,7 @@ router.post('/:id/interpret-executive', async (req: Request, res) => {
 
     // Create new report record
     const newVersion = 1; // Executive reports don't have versions (no regeneration)
-    const { data: report, error: insertError } = await serviceClient
+    const { data: report, error: insertError } = await getServiceClient()
       .from('interpretation_reports')
       .insert({
         run_id: runId,
@@ -122,7 +134,7 @@ async function generateAsync(runId: string, reportId: string): Promise<void> {
     const result = await generateExecutiveCommentary(input);
 
     // Save success
-    await serviceClient
+    await getServiceClient()
       .from('interpretation_reports')
       .update({
         status: 'completed',
@@ -144,7 +156,7 @@ async function generateAsync(runId: string, reportId: string): Promise<void> {
     });
 
     // Save failure
-    await serviceClient
+    await getServiceClient()
       .from('interpretation_reports')
       .update({
         status: 'failed',
@@ -165,7 +177,7 @@ router.get('/:id/interpret-executive/status', async (req: Request, res) => {
 
   try {
     // Check run is finalized
-    const { data: run } = await serviceClient
+    const { data: run } = await getServiceClient()
       .from('diagnostic_runs')
       .select('finalized_at')
       .eq('id', runId)
@@ -180,7 +192,7 @@ router.get('/:id/interpret-executive/status', async (req: Request, res) => {
     }
 
     // Get latest executive report
-    const { data: report } = await serviceClient
+    const { data: report } = await getServiceClient()
       .from('interpretation_reports')
       .select('*')
       .eq('run_id', runId)
