@@ -835,6 +835,22 @@
       }
     },
     {
+      "id": "fpa_q093",
+      "practice_id": "prac_operational_drivers",
+      "text": "Do operational function heads (Sales, HR, Operations) formally validate the driver assumptions (volume, headcount, utilization) used in the financial forecast before it is finalized?",
+      "help": "FP&A owns the model, but operational teams own the drivers. Without validation, Finance may use stale or incorrect assumptions. Formal sign-off ensures the forecast reflects current operational reality and creates shared accountability for outcomes.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Implement Driver Assumption Validation",
+        "recommendation": "Add a formal validation step to the forecast process where each driver owner reviews and approves their assumptions. Create a simple sign-off matrix: Sales validates pipeline, HR validates headcount, Ops validates utilization. No forecast finalization without sign-off.",
+        "type": "governance"
+      }
+    },
+    {
       "id": "fpa_q054",
       "practice_id": "prac_dynamic_targets",
       "text": "Is the revenue forecast automatically refreshed via direct CRM data feeds when pipeline stages change, without manual FP&A extraction?",
@@ -1365,7 +1381,7 @@
     {
       "id": "fpa_q088",
       "practice_id": "prac_process_automation",
-      "text": "Has Finance deliberately stopped or automated recurring reports to free up capacity?",
+      "text": "Has FP&A deliberately stopped or automated recurring reports to free up capacity?",
       "help": "Stopping low-value work is as important as starting new work. Regularly pruning reports frees up capacity for analysis and strategic support.",
       "maturity_level": 3,
       "is_critical": false,
@@ -1397,7 +1413,7 @@
     {
       "id": "fpa_q090",
       "practice_id": "prac_process_automation",
-      "text": "Does FP&A have a defined cycle time target for quarterly reforecasts (e.g., 5 business days), and consistently meet it?",
+      "text": "Has FP&A established and consistently achieved a cycle time target (e.g., 5 business days) for quarterly reforecasts?",
       "help": "Forecast cycle time is a direct measure of process efficiency. If each reforecast requires two weeks of data gathering, reconciliation, and manual consolidation, the organization can't iterate quickly. Mature FP&A teams set explicit targets, measure actual cycle time, and continuously improve. The target itself matters less than having one and hitting it.",
       "maturity_level": 3,
       "is_critical": false,
@@ -1413,32 +1429,32 @@
     {
       "id": "fpa_q091",
       "practice_id": "prac_service_level_agreements",
-      "text": "Does the FP&A team spend at least 70% of their time on analysis, insight generation, and business partnering (vs. data gathering and reconciliation)?",
-      "help": "At Level 3 maturity, FP&A should have moved decisively beyond data wrangling. The 70% threshold indicates the team has achieved the automation and data infrastructure needed to focus on strategic value-add. This is a step-up from the L2 baseline of <50% on data work.",
+      "text": "Does the FP&A team spend the majority of their time on analysis and business partnering rather than data gathering?",
+      "help": "FP&A should have moved beyond data wrangling. Spending the majority of time on analysis indicates the team has achieved the automation and data infrastructure needed to focus on strategic value-add rather than manual data work.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Achieve 70% Analysis Time",
-        "recommendation": "Conduct a detailed time study across the team. Identify the remaining 30%+ spent on data work and systematically automate or outsource each task. Target: analysts should open their day with clean data ready for analysis, not data extraction.",
+        "title": "Maximize Analysis Time",
+        "recommendation": "Conduct a time study across the team. Identify data work activities and systematically automate or outsource each task. Target: analysts should open their day with clean data ready for analysis, not data extraction.",
         "type": "behavioral"
       }
     },
     {
       "id": "fpa_q092",
       "practice_id": "prac_service_level_agreements",
-      "text": "Does the business have a clear, reliable understanding of Finance turnaround times (e.g., 'AP queries are 48 hours'), or is it a black box?",
-      "help": "Predictability matters more than formal SLAs. If the business knows what to expect, they can plan around it. If Finance is a black box, frustration builds.",
-      "maturity_level": 4,
+      "text": "Does the business have clear, reliable expectations for FP&A ad-hoc deliverables (e.g., 'scenario analysis within 3 days, business case reviews within 5 days'), or is turnaround unpredictable?",
+      "help": "Predictability matters more than formal SLAs. If the business knows what to expect from FP&A for ad-hoc requests, they can plan around it. Unpredictable turnaround times create frustration and erode trust in the finance function.",
+      "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
       "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Establish Predictable Response Times",
-        "recommendation": "Communicate expected turnaround times for common requests. Consistency matters more than speed. If AP is always 48 hours, the business can plan around it.",
+        "recommendation": "Define and communicate expected turnaround times for common FP&A requests (e.g., scenario analysis, business case reviews, ad-hoc analysis). Consistency matters more than speed—if stakeholders know a business case review takes 5 days, they can plan around it.",
         "type": "governance"
       }
     }
