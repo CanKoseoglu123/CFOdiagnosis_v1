@@ -1,6 +1,6 @@
 # Question Review Criteria
 
-**Version:** 1.1
+**Version:** 1.2
 **Last Updated:** 2025-01-11  
 **Purpose:** Standard framework for evaluating diagnostic questions before release
 
@@ -21,6 +21,7 @@
 | 9 | **Impact/Complexity Calibration** | Scores feel right | High impact (4-5) = material business difference; Low complexity (1-2) = quick win |
 | 10 | **Level-Appropriate Scope** | Realistic for maturity level | L1 achievable by any company; L4 genuinely advanced for mid-market |
 | 11 | **FP&A Centricity** | Tests FP&A capability, not just outcome | Question names FP&A as the actor or clearly tests an FP&A behavior |
+| 12 | **Capability Over Tools** | Tests skill/process maturity, not tool adoption | A "Yes" requires meaningful organizational effort, not just enabling a software feature |
 
 ---
 
@@ -56,7 +57,7 @@
 ## Review Process
 
 1. Review questions grouped by **Objective**
-2. For each question, assess against all 11 criteria
+2. For each question, assess against all 12 criteria
 3. Flag issues with specific criterion number (e.g., "Fails #1 - ambiguous")
 4. Propose revision or recommend removal
 5. Re-review flagged questions after revision

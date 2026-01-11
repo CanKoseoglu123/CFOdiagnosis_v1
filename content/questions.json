@@ -469,17 +469,17 @@
     {
       "id": "fpa_q030",
       "practice_id": "prac_management_reporting",
-      "text": "Are reports generated with AI-powered narrative commentary that is calibrated by Finance before distribution?",
-      "help": "Automated narratives eliminate the grunt work of writing 'variance explanations,' allowing the Finance team to focus on high-level strategic calibration.",
+      "text": "Has FP&A eliminated data discrepancy debates by ensuring Finance and Operations use a single source of truth for shared metrics?",
+      "help": "When Finance and Operations reference different numbers, meetings devolve into data arguments. High-performing FP&A teams establish cross-functional data governance so discussions focus on actions, not whose spreadsheet is correct.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
-      "impact": 4,
-      "complexity": 2,
+      "impact": 5,
+      "complexity": 4,
       "expert_action": {
-        "title": "Implement AI-First Reporting",
-        "recommendation": "Use your BI tool's 'Smart Narrative' features to generate draft commentary, then have an analyst review it for 'So-What' insights.",
-        "type": "behavioral"
+        "title": "Establish Cross-Functional Data Governance",
+        "recommendation": "Map shared metrics (revenue, bookings, headcount) and document the single source for each. Create a reconciliation protocol that runs before key meetings. Assign a data steward to resolve discrepancies. Success metric: zero time in meetings debating whose numbers are correct.",
+        "type": "governance"
       }
     },
     {
