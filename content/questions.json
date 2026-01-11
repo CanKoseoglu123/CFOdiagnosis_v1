@@ -30,7 +30,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Extend Budget to Full P&L",
-        "recommendation": "Finance should add interest expense, tax provision, and below-the-line items to the budget template. Even rough estimates are acceptable initially. This ensures you're managing true net income, not just operating margin—critical for accurate profitability tracking.",
+        "recommendation": "Finance should add interest expense, tax provision, and below-the-line items to the budget template. Even rough estimates are acceptable initially. Complete when the budget shows a full P&L through net income—ensuring you're managing true profitability, not just operating margin.",
         "type": "quick_win"
       }
     },
@@ -62,7 +62,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Implement Budget Sign-Off",
-        "recommendation": "FP&A should add a formal sign-off step before budget consolidation. Can be as simple as email confirmation from each cost center owner, but must be documented and stored.",
+        "recommendation": "FP&A should add a formal sign-off step before budget consolidation. Can be as simple as email confirmation from each cost center owner, but must be documented. Complete when every budget line has a signed acknowledgment on file—eliminating 'Finance gave me this number' excuses when variances occur.",
         "type": "quick_win"
       }
     },
@@ -126,7 +126,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Automate Budget Transfers",
-        "recommendation": "Configure your planning tool to allow self-service budget transfers within a single cost center, up to a defined threshold (e.g., $50k). This reduces approval bottlenecks and gives managers the agility to respond to changing priorities without waiting for Finance.",
+        "recommendation": "Finance and IT should configure the planning tool to allow self-service budget transfers within a single cost center, up to a defined threshold (e.g., $50k). This reduces approval bottlenecks and gives managers the agility to respond to changing priorities without waiting for Finance.",
         "type": "governance"
       }
     },
@@ -158,7 +158,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Clarify Budget Rules of Engagement",
-        "recommendation": "Document and communicate the 3-5 key rules: Can budget be reallocated? What triggers a freeze? Is unspent budget lost? Enforce consistently.",
+        "recommendation": "FP&A should document and communicate the 3-5 key budget rules: Can funds be reallocated? What triggers a freeze? Is unspent budget lost? Clear rules eliminate mid-cycle lobbying and let managers focus on execution rather than renegotiation.",
         "type": "governance"
       }
     },
@@ -190,7 +190,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Reconcile Top-Down and Bottom-Up",
-        "recommendation": "Build a formal reconciliation step where top-down targets and bottom-up submissions are compared, gaps are documented, and resolution is signed off by both Finance and business leaders before final budget approval.",
+        "recommendation": "FP&A should build a formal reconciliation step where top-down targets and bottom-up submissions are compared and gaps documented. Require sign-off from both Finance and business leaders before final approval. This eliminates the 'two truths' problem—ensuring the board's expectations match what operations committed to.",
         "type": "structural"
       }
     },
@@ -206,7 +206,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Issue Target-Based Budget Templates",
-        "recommendation": "Send budget templates with targets pre-populated based on run-rate plus strategic adjustments. Require business units to justify deviations from the target rather than building from zero. This anchors the conversation and reduces sandbagging.",
+        "recommendation": "FP&A should send budget templates with targets pre-populated based on run-rate plus strategic adjustments. Require business units to justify deviations from the target rather than building from zero. This anchors the conversation and reduces sandbagging.",
         "type": "structural"
       }
     },
@@ -222,7 +222,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Link Budget to Strategy",
-        "recommendation": "Update budget submission templates to include a mandatory 'Strategic Pillar' field for all material investments. Deploy for the next budget cycle and require 100% completion before consolidation. This ensures the budget is a strategy execution tool, not just a numbers exercise.",
+        "recommendation": "FP&A should update budget submission templates to include a mandatory 'Strategic Pillar' field for all material investments. Deploy for the next budget cycle and require 100% completion before consolidation. This ensures the budget is a strategy execution tool, not just a numbers exercise.",
         "type": "structural"
       }
     },
@@ -350,7 +350,7 @@
       "complexity": 1,
       "expert_action": {
         "title": "Implement Close Checklist",
-        "recommendation": "Use a shared tool (Excel or specialised software) to list every close task. Review status daily during close week.",
+        "recommendation": "The Controller or Accounting Manager should create a shared close checklist covering every required task. Review status daily during close week. A documented checklist ensures nothing is missed and provides an audit trail for task completion.",
         "type": "governance"
       }
     },
@@ -366,7 +366,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Implement Hard Close",
-        "recommendation": "Configure the ERP to automatically lock accounting periods 3-5 days after month-end. Require CFO approval for any post-close adjustments. This protects historical data integrity—once numbers are reported, they stay fixed and reliable.",
+        "recommendation": "IT should configure the ERP to automatically lock accounting periods 3-5 days after month-end, with CFO approval required for any post-close adjustments. This protects historical data integrity—once numbers are reported, they stay fixed and reliable.",
         "type": "structural"
       }
     },
