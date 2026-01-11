@@ -286,7 +286,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Automate Approval Matrix",
-        "recommendation": "Build the delegation of authority (DOA) into the ERP or procurement tool. Remove 'email approval' options.",
+        "recommendation": "Finance and IT should configure the delegation of authority (DOA) directly in the ERP or procurement system. Eliminate email-based approvals. System-enforced controls ensure consistent policy application and create an auditable approval trail.",
         "type": "structural"
       }
     },
@@ -302,7 +302,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Enable System Budget Control",
-        "recommendation": "Turn on 'Encumbrance Accounting' or budget checks in your PO system. Start with a soft warning before moving to hard blocks.",
+        "recommendation": "The Controller should work with IT to enable budget checks in the PO system (encumbrance accounting). Start with soft warnings, then move to hard blocks. Preventative controls stop unbudgeted spend before it happens—far more effective than explaining variances after the fact.",
         "type": "structural"
       }
     },
@@ -318,7 +318,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement Risk-Based Routing",
-        "recommendation": "Define 'Fast-Track' approval rules for recurring vendors and budgeted items, while triggering extra scrutiny for new vendors.",
+        "recommendation": "Procurement and Finance should define risk-based approval rules: fast-track for recurring vendors and budgeted items, extra scrutiny for new vendors or unbudgeted requests. This focuses leadership attention on high-risk transactions while speeding up routine approvals.",
         "type": "structural"
       }
     },
@@ -334,7 +334,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Deploy AI Anomaly Detection",
-        "recommendation": "Evaluate AI-first procurement layers (like Glean or Tipalti) that sit on top of the ERP to flag risks automatically.",
+        "recommendation": "Finance should pilot an AI-based anomaly detection tool on one high-volume transaction type (e.g., AP invoices). Configure rules to flag duplicate invoices, unusual pricing, and compliance risks before approval. Expand coverage once the pilot demonstrates value—catching errors humans miss and reducing fraud risk.",
         "type": "structural"
       }
     },
@@ -366,7 +366,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Implement Hard Close",
-        "recommendation": "Configure your ERP to automatically lock accounting periods 3-5 days after month-end. Require CFO override for exceptions.",
+        "recommendation": "Configure the ERP to automatically lock accounting periods 3-5 days after month-end. Require CFO approval for any post-close adjustments. This protects historical data integrity—once numbers are reported, they stay fixed and reliable.",
         "type": "structural"
       }
     },
@@ -382,7 +382,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement 3-Day Fast Close",
-        "recommendation": "Move to a 'Hard Close' on sub-ledgers on Day 1 and use automated accrual engines for recurring expenses.",
+        "recommendation": "The Controller should target sub-ledger hard close on Day 1 and deploy automated accrual engines for recurring expenses. Complete when management reporting is consistently delivered within 3 business days—freeing 10+ days per month for analysis instead of accounting.",
         "type": "structural"
       }
     },
@@ -398,7 +398,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Achieve Continuous Close",
-        "recommendation": "Automate all bank reconciliations and inter-company eliminations to run daily rather than monthly.",
+        "recommendation": "Finance and IT should automate bank reconciliations, intercompany eliminations, and key accruals to run daily. Continuous close is achieved when leadership can request accurate financials within 24 hours at any point in the month—enabling real-time decision-making without waiting for month-end.",
         "type": "structural"
       }
     },
