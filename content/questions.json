@@ -229,8 +229,8 @@
     {
       "id": "fpa_q015",
       "practice_id": "prac_policy_&_governance",
-      "text": "Can the Board re-route capital or project funding mid-year to higher-performing initiatives, based on real-time ROI data rather than waiting for the next annual budget cycle?",
-      "help": "Highly mature organizations don't treat the annual budget as fixed. They maintain flexibility to shift resources toward winning projects and away from underperformers—without waiting 12 months to course-correct.",
+      "text": "Does FP&A provide regular performance updates on capital and project funding that enable the business to reallocate resources as priorities change?",
+      "help": "Highly mature FP&A functions treat capital allocation as dynamic, not fixed. They continuously track project performance and proactively surface reallocation opportunities—enabling leadership to shift resources toward higher-value initiatives without waiting for the next budget cycle.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
