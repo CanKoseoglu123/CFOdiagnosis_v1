@@ -1,7 +1,7 @@
 # Question Review Criteria
 
-**Version:** 1.0  
-**Last Updated:** 2025-01-10  
+**Version:** 1.1
+**Last Updated:** 2025-01-11  
 **Purpose:** Standard framework for evaluating diagnostic questions before release
 
 ---
@@ -20,6 +20,7 @@
 | 8 | **Critical Flag Validity** | If critical, truly gating | A "No" here should block Green status for the practice |
 | 9 | **Impact/Complexity Calibration** | Scores feel right | High impact (4-5) = material business difference; Low complexity (1-2) = quick win |
 | 10 | **Level-Appropriate Scope** | Realistic for maturity level | L1 achievable by any company; L4 genuinely advanced for mid-market |
+| 11 | **FP&A Centricity** | Tests FP&A capability, not just outcome | Question names FP&A as the actor or clearly tests an FP&A behavior |
 
 ---
 
@@ -55,7 +56,7 @@
 ## Review Process
 
 1. Review questions grouped by **Objective**
-2. For each question, assess against all 10 criteria
+2. For each question, assess against all 11 criteria
 3. Flag issues with specific criterion number (e.g., "Fails #1 - ambiguous")
 4. Propose revision or recommend removal
 5. Re-review flagged questions after revision

@@ -254,7 +254,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Standardize Chart of Accounts",
-        "recommendation": "Document your canonical CoA. Identify and map local variations. Create governance for new account requests.",
+        "recommendation": "The Controller should document a canonical chart of accounts and map all local variations to it. Establish a governance process for new account requests. Complete when all business units report on a single CoA—enabling consistent consolidation and comparable reporting across the organization.",
         "type": "structural"
       }
     },
@@ -270,7 +270,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Centralize GL Creation",
-        "recommendation": "Lock down the ERP. Only a central data steward (or Controller) should have rights to create new accounts.",
+        "recommendation": "Lock down account creation in the ERP. Only the Controller or a designated data steward should have rights to create new GL accounts. This prevents account proliferation that leads to data clutter and inconsistent reporting.",
         "type": "governance"
       }
     },
@@ -453,8 +453,8 @@
     {
       "id": "fpa_q029",
       "practice_id": "prac_management_reporting",
-      "text": "Do monthly management reports systematically include 'Lead Indicators' (e.g., pipeline velocity) alongside historical variances?",
-      "help": "Historical data tells you what happened; lead indicators tell you what will happen. Combining them creates a complete performance story.",
+      "text": "Does FP&A include forward-looking operational metrics (e.g., order intake, churn, backlog) in management reports to complement historical financials?",
+      "help": "Historical financials tell you what happened; operational metrics signal what's coming. Combining both gives leaders a complete picture—backward and forward.",
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
