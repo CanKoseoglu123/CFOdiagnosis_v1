@@ -13,7 +13,6 @@
   { "id": "prac_collaborative_systems", "objective_id": "obj_forecasting_agility", "title": "Collaborative Systems", "capability_tags": ["Technology", "People"] },
   { "id": "prac_operational_drivers", "objective_id": "obj_driver_based_planning", "title": "Operational Drivers", "capability_tags": ["Data", "People"] },
   { "id": "prac_dynamic_targets", "objective_id": "obj_driver_based_planning", "title": "Dynamic Targets", "capability_tags": ["Process", "Data"] },
-  { "id": "prac_continuous_planning", "objective_id": "obj_driver_based_planning", "title": "Continuous Planning", "capability_tags": ["Process", "Culture"] },
   { "id": "prac_rapid_what_if_capability", "objective_id": "obj_scenario_modeling", "title": "Rapid 'What-If' Capability", "capability_tags": ["Technology", "Process"] },
   { "id": "prac_multi_scenario_management", "objective_id": "obj_scenario_modeling", "title": "Multi-Scenario Management", "capability_tags": ["Process", "Technology"] },
   { "id": "prac_stress_testing", "objective_id": "obj_scenario_modeling", "title": "Stress Testing", "capability_tags": ["Process", "Risk"] },

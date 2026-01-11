@@ -805,16 +805,16 @@
     {
       "id": "fpa_q051",
       "practice_id": "prac_operational_drivers",
-      "text": "Does FP&A use predictive models to automatically quantify how changes in operational drivers (revenue per FTE, gross margin per unit, customer acquisition cost) will impact financial outcomes?",
-      "help": "Advanced FP&A teams move beyond explaining past performance to predicting future outcomes. ML-assisted driver sensitivity analysis enables rapid answers to questions like 'what happens to EBITDA if churn increases 2%?'—shifting Finance from reactive reporting to proactive guidance.",
+      "text": "Does FP&A maintain automated alerts that flag when operational drivers deviate from forecast assumptions by more than historical norms?",
+      "help": "Proactive driver monitoring catches forecast drift before it becomes a surprise. When key drivers (volume, price, churn) move outside expected ranges, mature FP&A teams are alerted immediately—enabling course correction while there's still time to act.",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Implement Predictive Driver Modeling",
-        "recommendation": "Build or procure a sensitivity engine that links operational drivers to P&L outcomes. Start with the top 3 drivers identified in your driver map. Configure the model to instantly show impact ranges when inputs change. Test by asking 'if CAC rises 20%, what happens to EBITDA?' The answer should take seconds, not hours.",
+        "title": "Build Driver Deviation Alerts",
+        "recommendation": "Calculate historical variance bands for each key driver (e.g., +/-1 standard deviation from trend). Configure automated alerts in your BI tool or planning system that trigger when actuals breach these bands. Route alerts to the relevant FP&A analyst. Target: driver deviations flagged within 24 hours of detection.",
         "type": "structural"
       }
     },
@@ -835,22 +835,6 @@
       }
     },
     {
-      "id": "fpa_q053",
-      "practice_id": "prac_dynamic_targets",
-      "text": "Does FP&A automatically adjust forecast assumptions when material external factors (FX rates, inflation, commodity prices) change by >5%?",
-      "help": "Static forecast assumptions become stale. When FX moves 10% or inflation spikes, mature FP&A teams recalibrate their models immediately rather than waiting for the next cycle. This keeps the forecast relevant as a decision-support tool.",
-      "maturity_level": 3,
-      "is_critical": false,
-      "initiative_id": "init_forward_visibility",
-      "impact": 4,
-      "complexity": 3,
-      "expert_action": {
-        "title": "Automate Assumption Refresh Triggers",
-        "recommendation": "Define thresholds for key external factors (e.g., FX +/-5%, inflation +/-2pp). Set up alerts or automated feeds that flag when thresholds are breached. Build a 'light touch' reforecast process that updates only the affected assumptions without a full bottom-up cycle. Goal: assumption refresh within 48 hours of material external shifts.",
-        "type": "structural"
-      }
-    },
-    {
       "id": "fpa_q054",
       "practice_id": "prac_dynamic_targets",
       "text": "Is the revenue forecast automatically refreshed via direct CRM data feeds when pipeline stages change, without manual FP&A extraction?",
@@ -863,22 +847,6 @@
       "expert_action": {
         "title": "Build CRM-to-Forecast Integration",
         "recommendation": "Connect CRM (Salesforce, HubSpot) directly to your forecasting tool via API or middleware. Configure probability weightings by pipeline stage. Set up daily or real-time sync. Validate by comparing automated forecast to manually-built version. Complete when FP&A no longer extracts CRM data manually.",
-        "type": "structural"
-      }
-    },
-    {
-      "id": "fpa_q056",
-      "practice_id": "prac_continuous_planning",
-      "text": "Can FP&A produce an updated forecast within one week when a major business event (e.g., lost customer, acquisition, market shift) occurs?",
-      "help": "Rigid planning cycles can miss major market shifts. The ability to rapidly update the forecast when material events occur ensures the financial outlook remains a relevant decision-support tool, not a stale artifact.",
-      "maturity_level": 2,
-      "is_critical": false,
-      "initiative_id": "init_forward_visibility",
-      "impact": 4,
-      "complexity": 3,
-      "expert_action": {
-        "title": "Build Rapid Reforecast Capability",
-        "recommendation": "Create a streamlined 'event-triggered' reforecast process separate from the full quarterly cycle. Define what constitutes a 'major event' (e.g., customer loss >5% of revenue, M&A, regulatory change). Pre-build scenario templates for common events. Target: leadership receives updated outlook within 5 business days of any major event.",
         "type": "structural"
       }
     },
