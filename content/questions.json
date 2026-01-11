@@ -949,16 +949,16 @@
     {
       "id": "fpa_q097",
       "practice_id": "prac_multi_scenario_management",
-      "text": "Does the planning system automatically generate or update scenario ranges based on external data feeds (market indices, commodity prices, FX rates)?",
-      "help": "L4 scenario capability means the model responds to the world without manual intervention. When oil prices spike or currency moves, the system should auto-populate updated scenarios—shifting FP&A from data entry to interpretation and response.",
+      "text": "Does FP&A use probabilistic methods (e.g., Monte Carlo simulation, confidence intervals) to quantify the range of likely outcomes rather than relying solely on point estimates?",
+      "help": "Point estimates (Base/Upside/Downside) are useful but arbitrary. Probabilistic forecasting generates thousands of scenarios based on historical variance and driver correlations, producing a distribution of outcomes—e.g., '70% chance EBITDA lands between $45M and $55M.' This shifts the conversation from 'which scenario is right?' to 'what's the probability of hitting our targets?'",
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
       "impact": 4,
       "complexity": 5,
       "expert_action": {
-        "title": "Implement Auto-Updating Scenario Inputs",
-        "recommendation": "Identify the 3-5 external variables that most impact your forecast (FX, commodity prices, interest rates). Connect live data feeds to your planning tool. Configure automatic scenario range updates when external variables move beyond thresholds. FP&A reviews outputs, not inputs.",
+        "title": "Pilot Probabilistic Forecasting",
+        "recommendation": "Start with a Monte Carlo simulation on revenue: define probability distributions for key drivers (volume, price, win rates) based on historical variance. Run 1,000+ iterations to generate an outcome distribution. Present results as confidence intervals ('80% chance revenue is between $X and $Y'). Tools like @RISK, Crystal Ball, or Python can automate this.",
         "type": "structural"
       }
     },
