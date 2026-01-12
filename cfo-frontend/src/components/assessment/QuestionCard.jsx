@@ -17,7 +17,7 @@ export default function QuestionCard({
   const isNo = answer === false;
 
   return (
-    <div className={`bg-white border rounded-sm overflow-hidden transition-all ${
+    <div data-question-card className={`bg-white border rounded-sm overflow-hidden transition-all ${
       isAnswered ? 'border-slate-400' : 'border-slate-300'
     }`}>
       {/* Question Header */}
