@@ -989,9 +989,11 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
       .eq("id", run.company_profile_id)
       .single();
 
-    if (profile?.classification) {
-      classification = profile.classification;
+    if (profile) {
       companyContext = profile.context || {};
+      if (profile.classification) {
+        classification = profile.classification;
+      }
     }
   }
 
