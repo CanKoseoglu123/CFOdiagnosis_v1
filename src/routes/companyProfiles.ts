@@ -191,6 +191,24 @@ router.put('/:id', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Context is required' });
   }
 
+  // VS-Security: Check if profile is linked to a finalized run
+  const { data: linkedRun } = await req.supabase
+    .from('diagnostic_runs')
+    .select('id, finalized_at')
+    .eq('company_profile_id', profileId)
+    .not('finalized_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (linkedRun) {
+    return res.status(403).json({
+      error: 'Cannot modify profile linked to finalized diagnostic run',
+      code: 'PROFILE_LINKED_TO_FINALIZED_RUN',
+      run_id: linkedRun.id,
+      finalized_at: linkedRun.finalized_at
+    });
+  }
+
   // Validate all 9 classification fields
   const validation = validateContext(context);
   if (!validation.valid) {
@@ -254,6 +272,24 @@ router.post('/:id/reclassify', async (req: Request, res: Response) => {
 
   const profileId = req.params.id;
 
+  // VS-Security: Check if profile is linked to a finalized run
+  const { data: linkedRun } = await req.supabase
+    .from('diagnostic_runs')
+    .select('id, finalized_at')
+    .eq('company_profile_id', profileId)
+    .not('finalized_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (linkedRun) {
+    return res.status(403).json({
+      error: 'Cannot modify profile linked to finalized diagnostic run',
+      code: 'PROFILE_LINKED_TO_FINALIZED_RUN',
+      run_id: linkedRun.id,
+      finalized_at: linkedRun.finalized_at
+    });
+  }
+
   try {
     // Fetch current profile
     const { data: profile, error: fetchError } = await req.supabase
@@ -313,6 +349,24 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
   const profileId = req.params.id;
 
+  // VS-Security: Check if profile is linked to a finalized run
+  const { data: linkedRun } = await req.supabase
+    .from('diagnostic_runs')
+    .select('id, finalized_at')
+    .eq('company_profile_id', profileId)
+    .not('finalized_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (linkedRun) {
+    return res.status(403).json({
+      error: 'Cannot delete profile linked to finalized diagnostic run',
+      code: 'PROFILE_LINKED_TO_FINALIZED_RUN',
+      run_id: linkedRun.id,
+      finalized_at: linkedRun.finalized_at
+    });
+  }
+
   try {
     const { error } = await req.supabase
       .from('company_profiles')
@@ -352,6 +406,24 @@ router.patch('/:id/persona', async (req: Request, res: Response) => {
   const allPersonas = getAllPersonas();
   if (!(selected_persona in allPersonas)) {
     return res.status(400).json({ error: 'Invalid persona ID' });
+  }
+
+  // VS-Security: Check if profile is linked to a finalized run
+  const { data: linkedRun } = await req.supabase
+    .from('diagnostic_runs')
+    .select('id, finalized_at')
+    .eq('company_profile_id', profileId)
+    .not('finalized_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (linkedRun) {
+    return res.status(403).json({
+      error: 'Cannot modify profile linked to finalized diagnostic run',
+      code: 'PROFILE_LINKED_TO_FINALIZED_RUN',
+      run_id: linkedRun.id,
+      finalized_at: linkedRun.finalized_at
+    });
   }
 
   try {

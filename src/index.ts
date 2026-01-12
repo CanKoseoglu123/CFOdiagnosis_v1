@@ -536,12 +536,21 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   // Verify run exists first (needed for V2 format check)
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, setup_completed_at, company_profile_id")
+    .select("id, setup_completed_at, company_profile_id, finalized_at")
     .eq("id", runId)
     .single();
 
   if (runError || !run) {
     return res.status(404).json({ error: "Run not found" });
+  }
+
+  // VS-Security: Check if run is finalized before allowing modifications
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED",
+      finalized_at: run.finalized_at
+    });
   }
 
   // Detect format:
@@ -637,12 +646,21 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
   // Verify run exists and is completed
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status, spec_version")
+    .select("id, status, spec_version, finalized_at")
     .eq("id", runId)
     .single();
 
   if (runError || !run) {
     return res.status(404).json({ error: "Run not found", details: runError?.message });
+  }
+
+  // VS-Security: Check if run is finalized before allowing modifications
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED",
+      finalized_at: run.finalized_at
+    });
   }
 
   if (run.status !== "completed") {
@@ -761,6 +779,25 @@ app.post("/diagnostic-inputs", async (req, res) => {
     });
   }
 
+  // VS-Security: Check if run is finalized before allowing modifications
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, finalized_at")
+    .eq("id", run_id)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED",
+      finalized_at: run.finalized_at
+    });
+  }
+
   const { data, error } = await req.supabase
     .from("diagnostic_inputs")
     .upsert(
@@ -827,12 +864,21 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
 
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, status")
+    .select("id, status, finalized_at")
     .eq("id", runId)
     .single();
 
   if (runError || !run) {
     return res.status(404).json({ error: "Run not found" });
+  }
+
+  // VS-Security: Check if run is finalized before allowing modifications
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED",
+      finalized_at: run.finalized_at
+    });
   }
 
   if (run.status !== "completed") {
@@ -1597,12 +1643,21 @@ app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
   // Verify run exists
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id")
+    .select("id, finalized_at")
     .eq("id", runId)
     .single();
 
   if (runError || !run) {
     return res.status(404).json({ error: "Run not found" });
+  }
+
+  // VS-Security: Check if run is finalized before allowing modifications
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED",
+      finalized_at: run.finalized_at
+    });
   }
 
   // Upsert the action plan item
@@ -1634,6 +1689,25 @@ app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
 app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
   const runId = req.params.id;
   const questionId = req.params.questionId;
+
+  // VS-Security: Verify run exists and check if finalized
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, finalized_at")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED",
+      finalized_at: run.finalized_at
+    });
+  }
 
   // Delete the action plan item
   const { error } = await req.supabase
