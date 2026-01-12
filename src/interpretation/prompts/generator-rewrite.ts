@@ -5,10 +5,12 @@
  */
 
 import { RewriteInput, QuestionAnswer } from '../types';
+import { sanitizeAnswer, sanitizeForPrompt } from './sanitize';
 
 export function buildGeneratorRewritePrompt(input: RewriteInput): string {
   const previousDraftJson = JSON.stringify(input.previous_draft, null, 2);
 
+  // VS-Security: Sanitize user answers to prevent prompt injection
   // Add confidence notes to answers
   const answersWithConfidence = input.answers
     .map((a) => {
@@ -16,7 +18,9 @@ export function buildGeneratorRewritePrompt(input: RewriteInput): string {
         a.confidence === 'low'
           ? ' [USER ANSWERED QUICKLY - TREAT WITH SKEPTICISM IF CONTRADICTS OTHER DATA]'
           : '';
-      return `Q: ${a.question}\nA: ${a.answer}${confidenceNote}`;
+      const sanitizedQuestion = sanitizeForPrompt(a.question, 300);
+      const sanitizedAnswer = sanitizeAnswer(a.answer);
+      return `Q: ${sanitizedQuestion}\nA: ${sanitizedAnswer}${confidenceNote}`;
     })
     .join('\n\n');
 

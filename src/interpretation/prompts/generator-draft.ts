@@ -5,8 +5,11 @@
  */
 
 import { GeneratorInput } from '../types';
+import { sanitizeGeneratorInput } from './sanitize';
 
 export function buildGeneratorDraftPrompt(input: GeneratorInput): string {
+  // VS-Security: Sanitize user-provided inputs to prevent prompt injection
+  const sanitized = sanitizeGeneratorInput(input);
   const cappedInfo = input.capped
     ? `Yes, by: ${input.capped_by_titles.join(', ')}`
     : 'No';
@@ -52,11 +55,11 @@ CORE RULES (MANDATORY)
 WHAT YOU KNOW ABOUT THIS COMPANY
 ═══════════════════════════════════════════════════════════════════
 
-Company: ${input.company_name}
-Industry: ${input.industry}
-Team Size: ${input.team_size || '[NEED: FP&A team size]'}
-Pain Points: ${input.pain_points?.join('; ') || '[NEED: stated pain points]'}
-Systems: ${input.systems || '[NEED: current tools/systems]'}
+Company: ${sanitized.company_name}
+Industry: ${sanitized.industry}
+Team Size: ${sanitized.team_size || '[NEED: FP&A team size]'}
+Pain Points: ${sanitized.pain_points?.join('; ') || '[NEED: stated pain points]'}
+Systems: ${sanitized.systems || '[NEED: current tools/systems]'}
 
 ═══════════════════════════════════════════════════════════════════
 DIAGNOSTIC RESULTS (ABSOLUTE TRUTH — DO NOT DISPUTE)

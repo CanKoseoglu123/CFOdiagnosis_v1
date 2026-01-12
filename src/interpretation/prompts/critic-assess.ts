@@ -5,16 +5,20 @@
  */
 
 import { CriticAssessInput } from '../types';
+import { sanitizeGeneratorInput } from './sanitize';
 
 export function buildCriticAssessPrompt(input: CriticAssessInput): string {
+  // VS-Security: Sanitize user-provided inputs to prevent prompt injection
+  const sanitizedContext = sanitizeGeneratorInput(input.context);
+
   const draftJson = JSON.stringify(input.draft, null, 2);
   const contextJson = JSON.stringify(
     {
-      company_name: input.context.company_name,
-      industry: input.context.industry,
-      team_size: input.context.team_size,
-      pain_points: input.context.pain_points,
-      systems: input.context.systems,
+      company_name: sanitizedContext.company_name,
+      industry: sanitizedContext.industry,
+      team_size: sanitizedContext.team_size,
+      pain_points: sanitizedContext.pain_points,
+      systems: sanitizedContext.systems,
       execution_score: input.context.execution_score,
       maturity_level: input.context.maturity_level,
       objectives: input.context.objectives.map((o) => ({

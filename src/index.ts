@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import * as UAParserModule from "ua-parser-js";
 
@@ -31,6 +32,7 @@ import {
   DiagnosticContextV1
 } from "./specs/schemas";
 import { normalizeContext } from "./utils/contextAdapter";
+import { handleDatabaseError } from "./utils/errorHandler";
 
 // VS-27e: Target calculation
 import { calculateTargets, getDefaultTargetMatrix, validateTargetMatrix, TargetsResult, getEffectivePersona } from "./utils/targetCalculation";
@@ -81,6 +83,25 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// Security headers via helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://*.supabase.co", "https://api.openai.com"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Disable for API compatibility
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin API access
+}));
+
 app.use(express.json());
 
 // ------------------------------------------------------------------
@@ -247,9 +268,7 @@ app.get("/supabase-health", async (_req, res) => {
     .limit(1);
 
   if (error) {
-    return res
-      .status(500)
-      .json({ status: "supabase-error", error: error.message });
+    return handleDatabaseError(res, error, 'Health check - Supabase');
   }
 
   res.json({ status: "supabase-ok" });
@@ -272,7 +291,7 @@ app.post("/diagnostic-runs", async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return handleDatabaseError(res, error, 'Create diagnostic run');
   }
 
   res.status(201).json(data);
@@ -288,7 +307,7 @@ app.get("/diagnostic-runs", async (req, res) => {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return res.status(500).json({ error: error.message });
+    return handleDatabaseError(res, error, 'List diagnostic runs');
   }
 
   res.json(data);

@@ -20,7 +20,17 @@ export default function AuthPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const from = location.state?.from?.pathname || '/'
+  // VS-Security: Validate redirect path to prevent open redirect attacks
+  const validateRedirectPath = (path) => {
+    if (!path || typeof path !== 'string') return '/';
+    // Only allow paths starting with / and not containing protocol indicators
+    if (!path.startsWith('/') || path.startsWith('//') || path.includes('://')) {
+      return '/';
+    }
+    return path;
+  };
+
+  const from = validateRedirectPath(location.state?.from?.pathname);
 
   // Safety Redirect: If user is already logged in, redirect them
   useEffect(() => {
