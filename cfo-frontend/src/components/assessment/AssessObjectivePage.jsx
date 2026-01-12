@@ -117,33 +117,6 @@ export default function AssessObjectivePage() {
   const prevObjective = !isFirstObjective ? OBJECTIVE_ORDER[currentIndex - 1] : null;
   const nextObjective = !isLastObjective ? OBJECTIVE_ORDER[currentIndex + 1] : null;
 
-  // Scroll to first unanswered question when objective changes or data loads
-  useEffect(() => {
-    if (loading || !objectiveQuestions.length) return;
-
-    // Find first unanswered question index
-    const firstUnansweredIndex = objectiveQuestions.findIndex(
-      q => answers[q.id] === undefined
-    );
-
-    if (firstUnansweredIndex === -1) {
-      // All answered - scroll to top
-      window.scrollTo(0, 0);
-      return;
-    }
-
-    // Small delay to ensure DOM is rendered
-    setTimeout(() => {
-      const questionElements = questionsContainerRef.current?.querySelectorAll('[data-question-card]');
-      if (questionElements && questionElements[firstUnansweredIndex]) {
-        questionElements[firstUnansweredIndex].scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }
-    }, 100);
-  }, [objectiveId, loading, objectiveQuestions, answers]);
-
   // Validate objective ID
   useEffect(() => {
     if (!objectiveMeta) {
@@ -235,6 +208,33 @@ export default function AssessObjectivePage() {
     if (!spec?.questions) return [];
     return spec.questions.filter(q => getQuestionObjective(q) === objectiveId);
   }, [spec, objectiveId, getQuestionObjective]);
+
+  // Scroll to first unanswered question when objective changes or data loads
+  useEffect(() => {
+    if (loading || !objectiveQuestions.length) return;
+
+    // Find first unanswered question index
+    const firstUnansweredIndex = objectiveQuestions.findIndex(
+      q => answers[q.id] === undefined
+    );
+
+    if (firstUnansweredIndex === -1) {
+      // All answered - scroll to top
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    // Small delay to ensure DOM is rendered
+    setTimeout(() => {
+      const questionElements = questionsContainerRef.current?.querySelectorAll('[data-question-card]');
+      if (questionElements && questionElements[firstUnansweredIndex]) {
+        questionElements[firstUnansweredIndex].scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 100);
+  }, [objectiveId, loading, objectiveQuestions, answers]);
 
   // Get all questions for overall progress
   const allQuestions = useMemo(() => spec?.questions || [], [spec]);
