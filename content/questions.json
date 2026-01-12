@@ -862,7 +862,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Build Scenario-Ready Model Architecture",
-        "recommendation": "Ensure key drivers (volume, price, growth rates, headcount) flow through the entire P&L from a single input location. Test: can you answer 'what if volume drops 10%?' in under 5 minutes? If not, restructure the model to separate assumptions from calculations.",
+        "recommendation": "FP&A should audit the current forecast model and restructure it so key drivers (volume, price, growth rates, headcount) flow from a single assumptions section through the entire P&L. Test: can you answer 'what if volume drops 10%?' in under 5 minutes? Complete when leadership can request scenario impacts during meetings and receive answers immediately—eliminating the delay that kills strategic agility.",
         "type": "structural"
       }
     },
@@ -877,8 +877,8 @@
       "impact": 4,
       "complexity": 3,
       "expert_action": {
-        "title": "Build Rapid Scenario Capability",
-        "recommendation": "Parameterize your model. 'Volume' should be a single input cell that flows through the entire P&L instantly. This is foundational model architecture—no advanced scenario work is possible without it.",
+        "title": "Validate Sub-Hour Scenario Turnaround",
+        "recommendation": "FP&A should time-test the current scenario process: from leadership request to consolidated P&L and cash impact. Identify any manual steps, data refreshes, or approval delays that slow turnaround. Complete when FP&A can reliably deliver scenario results within one hour—enabling real-time 'what-if' discussions in leadership meetings rather than follow-up emails days later.",
         "type": "structural"
       }
     },
@@ -910,7 +910,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Compress Reforecast Cycle",
-        "recommendation": "Map the current reforecast process end-to-end. Identify bottlenecks (usually waiting for inputs or manual consolidation). Set a 5-day target and work backwards to compress each phase. If you can't reforecast quickly, you can't do scenarios at all.",
+        "recommendation": "FP&A should map the current reforecast process end-to-end and identify bottlenecks (typically waiting for inputs or manual consolidation). Set a target (e.g., 5 business days) and compress each phase. Complete when FP&A can reliably deliver a revised full-year view within one week of any leadership request—proving the organization can pivot when conditions change.",
         "type": "structural"
       }
     },
@@ -926,7 +926,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Embed Scenario Presentation in Decision Flow",
-        "recommendation": "Establish a standard that all investment requests above a threshold include Base, Upside, and Downside views. Create a simple template showing key metrics under each scenario. Track adoption: if decisions are made without scenario context, diagnose why.",
+        "recommendation": "FP&A should create a standard template requiring all investment requests above a threshold (e.g., $100K) to include Base, Upside, and Downside views. Make Finance sign-off a gate in the approval workflow. Complete when no major capital decision proceeds without scenario context—ensuring leadership weighs trade-offs before committing resources.",
         "type": "behavioral"
       }
     },
@@ -942,7 +942,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Maintain Multi-Scenario Model",
-        "recommendation": "Build scenario toggles directly into the core model rather than maintaining separate files. Update all three scenarios each forecast cycle. Establish clear definitions: Base = most likely, Upside = stretch but achievable, Downside = recession/risk materialization.",
+        "recommendation": "FP&A should build scenario toggles directly into the core model rather than maintaining separate files. Define clear scenarios (Base = most likely, Upside = stretch, Downside = recession) and refresh all three each forecast cycle. Complete when leadership can request any scenario view at any time and receive current numbers—ensuring the organization is never caught flat-footed by changing conditions.",
         "type": "structural"
       }
     },
@@ -958,7 +958,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Pilot Probabilistic Forecasting",
-        "recommendation": "Start with a Monte Carlo simulation on revenue: define probability distributions for key drivers (volume, price, win rates) based on historical variance. Run 1,000+ iterations to generate an outcome distribution. Present results as confidence intervals ('80% chance revenue is between $X and $Y'). Tools like @RISK, Crystal Ball, or Python can automate this.",
+        "recommendation": "FP&A should pilot probabilistic forecasting on revenue by defining probability distributions for key drivers (volume, price, win rates) based on historical variance, then running simulations to generate outcome distributions. Present results as confidence intervals (e.g., '80% probability revenue lands between $X and $Y'). Complete when Board presentations include probability ranges—shifting conversations from 'which scenario is right?' to 'what's our likelihood of hitting targets?'",
         "type": "structural"
       }
     },
@@ -974,7 +974,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Define Actionable Triggers",
-        "recommendation": "FP&A should draft a contingency playbook with 3-5 triggers tied to specific actions (e.g., 'Revenue -10% → hiring freeze', 'Revenue -20% → RIF list activated'). Present to leadership for approval. Review triggers quarterly to ensure they remain relevant.",
+        "recommendation": "FP&A should draft a contingency playbook with 3-5 triggers tied to specific actions (e.g., 'Revenue -10% → hiring freeze', 'Revenue -20% → RIF activation'). Present to leadership or the Board for formal approval and review quarterly. Complete when pre-agreed triggers exist—so crisis response becomes execution, not debate, saving weeks of decision paralysis when conditions deteriorate.",
         "type": "governance"
       }
     },
@@ -990,7 +990,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement Breaking Point Analysis",
-        "recommendation": "Run quarterly 'break the bank' analysis: How much can volume/price drop before covenants breach? Before cash runs negative? Before EBITDA turns negative? Document these thresholds and share with leadership. This becomes the foundation for contingency trigger design.",
+        "recommendation": "FP&A should run quarterly 'break the bank' analysis: How far can volume or price drop before covenants breach? Before cash runs negative? Before EBITDA turns negative? Document these thresholds and share with leadership. Complete when FP&A can instantly answer 'how much runway do we have?'—giving leadership the survival math needed for confident decision-making under pressure.",
         "type": "structural"
       }
     },
@@ -1006,7 +1006,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Establish Risks & Opportunities Register",
-        "recommendation": "Create a log with columns: Item Description, Type (Risk/Opportunity), Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Status. Review monthly with leadership. Require business units to flag both risks AND opportunities during forecast submission. Integrate top items into Board reporting.",
+        "recommendation": "FP&A should create and maintain a risks & opportunities register with columns: Description, Type (Risk/Opportunity), Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Status. Review monthly with leadership and require business units to flag items during forecast submission. Complete when forecast presentations routinely show both upside potential and downside exposure—ensuring leadership sees the full range of outcomes, not just the base case.",
         "type": "governance"
       }
     },
@@ -1069,9 +1069,9 @@
       "impact": 4,
       "complexity": 2,
       "expert_action": {
-        "title": "Shared Performance KPIs",
-        "recommendation": "Link Finance bonus to the P&L of the unit they support. Align incentives.",
-        "type": "governance"
+        "title": "Align Finance Partner Goals with Business Unit Outcomes",
+        "recommendation": "FP&A leadership should add business unit performance metrics to Finance Business Partner objectives. Include at least one shared KPI (e.g., business unit margin, forecast accuracy for that unit) in annual goals. Review monthly: if the business unit is struggling and the Finance partner didn't flag it early, diagnose why. Complete when Finance partners can articulate their business unit's performance drivers as fluently as the GM—demonstrating true partnership, not just reporting.",
+        "type": "behavioral"
       }
     },
     {
@@ -1117,9 +1117,9 @@
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Incentivize Accuracy",
-        "recommendation": "Propose a symmetric bonus structure: Cap upside for sandbagging, and penalize for significant misses in *either* direction.",
-        "type": "governance"
+        "title": "Publish Forecast Accuracy Scorecard",
+        "recommendation": "FP&A should create a quarterly Forecast Accuracy Scorecard ranking business units by variance direction and magnitude. Track patterns over 4+ quarters to identify chronic sandbagging or over-promising. Present to leadership with examples: 'Sales has under-forecasted by 15% for 4 consecutive quarters.' Complete when forecast accuracy is a visible metric discussed in leadership reviews—shifting culture from 'beat budget' to 'hit the number.'",
+        "type": "structural"
       }
     },
     {
@@ -1165,8 +1165,8 @@
       "impact": 5,
       "complexity": 3,
       "expert_action": {
-        "title": "Conduct ROI Look-Backs",
-        "recommendation": "Schedule a review 6-12 months post-investment. Compare actuals vs. the business case. Learn from the variance.",
+        "title": "Implement Post-Investment Review Process",
+        "recommendation": "FP&A should establish a formal look-back process for investments above threshold. Create a review template comparing: actual vs. budgeted costs, realized vs. projected benefits, timeline variance, and root causes. Schedule reviews 6-12 months post-implementation. Present to leadership with a verdict: 'Met,' 'Partial,' or 'Failed.' Complete when quarterly summaries of project outcomes improve future investment decisions.",
         "type": "governance"
       }
     },
@@ -1245,9 +1245,9 @@
       "impact": 5,
       "complexity": 1,
       "expert_action": {
-        "title": "Secure Leadership Team Membership",
-        "recommendation": "If the CFO isn't on the executive team, make the case: Finance provides the objective lens on strategy viability. Request membership or, at minimum, standing attendance at strategic discussions. Document the value Finance adds when present.",
-        "type": "governance"
+        "title": "Deliver Strategic Decision Support Proactively",
+        "recommendation": "FP&A should demonstrate value by delivering unsolicited analysis on leadership's top concerns. Identify the 2-3 strategic questions being debated (market entry, pricing, M&A). Build financial scenarios before being asked. Present findings: 'We thought you'd want to see the margin impact of the options.' Complete when leadership routinely seeks Finance input before major decisions—earning influence through demonstrated value.",
+        "type": "behavioral"
       }
     },
     {
