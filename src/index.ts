@@ -2430,15 +2430,22 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
       context: {
         company: {
           name: `Test Company (${scenario.name})`,
-          industry: "Technology",
-            revenue_range: "€50M - €100M",
-          employee_count: "51-200",
+          industry: "saas",
+          revenue_range: "100m_250m",
+          employee_count: "201_1000",
+          finance_structure: "hybrid",
+          ownership_structure: "pe_backed",
+          change_appetite: "standardize",
         },
         pillar: {
-          model_count: 5,
-          finance_ftes: 3,
-          erp_system: "QuickBooks",
-          planning_tool: "Excel",
+          tools: [
+            { tool: "excel", effectiveness: "medium" },
+            { tool: "adaptive", effectiveness: "high" }
+          ],
+          team_size: "4_10",
+          forecast_frequency: "quarterly",
+          budget_process: ["hybrid", "driver_based"],
+          pain_points: ["data_wrangling", "forecast_accuracy", "bandwidth"],
         },
       },
       calibration: {
