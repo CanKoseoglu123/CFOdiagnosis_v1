@@ -244,7 +244,7 @@ export default function ActionPlanningWizard({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-sm max-w-4xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-300">
+      <div className="bg-white rounded-sm max-w-6xl w-full max-h-[90vh] flex flex-col shadow-xl border border-slate-300">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div>
@@ -498,9 +498,9 @@ function ActionCard({ question, isSelected, onToggle, showPainPoints, painPoints
             </span>
           </div>
 
-          {/* Recommendation (hide in compact mode) */}
-          {!compact && question.expert_action?.recommendation && (
-            <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+          {/* Recommendation - show in all modes */}
+          {question.expert_action?.recommendation && (
+            <p className={`text-xs text-slate-500 mt-1 ${compact ? 'line-clamp-3' : 'line-clamp-4'}`}>
               {question.expert_action.recommendation}
             </p>
           )}

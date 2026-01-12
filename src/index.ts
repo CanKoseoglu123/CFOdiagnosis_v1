@@ -1000,6 +1000,23 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
 
   // VS26: Extract pillar context for pain point boosting
   const normalizedCtx = normalizeContext(run.context);
+
+  // VS-27c: Merge company data from company_profiles for v2 format runs
+  if (companyContext && companyContext.company_name) {
+    normalizedCtx.company = {
+      ...normalizedCtx.company,
+      name: companyContext.company_name,
+      industry: companyContext.industry || normalizedCtx.company.industry,
+      revenue_range: companyContext.revenue_range || normalizedCtx.company.revenue_range,
+      employee_count: companyContext.employee_count || normalizedCtx.company.employee_count,
+      finance_ftes: companyContext.finance_ftes || normalizedCtx.company.finance_ftes,
+      legal_entities: companyContext.legal_entities || normalizedCtx.company.legal_entities,
+      finance_structure: companyContext.finance_structure || normalizedCtx.company.finance_structure,
+      ownership_structure: companyContext.ownership_structure || normalizedCtx.company.ownership_structure,
+      change_appetite: companyContext.change_appetite || normalizedCtx.company.change_appetite,
+    };
+  }
+
   const pillarContext = normalizedCtx.pillar ? {
     pain_points: normalizedCtx.pillar.pain_points || undefined,
     tools: normalizedCtx.pillar.tools_with_effectiveness || undefined,
