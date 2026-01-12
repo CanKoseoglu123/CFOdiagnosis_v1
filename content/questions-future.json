@@ -1,0 +1,439 @@
+{
+  "version": "2.18.0",
+  "pillar": "fpa",
+  "theme": "future",
+  "questions": [
+    {
+      "id": "fpa_q037",
+      "practice_id": "prac_rolling_forecast_cadence",
+      "text": "Does FP&A complete a full P&L re-forecast at least quarterly?",
+      "help": "An annual budget becomes obsolete quickly. Quarterly re-forecasting allows the business to adjust resource allocation based on actual year-to-date performance.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Quarterly Reforecast",
+        "recommendation": "FP&A should establish a quarterly re-forecasting rhythm (3+9, 6+6, 9+3) that updates the full-year view based on YTD actuals. Start by adding one formal re-forecast at Q1 close, then expand to quarterly. Assign one analyst as the forecast process owner. Complete when leadership receives an updated outlook within 10 days of each quarter close—enabling mid-year resource reallocation before it's too late.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q039",
+      "practice_id": "prac_rolling_forecast_cadence",
+      "text": "Does Finance explicitly track and communicate systematic forecast bias (optimism/conservatism)?",
+      "help": "Bias tracking improves accuracy. Identifying if a team is consistently optimistic or conservative allows for better calibration of future forecasts.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 3,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Identify and Correct Forecast Bias",
+        "recommendation": "The FP&A lead should build a scorecard comparing forecast vs. actual by line item and by submitter, tracking whether each is consistently high or low. Present to leadership quarterly. Require forecast owners to explain persistent directional bias, not just dollar variance. Complete when chronic over/under-forecasters are identified and the pattern informs how Finance adjusts their inputs—improving forecast reliability and reducing management time spent debating numbers.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q040",
+      "practice_id": "prac_rolling_forecast_cadence",
+      "text": "Does FP&A maintain a rolling forecast that extends beyond the current fiscal year end?",
+      "help": "Business doesn't stop at year-end. A rolling forecast (e.g., 12 months out) provides continuous visibility, aiding in longer-term decision making.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Extend to Rolling Forecast",
+        "recommendation": "FP&A should expand the forecast model to always look 4 quarters ahead of the current period, regardless of fiscal year-end. This means in Q3, you're forecasting through Q3 of next year. Start by defining out-period assumptions (growth rates, inflation, headcount trajectory) with Finance leadership. Complete when the Board receives a continuous forward view—eliminating the artificial cliff where visibility drops to zero at year-end.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q041",
+      "practice_id": "prac_cash_flow_visibility",
+      "text": "Are working capital assumptions (DSO, DIO, DPO) explicitly modeled in the forecast?",
+      "help": "Working capital drivers—Days Sales Outstanding (DSO), Days Inventory Outstanding (DIO), and Days Payable Outstanding (DPO)—directly impact cash flow. Modeling them explicitly allows you to see the cash impact of operational changes like collecting faster, turning inventory quicker, or extending payment terms. For midcaps, cash is king.",
+      "maturity_level": 2,
+      "is_critical": true,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Model Working Capital Drivers",
+        "recommendation": "FP&A should replace static balance sheet plugs with driver-based working capital. Link AR to revenue and collection days, AP to spend patterns and payment terms, and Inventory (if applicable) to volume and turns. Start with AR—it's typically the largest lever. Work with the Controller to document current days metrics and set improvement targets. Complete when leadership can answer \"what happens to cash if we collect 5 days faster?\"—enabling proactive working capital management.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q042",
+      "practice_id": "prac_cash_flow_visibility",
+      "text": "Is covenant compliance forecasted at least 12 months out as part of the standard reporting package?",
+      "help": "Covenants are binding financial commitments in debt agreements—typically ratios like leverage (Debt/EBITDA) or interest coverage that the borrower must maintain. For PE-backed or leveraged companies, covenant breach is existential: it can trigger default, accelerated repayment, or loss of control. Forecasting compliance ahead of time allows for proactive management of lender relationships and early warning of potential issues.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Covenant Forecasting",
+        "recommendation": "The Controller or FP&A lead should add covenant metrics (leverage ratio, interest coverage, fixed charge coverage) to the monthly reporting package with a 12-month forward view. Build a simple traffic-light indicator: green (>20% headroom), yellow (10-20%), red (<10%). Complete when leadership sees projected covenant position monthly—providing early warning to manage lender relationships proactively rather than scrambling at breach.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q043",
+      "practice_id": "prac_cash_flow_visibility",
+      "text": "Does FP&A project cash flow and liquidity in the forecast, not just P&L?",
+      "help": "Profit is not cash. Forecasting liquidity ensures the business can meet its obligations and fund operations, which is critical for survival and growth.",
+      "maturity_level": 2,
+      "is_critical": true,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Add Cash Flow to Forecast",
+        "recommendation": "FP&A should build a 13-week rolling cash flow forecast using the direct method (actual receipts and payments, not P&L adjustments). Start by mapping the top 5 cash inflows and outflows: customer collections, payroll, rent, AP, and debt service. Update weekly. Complete when leadership receives a weekly cash position report—because profit doesn't pay bills, cash does.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q044",
+      "practice_id": "prac_cash_flow_visibility",
+      "text": "Does FP&A use the Direct Method—tracking actual receipts and payments—for the short-term (13-week) cash forecast, rather than deriving cash from P&L adjustments?",
+      "help": "The Indirect Method (starting from Net Income and adjusting for non-cash items) is fine for annual planning but useless for weekly liquidity management. The Direct Method tracks actual cash movements: when will customers pay? When do payroll and rent hit? For PE-backed or leveraged companies, this granularity is the difference between managing cash and being surprised by it.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Achieve Cash Forecast Precision",
+        "recommendation": "FP&A or Treasury should refine the cash forecast by breaking collections into aging buckets and AP into vendor-level detail. Tie Week 1 forecasts to actual bank movements and track variance weekly. Investigate and correct any deviation >5%. Complete when Week 1 forecast variance to actual is consistently <5%—this precision transforms cash forecasting from directional guidance into a reliable liquidity management tool.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q045",
+      "practice_id": "prac_collaborative_systems",
+      "text": "Has FP&A established a single reconciled data source from which all Finance outputs (reports, decks, dashboards) are derived?",
+      "help": "Multiple data sources create multiple truths. A single source eliminates reconciliation debates and version confusion. This is foundational—if the numbers are wrong, nothing else matters.",
+      "maturity_level": 1,
+      "is_critical": true,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Establish Single Data Source",
+        "recommendation": "FP&A should identify and document the 'golden source' for each data element. When ERP, CRM, and BI tool show different numbers, establish a hierarchy (e.g., 'GL is always right for actuals, CRM is right for pipeline'). Create a conflict resolution protocol and assign a data steward to adjudicate disputes. Complete when Finance team can answer \"where does this number come from?\" instantly—eliminating reconciliation debates that waste time and erode credibility.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q046",
+      "practice_id": "prac_collaborative_systems",
+      "text": "Can multiple contributors update the forecast simultaneously without creating version conflicts or data integrity issues?",
+      "help": "Effective collaboration requires that Sales, HR, and Operations can update their forecast sections concurrently without creating version chaos. The solution could be cloud spreadsheets, dedicated FP&A software, or well-governed offline processes—what matters is the outcome: no version conflicts, no lost work, no reconciliation debates.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Enable Multi-User Forecasting",
+        "recommendation": "FP&A should eliminate version conflicts by moving to a collaborative platform. For sub-$100M companies: implement Google Sheets or Excel Online with strict cell-level protection. For $100M+: evaluate purpose-built tools (Pigment, Planful, Cube). Assign one person to manage access controls and version governance. Complete when Sales and Finance can update the same model at the same time without version conflicts—cutting forecast cycle time in half.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q047",
+      "practice_id": "prac_collaborative_systems",
+      "text": "Does FP&A maintain documented forecast assumptions that are accessible to all contributors?",
+      "help": "Undocumented assumptions lead to inconsistent inputs and make it impossible to explain forecast changes. Central documentation ensures alignment.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Centralize Forecast Assumptions",
+        "recommendation": "FP&A should create and maintain a single assumptions document covering inflation, FX rates, headcount costs, and growth drivers. Publish to all forecast contributors at cycle start. Assign one person to own updates and communicate changes. Complete when everyone uses the same inputs—reducing consolidation cycles and ensuring forecast changes reflect business reality, not assumption drift.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q048",
+      "practice_id": "prac_collaborative_systems",
+      "text": "Can leadership request an updated financial outlook from FP&A at any point in the month and receive a consolidated view within the same business day?",
+      "help": "The pinnacle of forecasting agility is perpetual readiness. At L4 maturity, the forecast isn't a periodic event—it's a living asset. When the CEO asks 'where do we stand?' on any given Tuesday, FP&A can deliver a consolidated answer by end of day because the infrastructure, data flows, and driver models are continuously maintained.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_forecast_infrastructure",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Achieve Always-On Forecast Readiness",
+        "recommendation": "FP&A and IT should eliminate forecast 'spin-up' time by maintaining continuously updated driver inputs, automated data feeds, and pre-built consolidation logic. Validate key assumptions weekly to keep the model current. Test monthly: can you produce a Board-ready view today? Complete when leadership can request an updated outlook and receive it same-day—enabling real-time strategic pivots without waiting for the next cycle.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q049",
+      "practice_id": "prac_operational_drivers",
+      "text": "Has FP&A identified and documented the top 3-5 operational drivers (e.g., revenue per FTE, gross margin per unit, customer acquisition cost) that most directly impact financial performance?",
+      "help": "You can't manage what you haven't defined. Before FP&A can build driver-based models or explain performance through operational lenses, the team must explicitly identify which levers actually move the P&L. This is the foundation of driver-based planning—without it, everything else is guesswork.",
+      "maturity_level": 1,
+      "is_critical": true,
+      "initiative_id": "init_forward_visibility",
+      "impact": 5,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Define Core Operational Drivers",
+        "recommendation": "FP&A should convene with CFO and business leaders to identify 3-5 operational metrics that most directly drive financial outcomes: revenue per FTE, gross margin per unit, customer acquisition cost, plus one industry-specific metric (churn for SaaS, utilization for services, yield for manufacturing). Document in a one-page 'Driver Map' linking operational metrics to P&L lines. Complete when leadership agrees on which levers matter most—this becomes the vocabulary for forward-looking discussions.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q050",
+      "practice_id": "prac_operational_drivers",
+      "text": "Does FP&A explicitly track the top 3 operational drivers against targets in monthly executive reports?",
+      "help": "If drivers aren't in the report, they aren't being managed. Explicit tracking ensures leadership focuses on the levers that actually move financial outcomes.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Embed Driver Tracking",
+        "recommendation": "FP&A should add a dedicated 'Driver Performance' section to the monthly management pack showing the top 3 drivers (e.g., volume, price, churn) vs. target and vs. prior period. Include variance commentary explaining why drivers moved. Complete when leadership references driver performance—not just financial results—in monthly reviews, shifting conversations from 'what happened' to 'why it happened.'",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q093",
+      "practice_id": "prac_operational_drivers",
+      "text": "Do operational function heads (Sales, HR, Operations) formally validate the driver assumptions (volume, headcount, utilization) used in the financial forecast before it is finalized?",
+      "help": "FP&A owns the model, but operational teams own the drivers. Without validation, Finance may use stale or incorrect assumptions. Formal sign-off ensures the forecast reflects current operational reality and creates shared accountability for outcomes.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Implement Driver Assumption Validation",
+        "recommendation": "FP&A should add a formal validation step to the forecast process where each driver owner reviews and approves their assumptions. Create a simple sign-off matrix: Sales validates pipeline, HR validates headcount, Ops validates utilization. No forecast finalization without sign-off—ensuring the forecast reflects current operational reality and creating shared accountability for outcomes.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q051",
+      "practice_id": "prac_operational_drivers",
+      "text": "Does FP&A maintain automated alerts that flag when operational drivers deviate from forecast assumptions by more than historical norms?",
+      "help": "Proactive driver monitoring catches forecast drift before it becomes a surprise. When key drivers (volume, price, churn) move outside expected ranges, mature FP&A teams are alerted immediately—enabling course correction while there's still time to act.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Build Driver Deviation Alerts",
+        "recommendation": "FP&A and IT should calculate historical variance bands for each key driver (e.g., +/-1 standard deviation from trend). Configure automated alerts in your BI tool or planning system that trigger when actuals breach these bands. Route alerts to the relevant FP&A analyst. Target: driver deviations flagged within 24 hours of detection—catching forecast drift before it becomes a month-end surprise.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q052",
+      "practice_id": "prac_operational_drivers",
+      "text": "Is non-financial data (CRM pipeline, HR headcount, operational KPIs) systematically integrated into financial performance reporting?",
+      "help": "True performance management requires connecting financial outcomes to operational drivers. Without automated integration of non-financial data, FP&A spends excessive time manually gathering context and cannot provide real-time business intelligence.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 5,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Build Integrated Performance Data Model",
+        "recommendation": "FP&A and IT should identify the top 5 operational metrics that drive financial outcomes (e.g., pipeline value, headcount, utilization, NPS). Build automated feeds from source systems (CRM, HRIS, operations tools) into your FP&A data layer. Target: monthly reports include both financial and operational context without manual data pulls—freeing analysts from data gathering to focus on insight generation.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q054",
+      "practice_id": "prac_dynamic_targets",
+      "text": "Is the revenue forecast automatically refreshed via direct CRM data feeds when pipeline stages change, without manual FP&A extraction?",
+      "help": "Manual CRM-to-forecast processes introduce lag and error. L4 integration means pipeline changes flow directly into financial projections, enabling real-time revenue visibility and eliminating FP&A time spent on data extraction.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_forward_visibility",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Build CRM-to-Forecast Integration",
+        "recommendation": "FP&A and IT should connect CRM (Salesforce, HubSpot) directly to your forecasting tool via API or middleware. Configure probability weightings by pipeline stage. Set up daily or real-time sync. Validate by comparing automated forecast to manually-built version. Complete when FP&A no longer extracts CRM data manually—eliminating lag between pipeline changes and financial projections.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q095",
+      "practice_id": "prac_rapid_what_if_capability",
+      "text": "Can FP&A change key forecast assumptions (volume, price, headcount growth) and see the financial impact immediately, without rebuilding or restructuring the model?",
+      "help": "Scenario-ready models allow leadership to ask 'what if volume drops 10%?' and get an answer in minutes, not days. If changing an assumption requires rework, you don't have a scenario capability—you have a one-time forecast.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Build Scenario-Ready Model Architecture",
+        "recommendation": "FP&A should audit the current forecast model and restructure it so key drivers (volume, price, growth rates, headcount) flow from a single assumptions section through the entire P&L. Test: can you answer 'what if volume drops 10%?' in under 5 minutes? Complete when leadership can request scenario impacts during meetings and receive answers immediately—eliminating the delay that kills strategic agility.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q094",
+      "practice_id": "prac_rapid_what_if_capability",
+      "text": "Can FP&A run a 'what-if' scenario on a key driver (e.g., volume -10%) in less than one hour?",
+      "help": "Speed is essential for agility. If scenario analysis takes days, the opportunity to react may pass. Rapid modeling allows for real-time strategic discussions.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Validate Sub-Hour Scenario Turnaround",
+        "recommendation": "FP&A should time-test the current scenario process: from leadership request to consolidated P&L and cash impact. Identify any manual steps, data refreshes, or approval delays that slow turnaround. Complete when FP&A can reliably deliver scenario results within one hour—enabling real-time 'what-if' discussions in leadership meetings rather than follow-up emails days later.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q057",
+      "practice_id": "prac_rapid_what_if_capability",
+      "text": "Does FP&A include sensitivity analysis in forecast presentations, showing how key outcomes (revenue, EBITDA, cash) change when top drivers vary by +/-10%?",
+      "help": "A single-point forecast creates false precision. Sensitivity tables show the range of outcomes—if volume drops 10%, EBITDA falls from $50M to $42M. This prepares leadership for volatility and frames expectations around forecast uncertainty.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 3,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Add Sensitivity Analysis to Forecast Presentations",
+        "recommendation": "FP&A should include a standard sensitivity table in every forecast deck showing the top drivers (e.g., volume, price, cost inflation) with meaningful variance ranges (e.g., +/-10%) and their impact on key outcomes. Complete when leadership never sees a single-point forecast without understanding the range of possible results.",
+        "type": "quick_win"
+      }
+    },
+    {
+      "id": "fpa_q096",
+      "practice_id": "prac_multi_scenario_management",
+      "text": "Can FP&A produce a revised full-year forecast within five business days when leadership requests one?",
+      "help": "Scenario agility requires process speed. If producing a single revised view takes weeks, the organization cannot respond to changing conditions. This tests whether the forecast process is nimble enough to support scenario work.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Compress Reforecast Cycle",
+        "recommendation": "FP&A should map the current reforecast process end-to-end and identify bottlenecks (typically waiting for inputs or manual consolidation). Set a target (e.g., 5 business days) and compress each phase. Complete when FP&A can reliably deliver a revised full-year view within one week of any leadership request—proving the organization can pivot when conditions change.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q058",
+      "practice_id": "prac_multi_scenario_management",
+      "text": "Does FP&A present scenario comparisons—not just the base case—for all major investment or resource allocation decisions?",
+      "help": "FP&A's role is to frame decisions with alternatives. If Finance only presents a single number, leadership can't weigh trade-offs. Scenario presentation is the mechanism through which Finance enables risk-aware decision-making.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Embed Scenario Presentation in Decision Flow",
+        "recommendation": "FP&A should create a standard template requiring all investment requests above a threshold (e.g., $100K) to include Base, Upside, and Downside views. Make Finance sign-off a gate in the approval workflow. Complete when no major capital decision proceeds without scenario context—ensuring leadership weighs trade-offs before committing resources.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q059",
+      "practice_id": "prac_multi_scenario_management",
+      "text": "Does FP&A maintain at least three scenarios (Base, Upside, Downside) that are updated with current assumptions each forecast cycle?",
+      "help": "The future is uncertain. Maintaining multiple scenarios—refreshed regularly, not static artifacts—ensures the business is prepared for different outcomes. 'Maintained' means assumptions are current, not that the scenario was built once and forgotten.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Maintain Multi-Scenario Model",
+        "recommendation": "FP&A should build scenario toggles directly into the core model rather than maintaining separate files. Define clear scenarios (Base = most likely, Upside = stretch, Downside = recession) and refresh all three each forecast cycle. Complete when leadership can request any scenario view at any time and receive current numbers—ensuring the organization is never caught flat-footed by changing conditions.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q097",
+      "practice_id": "prac_multi_scenario_management",
+      "text": "Does FP&A use probabilistic methods (e.g., Monte Carlo simulation, confidence intervals) to quantify the range of likely outcomes rather than relying solely on point estimates?",
+      "help": "Point estimates (Base/Upside/Downside) are useful but arbitrary. Probabilistic forecasting generates thousands of scenarios based on historical variance and driver correlations, producing a distribution of outcomes—e.g., '70% chance EBITDA lands between $45M and $55M.' This shifts the conversation from 'which scenario is right?' to 'what's the probability of hitting our targets?'",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Pilot Probabilistic Forecasting",
+        "recommendation": "FP&A should pilot probabilistic forecasting on revenue by defining probability distributions for key drivers (volume, price, win rates) based on historical variance, then running simulations to generate outcome distributions. Present results as confidence intervals (e.g., '80% probability revenue lands between $X and $Y'). Complete when Board presentations include probability ranges—shifting conversations from 'which scenario is right?' to 'what's our likelihood of hitting targets?'",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q060",
+      "practice_id": "prac_stress_testing",
+      "text": "Has FP&A documented contingency triggers (e.g., 'If revenue drops 15%, initiate cost action X') that have been approved by leadership or the Board?",
+      "help": "Pre-agreed triggers remove emotion from crisis decision-making. FP&A's role is to define the thresholds and response playbook; leadership's role is to approve them. When a trigger is breached, the response is execution, not debate.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Define Actionable Triggers",
+        "recommendation": "FP&A should draft a contingency playbook with 3-5 triggers tied to specific actions (e.g., 'Revenue -10% → hiring freeze', 'Revenue -20% → RIF activation'). Present to leadership or the Board for formal approval and review quarterly. Complete when pre-agreed triggers exist—so crisis response becomes execution, not debate, saving weeks of decision paralysis when conditions deteriorate.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q061",
+      "practice_id": "prac_stress_testing",
+      "text": "Does FP&A regularly stress-test the forecast to identify breaking points—the thresholds where covenants breach, cash runs out, or profitability turns negative?",
+      "help": "Stress testing goes beyond 'what-if' to find the edge of survivability. Knowing that a 20% volume drop breaches covenants—while 15% doesn't—enables precise contingency planning. This is about finding limits, not just exploring alternatives.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement Breaking Point Analysis",
+        "recommendation": "FP&A should run quarterly 'break the bank' analysis: How far can volume or price drop before covenants breach? Before cash runs negative? Before EBITDA turns negative? Document these thresholds and share with leadership. Complete when FP&A can instantly answer 'how much runway do we have?'—giving leadership the survival math needed for confident decision-making under pressure.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q062",
+      "practice_id": "prac_stress_testing",
+      "text": "Does FP&A maintain a formal risks and opportunities register that identifies, quantifies, and tracks potential P&L and cash flow impacts—both downside threats and upside potential?",
+      "help": "A risks & opportunities register documents both threats (customer concentration, supply disruption, FX exposure) and upsides (new customer pipeline, pricing actions, cost savings initiatives)—each with probability estimates and quantified impact ranges. Tracking both ensures the forecast reflects the full range of outcomes, not just the base case.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_scenario_modeling",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Establish Risks & Opportunities Register",
+        "recommendation": "FP&A should create and maintain a risks & opportunities register with columns: Description, Type (Risk/Opportunity), Likelihood (H/M/L), P&L Impact Range, Cash Impact Range, Owner, Status. Review monthly with leadership and require business units to flag items during forecast submission. Complete when forecast presentations routinely show both upside potential and downside exposure—ensuring leadership sees the full range of outcomes, not just the base case.",
+        "type": "governance"
+      }
+    }
+  ]
+}

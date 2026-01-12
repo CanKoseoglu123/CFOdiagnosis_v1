@@ -1,0 +1,535 @@
+{
+  "version": "2.18.0",
+  "pillar": "fpa",
+  "theme": "intelligence",
+  "questions": [
+    {
+      "id": "fpa_q063",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Is Finance consulted before commercial decisions above a defined threshold (e.g., new products, pricing changes, deals over $X) are finalized?",
+      "help": "Finance involvement ensures commercial viability is validated before commitments are made. The threshold should be explicit—without it, 'major' is subjective and consultation becomes inconsistent.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Define Commercial Consultation Policy",
+        "recommendation": "The CFO or FP&A lead should establish clear thresholds (e.g., deals >$100K, pricing changes >5%) requiring Finance sign-off. Document in a policy and communicate to commercial teams. Complete when all deals above threshold have documented Finance review—preventing unprofitable deals from closing without visibility.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q064",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Is Finance review mandatory for all commercial contracts that deviate from standard terms or pricing?",
+      "help": "Standard terms protect margin and risk. Mandatory review for deviations ensures that exceptions are financially sound and approved at the right level. This is governance—without it, margin erosion happens deal by deal.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Deal Desk Process",
+        "recommendation": "Finance should define 'standard terms' explicitly and create an approval workflow for deviations—Sales submits, Finance reviews within 24-48 hours. Complete when deviation tracking shows margin impact quarterly—protecting margins by ensuring non-standard terms are explicitly justified.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q065",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Does FP&A proactively deliver operational insights to business unit leaders—without waiting to be asked?",
+      "help": "Strategic partnership means anticipating needs, not just responding to requests. If FP&A only answers questions, they're reactive. Proactive insight delivery—flagging issues, identifying opportunities—demonstrates value and builds trust.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement Proactive Insight Delivery",
+        "recommendation": "Assign each Finance Business Partner a monthly deliverable: one unsolicited insight for their business unit (cost trend, margin erosion, efficiency opportunity). Track whether insights lead to action. If they don't, the insights aren't valuable enough—shifting Finance from scorekeeper to trusted advisor.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q066",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Are Finance Business Partners measured on the performance of their supported units?",
+      "help": "Shared KPIs create alignment. When Finance partners share the goals of their business unit, they are more motivated to drive operational success.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Align Finance Partner Goals with Business Unit Outcomes",
+        "recommendation": "FP&A leadership should add business unit performance metrics to Finance Business Partner objectives. Include at least one shared KPI (e.g., business unit margin, forecast accuracy for that unit) in annual goals. Review monthly: if the business unit is struggling and the Finance partner didn't flag it early, diagnose why. Complete when Finance partners can articulate their business unit's performance drivers as fluently as the GM—demonstrating true partnership, not just reporting.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q067",
+      "practice_id": "prac_commercial_partnership",
+      "text": "Has Finance successfully stopped or restructured a major commercial deal or initiative in the last 12 months based on negative ROI?",
+      "help": "The ability to say 'no' is the ultimate test of Finance's influence. If you only approve, you are a rubber stamp, not a strategic partner.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement 'Yellow Flag' Process",
+        "recommendation": "If Finance hasn't stopped a bad deal in 12 months, diagnose why: Is your analysis not compelling? Or is leadership not listening? Start with a formal 'Financial Risk Assessment' appendix for all deals to document concerns on the record. Then track whether flagged deals underperform—build your credibility with data before escalating to veto power.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q098",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Is the CFO or Finance leader a member of the executive leadership team (or equivalent decision-making body)?",
+      "help": "Strategic influence requires structural access. If Finance isn't represented at the leadership table, influence is limited to reactive analysis requests. Membership ensures Finance perspective is heard when strategy is set, not after decisions are made.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 1,
+      "expert_action": {
+        "title": "Deliver Strategic Decision Support Proactively",
+        "recommendation": "FP&A should demonstrate value by delivering unsolicited analysis on leadership's top concerns. Identify the 2-3 strategic questions being debated (market entry, pricing, M&A). Build financial scenarios before being asked. Present findings: 'We thought you'd want to see the margin impact of the options.' Complete when leadership routinely seeks Finance input before major decisions—earning influence through demonstrated value.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q068",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Are Finance KPIs explicitly linked to the company's top strategic initiatives?",
+      "help": "Alignment ensures Finance tracks what matters most. If Finance measures don't connect to strategy, the function optimizes the wrong things. This is foundational alignment—the starting point for strategic partnership.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Map Finance KPIs to Strategy",
+        "recommendation": "FP&A should list the company's top 3 strategic initiatives and identify which Finance KPIs measure progress for each. If there's no link, add a KPI or question what you're tracking. Complete when every strategic initiative has a linked Finance KPI—ensuring Finance measures what the business cares about.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q069",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Are business unit bonuses tied to forecast accuracy (e.g., hitting the commitment) rather than just 'beating' a sandbagged budget?",
+      "help": "If bonuses are only tied to exceeding budget, managers will sandbag. Tying incentives to accuracy aligns everyone on hitting the 'real' number.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Publish Forecast Accuracy Scorecard",
+        "recommendation": "FP&A should create a quarterly Forecast Accuracy Scorecard ranking business units by variance direction and magnitude. Track patterns over 4+ quarters to identify chronic sandbagging or over-promising. Present to leadership with examples: 'Sales has under-forecasted by 15% for 4 consecutive quarters.' Complete when forecast accuracy is a visible metric discussed in leadership reviews—shifting culture from 'beat budget' to 'hit the number.'",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q070",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Does FP&A regularly communicate profitability rankings by business segment, product line, or customer tier to leadership?",
+      "help": "Not all revenue is equal. Profitability ranking highlights where resources should be invested and where they might be wasted. This analysis should drive portfolio decisions, not sit in a spreadsheet.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Build Profitability Ranking Report",
+        "recommendation": "FP&A should calculate fully-loaded profitability (including allocated overhead) by segment/product/customer. Rank from most to least profitable. Present quarterly to leadership with recommendations: invest more here, investigate this, consider exiting that. Complete when profitability rankings drive at least one portfolio decision.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q099",
+      "practice_id": "prac_strategic_alignment",
+      "text": "Does FP&A proactively model the financial implications of strategic alternatives (e.g., market entry, M&A, restructuring) before leadership requests the analysis?",
+      "help": "L4 influence means anticipating strategic questions, not waiting to be asked. When FP&A sees a strategic decision brewing—a competitor move, a market shift, an acquisition target—they should prepare the financial analysis before leadership asks for it. This shifts Finance from reactive support to strategic anticipation.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 5,
+      "expert_action": {
+        "title": "Build Strategic Anticipation Capability",
+        "recommendation": "FP&A should monitor strategic signals: Board discussions, competitor moves, market trends, CEO statements. When a strategic question emerges, build the analysis before being asked. Present proactively: 'We noticed X and thought you'd want to see the financial implications.' Complete when FP&A has anticipated at least 3 strategic analyses before being asked.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q071",
+      "practice_id": "prac_investment_rigor",
+      "text": "Are all capital investments or unbudgeted initiatives above a defined threshold required to have a formal business case with calculated ROI/NPV?",
+      "help": "Requiring a business case enforces discipline. It ensures capital is deployed only to projects with clear financial return and strategic fit. This is investment governance—the minimum standard for capital allocation.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Establish Business Case Policy",
+        "recommendation": "Finance leadership should define the threshold (e.g., >$50K capex or >$100K opex) and create a business case template: investment amount, benefits, ROI, payback, risks. Require Finance sign-off. Complete when 100% of investments above threshold have a signed-off business case—ensuring capital goes only to projects with demonstrated returns.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q072",
+      "practice_id": "prac_investment_rigor",
+      "text": "Does Finance perform post-investment reviews ('look-backs') on major projects to validate if the promised ROI was actually delivered?",
+      "help": "Look-backs create accountability. They verify if the benefits promised in the business case were realized and provide learning for future investments.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Implement Post-Investment Review Process",
+        "recommendation": "FP&A should establish a formal look-back process for investments above threshold. Create a review template comparing: actual vs. budgeted costs, realized vs. projected benefits, timeline variance, and root causes. Schedule reviews 6-12 months post-implementation. Present to leadership with a verdict: 'Met,' 'Partial,' or 'Failed.' Complete when quarterly summaries of project outcomes improve future investment decisions.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q073",
+      "practice_id": "prac_investment_rigor",
+      "text": "Does FP&A formally flag underperforming projects with explicit 'continue/restructure/kill' recommendations to leadership?",
+      "help": "Starting projects is easy; stopping them is hard. FP&A's role is to provide the data AND the recommendation—not just report that a project is underperforming, but explicitly recommend what to do about it. This requires courage backed by analysis.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement Project Health Reviews",
+        "recommendation": "Quarterly, review all projects >$X against their original business case. For each, FP&A must provide a recommendation: Continue (on track), Restructure (salvageable with changes), or Kill (cut losses). Track recommendation acceptance rate—stopping good money from chasing bad investments.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q075",
+      "practice_id": "prac_board_level_impact",
+      "text": "Is there a single source of truth for financial data that all executives use when presenting to the Board or external stakeholders?",
+      "help": "Conflicting numbers destroy credibility. A single source of truth—one system, one report, one version—ensures the management team speaks with one voice. This is foundational data governance.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Establish Single Source of Truth",
+        "recommendation": "The Controller or FP&A lead should designate one system (ERP, BI tool, or controlled Excel) as the official source for Board-level metrics. Publish a 'numbers freeze' date before meetings. Complete when no conflicting numbers appear in Board presentations—eliminating credibility-destroying number conflicts.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q074",
+      "practice_id": "prac_board_level_impact",
+      "text": "Does FP&A prepare a strategic 'State of the Business' narrative—not just financial tables—for Board meetings?",
+      "help": "The Board needs context, not just numbers. FP&A's role is to tell the financial story: what happened, why, and what it means for the future. If FP&A only produces data tables, they're not adding strategic value.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 4,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Develop Board Narrative Template",
+        "recommendation": "FP&A should create a standard Board finance section: 1-page executive summary, key variances with 'so what' commentary, forward-looking risks and opportunities, strategic initiative progress. Test: could a Board member understand business health without asking clarifying questions? This builds Board confidence in Finance's strategic grasp.",
+        "type": "quick_win"
+      }
+    },
+    {
+      "id": "fpa_q076",
+      "practice_id": "prac_board_level_impact",
+      "text": "When Finance and Sales forecasts diverge, does FP&A present a formal reconciliation showing the assumptions driving the difference?",
+      "help": "Conflicting numbers create confusion. FP&A's role is not to win the argument but to illuminate it—showing exactly why the forecasts differ (timing, probability weighting, deal inclusion). This transforms a credibility contest into a productive discussion about assumptions.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_strategic_influence",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Create Forecast Reconciliation Process",
+        "recommendation": "FP&A should produce a bridge when forecasts diverge by >5%: Finance forecast → Sales forecast showing each assumption difference (deal timing, probability, pipeline inclusion). Present as 'here's why we differ' not 'we're right.' Complete when divergence discussions reference the bridge, not competing claims.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q077",
+      "practice_id": "prac_data_visualization",
+      "text": "Does FP&A routinely perform profitability analysis at the customer, product, or channel level to inform commercial decisions?",
+      "help": "Understanding where money is made vs. lost is foundational. Without this analysis, commercial decisions are based on revenue, not profit.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Build Profitability Analysis Capability",
+        "recommendation": "FP&A should start with profitability analysis on the top 10 customers or products. Allocate direct costs first, then layer in reasonable overhead allocation using agreed drivers. Update quarterly. Complete when commercial teams reference profitability—not just revenue—in their decisions, ensuring resources flow to where the company actually makes money.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q079",
+      "practice_id": "prac_data_visualization",
+      "text": "Do FP&A reports include narrative insights explaining what happened and why, enabling leadership to make informed decisions?",
+      "help": "A chart without a 'so what' is just data. Mature reporting tells a story: What happened, Why it happened, and What we are doing about it.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Enforce the 'So What?' Rule",
+        "recommendation": "FP&A leadership should establish a standard: every chart must have a headline stating the insight, not the data. If the headline isn't actionable, delete the chart. Review all reports before distribution. Complete when leadership meetings focus on decisions rather than asking 'what does this mean?'—saving hours of clarification and driving faster action.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q080",
+      "practice_id": "prac_data_visualization",
+      "text": "Can the FP&A team drill down from consolidated P&L to transaction-level detail (customer/SKU/invoice) within their own tools, enabling rapid root-cause analysis without IT support?",
+      "help": "This is a prerequisite for self-service analytics. Finance must first have seamless drill-down capability before it can be extended to the business. If FP&A still runs manual queries to answer 'why' questions, the data architecture isn't ready for broader access.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Build Finance Drill-Down Capability",
+        "recommendation": "FP&A and IT should connect the BI tool directly to ERP sub-ledgers and transactional data, creating a unified data model that links GL summary to underlying transactions. Test: can an analyst answer 'what drove the variance in Line X?' in under 5 minutes? Complete when root-cause analysis happens in minutes instead of days—eliminating the lag that turns variance meetings into stale post-mortems.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q081",
+      "practice_id": "prac_data_visualization",
+      "text": "Does FP&A proactively deliver analysis (including NPV/ROI) that enables leadership to make better commercial decisions on pricing, promotions, or product mix?",
+      "help": "Reactive Finance waits to be asked. Proactive Finance identifies opportunities and brings insight to the table before decisions are made.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 5,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Shift to Proactive Analysis",
+        "recommendation": "FP&A should identify 2-3 commercial decisions per quarter where Finance can add value (e.g., pricing changes, product launches, customer deals) and deliver unsolicited analysis before decisions are made. Track whether the analysis influenced the decision. Complete when business leaders start asking 'what does Finance think?' before major moves—signaling that FP&A has earned a seat at the decision table.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q082",
+      "practice_id": "prac_self_service_analytics",
+      "text": "Can non-finance business users drill down from summary dashboards to transaction-level detail without requesting Finance support, enabling them to investigate variances and make informed decisions?",
+      "help": "This is the pinnacle of self-service analytics. Building on Finance's own drill-down capability (L3), the data architecture now supports secure, governed access for business users to answer their own 'why' questions. Finance shifts from query responder to insight partner.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Enable Business Self-Service Drill-Down",
+        "recommendation": "FP&A and IT should extend the Finance data model to business users via governed dashboards with row-level security. Train budget owners on drill-path navigation. Complete when ad-hoc Finance queries drop by 50%—freeing FP&A from data retrieval to focus on insight generation and strategic partnership.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q083",
+      "practice_id": "prac_self_service_analytics",
+      "text": "Can non-finance leaders access their real-time spend vs. budget without emailing Finance, enabling them to make timely spending decisions?",
+      "help": "Real-time access encourages ownership. When leaders can see their spend status anytime, they are better equipped to manage their own budgets.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Deploy Real-Time Manager Self-Service",
+        "recommendation": "FP&A should deploy curated dashboards giving budget owners real-time access to their spend vs. budget, with drill-down to transaction detail. Configure automated alerts when spend exceeds thresholds. Complete when budget owners can answer 'where do I stand?' without contacting Finance—enabling faster spending decisions and shifting FP&A from data provider to strategic advisor.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q084",
+      "practice_id": "prac_predictive_analytics",
+      "text": "Does FP&A use statistical or algorithmic forecasting to validate human inputs, enabling more accurate resource allocation decisions?",
+      "help": "Even simple statistical methods (trend analysis, regression) provide an unbiased baseline. Using them to challenge human inputs helps identify sandbagging or over-optimism.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Implement Statistical Forecast Validation",
+        "recommendation": "FP&A should build statistical models (trend analysis, regression, or time-series) that run parallel to human-submitted forecasts. Flag submissions that deviate significantly from statistical expectation for review. Complete when forecast accuracy improves measurably and chronic sandbagging or over-optimism is identified and corrected—removing bias that distorts resource allocation decisions.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q085",
+      "practice_id": "prac_predictive_analytics",
+      "text": "Does FP&A use automated outlier detection to flag unrealistic forecast submissions, ensuring leadership decisions are based on credible projections?",
+      "help": "Automated checks catch errors early. Flagging outliers saves review time and prevents unrealistic numbers from entering the consolidated plan.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_decision_support",
+      "impact": 4,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Automate Outlier Detection",
+        "recommendation": "FP&A should implement automated outlier detection in the forecast submission process, flagging anomalies (e.g., values outside historical variance bands) before consolidation. Route flagged items to analysts for review. Complete when unrealistic submissions are caught before they enter the plan—ensuring leadership decisions are based on credible projections, not errors or gaming.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q100",
+      "practice_id": "prac_process_automation",
+      "text": "Does FP&A have documented procedures for its core recurring processes (close, budget, forecast)?",
+      "help": "Documentation is the foundation of process maturity. Without written procedures, processes live in people's heads—creating key-person risk, inconsistent execution, and no baseline for improvement.",
+      "maturity_level": 1,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 3,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Document Core FP&A Processes",
+        "recommendation": "The FP&A lead should document the step-by-step procedures for close, budgeting, and forecasting. Include inputs, outputs, owners, and deadlines for each step. Complete when a new team member could follow the documentation to execute the process—reducing onboarding time and key-person risk.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q086",
+      "practice_id": "prac_process_automation",
+      "text": "Is the annual budget cycle completed within a defined timeframe (e.g., 8 weeks) from kickoff to board approval?",
+      "help": "Drawn-out budget processes exhaust the organization and produce stale assumptions. Efficiency signals process maturity.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Compress Budget Cycle",
+        "recommendation": "The FP&A lead should map the current budget timeline end-to-end and identify bottlenecks. Set a target duration (e.g., 8 weeks) and work backwards to compress each phase. Complete when the budget cycle consistently finishes before fiscal year start—eliminating stale assumptions and organizational fatigue.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q087",
+      "practice_id": "prac_process_automation",
+      "text": "Does at least one FP&A team member have working proficiency in data extraction and analysis tools (e.g., SQL, Power BI, Python) beyond Excel?",
+      "help": "Modern FP&A requires technical skills to access data independently. Reliance on IT for every data pull slows the team and limits analytical depth.",
+      "maturity_level": 2,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Build Technical Capability",
+        "recommendation": "The FP&A lead should assess team skill gaps in SQL, BI, or Python. Invest in training or hire for technical proficiency. Target: at least one team member who can self-serve data without IT tickets—reducing report turnaround and enabling deeper analysis.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q088",
+      "practice_id": "prac_process_automation",
+      "text": "Has FP&A deliberately stopped or automated recurring reports to free up capacity?",
+      "help": "Stopping low-value work is as important as starting new work. Regularly pruning reports frees up capacity for analysis and strategic support.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Conduct Report Pruning Exercise",
+        "recommendation": "FP&A should audit all recurring reports and rank them by business value. Stop or automate the lowest-value outputs. Complete when freed capacity has been visibly reallocated to analysis and business partnering—not just absorbed by other reporting.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q089",
+      "practice_id": "prac_process_automation",
+      "text": "Can the monthly close and reporting process run without key-person dependency?",
+      "help": "If one person's absence breaks the process, you have a fragility problem. Mature processes are documented and transferable.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Eliminate Key-Person Risk",
+        "recommendation": "The Controller or FP&A lead should document all close procedures and cross-train team members. Test quarterly by having backup staff run the process. Complete when no single person's absence can delay close—protecting the organization from vacation and turnover disruption.",
+        "type": "governance"
+      }
+    },
+    {
+      "id": "fpa_q090",
+      "practice_id": "prac_process_automation",
+      "text": "Has FP&A established and consistently achieved a cycle time target (e.g., 5 business days) for quarterly reforecasts?",
+      "help": "Forecast cycle time is a direct measure of process efficiency. If each reforecast requires two weeks of data gathering, reconciliation, and manual consolidation, the organization can't iterate quickly. Mature FP&A teams set explicit targets, measure actual cycle time, and continuously improve. The target itself matters less than having one and hitting it.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 4,
+      "complexity": 3,
+      "expert_action": {
+        "title": "Define and Measure Forecast Cycle Time",
+        "recommendation": "FP&A should map the reforecast process end-to-end and measure elapsed time for each stage. Set a target cycle time, assign stage deadlines, and track actual vs. target. Address bottlenecks—usually waiting for inputs or manual consolidation. Complete when forecast cycle time is a tracked KPI reviewed quarterly—enabling faster response to changing conditions.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q101",
+      "practice_id": "prac_process_automation",
+      "text": "Has FP&A automated repetitive manual tasks—data extraction, consolidation, report distribution—so they execute without analyst intervention (e.g., using tools like Power Automate, n8n, or similar)?",
+      "help": "L4 operational excellence means humans focus on judgment while machines handle routine work. Automation isn't just efficiency—it's accuracy, consistency, and scalability. Manual processes that run 'well enough' are technical debt waiting to break.",
+      "maturity_level": 4,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Automate Repetitive FP&A Tasks",
+        "recommendation": "FP&A should identify the most time-consuming manual tasks and evaluate automation options. Start with data extraction or report distribution. Complete when recurring manual tasks run without human intervention—freeing analyst capacity for judgment-based work.",
+        "type": "structural"
+      }
+    },
+    {
+      "id": "fpa_q091",
+      "practice_id": "prac_service_level_agreements",
+      "text": "Does the FP&A team spend the majority of their time on analysis and business partnering rather than data gathering?",
+      "help": "FP&A should have moved beyond data wrangling. Spending the majority of time on analysis indicates the team has achieved the automation and data infrastructure needed to focus on strategic value-add rather than manual data work.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 5,
+      "complexity": 4,
+      "expert_action": {
+        "title": "Maximize Analysis Time",
+        "recommendation": "The FP&A lead should conduct a time study to identify data gathering activities. Systematically automate or outsource each task. Target: analysts should open their day with clean data ready for analysis, not extraction—shifting team capacity from data wrangling to insight generation.",
+        "type": "behavioral"
+      }
+    },
+    {
+      "id": "fpa_q092",
+      "practice_id": "prac_service_level_agreements",
+      "text": "Does the business have clear, reliable expectations for FP&A ad-hoc deliverables (e.g., 'scenario analysis within 3 days, business case reviews within 5 days'), or is turnaround unpredictable?",
+      "help": "Predictability matters more than formal SLAs. If the business knows what to expect from FP&A for ad-hoc requests, they can plan around it. Unpredictable turnaround times create frustration and erode trust in the finance function.",
+      "maturity_level": 3,
+      "is_critical": false,
+      "initiative_id": "init_operational_excellence",
+      "impact": 3,
+      "complexity": 2,
+      "expert_action": {
+        "title": "Establish Predictable Response Times",
+        "recommendation": "The FP&A lead should define and communicate expected turnaround times for common requests (scenario analysis, business case reviews, ad-hoc analysis). Consistency matters more than speed. Complete when stakeholders can reliably predict FP&A response times—building trust through predictability.",
+        "type": "governance"
+      }
+    }
+  ]
+}

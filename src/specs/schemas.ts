@@ -64,6 +64,20 @@ export const QuestionsFileSchema = z.object({
     }, { message: "Duplicate question IDs found" })
 });
 
+// Theme-specific question file schema (for split files)
+export const ThemeQuestionsFileSchema = z.object({
+  version: z.string(),
+  pillar: z.literal('fpa'),
+  theme: ThemeIdSchema,
+  questions: z.array(QuestionSchema)
+    .min(20)
+    .max(45)
+    .refine((items) => {
+      const ids = items.map(i => i.id);
+      return new Set(ids).size === ids.length;
+    }, { message: "Duplicate question IDs found" })
+});
+
 // === PRACTICE ===
 // VS-26: Simplified schema - practices now link FROM questions, not TO questions
 

@@ -10,6 +10,7 @@
 import { z } from 'zod';
 import {
   QuestionsFileSchema,
+  ThemeQuestionsFileSchema,
   PracticesFileSchema,
   InitiativesFileSchema,
   ObjectivesFileSchema,
@@ -23,8 +24,10 @@ import {
   GatesConfig
 } from './schemas';
 
-// Import JSON files
-import questionsJson from '../../content/questions.json';
+// Import JSON files - split by theme for maintainability
+import questionsFoundationJson from '../../content/questions-foundation.json';
+import questionsFutureJson from '../../content/questions-future.json';
+import questionsIntelligenceJson from '../../content/questions-intelligence.json';
 import practicesJson from '../../content/practices.json';
 import initiativesJson from '../../content/initiatives.json';
 import objectivesJson from '../../content/objectives.json';
@@ -60,8 +63,25 @@ function validateOnce<T>(
 
 export function loadQuestions(): Question[] {
   if (!_questions) {
-    const validated = validateOnce(questionsJson, QuestionsFileSchema, 'questions.json');
-    _questions = validated.questions;
+    // Load and validate each theme file separately
+    const foundation = validateOnce(questionsFoundationJson, ThemeQuestionsFileSchema, 'questions-foundation.json');
+    const future = validateOnce(questionsFutureJson, ThemeQuestionsFileSchema, 'questions-future.json');
+    const intelligence = validateOnce(questionsIntelligenceJson, ThemeQuestionsFileSchema, 'questions-intelligence.json');
+
+    // Merge all questions (already sorted by theme file order)
+    _questions = [
+      ...foundation.questions,
+      ...future.questions,
+      ...intelligence.questions
+    ];
+
+    // Validate no duplicate IDs across files
+    const ids = _questions.map(q => q.id);
+    const uniqueIds = new Set(ids);
+    if (uniqueIds.size !== ids.length) {
+      const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+      throw new Error(`Duplicate question IDs found across theme files: ${duplicates.join(', ')}`);
+    }
   }
   return _questions;
 }
