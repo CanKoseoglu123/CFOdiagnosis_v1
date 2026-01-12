@@ -1002,10 +1002,10 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
   const normalizedCtx = normalizeContext(run.context);
 
   // VS-27c: Merge company data from company_profiles for v2 format runs
-  if (companyContext && companyContext.company_name) {
+  if (companyContext && companyContext.name) {
     normalizedCtx.company = {
       ...normalizedCtx.company,
-      name: companyContext.company_name,
+      name: companyContext.name,
       industry: companyContext.industry || normalizedCtx.company.industry,
       revenue_range: companyContext.revenue_range || normalizedCtx.company.revenue_range,
       employee_count: companyContext.employee_count || normalizedCtx.company.employee_count,
