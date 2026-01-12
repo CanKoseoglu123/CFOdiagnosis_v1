@@ -201,12 +201,12 @@ CFOdiagnosis_v1/
 ## Assessment Flow
 
 1. Click "Start Assessment" → `/assess` (auto-creates run)
-2. Redirects to → `/run/:id/setup/company`
-3. Enter company context → `/run/:id/setup/persona`
-4. Review/confirm persona classification → `/run/:id/setup/pillar`
-5. Enter FP&A context → `/run/:id/intro`
-6. Read methodology → `/assess/foundation?runId=:id`
-7. Answer questions (3 themes) → Complete + Score
+2. Redirects to → `/run/:id/intro`
+3. Read methodology → `/run/:id/setup/company`
+4. Enter company context → `/run/:id/setup/persona`
+5. Review/confirm persona classification → `/run/:id/setup/pillar`
+6. Enter FP&A context → `/assess/objective/obj_budget_discipline?runId=:id`
+7. Answer questions (9 objectives) → Complete + Score
 8. Calibrate importance → `/run/:id/calibrate`
 9. View report → `/report/:runId`
 
@@ -504,7 +504,7 @@ const L1_CRITICALS = ['fpa_l1_q01', ...]; // DO NOT DO THIS
 | Task | Priority | Status |
 |------|----------|--------|
 | Domain QA (cfo-lens.com) | High | Pending |
-| Move Intro page before Company Setup | High | Pending |
+| Move Intro page before Company Setup | High | **Done** |
 | Post-completion flow (return to landing) | High | Pending |
 | PDF export for reports | High | **Done** (VS-45 Executive Report) |
 | Executive Report comprehensive export (PPTX-like) | Medium | Pending |
