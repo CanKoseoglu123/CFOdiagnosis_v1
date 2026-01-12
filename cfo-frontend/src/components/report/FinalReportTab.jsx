@@ -4,6 +4,7 @@
 // Mental model: "Forward to CEO without explanation"
 
 import React, { useMemo } from 'react';
+import { TOTAL_QUESTIONS } from '../../data/spec';
 
 // Objective theme mapping
 const OBJECTIVE_THEME_MAP = {
@@ -238,7 +239,7 @@ export default function FinalReportTab({
 
   // Projected scores (24 months)
   const projectedScore = useMemo(() => {
-    const totalQuestions = questions.length || 48;
+    const totalQuestions = questions.length || TOTAL_QUESTIONS;
     const inputMap = new Map((report?.inputs || []).map(i => [i.question_id, i.value]));
     const currentYes = questions.filter(q => inputMap.get(q.id) === true).length;
     const projectedYes = questions.filter(q => inputMap.get(q.id) === true || actionPlan[q.id]).length;

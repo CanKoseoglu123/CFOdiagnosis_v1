@@ -3,6 +3,7 @@
 // Extracted from FinalReportTab.jsx for use in ExecutiveReportPage
 
 import { useMemo } from 'react';
+import { TOTAL_QUESTIONS } from '../data/spec';
 
 // Objective theme mapping
 export const OBJECTIVE_THEME_MAP = {
@@ -178,7 +179,7 @@ export default function useReportData({
   // ─────────────────────────────────────────────────────────────────────────────
 
   const projectedScore = useMemo(() => {
-    const totalQuestions = questions.length || 48;
+    const totalQuestions = questions.length || TOTAL_QUESTIONS;
     const inputMap = new Map((report?.inputs || []).map(i => [i.question_id, i.value]));
     const projectedYes = questions.filter(q => inputMap.get(q.id) === true || actionPlan[q.id]).length;
     return Math.round((projectedYes / totalQuestions) * 100);

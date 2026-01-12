@@ -88,10 +88,14 @@ export default function ActionPlanTab({
     }
   }, [runId]);
 
-  // VS-47: Show intro modal on entry
+  // VS-47: Show intro modal on entry (only first time per run)
   useEffect(() => {
     if (!runId || isFinalized) return;
-    setShowIntroModal(true);
+    const storageKey = `actionPlanIntroSeen:${runId}`;
+    const hasSeen = window.localStorage.getItem(storageKey);
+    if (!hasSeen) {
+      setShowIntroModal(true);
+    }
   }, [runId, isFinalized]);
 
   async function fetchActionPlan() {
@@ -636,6 +640,7 @@ export default function ActionPlanTab({
                 onClick={() => {
                   setShowIntroModal(false);
                   setShowWizard(true);
+                  window.localStorage.setItem(`actionPlanIntroSeen:${runId}`, 'true');
                 }}
                 className="w-full px-4 py-2 text-white text-sm font-medium rounded flex items-center justify-center gap-2 transition-colors bg-violet-600 hover:bg-violet-700"
               >
@@ -646,7 +651,10 @@ export default function ActionPlanTab({
 
             <div className="flex items-center justify-end">
               <button
-                onClick={() => setShowIntroModal(false)}
+                onClick={() => {
+                  setShowIntroModal(false);
+                  window.localStorage.setItem(`actionPlanIntroSeen:${runId}`, 'true');
+                }}
                 className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
               >
                 Select Actions Manually

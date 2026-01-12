@@ -25,6 +25,7 @@ import ActionPlanTab from '../components/report/ActionPlanTab';
 import FinalReportTab from '../components/report/FinalReportTab';
 import BenchmarkTab from '../components/report/BenchmarkTab';
 import useReportData from '../hooks/useReportData';
+import { TOTAL_QUESTIONS } from '../data/spec';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -303,7 +304,7 @@ export default function PillarReport() {
   const cappedBy = maturityV2.capped_by || [];
 
   // Count questions answered from pillar data (scored_questions counts all answered)
-  const questionsAnswered = report.pillars?.[0]?.scored_questions || 48;
+  const questionsAnswered = report.pillars?.[0]?.scored_questions || TOTAL_QUESTIONS;
 
   // ─────────────────────────────────────────────────────────────────────────
   // MATURITY FOOTPRINT DATA (VS-23)
@@ -531,7 +532,7 @@ export default function PillarReport() {
                   execution_score={executionScore}
                   actual_level={actualLevel}
                   level_name={levelName}
-                  questions_total={48}
+                  questions_total={TOTAL_QUESTIONS}
                   questions_answered={questionsAnswered}
                   critical_count={8}
                   failed_critical_count={criticalRisks.length}
