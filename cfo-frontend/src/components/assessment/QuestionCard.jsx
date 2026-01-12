@@ -10,7 +10,7 @@ export default function QuestionCard({
   onAnswer,
   index
 }) {
-  const [showHelp, setShowHelp] = useState(false);
+  const [showHelp, setShowHelp] = useState(true);
 
   const isAnswered = answer !== null && answer !== undefined;
   const isYes = answer === true;
