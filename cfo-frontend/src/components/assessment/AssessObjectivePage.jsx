@@ -291,7 +291,8 @@ export default function AssessObjectivePage() {
     const hasSeen = window.localStorage.getItem(storageKey);
     if (!hasSeen) {
       setShowIntroModal(true);
-      window.localStorage.setItem(storageKey, 'true');
+      // Note: localStorage is set when user dismisses modal, not here
+      // This prevents StrictMode double-mount from hiding the modal
     }
   }, [loading, isFirstObjective, runId]);
 
@@ -476,7 +477,11 @@ export default function AssessObjectivePage() {
               </p>
               <div className="flex justify-end mt-4">
                 <button
-                  onClick={() => setShowIntroModal(false)}
+                  onClick={() => {
+                    setShowIntroModal(false);
+                    // Mark as seen only when user explicitly dismisses
+                    window.localStorage.setItem(`assessmentIntroSeen:${runId}`, 'true');
+                  }}
                   className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
                 >
                   Start Questions
