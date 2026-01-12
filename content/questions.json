@@ -1022,7 +1022,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Define Commercial Consultation Policy",
-        "recommendation": "Establish clear thresholds (e.g., deals >$100K, pricing changes >5%, new product launches) that require Finance sign-off. Document in a policy and communicate to commercial teams. Track compliance.",
+        "recommendation": "The CFO or FP&A lead should establish clear thresholds (e.g., deals >$100K, pricing changes >5%) requiring Finance sign-off. Document in a policy and communicate to commercial teams. Complete when all deals above threshold have documented Finance review—preventing unprofitable deals from closing without visibility.",
         "type": "governance"
       }
     },
@@ -1038,7 +1038,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Deal Desk Process",
-        "recommendation": "Define 'standard terms' explicitly. Create a simple approval workflow for deviations—Sales submits, Finance reviews within 24-48 hours. Track deviation frequency and margin impact quarterly.",
+        "recommendation": "Finance should define 'standard terms' explicitly and create an approval workflow for deviations—Sales submits, Finance reviews within 24-48 hours. Complete when deviation tracking shows margin impact quarterly—protecting margins by ensuring non-standard terms are explicitly justified.",
         "type": "governance"
       }
     },
@@ -1054,7 +1054,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement Proactive Insight Delivery",
-        "recommendation": "Assign each Finance Business Partner a monthly deliverable: one unsolicited insight for their business unit (cost trend, margin erosion, efficiency opportunity). Track whether insights lead to action. If they don't, the insights aren't valuable enough.",
+        "recommendation": "Assign each Finance Business Partner a monthly deliverable: one unsolicited insight for their business unit (cost trend, margin erosion, efficiency opportunity). Track whether insights lead to action. If they don't, the insights aren't valuable enough—shifting Finance from scorekeeper to trusted advisor.",
         "type": "behavioral"
       }
     },
@@ -1102,7 +1102,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Map Finance KPIs to Strategy",
-        "recommendation": "List the company's top 3 strategic initiatives. For each, identify which Finance KPIs directly measure progress. If there's no link, either add a KPI or question whether Finance is tracking the right things.",
+        "recommendation": "FP&A should list the company's top 3 strategic initiatives and identify which Finance KPIs measure progress for each. If there's no link, add a KPI or question what you're tracking. Complete when every strategic initiative has a linked Finance KPI—ensuring Finance measures what the business cares about.",
         "type": "governance"
       }
     },
@@ -1134,7 +1134,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Build Profitability Ranking Report",
-        "recommendation": "Calculate fully-loaded profitability (including allocated overhead) by segment/product/customer. Rank from most to least profitable. Present quarterly to leadership with recommendations: invest more here, investigate this, consider exiting that.",
+        "recommendation": "FP&A should calculate fully-loaded profitability (including allocated overhead) by segment/product/customer. Rank from most to least profitable. Present quarterly to leadership with recommendations: invest more here, investigate this, consider exiting that. Complete when profitability rankings drive at least one portfolio decision.",
         "type": "structural"
       }
     },
@@ -1150,7 +1150,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Establish Business Case Policy",
-        "recommendation": "Define the threshold (e.g., >$50K capex or >$100K opex). Create a simple business case template with required fields: investment amount, expected benefits, ROI calculation, payback period, risks. Require Finance sign-off before approval.",
+        "recommendation": "Finance leadership should define the threshold (e.g., >$50K capex or >$100K opex) and create a business case template: investment amount, benefits, ROI, payback, risks. Require Finance sign-off. Complete when 100% of investments above threshold have a signed-off business case—ensuring capital goes only to projects with demonstrated returns.",
         "type": "governance"
       }
     },
@@ -1182,7 +1182,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Implement Project Health Reviews",
-        "recommendation": "Quarterly, review all projects >$X against their original business case. For each, FP&A must provide a recommendation: Continue (on track), Restructure (salvageable with changes), or Kill (cut losses). Track recommendation acceptance rate.",
+        "recommendation": "Quarterly, review all projects >$X against their original business case. For each, FP&A must provide a recommendation: Continue (on track), Restructure (salvageable with changes), or Kill (cut losses). Track recommendation acceptance rate—stopping good money from chasing bad investments.",
         "type": "governance"
       }
     },
@@ -1198,7 +1198,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Develop Board Narrative Template",
-        "recommendation": "Create a standard Board finance section with: 1-page executive summary, key variances with 'so what' commentary, forward-looking risks and opportunities, strategic initiative progress. Test: could a Board member understand the business health without asking clarifying questions?",
+        "recommendation": "FP&A should create a standard Board finance section: 1-page executive summary, key variances with 'so what' commentary, forward-looking risks and opportunities, strategic initiative progress. Test: could a Board member understand business health without asking clarifying questions? This builds Board confidence in Finance's strategic grasp.",
         "type": "quick_win"
       }
     },
@@ -1214,7 +1214,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Establish Single Source of Truth",
-        "recommendation": "Designate one system (ERP, BI tool, or even a controlled Excel file) as the official source for Board-level metrics. Publish a 'numbers freeze' date before Board meetings. Ban executives from creating their own versions.",
+        "recommendation": "The Controller or FP&A lead should designate one system (ERP, BI tool, or controlled Excel) as the official source for Board-level metrics. Publish a 'numbers freeze' date before meetings. Complete when no conflicting numbers appear in Board presentations—eliminating credibility-destroying number conflicts.",
         "type": "governance"
       }
     },
@@ -1230,7 +1230,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Create Forecast Reconciliation Process",
-        "recommendation": "When forecasts diverge by >5%, produce a bridge: Finance forecast → Sales forecast showing each assumption difference (deal timing, probability, pipeline inclusion). Present to leadership as 'here's why we differ' rather than 'we're right, they're wrong.'",
+        "recommendation": "FP&A should produce a bridge when forecasts diverge by >5%: Finance forecast → Sales forecast showing each assumption difference (deal timing, probability, pipeline inclusion). Present as 'here's why we differ' not 'we're right.' Complete when divergence discussions reference the bridge, not competing claims.",
         "type": "structural"
       }
     },
@@ -1262,7 +1262,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Build Strategic Anticipation Capability",
-        "recommendation": "Monitor strategic signals: Board discussions, competitor moves, market trends, CEO statements. When you see a strategic question emerging, build the analysis before being asked. Present it proactively: 'We noticed X and thought you'd want to see the financial implications of Y and Z options.'",
+        "recommendation": "FP&A should monitor strategic signals: Board discussions, competitor moves, market trends, CEO statements. When a strategic question emerges, build the analysis before being asked. Present proactively: 'We noticed X and thought you'd want to see the financial implications.' Complete when FP&A has anticipated at least 3 strategic analyses before being asked.",
         "type": "behavioral"
       }
     },
@@ -1278,7 +1278,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Build Profitability Analysis Capability",
-        "recommendation": "Start with top 10 customers or products. Allocate direct costs, then layer in reasonable overhead allocation. Update quarterly.",
+        "recommendation": "FP&A should start with profitability analysis on the top 10 customers or products. Allocate direct costs first, then layer in reasonable overhead allocation using agreed drivers. Update quarterly. Complete when commercial teams reference profitability—not just revenue—in their decisions, ensuring resources flow to where the company actually makes money.",
         "type": "structural"
       }
     },
@@ -1294,7 +1294,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Rationalize Allocations",
-        "recommendation": "Document allocation methodology. Use logical drivers (headcount for HR, users for IT). Get business unit sign-off on the approach.",
+        "recommendation": "FP&A or the Controller should document allocation methodology using logical drivers (headcount for HR, users for IT) and get business unit sign-off on the approach. Complete when business leaders stop challenging allocation methods in reviews—freeing discussions to focus on performance rather than accounting disputes.",
         "type": "governance"
       }
     },
@@ -1310,7 +1310,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Enforce the 'So What?' Rule",
-        "recommendation": "Every chart must have a headline stating the *insight*, not the data. If the headline isn't an insight, delete the chart.",
+        "recommendation": "FP&A leadership should establish a standard: every chart must have a headline stating the insight, not the data. If the headline isn't actionable, delete the chart. Review all reports before distribution. Complete when leadership meetings focus on decisions rather than asking 'what does this mean?'—saving hours of clarification and driving faster action.",
         "type": "behavioral"
       }
     },
@@ -1326,7 +1326,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Build Finance Drill-Down Capability",
-        "recommendation": "Connect your BI tool directly to ERP sub-ledgers and transactional data. Create a unified data model that links GL summary to underlying transactions. Test: can an FP&A analyst answer 'what drove the variance in Line X?' in under 5 minutes without leaving their dashboard?",
+        "recommendation": "FP&A and IT should connect the BI tool directly to ERP sub-ledgers and transactional data, creating a unified data model that links GL summary to underlying transactions. Test: can an analyst answer 'what drove the variance in Line X?' in under 5 minutes? Complete when root-cause analysis happens in minutes instead of days—eliminating the lag that turns variance meetings into stale post-mortems.",
         "type": "structural"
       }
     },
@@ -1342,7 +1342,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Shift to Proactive Analysis",
-        "recommendation": "Identify 2-3 commercial decisions per quarter where Finance can add value. Deliver unsolicited analysis. Measure uptake.",
+        "recommendation": "FP&A should identify 2-3 commercial decisions per quarter where Finance can add value (e.g., pricing changes, product launches, customer deals) and deliver unsolicited analysis before decisions are made. Track whether the analysis influenced the decision. Complete when business leaders start asking 'what does Finance think?' before major moves—signaling that FP&A has earned a seat at the decision table.",
         "type": "behavioral"
       }
     },
@@ -1358,7 +1358,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Enable Business Self-Service Drill-Down",
-        "recommendation": "Extend the Finance data model to business users via governed dashboards. Implement row-level security so users only see their own data. Train budget owners on how to navigate the drill-path. Success metric: reduce ad-hoc Finance queries by 50%.",
+        "recommendation": "FP&A and IT should extend the Finance data model to business users via governed dashboards with row-level security. Train budget owners on drill-path navigation. Complete when ad-hoc Finance queries drop by 50%—freeing FP&A from data retrieval to focus on insight generation and strategic partnership.",
         "type": "structural"
       }
     },
@@ -1373,8 +1373,8 @@
       "impact": 5,
       "complexity": 4,
       "expert_action": {
-        "title": "Deploy Manager Self-Service",
-        "recommendation": "Give budget owners read-access to the planning tool or a curated dashboard. Stop being the gatekeeper of basic data.",
+        "title": "Deploy Real-Time Manager Self-Service",
+        "recommendation": "FP&A should deploy curated dashboards giving budget owners real-time access to their spend vs. budget, with drill-down to transaction detail. Configure automated alerts when spend exceeds thresholds. Complete when budget owners can answer 'where do I stand?' without contacting Finance—enabling faster spending decisions and shifting FP&A from data provider to strategic advisor.",
         "type": "structural"
       }
     },
@@ -1389,8 +1389,8 @@
       "impact": 4,
       "complexity": 4,
       "expert_action": {
-        "title": "Pilot Statistical Forecasting",
-        "recommendation": "Start simple: run a trend analysis or regression on historical sales parallel to your manual forecast. Investigate large deviations.",
+        "title": "Implement Statistical Forecast Validation",
+        "recommendation": "FP&A should build statistical models (trend analysis, regression, or time-series) that run parallel to human-submitted forecasts. Flag submissions that deviate significantly from statistical expectation for review. Complete when forecast accuracy improves measurably and chronic sandbagging or over-optimism is identified and corrected—removing bias that distorts resource allocation decisions.",
         "type": "structural"
       }
     },
@@ -1406,7 +1406,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Automate Outlier Detection",
-        "recommendation": "Implement statistical rules (e.g., +/- 2 standard deviations) to flag anomalies in user submissions before they roll up.",
+        "recommendation": "FP&A should implement automated outlier detection in the forecast submission process, flagging anomalies (e.g., values outside historical variance bands) before consolidation. Route flagged items to analysts for review. Complete when unrealistic submissions are caught before they enter the plan—ensuring leadership decisions are based on credible projections, not errors or gaming.",
         "type": "structural"
       }
     },
