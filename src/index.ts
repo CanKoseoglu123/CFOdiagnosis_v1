@@ -276,6 +276,22 @@ app.post("/diagnostic-runs", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// List diagnostic runs for authenticated user (My Reports)
+// ------------------------------------------------------------------
+app.get("/diagnostic-runs", async (req, res) => {
+  const { data, error } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, context, spec_version, created_at, updated_at, finalized_at, setup_completed_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
+});
+
+// ------------------------------------------------------------------
 // VS18 — Get diagnostic run details (includes inputs for resume)
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id", async (req, res) => {

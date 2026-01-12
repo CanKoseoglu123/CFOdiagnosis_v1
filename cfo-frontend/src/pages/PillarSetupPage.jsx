@@ -3,12 +3,12 @@
 // VS-27c: Updated to only send pillar context (company lives in company_profiles)
 // Includes: Tools & Technology, Team & Process, Pain Points, Additional Context
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Wrench, Users, Calendar, Target, AlertCircle, User,
-  ArrowRight, ArrowLeft, Loader, Check, MessageSquare
+  ArrowRight, ArrowLeft, Loader, Check, MessageSquare, LogOut
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -21,6 +21,15 @@ import {
 } from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Simple debounce helper for auto-save
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
 
 // Chip selector component (single select)
 function ChipSelector({ label, icon: Icon, value, onChange, options, required, hint }) {
@@ -326,6 +335,56 @@ export default function PillarSetupPage() {
       ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` })
     };
   };
+
+  // Track if auto-save is in progress
+  const [autoSaving, setAutoSaving] = useState(false);
+  const isInitialMount = useRef(true);
+
+  // Auto-save pillar context when fields change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const autoSave = useCallback(
+    debounce(async (pillarData) => {
+      if (!runId) return;
+
+      setAutoSaving(true);
+      try {
+        // Format tools with effectiveness for API
+        const toolsWithEffectiveness = pillarData.tools.map(tool => ({
+          tool,
+          effectiveness: pillarData.tool_effectiveness[tool] || 'medium'
+        }));
+
+        const headers = await getAuthHeaders();
+        await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}/setup`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            pillar: {
+              ...pillarData,
+              tools: toolsWithEffectiveness
+            }
+          })
+        });
+        console.log('[PillarSetupPage] Auto-saved pillar context');
+      } catch (err) {
+        console.error('[PillarSetupPage] Auto-save failed:', err);
+      } finally {
+        setAutoSaving(false);
+      }
+    }, 1000),
+    [runId]
+  );
+
+  // Trigger auto-save when pillar state changes (skip initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (!loading) {
+      autoSave(pillar);
+    }
+  }, [pillar, autoSave, loading]);
 
   // VS-27c: Load run data and check for linked company profile
   useEffect(() => {
@@ -663,7 +722,7 @@ export default function PillarSetupPage() {
             </div>
           </div>
 
-          <div className="flex justify-between mb-8">
+          <div className="flex justify-between items-center mb-8">
             <button
               onClick={handleBack}
               className="py-3 px-6 rounded font-semibold border border-gray-300
@@ -672,6 +731,16 @@ export default function PillarSetupPage() {
               <ArrowLeft size={18} />
               Back to Persona
             </button>
+
+            <button
+              onClick={() => navigate('/')}
+              className="py-3 px-6 rounded font-semibold border border-gray-200
+                text-gray-500 hover:bg-gray-50 hover:text-gray-600 flex items-center justify-center gap-2"
+            >
+              <LogOut size={18} />
+              Save & Exit
+            </button>
+
             <button
               onClick={handleSubmit}
               disabled={!isValid() || saving}

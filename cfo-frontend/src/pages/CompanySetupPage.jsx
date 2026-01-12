@@ -2,14 +2,15 @@
 // VS25: Company context setup - Step 1 of 2
 // Includes: Company Info, Organisation Scale, Ownership Structure, Transformation Ambition
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Building2, Users, Euro, GitBranch, Zap, Briefcase,
   ArrowRight, ArrowLeft, Loader, AlertCircle, Check, Info,
   // VS-27: Icons for Business Dynamics section
-  TrendingUp, GitMerge, Percent, Shield, Landmark, Database
+  TrendingUp, GitMerge, Percent, Shield, Landmark, Database,
+  LogOut
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -25,6 +26,15 @@ import {
 } from '../data/contextOptions';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// Simple debounce helper for auto-save
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
 
 // Chip selector component (single select)
 function ChipSelector({ label, icon: Icon, value, onChange, options, required }) {
@@ -154,6 +164,10 @@ export default function CompanySetupPage() {
   // VS-27c: Track company profile ID if linked
   const [companyProfileId, setCompanyProfileId] = useState(null);
 
+  // Track if auto-save is in progress
+  const [autoSaving, setAutoSaving] = useState(false);
+  const isInitialMount = useRef(true);
+
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return {
@@ -161,6 +175,41 @@ export default function CompanySetupPage() {
       ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` })
     };
   };
+
+  // Auto-save company context when fields change (only if profile exists)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const autoSave = useCallback(
+    debounce(async (companyData, profileId) => {
+      if (!profileId) return; // Don't auto-save if no profile yet
+
+      setAutoSaving(true);
+      try {
+        const headers = await getAuthHeaders();
+        await fetch(`${API_BASE_URL}/api/company-profiles/${profileId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ context: companyData })
+        });
+        console.log('[CompanySetupPage] Auto-saved company context');
+      } catch (err) {
+        console.error('[CompanySetupPage] Auto-save failed:', err);
+      } finally {
+        setAutoSaving(false);
+      }
+    }, 1000),
+    []
+  );
+
+  // Trigger auto-save when company state changes (skip initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (companyProfileId && !loading) {
+      autoSave(company, companyProfileId);
+    }
+  }, [company, companyProfileId, autoSave, loading]);
 
   // Load existing data
   useEffect(() => {
@@ -572,7 +621,7 @@ export default function CompanySetupPage() {
             />
           </div>
 
-          <div className="flex justify-between mb-8">
+          <div className="flex justify-between items-center mb-8">
             <button
               onClick={() => navigate(`/run/${runId}/intro`)}
               className="py-3 px-6 rounded font-semibold border border-gray-300
@@ -581,6 +630,16 @@ export default function CompanySetupPage() {
               <ArrowLeft size={18} />
               Back to Overview
             </button>
+
+            <button
+              onClick={() => navigate('/')}
+              className="py-3 px-6 rounded font-semibold border border-gray-200
+                text-gray-500 hover:bg-gray-50 hover:text-gray-600 flex items-center justify-center gap-2"
+            >
+              <LogOut size={18} />
+              Save & Exit
+            </button>
+
             <button
               onClick={handleContinue}
               disabled={!isValid() || saving}

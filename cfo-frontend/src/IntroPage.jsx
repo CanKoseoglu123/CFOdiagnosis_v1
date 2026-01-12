@@ -3,8 +3,8 @@
 // Single-page layout with horizontal sections, marketing-focused messaging
 
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Target, Bot, ClipboardList, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Target, Bot, ClipboardList, ArrowRight, CheckCircle2, LogOut } from 'lucide-react';
 import ChapterHeader from './components/ChapterHeader';
 import EnterpriseCanvas from './components/EnterpriseCanvas';
 import FeedbackButton from './components/FeedbackButton';
@@ -75,6 +75,7 @@ const THEMES = [
 
 export default function IntroPage() {
   const { runId } = useParams();
+  const navigate = useNavigate();
 
   // Scroll to top on mount
   useEffect(() => {
@@ -218,7 +219,14 @@ export default function IntroPage() {
 
         {/* ROW 4: CTA */}
         <section className="pt-2 border-t border-slate-300 mt-2">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-slate-500 px-4 py-2.5 text-sm font-medium hover:text-slate-600 hover:bg-slate-200 transition-colors rounded-sm border border-slate-200"
+            >
+              <LogOut className="w-4 h-4" />
+              Save & Exit
+            </button>
             <Link to={`/run/${runId}/setup/company`}>
               <button className="flex items-center gap-2 bg-[#1a365d] text-white px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition-colors rounded-sm">
                 Begin Assessment

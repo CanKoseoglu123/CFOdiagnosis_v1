@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Lock, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Lock, AlertTriangle, ChevronRight, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -167,7 +167,7 @@ function PriorityCounter({ topCount, maxTop, combinedCount, maxCombined }) {
 }
 
 // Sidebar Component
-function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSkip }) {
+function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSkip, onSaveAndExit }) {
   const totalObjectives = objectives.length;
   const configuredCount = Object.keys(importanceMap).length;
 
@@ -262,6 +262,13 @@ function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPr
           className="w-full py-2 text-slate-600 hover:text-navy text-sm transition-colors"
         >
           Skip (use defaults)
+        </button>
+        <button
+          onClick={onSaveAndExit}
+          className="w-full py-2 text-slate-500 hover:text-slate-600 text-sm transition-colors flex items-center justify-center gap-2 border border-slate-200 rounded-sm"
+        >
+          <LogOut className="w-4 h-4" />
+          Save & Exit
         </button>
       </div>
     </div>
@@ -411,6 +418,7 @@ export default function CalibrationPage() {
       combinedPriorityCount={combinedPriorityCount}
       onSubmit={handleSubmit}
       onSkip={handleSkip}
+      onSaveAndExit={() => navigate('/')}
     />
   );
 

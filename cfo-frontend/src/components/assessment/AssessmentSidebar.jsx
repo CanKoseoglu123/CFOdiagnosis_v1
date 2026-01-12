@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Circle, ChevronLeft } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft, LogOut } from 'lucide-react';
 
 // Theme configuration with objectives in order
 const THEME_CONFIG = {
@@ -260,11 +260,22 @@ export default function AssessmentSidebar({
         </div>
       </div>
 
-      {/* Spacer to push back button to bottom */}
+      {/* Spacer to push buttons to bottom */}
       <div className="flex-1" />
 
-      {/* Back Button */}
+      {/* Save & Exit Button */}
       <div className="mt-6">
+        <button
+          onClick={() => navigate('/')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-slate-500 text-sm font-medium rounded-sm border border-slate-200 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          Save & Exit
+        </button>
+      </div>
+
+      {/* Back Button */}
+      <div className="mt-3">
         <button
           onClick={handleBack}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
