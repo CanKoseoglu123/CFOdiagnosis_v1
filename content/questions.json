@@ -894,7 +894,7 @@
       "complexity": 2,
       "expert_action": {
         "title": "Add Sensitivity Analysis to Forecast Presentations",
-        "recommendation": "Include a standard sensitivity table in every forecast deck showing +/-10% on the top 3 drivers (typically volume, price, cost inflation) and their impact on Revenue, EBITDA, and Cash. Leadership should never see a single-point forecast without understanding the range.",
+        "recommendation": "FP&A should include a standard sensitivity table in every forecast deck showing the top drivers (e.g., volume, price, cost inflation) with meaningful variance ranges (e.g., +/-10%) and their impact on key outcomes. Complete when leadership never sees a single-point forecast without understanding the range of possible results.",
         "type": "quick_win"
       }
     },

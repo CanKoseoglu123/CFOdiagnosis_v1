@@ -1,7 +1,7 @@
 # Question Review Criteria
 
-**Version:** 1.2
-**Last Updated:** 2025-01-11  
+**Version:** 1.3
+**Last Updated:** 2025-01-12  
 **Purpose:** Standard framework for evaluating diagnostic questions before release
 
 ---
@@ -22,6 +22,7 @@
 | 10 | **Level-Appropriate Scope** | Realistic for maturity level | L1 achievable by any company; L4 genuinely advanced for mid-market |
 | 11 | **FP&A Centricity** | Tests FP&A capability, not just outcome | Question names FP&A as the actor or clearly tests an FP&A behavior |
 | 12 | **Capability Over Tools** | Tests skill/process maturity, not tool adoption | A "Yes" requires meaningful organizational effort, not just enabling a software feature |
+| 13 | **Avoid Arbitrary Numbers** | Questions/actions don't embed specific thresholds as requirements | Specific values appear only as examples (e.g., "+/-10%") not mandates |
 
 ---
 
@@ -57,7 +58,7 @@
 ## Review Process
 
 1. Review questions grouped by **Objective**
-2. For each question, assess against all 12 criteria
+2. For each question, assess against all 13 criteria
 3. Flag issues with specific criterion number (e.g., "Fails #1 - ambiguous")
 4. Propose revision or recommend removal
 5. Re-review flagged questions after revision
