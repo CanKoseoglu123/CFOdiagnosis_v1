@@ -107,6 +107,7 @@ export default function AssessObjectivePage() {
   const [error, setError] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const questionsContainerRef = useRef(null);
+  const prevObjectiveIdRef = useRef(objectiveId);
 
   const objectiveMeta = OBJECTIVE_META[objectiveId];
 
@@ -209,8 +210,15 @@ export default function AssessObjectivePage() {
     return spec.questions.filter(q => getQuestionObjective(q) === objectiveId);
   }, [spec, objectiveId, getQuestionObjective]);
 
-  // Scroll to first unanswered question when objective changes or data loads
+  // Scroll to first unanswered question only on objective navigation (not answer changes)
   useEffect(() => {
+    // Skip if objective hasn't changed (e.g., just answering questions)
+    const objectiveChanged = prevObjectiveIdRef.current !== objectiveId;
+    if (!objectiveChanged && !loading) {
+      return;
+    }
+    prevObjectiveIdRef.current = objectiveId;
+
     if (loading || !objectiveQuestions.length) return;
 
     // Find first unanswered question index
@@ -218,8 +226,8 @@ export default function AssessObjectivePage() {
       q => answers[q.id] === undefined
     );
 
-    if (firstUnansweredIndex === -1) {
-      // All answered - scroll to top
+    // Scroll to top if all answered or first question is unanswered
+    if (firstUnansweredIndex === -1 || firstUnansweredIndex === 0) {
       window.scrollTo(0, 0);
       return;
     }
