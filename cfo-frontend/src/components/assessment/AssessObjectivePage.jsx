@@ -328,7 +328,7 @@ export default function AssessObjectivePage() {
   // Navigation handlers
   function handleBack() {
     if (isFirstObjective) {
-      navigate(`/run/${runId}/intro`);
+      navigate(`/run/${runId}/setup/pillar?review=true`);
     } else if (prevObjective) {
       navigate(`/assess/objective/${prevObjective}?runId=${runId}`);
     }
@@ -535,7 +535,7 @@ export default function AssessObjectivePage() {
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              {isFirstObjective ? 'Back to Methodology' : 'Previous Objective'}
+              {isFirstObjective ? 'Back to Setup' : 'Previous Objective'}
             </button>
 
             {isLastObjective ? (

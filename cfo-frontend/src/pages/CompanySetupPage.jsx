@@ -7,7 +7,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
   Building2, Users, Euro, GitBranch, Zap, Briefcase,
-  ArrowRight, Loader, AlertCircle, Check, Info,
+  ArrowRight, ArrowLeft, Loader, AlertCircle, Check, Info,
   // VS-27: Icons for Business Dynamics section
   TrendingUp, GitMerge, Percent, Shield, Landmark, Database
 } from 'lucide-react';
@@ -176,10 +176,10 @@ export default function CompanySetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed and NOT in review mode, redirect to intro
+        // If setup already completed and NOT in review mode, redirect to assessment
         if (run.setup_completed_at && !isReviewMode) {
           setRedirecting(true);
-          navigate(`/run/${runId}/intro`);
+          navigate(`/assess/objective/obj_budget_discipline?runId=${runId}`);
           return;
         }
 
@@ -572,26 +572,36 @@ export default function CompanySetupPage() {
             />
           </div>
 
-          <button
-            onClick={handleContinue}
-            disabled={!isValid() || saving}
-            className={`w-full py-3 rounded font-semibold flex items-center justify-center gap-2 mb-8
-              ${isValid() && !saving
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-          >
-            {saving ? (
-              <>
-                <Loader size={18} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                Continue
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
+          <div className="flex justify-between mb-8">
+            <button
+              onClick={() => navigate(`/run/${runId}/intro`)}
+              className="py-3 px-6 rounded font-semibold border border-gray-300
+                text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
+            >
+              <ArrowLeft size={18} />
+              Back to Overview
+            </button>
+            <button
+              onClick={handleContinue}
+              disabled={!isValid() || saving}
+              className={`py-3 px-6 rounded font-semibold flex items-center justify-center gap-2
+                ${isValid() && !saving
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            >
+              {saving ? (
+                <>
+                  <Loader size={18} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+          </div>
         </EnterpriseCanvas>
       </div>
     </AppShell>

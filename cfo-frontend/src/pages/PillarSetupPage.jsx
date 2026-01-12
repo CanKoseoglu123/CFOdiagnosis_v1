@@ -342,10 +342,10 @@ export default function PillarSetupPage() {
 
         const run = await response.json();
 
-        // If setup already completed and not in review mode, redirect to intro
+        // If setup already completed and not in review mode, redirect to assessment
         if (run.setup_completed_at && !isReviewMode) {
           setRedirecting(true);
-          navigate(`/run/${runId}/intro`);
+          navigate(`/assess/objective/obj_budget_discipline?runId=${runId}`);
           return;
         }
 
@@ -487,8 +487,8 @@ export default function PillarSetupPage() {
         throw new Error(data.details?.join(', ') || data.error || 'Failed to save');
       }
 
-      // VS-27c: Navigate to intro page (assessment now requires setup completion)
-      navigate(`/run/${runId}/intro`);
+      // Navigate to first assessment objective
+      navigate(`/assess/objective/obj_budget_discipline?runId=${runId}`);
     } catch (err) {
       setError(err.message);
       setSaving(false);
