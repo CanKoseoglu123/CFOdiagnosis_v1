@@ -680,14 +680,17 @@ export default function AdminPage() {
                       scenario.id === 'perfect' ? 'bg-emerald-100 text-emerald-700' :
                       scenario.id === 'failing' ? 'bg-red-100 text-red-700' :
                       scenario.id === 'critical_block' ? 'bg-amber-100 text-amber-700' :
-                      'bg-blue-100 text-blue-700'
+                      scenario.id.startsWith('l2') ? 'bg-blue-100 text-blue-700' :
+                      scenario.id.startsWith('l3') ? 'bg-purple-100 text-purple-700' :
+                      'bg-slate-100 text-slate-700'
                     }`}>
                       {scenario.id === 'perfect' ? 'L4' :
                        scenario.id === 'failing' ? 'L1' :
-                       scenario.id === 'l2_ceiling' ? 'L2' :
-                       scenario.id === 'l3_ceiling' ? 'L3' :
                        scenario.id === 'critical_block' ? 'Blocked' :
-                       'Random'}
+                       scenario.id === 'l2_low' || scenario.id === 'l2_high' ? 'L2' :
+                       scenario.id === 'l3_low' || scenario.id === 'l3_high' ? 'L3' :
+                       scenario.id === 'realistic' ? '~L2' :
+                       'Test'}
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 mb-4">{scenario.description}</p>

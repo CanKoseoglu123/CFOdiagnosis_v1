@@ -3,7 +3,7 @@
 // 8 pages, landscape, print-optimized for PDF export
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import WorkflowSidebar from '../components/WorkflowSidebar';
@@ -311,6 +311,8 @@ function PriorityObjectivesChart({ objectives }) {
 export default function ExecutiveReportPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldPrint = searchParams.get('print') === 'true';
   const [report, setReport] = useState(null);
   const [spec, setSpec] = useState(null);
   const [benchmarkData, setBenchmarkData] = useState(null);
@@ -333,6 +335,17 @@ export default function ExecutiveReportPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Trigger print dialog if ?print=true
+  useEffect(() => {
+    if (shouldPrint && !loading && report) {
+      // Small delay to ensure content is rendered
+      const timer = setTimeout(() => {
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldPrint, loading, report]);
 
   async function fetchReport() {
     try {

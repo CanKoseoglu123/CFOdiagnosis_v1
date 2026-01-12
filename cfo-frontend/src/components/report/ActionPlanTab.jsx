@@ -5,12 +5,13 @@
 // Includes ActionSidebar inside content container for interactive metrics
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
 import ActionPlanningWizard from './ActionPlanningWizard';
-import { AlertTriangle, CheckCircle, Wand2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CheckCircle2, Wand2, FileText, Home } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,6 +60,8 @@ export default function ActionPlanTab({
     // Legacy: direct objective_id on question
     return q.objective_id;
   }, [practiceToObjective]);
+  const navigate = useNavigate();
+
   // View mode: 'actions' or 'initiatives'
   const [viewMode, setViewMode] = useState('actions');
 
@@ -72,6 +75,9 @@ export default function ActionPlanTab({
   // VS-39: Finalization modal state (LOCAL only - no prop drilling)
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+
+  // Post-completion modal state
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   // VS-46: Wizard state
   const [showWizard, setShowWizard] = useState(false);
@@ -224,7 +230,9 @@ export default function ActionPlanTab({
 
       if (res.ok) {
         setShowFinalizeModal(false);
-        // Tell parent to refetch report + switch to Executive tab
+        // Show completion modal instead of immediately redirecting
+        setShowCompletionModal(true);
+        // Tell parent to refetch report (for sidebar state update)
         if (onFinalized) {
           onFinalized();
         }
@@ -239,6 +247,19 @@ export default function ActionPlanTab({
     } finally {
       setFinalizing(false);
     }
+  }
+
+  // Post-completion handlers
+  function handleViewReport() {
+    navigate(`/report/${runId}/executive`);
+  }
+
+  function handleDownloadPDF() {
+    navigate(`/report/${runId}/executive?print=true`);
+  }
+
+  function handleReturnHome() {
+    navigate('/');
   }
 
   // VS-46: Handle wizard selection apply
@@ -597,6 +618,48 @@ export default function ActionPlanTab({
                 className="flex-1 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:opacity-50"
               >
                 {finalizing ? 'Finalizing...' : 'Yes, Finalize'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-Completion Modal */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-sm max-w-md border border-slate-300 shadow-xl">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">Diagnostic Complete!</h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Thank you for completing the CFO Diagnostic. Your Executive Report is ready.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleViewReport}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                View Executive Report
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-sm hover:bg-slate-50 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Download PDF
+              </button>
+              <button
+                onClick={handleReturnHome}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-slate-500 text-sm hover:text-slate-700 transition-colors"
+              >
+                <Home className="w-4 h-4" />
+                Return to Home
               </button>
             </div>
           </div>

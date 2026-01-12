@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Circle, Lock, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { CheckCircle2, Circle, Lock, ChevronLeft, ChevronRight, FileText, Home } from 'lucide-react';
 
 // Workflow steps for the diagnostic journey
 // VS-39: Merged Report Review & Action Planning, added Executive Report
@@ -72,6 +72,14 @@ export default function WorkflowSidebar({
     if (onFinalizeRequest) {
       onFinalizeRequest();
     }
+  }
+
+  function handleReturnToHome() {
+    navigate('/');
+  }
+
+  function handleDownloadPDF() {
+    navigate(`/report/${runId}/executive?print=true`);
   }
 
   // Build tooltip message for disabled Generate Executive Report button
@@ -162,63 +170,94 @@ export default function WorkflowSidebar({
 
       {/* VS-41: Navigation Buttons */}
       <div className="space-y-2 mt-6">
-        {/* Back to Assessment */}
-        <button
-          onClick={handleBackToAssessment}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Assessment
-        </button>
+        {isFinalized ? (
+          // Post-completion navigation
+          <>
+            {/* Completion message */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-sm p-4 mb-2">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <span className="font-semibold text-emerald-800">Diagnostic Complete!</span>
+              </div>
+              <p className="text-sm text-emerald-700">
+                Thank you for completing the CFO Diagnostic. Your Executive Report is ready.
+              </p>
+            </div>
 
-        {/* Back to Calibration */}
-        <button
-          onClick={handleBackToCalibration}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Calibration
-        </button>
-
-        {/* Third button: Action Planning OR Generate Executive Report */}
-        {showGenerateButton ? (
-          // Generate Executive Report (Action Planning tab, not finalized)
-          <div
-            className="relative"
-            onMouseEnter={() => !canFinalize && setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-          >
+            {/* Download PDF */}
             <button
-              onClick={handleGenerateExecutiveReport}
-              disabled={!canFinalize}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed"
+              onClick={handleDownloadPDF}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
             >
               <FileText className="w-4 h-4" />
-              Generate Executive Report
+              Download PDF
             </button>
-            {/* Tooltip for disabled state */}
-            {showTooltip && !canFinalize && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-10">
-                {getDisabledReason()}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
-              </div>
-            )}
-          </div>
-        ) : isFinalized ? (
-          // Already finalized - show completed state
-          <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-sm border border-emerald-200">
-            <CheckCircle2 className="w-4 h-4" />
-            Report Generated
-          </div>
+
+            {/* Return to Home */}
+            <button
+              onClick={handleReturnToHome}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              Return to Home
+            </button>
+          </>
         ) : (
-          // Go to Action Planning (Overview/Footprint tabs)
-          <button
-            onClick={handleGoToActionPlanning}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-sm hover:bg-blue-700 transition-colors"
-          >
-            Action Planning
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          // Pre-finalization navigation
+          <>
+            {/* Back to Assessment */}
+            <button
+              onClick={handleBackToAssessment}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Assessment
+            </button>
+
+            {/* Back to Calibration */}
+            <button
+              onClick={handleBackToCalibration}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Calibration
+            </button>
+
+            {/* Third button: Action Planning OR Generate Executive Report */}
+            {showGenerateButton ? (
+              // Generate Executive Report (Action Planning tab, not finalized)
+              <div
+                className="relative"
+                onMouseEnter={() => !canFinalize && setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+              >
+                <button
+                  onClick={handleGenerateExecutiveReport}
+                  disabled={!canFinalize}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed"
+                >
+                  <FileText className="w-4 h-4" />
+                  Generate Executive Report
+                </button>
+                {/* Tooltip for disabled state */}
+                {showTooltip && !canFinalize && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-10">
+                    {getDisabledReason()}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Go to Action Planning (Overview/Footprint tabs)
+              <button
+                onClick={handleGoToActionPlanning}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-sm hover:bg-blue-700 transition-colors"
+              >
+                Action Planning
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

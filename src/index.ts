@@ -42,6 +42,9 @@ import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
 import { requireAdmin } from "./middleware/adminAuth";
 
+// Critical gates for test scenarios
+import { L1_CRITICALS, L2_CRITICALS } from "./gates";
+
 const app = express();
 
 // CORS: Allow production domains, Vercel preview deployments, and local dev
@@ -1985,14 +1988,13 @@ interface TestScenario {
   calibrationProfile: Record<string, number>;
 }
 
-const L1_CRITICALS_TEST = ["fpa_l1_q01", "fpa_l1_q02", "fpa_l1_q05", "fpa_l1_q09"];
-const L2_CRITICALS_TEST = ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q08"];
-
+// Deterministic test scenarios using correct critical gate IDs from SSOT
 const TEST_SCENARIOS: TestScenario[] = [
+  // L4: Perfect Score
   {
     id: "perfect",
     name: "Perfect Score (L4 Optimized)",
-    description: "All questions answered Yes - shows ideal state report",
+    description: "All questions answered Yes - 100% score, L4 Optimized",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
       questions.forEach((q) => answers.set(q.id, true));
@@ -2010,10 +2012,12 @@ const TEST_SCENARIOS: TestScenario[] = [
       obj_operational_excellence: 5,
     },
   },
+
+  // L1: Complete Failure
   {
     id: "failing",
-    name: "Complete Failure (L1 Blocked)",
-    description: "All questions answered No - shows worst-case with critical risks",
+    name: "Complete Failure (L1 Emerging)",
+    description: "All questions answered No - 0% score, L1 Emerging",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
       questions.forEach((q) => answers.set(q.id, false));
@@ -2031,32 +2035,86 @@ const TEST_SCENARIOS: TestScenario[] = [
       obj_operational_excellence: 3,
     },
   },
+
+  // L2 Low End (~52%) - Deterministic
   {
-    id: "l2_ceiling",
-    name: "L2 Ceiling (Defined)",
-    description: "Pass L1 criticals, fail L2 criticals, ~60% score - shows L2 maturity",
+    id: "l2_low",
+    name: "L2 Low End (52%)",
+    description: "Pass L1 criticals, YES to L1 + half L2 = ~52%, L2 Defined",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      questions.forEach((q) => {
-        // Pass all L1 criticals
-        if (L1_CRITICALS_TEST.includes(q.id)) {
+      const l2Questions = questions.filter((q: any) => q.maturity_level === 2);
+      const halfL2Count = Math.ceil(l2Questions.length / 2);
+      const halfL2Ids = l2Questions.slice(0, halfL2Count).map((q: any) => q.id);
+
+      questions.forEach((q: any) => {
+        // Pass all L1 criticals (required for L2)
+        if (L1_CRITICALS.includes(q.id)) {
           answers.set(q.id, true);
         }
-        // Fail all L2 criticals
-        else if (L2_CRITICALS_TEST.includes(q.id)) {
+        // YES to all L1 questions
+        else if (q.maturity_level === 1) {
+          answers.set(q.id, true);
+        }
+        // YES to first half of L2
+        else if (halfL2Ids.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // NO to everything else
+        else {
           answers.set(q.id, false);
         }
-        // L1 questions: 80% yes
+      });
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 3,
+      obj_financial_controls: 3,
+      obj_performance_monitoring: 3,
+      obj_forecasting_agility: 3,
+      obj_driver_based_planning: 3,
+      obj_scenario_modeling: 3,
+      obj_strategic_influence: 3,
+      obj_decision_support: 3,
+      obj_operational_excellence: 3,
+    },
+  },
+
+  // L2 High End (~77%) - Deterministic, capped by L2 critical failures
+  {
+    id: "l2_high",
+    name: "L2 High End (77%)",
+    description: "Pass L1 criticals, fail L2 criticals, high L1-L2 scores = ~77%, capped at L2",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      const l3Questions = questions.filter((q: any) => q.maturity_level === 3);
+      const thirtyPercentL3 = Math.ceil(l3Questions.length * 0.3);
+      const l3YesIds = l3Questions.slice(0, thirtyPercentL3).map((q: any) => q.id);
+
+      questions.forEach((q: any) => {
+        // Pass all L1 criticals
+        if (L1_CRITICALS.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // FAIL L2 criticals (caps at L2)
+        else if (L2_CRITICALS.includes(q.id)) {
+          answers.set(q.id, false);
+        }
+        // YES to all L1
         else if (q.maturity_level === 1) {
-          answers.set(q.id, Math.random() < 0.8);
+          answers.set(q.id, true);
         }
-        // L2 questions: 60% yes
+        // YES to all L2 (except criticals already handled)
         else if (q.maturity_level === 2) {
-          answers.set(q.id, Math.random() < 0.6);
+          answers.set(q.id, true);
         }
-        // L3+ questions: 30% yes
+        // YES to first 30% of L3
+        else if (l3YesIds.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // NO to rest
         else {
-          answers.set(q.id, Math.random() < 0.3);
+          answers.set(q.id, false);
         }
       });
       return answers;
@@ -2073,28 +2131,78 @@ const TEST_SCENARIOS: TestScenario[] = [
       obj_operational_excellence: 3,
     },
   },
+
+  // L3 Low End (~82%) - Deterministic
   {
-    id: "l3_ceiling",
-    name: "L3 Ceiling (Managed)",
-    description: "Pass L1 & L2 criticals, ~85% score - shows L3 maturity",
+    id: "l3_low",
+    name: "L3 Low End (82%)",
+    description: "Pass L1+L2 criticals, YES to L1+L2 + half L3 = ~82%, L3 Managed",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      questions.forEach((q) => {
-        // Pass all L1 and L2 criticals
-        if (L1_CRITICALS_TEST.includes(q.id) || L2_CRITICALS_TEST.includes(q.id)) {
+      const l3Questions = questions.filter((q: any) => q.maturity_level === 3);
+      const halfL3Count = Math.ceil(l3Questions.length / 2);
+      const halfL3Ids = l3Questions.slice(0, halfL3Count).map((q: any) => q.id);
+
+      questions.forEach((q: any) => {
+        // Pass ALL criticals (L1 and L2)
+        if (L1_CRITICALS.includes(q.id) || L2_CRITICALS.includes(q.id)) {
           answers.set(q.id, true);
         }
-        // L1-L2 questions: 95% yes
+        // YES to all L1+L2
         else if (q.maturity_level <= 2) {
-          answers.set(q.id, Math.random() < 0.95);
+          answers.set(q.id, true);
         }
-        // L3 questions: 75% yes
-        else if (q.maturity_level === 3) {
-          answers.set(q.id, Math.random() < 0.75);
+        // YES to first half of L3
+        else if (halfL3Ids.includes(q.id)) {
+          answers.set(q.id, true);
         }
-        // L4 questions: 40% yes
+        // NO to rest
         else {
-          answers.set(q.id, Math.random() < 0.4);
+          answers.set(q.id, false);
+        }
+      });
+      return answers;
+    },
+    calibrationProfile: {
+      obj_budget_discipline: 4,
+      obj_financial_controls: 4,
+      obj_performance_monitoring: 4,
+      obj_forecasting_agility: 4,
+      obj_driver_based_planning: 4,
+      obj_scenario_modeling: 3,
+      obj_strategic_influence: 3,
+      obj_decision_support: 4,
+      obj_operational_excellence: 3,
+    },
+  },
+
+  // L3 High End (~92%) - Deterministic
+  {
+    id: "l3_high",
+    name: "L3 High End (92%)",
+    description: "Pass L1+L2 criticals, YES to L1+L2+L3 + half L4 = ~92%, strong L3",
+    generateAnswers: (questions) => {
+      const answers = new Map<string, boolean>();
+      const l4Questions = questions.filter((q: any) => q.maturity_level === 4);
+      const halfL4Count = Math.ceil(l4Questions.length / 2);
+      const halfL4Ids = l4Questions.slice(0, halfL4Count).map((q: any) => q.id);
+
+      questions.forEach((q: any) => {
+        // Pass ALL criticals
+        if (L1_CRITICALS.includes(q.id) || L2_CRITICALS.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // YES to all L1+L2+L3
+        else if (q.maturity_level <= 3) {
+          answers.set(q.id, true);
+        }
+        // YES to first half of L4
+        else if (halfL4Ids.includes(q.id)) {
+          answers.set(q.id, true);
+        }
+        // NO to rest
+        else {
+          answers.set(q.id, false);
         }
       });
       return answers;
@@ -2108,23 +2216,33 @@ const TEST_SCENARIOS: TestScenario[] = [
       obj_scenario_modeling: 4,
       obj_strategic_influence: 4,
       obj_decision_support: 4,
-      obj_operational_excellence: 3,
+      obj_operational_excellence: 4,
     },
   },
+
+  // Critical Block - High score but capped at L1 due to L1 critical failures
   {
     id: "critical_block",
-    name: "High Score, Critical Block",
-    description: "High scores (80%+) but fail L1 criticals - tests critical gate blocking",
+    name: "High Score, L1 Critical Block",
+    description: "~90% score but fail L1 criticals - capped at L1 Emerging",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      questions.forEach((q) => {
-        // Fail L1 criticals specifically
-        if (L1_CRITICALS_TEST.includes(q.id)) {
+      const l4Questions = questions.filter((q: any) => q.maturity_level === 4);
+      // Fail ~10 questions to hit ~90% score (97 * 0.1 = ~10)
+      const failL4Ids = l4Questions.slice(0, 6).map((q: any) => q.id);
+
+      questions.forEach((q: any) => {
+        // FAIL L1 criticals (the blocking mechanism)
+        if (L1_CRITICALS.includes(q.id)) {
           answers.set(q.id, false);
         }
-        // Everything else: 85% yes
+        // Fail some L4 questions to stay around 90%
+        else if (failL4Ids.includes(q.id)) {
+          answers.set(q.id, false);
+        }
+        // YES to everything else
         else {
-          answers.set(q.id, Math.random() < 0.85);
+          answers.set(q.id, true);
         }
       });
       return answers;
@@ -2141,27 +2259,20 @@ const TEST_SCENARIOS: TestScenario[] = [
       obj_operational_excellence: 4,
     },
   },
+
+  // Realistic - Random distribution for varied testing
   {
     id: "realistic",
-    name: "Realistic Distribution",
-    description: "Randomized realistic mix simulating typical user responses",
+    name: "Realistic Mid-Market",
+    description: "Randomized ~60-70% typical mid-market pattern (varies each run)",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      questions.forEach((q) => {
+      questions.forEach((q: any) => {
         // Realistic distribution based on maturity level
-        // L1: Most companies have basics (70%)
-        // L2: Many have defined processes (55%)
-        // L3: Fewer have managed practices (35%)
-        // L4: Few are optimized (15%)
-        const prob =
-          q.maturity_level === 1
-            ? 0.7
-            : q.maturity_level === 2
-              ? 0.55
-              : q.maturity_level === 3
-                ? 0.35
-                : 0.15;
-        answers.set(q.id, Math.random() < prob);
+        if (q.maturity_level === 1) answers.set(q.id, Math.random() < 0.85);
+        else if (q.maturity_level === 2) answers.set(q.id, Math.random() < 0.65);
+        else if (q.maturity_level === 3) answers.set(q.id, Math.random() < 0.35);
+        else answers.set(q.id, Math.random() < 0.15);
       });
       return answers;
     },
