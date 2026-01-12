@@ -21,20 +21,26 @@ const API_URL = import.meta.env.VITE_API_URL;
 const NAVY = '#1e3a5f';
 const GOLD = '#c9a050';
 
-// Logo component for PDF header
-function CFOLensLogo({ size = 36 }) {
+// Reusable page header component for all content pages
+function PageHeader({ companyName, industry, runDate }) {
   return (
-    <div className="flex items-center gap-2">
-      <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-        <path d="M8 8 L42 8 L42 42 L8 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-        <path d="M58 8 L92 8 L92 42 L58 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-        <path d="M8 58 L42 58 L42 92 L8 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-        <path d="M58 58 L92 58 L92 92 L58 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-        <path d="M50 30 L70 50 L50 70 L30 50 Z" fill={GOLD}/>
-      </svg>
-      <span className="text-sm font-bold tracking-tight" style={{ color: NAVY }}>
-        CFO LENS AI
-      </span>
+    <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+      <div className="flex items-center gap-4">
+        <img
+          src="/Logo horizontal.png"
+          alt="CFO Lens AI"
+          className="h-8 object-contain"
+        />
+        <div className="border-l border-slate-300 pl-4">
+          <div className="text-xs text-slate-500 uppercase tracking-wide">FP&A Diagnostic</div>
+          <h1 className="text-xl font-bold text-slate-800">{companyName}</h1>
+          {industry && <div className="text-sm text-slate-500">{industry}</div>}
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="text-xs text-slate-400">Finalized</div>
+        <div className="text-sm text-slate-600">{runDate}</div>
+      </div>
     </div>
   );
 }
@@ -725,8 +731,9 @@ export default function ExecutiveReportPage() {
         </div>
 
         {/* PRINT-ONLY DISCLAIMER PAGE */}
-        <div className="executive-page p-10 page-break-before print-only">
-          <div className="border-b border-slate-200 pb-2 mb-4">
+        <div className="executive-page p-6 page-break-before print-only">
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Confidentiality and Intellectual Property</h2>
           </div>
           <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
@@ -763,21 +770,7 @@ export default function ExecutiveReportPage() {
         {/* PAGE 3: EXECUTIVE SUMMARY */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6">
-          {/* Page Header with Logo */}
-          <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
-            <div className="flex items-center gap-4">
-              <CFOLensLogo size={32} />
-              <div className="border-l border-slate-300 pl-4">
-                <div className="text-xs text-slate-500 uppercase tracking-wide">FP&A Diagnostic</div>
-                <h1 className="text-xl font-bold text-slate-800">{companyName}</h1>
-                {industry && <div className="text-sm text-slate-500">{industry}</div>}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs text-slate-400">Finalized</div>
-              <div className="text-sm text-slate-600">{runDate}</div>
-            </div>
-          </div>
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
 
           <div className="mb-3">
             <h2 className="text-lg font-bold text-slate-800">Overall Results Summary</h2>
@@ -828,9 +821,9 @@ export default function ExecutiveReportPage() {
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* PAGE 4: OBJECTIVE OVERVIEW */}
         <div className="executive-page p-6 page-break-before">
-          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Objective Overview</h2>
-            <div className="text-xs text-slate-400 print:hidden">Page 4 - {companyName}</div>
           </div>
           {/* Objective Overview Table */}
           <div className="border border-slate-300">
@@ -891,9 +884,9 @@ export default function ExecutiveReportPage() {
 
         {/* PAGE 5: MATURITY BENCHMARK */}
         <div className="executive-page p-6 page-break-before">
-          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Maturity Benchmark</h2>
-            <div className="text-xs text-slate-400 print:hidden">Page 5 - {companyName}</div>
           </div>
           {benchmarkLoading ? (
             <div className="text-slate-500 text-sm">Loading benchmark...</div>
@@ -914,9 +907,9 @@ export default function ExecutiveReportPage() {
         {/* PAGE 6: ACTION PLAN */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
-          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Action Plan</h2>
-            <div className="text-xs text-slate-400 print:hidden">Page 6 - {companyName}</div>
           </div>
           <ActionPlanTable
             commitmentRegister={commitmentRegister}
@@ -929,9 +922,9 @@ export default function ExecutiveReportPage() {
         {/* PAGE 7: PRIORITY MATRIX */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before priority-matrix-page">
-          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Priority Matrix</h2>
-            <div className="text-xs text-slate-400 print:hidden">Page 7 - {companyName}</div>
           </div>
           <div className="priority-matrix-wrap">
             {spec && (
@@ -951,9 +944,9 @@ export default function ExecutiveReportPage() {
         {/* PAGE 8: MATURITY FOOTPRINT */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
-          <div className="border-b border-slate-200 pb-2 mb-4 flex justify-between items-center">
+          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Maturity Footprint</h2>
-            <div className="text-xs text-slate-400 print:hidden">Page 8 - {companyName}</div>
           </div>
           <ObjectivesPracticesOverview
             levels={maturityLevels}
