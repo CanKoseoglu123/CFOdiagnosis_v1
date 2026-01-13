@@ -310,15 +310,20 @@ app.get("/diagnostic-runs", async (req, res) => {
       return res.status(401).json({ error: "Authentication required" });
     }
 
+    // Debug: Log auth status
+    console.log('[GET /diagnostic-runs] userId:', req.userId, 'userEmail:', req.userEmail);
+
     const { data, error } = await req.supabase
       .from("diagnostic_runs")
       .select("id, status, context, spec_version, created_at, updated_at, finalized_at, setup_completed_at")
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error('[GET /diagnostic-runs] Supabase error:', JSON.stringify(error));
       return handleDatabaseError(res, error, 'List diagnostic runs');
     }
 
+    console.log('[GET /diagnostic-runs] Found', data?.length || 0, 'runs');
     res.json(data || []);
   } catch (err) {
     console.error('[GET /diagnostic-runs] Unhandled error:', err);
