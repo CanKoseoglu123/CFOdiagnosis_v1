@@ -19,6 +19,19 @@ import FeedbackButton from '../components/FeedbackButton';
 const API_URL = import.meta.env.VITE_API_URL;
 const FIRST_OBJECTIVE = 'obj_budget_discipline';
 
+// Objective order for resume navigation (9 objectives in assessment sequence)
+const OBJECTIVE_ORDER = [
+  'obj_budget_discipline',
+  'obj_financial_controls',
+  'obj_performance_monitoring',
+  'obj_forecasting_agility',
+  'obj_driver_based_planning',
+  'obj_scenario_modeling',
+  'obj_strategic_influence',
+  'obj_decision_support',
+  'obj_operational_excellence'
+];
+
 // Helper to extract company name from run
 function getCompanyName(run) {
   // V2 format: company_name from joined company_profiles
@@ -85,19 +98,66 @@ export default function LandingPage() {
     }
   }
 
-  function handleRunClick(run) {
+  async function handleRunClick(run) {
     setShowRunsModal(false);
 
     if (run.status === 'completed' || run.status === 'locked') {
       navigate(`/report/${run.id}`);
-    } else {
-      // In-progress: check if setup is complete (already in fetch response)
-      if (run.setup_completed_at) {
-        navigate(`/assess/objective/${FIRST_OBJECTIVE}?runId=${run.id}`);
-      } else {
-        navigate(`/run/${run.id}/setup/company`);
-      }
+      return;
     }
+
+    // In-progress: check if setup is complete
+    if (!run.setup_completed_at) {
+      navigate(`/run/${run.id}/setup/company`);
+      return;
+    }
+
+    // Setup complete - try to determine last answered objective
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_URL}/diagnostic-runs/${run.id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (res.ok) {
+        const runData = await res.json();
+        const inputs = runData.inputs || [];
+
+        if (inputs.length > 0) {
+          // Fetch spec to build question -> objective mapping
+          const specRes = await fetch(`${API_URL}/api/spec`);
+          const spec = await specRes.json();
+
+          // Build question -> objective mapping
+          const questionToObjective = {};
+          spec.questions.forEach(q => {
+            const practice = spec.practices.find(p => p.id === q.practice_id);
+            if (practice) {
+              questionToObjective[q.id] = practice.objective_id;
+            }
+          });
+
+          // Find highest objective index with answers
+          let lastObjectiveIndex = 0;
+          inputs.forEach(input => {
+            const objId = questionToObjective[input.question_id];
+            const index = OBJECTIVE_ORDER.indexOf(objId);
+            if (index > lastObjectiveIndex) {
+              lastObjectiveIndex = index;
+            }
+          });
+
+          const lastObjective = OBJECTIVE_ORDER[lastObjectiveIndex];
+          navigate(`/assess/objective/${lastObjective}?runId=${run.id}`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error determining last objective:', err);
+    }
+
+    // Fallback to first objective
+    navigate(`/assess/objective/${FIRST_OBJECTIVE}?runId=${run.id}`);
   }
 
   if (loading) {
@@ -482,7 +542,7 @@ export default function LandingPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowRunsModal(false)} />
 
-          <div className="relative bg-white shadow-xl w-full max-w-lg">
+          <div className="relative bg-white shadow-xl w-full max-w-2xl">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-800">My Assessments</h3>
@@ -491,7 +551,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* Runs List */}
+            {/* Runs Table */}
             <div className="max-h-96 overflow-y-auto">
               {allRuns.length === 0 ? (
                 <div className="p-6 text-center text-slate-500">
@@ -506,42 +566,50 @@ export default function LandingPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100">
-                  {allRuns.map(run => {
-                    const badge = getStatusBadge(run.status);
-                    return (
-                      <button
-                        key={run.id}
-                        onClick={() => handleRunClick(run)}
-                        className="w-full p-4 text-left hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-slate-800 truncate">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Company</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pillar</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Started</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {allRuns.map(run => {
+                      const badge = getStatusBadge(run.status);
+                      return (
+                        <tr
+                          key={run.id}
+                          onClick={() => handleRunClick(run)}
+                          className="hover:bg-slate-50 cursor-pointer transition-colors"
+                        >
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-slate-800 truncate max-w-[180px]">
                               {getCompanyName(run)}
                             </div>
-                            <div className="text-xs text-slate-400 mt-0.5">
-                              FP&A Assessment
-                            </div>
-                            <div className="flex items-center gap-2 mt-1.5 text-sm text-slate-500">
-                              <span className={`px-2 py-0.5 text-xs font-medium ${badge.color}`}>
-                                {badge.label}
-                              </span>
-                              <span>•</span>
-                              <span>Started {new Date(run.created_at).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-xs text-slate-400">
-                              {run.status === 'in_progress' ? 'Continue' : 'View'}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-600">FP&A</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs font-medium ${badge.color}`}>
+                              {badge.label}
                             </span>
-                            <ArrowRight className="w-4 h-4 text-slate-400" />
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-slate-500">
+                            {new Date(run.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="text-sm font-medium text-slate-600 flex items-center justify-end gap-1">
+                              {run.status === 'in_progress' ? 'Continue' : 'View'}
+                              <ArrowRight className="w-4 h-4" />
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
 
