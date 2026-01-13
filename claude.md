@@ -313,12 +313,14 @@ where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
 | 1 Minimal | 0.50x |
 
 ### Maturity Levels
-| Level | Name | Requirements |
-|-------|------|--------------|
-| 1 | Emerging | Pass L1 critical questions |
-| 2 | Defined | L1 + L2 gates |
-| 3 | Managed | L2 + L3 gates |
-| 4 | Optimized | L3 + L4 gates |
+| Level | Name | Score Threshold | Gate Requirements |
+|-------|------|-----------------|-------------------|
+| 1 | Emerging | < 40% | — |
+| 2 | Defined | >= 40% | Pass L1 critical gates |
+| 3 | Managed | >= 65% | Pass L1 + L2 critical gates |
+| 4 | Optimized | >= 85% | Pass L1 + L2 critical gates |
+
+**Note:** Critical gate failures cap the level regardless of score. For example, a user with 70% score but failed L1 criticals will be capped at L1.
 
 ---
 
