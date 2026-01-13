@@ -107,8 +107,7 @@ export default function AssessObjectivePage() {
   const [error, setError] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const questionsContainerRef = useRef(null);
-  const prevObjectiveIdRef = useRef(objectiveId);
-  const hasScrolledRef = useRef(false);
+  const [scrolledForObjective, setScrolledForObjective] = useState(null);
 
   const objectiveMeta = OBJECTIVE_META[objectiveId];
 
@@ -211,58 +210,55 @@ export default function AssessObjectivePage() {
     return spec.questions.filter(q => getQuestionObjective(q) === objectiveId);
   }, [spec, objectiveId, getQuestionObjective]);
 
-  // Scroll to first unanswered question on navigation or initial load ONLY
-  // This effect should NOT run when answers change - only on page load/navigation
+  // Scroll to first unanswered question on navigation or initial load
   useEffect(() => {
-    // Reset scroll flag when objective changes
-    if (prevObjectiveIdRef.current !== objectiveId) {
-      hasScrolledRef.current = false;
-      prevObjectiveIdRef.current = objectiveId;
-    }
-
-    // Don't scroll if still loading or already scrolled for this objective
-    if (loading || hasScrolledRef.current || !objectiveQuestions.length) {
+    // Skip if still loading or no questions
+    if (loading || !objectiveQuestions.length) {
       return;
     }
 
-    // Mark as scrolled BEFORE any scroll operation to prevent re-scrolling
-    hasScrolledRef.current = true;
+    // Skip if already scrolled for this objective
+    if (scrolledForObjective === objectiveId) {
+      return;
+    }
 
-    // Find first unanswered question index using current answers
-    // Note: answers is intentionally NOT in the dependency array because we only
-    // want to scroll on initial load/navigation, not when answers change
+    // Mark as scrolled for this objective
+    setScrolledForObjective(objectiveId);
+
+    // Find first unanswered question using current answers
     const firstUnansweredIndex = objectiveQuestions.findIndex(
       q => answers[q.id] === undefined
     );
 
-    // Scroll to top if all answered or first question is unanswered
-    if (firstUnansweredIndex === -1 || firstUnansweredIndex === 0) {
-      window.scrollTo(0, 0);
+    console.log('[AutoScroll]', { objectiveId, firstUnansweredIndex, totalQuestions: objectiveQuestions.length });
+
+    // If all answered or first is unanswered, scroll to top
+    if (firstUnansweredIndex <= 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    // Delay to ensure DOM is rendered - use requestAnimationFrame for better timing
-    const scrollToQuestion = () => {
+    // Scroll to the first unanswered question after DOM is ready
+    const timeoutId = setTimeout(() => {
       const container = questionsContainerRef.current;
-      if (!container) return;
+      if (!container) {
+        console.warn('[AutoScroll] Container ref is null');
+        return;
+      }
 
       const questionElements = container.querySelectorAll('[data-question-card]');
       const targetElement = questionElements[firstUnansweredIndex];
 
       if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        console.warn('[AutoScroll] Element not found at index', firstUnansweredIndex);
       }
-    };
+    }, 150);
 
-    // Use requestAnimationFrame + small delay for reliable DOM access
-    requestAnimationFrame(() => {
-      setTimeout(scrollToQuestion, 50);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [objectiveId, loading, objectiveQuestions]); // answers intentionally omitted
+    return () => clearTimeout(timeoutId);
+  }, [objectiveId, loading, objectiveQuestions, scrolledForObjective]);
+  // Note: answers excluded from deps to prevent re-scroll on answer changes
 
   // Get all questions for overall progress
   const allQuestions = useMemo(() => spec?.questions || [], [spec]);
