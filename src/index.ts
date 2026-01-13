@@ -575,6 +575,9 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
     return res.status(400).json({ error: "Company profile has no persona classification" });
   }
 
+  // Debug logging for target calculation
+  console.log(`[Benchmark] Profile ${companyProfileId}: persona=${profile.classification.persona}, context keys=${Object.keys(profile.context || {}).join(',')}`);
+
   const { data: inputs, error: inputsError } = await req.supabase
     .from("diagnostic_inputs")
     .select("question_id, value")
@@ -591,7 +594,9 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
     targets = calculateTargets(profile.classification, profile.context || {});
   } catch (err) {
     const message = err instanceof Error ? err.message : "Target calculation failed";
-    return res.status(500).json({ error: message });
+    console.error(`[Benchmark] Target calculation failed for profile ${companyProfileId}:`, err);
+    console.error(`[Benchmark] Classification:`, JSON.stringify(profile.classification));
+    return res.status(500).json({ error: message, code: "TARGET_CALCULATION_FAILED" });
   }
 
   const achieved = computeAchievedLevels(spec, inputs || []);
