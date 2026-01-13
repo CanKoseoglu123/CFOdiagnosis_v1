@@ -61,6 +61,7 @@ export default function PillarReport() {
   const [actionPlan, setActionPlan] = useState({});
   const [benchmarkData, setBenchmarkData] = useState(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [benchmarkError, setBenchmarkError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -221,6 +222,7 @@ export default function PillarReport() {
   async function fetchBenchmark() {
     try {
       setBenchmarkLoading(true);
+      setBenchmarkError(null);
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
@@ -239,6 +241,8 @@ export default function PillarReport() {
       setBenchmarkData(data);
     } catch (err) {
       console.error('Failed to fetch benchmark:', err);
+      setBenchmarkError(err.message || 'Failed to fetch benchmark');
+      setBenchmarkData(null);
     } finally {
       setBenchmarkLoading(false);
     }
@@ -574,6 +578,15 @@ export default function PillarReport() {
             benchmarkLoading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-slate-500">Loading benchmarks...</div>
+              </div>
+            ) : benchmarkError ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="text-sm text-red-600">Benchmark data unavailable.</div>
+                <div className="text-xs text-slate-500 mt-2">{benchmarkError}</div>
+              </div>
+            ) : !benchmarkData ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-sm text-slate-500">Benchmark data unavailable.</div>
               </div>
             ) : (
               <BenchmarkTab

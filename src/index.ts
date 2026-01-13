@@ -561,12 +561,13 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
           .from("diagnostic_runs")
           .update({ benchmark_commentary: commentary })
           .eq("id", runId);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Benchmark commentary failed";
-        return res.status(500).json({ error: message });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Benchmark commentary failed";
+          console.error("Benchmark commentary failed:", message);
+          // Fail open: return benchmark data without commentary if generation fails.
+        }
       }
     }
-  }
 
   res.json({
     run_id: runId,

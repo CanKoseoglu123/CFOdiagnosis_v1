@@ -323,6 +323,7 @@ export default function ExecutiveReportPage() {
   const [spec, setSpec] = useState(null);
   const [benchmarkData, setBenchmarkData] = useState(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [benchmarkError, setBenchmarkError] = useState(null);
   const [aiSections, setAiSections] = useState([]);
   const [aiStatus, setAiStatus] = useState('idle');
   const [loading, setLoading] = useState(true);
@@ -397,6 +398,7 @@ export default function ExecutiveReportPage() {
   async function fetchBenchmark() {
     try {
       setBenchmarkLoading(true);
+      setBenchmarkError(null);
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
@@ -415,6 +417,8 @@ export default function ExecutiveReportPage() {
       setBenchmarkData(data);
     } catch (err) {
       console.error('Failed to fetch benchmark:', err);
+      setBenchmarkError(err.message || 'Failed to fetch benchmark');
+      setBenchmarkData(null);
     } finally {
       setBenchmarkLoading(false);
     }
@@ -885,16 +889,20 @@ export default function ExecutiveReportPage() {
         {/* PAGE 5: MATURITY BENCHMARK */}
         <div className="executive-page p-6 page-break-before">
           <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
-          <div className="mb-4">
-            <h2 className="text-lg font-bold text-slate-800">Maturity Benchmark</h2>
-          </div>
-          {benchmarkLoading ? (
-            <div className="text-slate-500 text-sm">Loading benchmark...</div>
-          ) : (
-            <BenchmarkTab
-              report={report}
-              spec={spec}
-              benchmarkData={benchmarkData}
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-slate-800">Maturity Benchmark</h2>
+            </div>
+            {benchmarkLoading ? (
+              <div className="text-slate-500 text-sm">Loading benchmark...</div>
+            ) : benchmarkError ? (
+              <div className="text-sm text-red-600">Benchmark data unavailable.</div>
+            ) : !benchmarkData ? (
+              <div className="text-slate-500 text-sm">Benchmark data unavailable.</div>
+            ) : (
+              <BenchmarkTab
+                report={report}
+                spec={spec}
+                benchmarkData={benchmarkData}
               includeCommittedActions={true}
               projectedTargets={projectedTargets}
               projectedTotal={reportData.projectedLevel}

@@ -24,6 +24,13 @@ function splitLabel(label = '') {
   return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
 }
 
+function scoreToLevel(score) {
+  if (score >= 85) return 4;
+  if (score >= 65) return 3;
+  if (score >= 40) return 2;
+  return 1;
+}
+
 function formatLevel(value, fallback = '-') {
   if (value === null || value === undefined) return fallback;
   const numeric = Number(value);
@@ -125,7 +132,18 @@ export default function BenchmarkTab({
     return new Map(targets.map((t) => [t.practice_id, t]));
   }, [benchmarkData]);
 
-  const achievedObjectives = benchmarkData?.achieved?.objectiveLevels || {};
+  const achievedObjectivesFromReport = useMemo(() => {
+    const map = {};
+    (report?.objectives || []).forEach((objective) => {
+      const id = objective.objective_id || objective.id;
+      if (!id) return;
+      const score = Number(objective.score ?? 0);
+      map[id] = scoreToLevel(Number.isNaN(score) ? 0 : score);
+    });
+    return map;
+  }, [report]);
+
+  const achievedObjectives = benchmarkData?.achieved?.objectiveLevels || achievedObjectivesFromReport;
   const achievedPractices = benchmarkData?.achieved?.practiceLevels || {};
 
   const orderedObjectives = OBJECTIVE_ORDER

@@ -49,12 +49,16 @@ CFOdiagnosis_v1/
 │   ├── interpretation/           # AI interpretation layer (VS-25)
 │   └── tests/                    # QA test suites
 │
-├── content/                      # JSON content catalog (v2.9.0)
-│   ├── questions.json            # 91 FP&A questions (practice_id linkage)
+├── content/                      # JSON content catalog (v3.1.0)
+│   ├── questions-foundation.json # 37 Foundation theme questions
+│   ├── questions-future.json     # 27 Future theme questions
+│   ├── questions-intelligence.json # 33 Intelligence theme questions
 │   ├── practices.json            # 27 practices
 │   ├── initiatives.json          # 9 initiatives
 │   ├── objectives.json           # 9 objectives
-│   └── gates.json                # Maturity gates
+│   ├── themes.json               # 3 themes
+│   ├── gates.json                # Maturity gates
+│   └── targetMatrix.json         # Persona-specific maturity targets (VS-27e)
 │
 ├── cfo-frontend/                 # Frontend application
 │   ├── src/
@@ -95,7 +99,7 @@ CFOdiagnosis_v1/
 
 ## Key Principles (DO NOT VIOLATE)
 
-1. **Current spec is v2.9.0** — Question → Practice → Objective schema
+1. **Current spec is v3.1.0** — Question → Practice → Objective schema (see `spec/SPEC_v3.1.0.md`)
 2. **Scoring is pure functions** — No side effects, deterministic
 3. **Missing answers = 0 score** — Conservative scoring
 4. **Gates are sequential** — Must pass all previous levels
@@ -197,12 +201,12 @@ CFOdiagnosis_v1/
 ## Assessment Flow
 
 1. Click "Start Assessment" → `/assess` (auto-creates run)
-2. Redirects to → `/run/:id/setup/company`
-3. Enter company context → `/run/:id/setup/persona`
-4. Review/confirm persona classification → `/run/:id/setup/pillar`
-5. Enter FP&A context → `/run/:id/intro`
-6. Read methodology → `/assess/foundation?runId=:id`
-7. Answer questions (3 themes) → Complete + Score
+2. Redirects to → `/run/:id/intro`
+3. Read methodology → `/run/:id/setup/company`
+4. Enter company context → `/run/:id/setup/persona`
+5. Review/confirm persona classification → `/run/:id/setup/pillar`
+6. Enter FP&A context → `/assess/objective/obj_budget_discipline?runId=:id`
+7. Answer questions (9 objectives) → Complete + Score
 8. Calibrate importance → `/run/:id/calibrate`
 9. View report → `/report/:runId`
 
@@ -236,24 +240,68 @@ CFOdiagnosis_v1/
 
 ---
 
-## Question Distribution (v2.9.0)
+## Question Distribution (v3.1.0)
 
-| Level | Questions | Critical | Objectives |
-|-------|-----------|----------|------------|
-| L1 Emerging | 12 | 5 | Budget Foundation, Financial Controls |
-| L2 Defined | 25 | 4 | Variance Analysis, Forecasting |
-| L3 Managed | 35 | 1 | Driver-Based Planning, Scenario Modeling |
-| L4 Optimized | 19 | 0 | Integrated Planning, Predictive Analytics |
-| **Total** | **91** | **10** | **9** |
+| Theme | File | Questions |
+|-------|------|-----------|
+| Foundation | `questions-foundation.json` | 37 |
+| Future | `questions-future.json` | 27 |
+| Intelligence | `questions-intelligence.json` | 33 |
+| **Total** | | **97** |
+
+Questions are sorted per `spec/QUESTION_SORTING_PRINCIPLES.md`:
+1. By Objective (theme order)
+2. By Practice within Objective (logical flow)
+3. By Maturity Level within Practice (L1 → L4)
 
 ---
 
 ## Scoring System
 
-### Score Formula
+### Score Formula (v3.1.0)
 ```
-Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
+Score = (Impact² / Complexity) × CriticalBoost × CombinedMultiplier
+
+where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
 ```
+
+| Component | Source | Values |
+|-----------|--------|--------|
+| Impact | questions.json | 1-5 |
+| Complexity | questions.json | 1-5 |
+| CriticalBoost | is_critical flag | 1× or 2× |
+| ImportanceFactor | VS-21 Calibration | 0.50×–1.50× |
+| ContextModifier | VS-26 Pain Points | 1.0×–2.0× |
+
+### Impact & Complexity Definitions
+
+**Impact** measures value creation potential when the capability is in place:
+
+| Score | Label | CFO Lens |
+|-------|-------|----------|
+| 5 | Transformational | "Changes how we run the company" |
+| 4 | High | "Leadership uses this weekly" |
+| 3 | Moderate | "Meaningful process improvement" |
+| 2 | Low | "Nice to have, not essential" |
+
+**Complexity** measures implementation friction:
+
+| Score | Label | CFO Lens |
+|-------|-------|----------|
+| 5 | Transformational | "Board approval, multi-quarter execution" |
+| 4 | High | "Budget cycle decision, dedicated PM" |
+| 3 | Moderate | "Quarterly project, team effort" |
+| 2 | Low | "Sprint or focus area, one owner" |
+| 1 | Quick Win | "Can be done this month" |
+
+**Target Distribution (v2.19.0):** Impact follows bell curve centered on 3-4:
+- Impact 5: ~20% (transformational only)
+- Impact 4: ~35% (significant improvements)
+- Impact 3: ~35% (standard good practices)
+- Impact 2: ~10% (foundational hygiene)
+
+> Full methodology: `spec/IMPACT_COMPLEXITY.md` (cross-pillar)
+> FP&A anchors: `spec/IMPACT_COMPLEXITY_FPA.md` (pillar-specific)
 
 ### Importance Multipliers (VS21)
 | Level | Multiplier |
@@ -265,12 +313,14 @@ Score = (Impact² / Complexity) × CriticalBoost × ImportanceFactor
 | 1 Minimal | 0.50x |
 
 ### Maturity Levels
-| Level | Name | Requirements |
-|-------|------|--------------|
-| 1 | Emerging | Pass L1 critical questions |
-| 2 | Defined | L1 + L2 gates |
-| 3 | Managed | L2 + L3 gates |
-| 4 | Optimized | L3 + L4 gates |
+| Level | Name | Score Threshold | Gate Requirements |
+|-------|------|-----------------|-------------------|
+| 1 | Emerging | < 40% | — |
+| 2 | Defined | >= 40% | Pass L1 critical gates |
+| 3 | Managed | >= 65% | Pass L1 + L2 critical gates |
+| 4 | Optimized | >= 85% | Pass L1 + L2 critical gates |
+
+**Note:** Critical gate failures cap the level regardless of score. For example, a user with 70% score but failed L1 criticals will be capped at L1.
 
 ---
 
@@ -360,6 +410,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-27c: Persona Confirmation | Frontend persona display with one-click switching |
 | VS-27e: Target Calculation | Persona-specific maturity targets per objective |
 | VS-27d: Benchmark Tab | Targets vs actuals comparison with persona context, practice detail table, and "Include committed actions" toggle in the report sidebar |
+| VS-26: Context Modifier | Pain point → practice boosting (1.0×–2.0× multiplier) |
 | VS-27f: Target Lines | Target lines in Objectives grid (Post-MVP, #75) |
 
 
@@ -392,20 +443,25 @@ accent: '#f59e0b'       // Amber highlights
 
 ---
 
-## Content Architecture (v2.9.0)
+## Content Architecture (v3.1.0)
 
 ```
 content/*.json (Source of Truth)
        ↓
 src/specs/schemas.ts (Zod Validation)
        ↓
-src/specs/loader.ts (Load + Transform)
+src/specs/loader.ts (Load + Merge Theme Files)
        ↓
 src/specs/registry.ts (Version Registry)
        ↓
 API / Reports / Tests
 
-Schema Relationships (v2.9.0):
+Question Files (split by theme for maintainability):
+  questions-foundation.json  → Foundation theme (37 questions)
+  questions-future.json      → Future theme (27 questions)
+  questions-intelligence.json → Intelligence theme (33 questions)
+
+Schema Relationships (v3.1.0):
   question.practice_id → practice.objective_id → objective.theme_id
   (3-level hierarchy: Question → Practice → Objective)
 ```
@@ -480,7 +536,7 @@ const L1_CRITICALS = ['fpa_l1_q01', ...]; // DO NOT DO THIS
 | Task | Priority | Status |
 |------|----------|--------|
 | Domain QA (cfo-lens.com) | High | Pending |
-| Move Intro page before Company Setup | High | Pending |
+| Move Intro page before Company Setup | High | **Done** |
 | Post-completion flow (return to landing) | High | Pending |
 | PDF export for reports | High | **Done** (VS-45 Executive Report) |
 | Executive Report comprehensive export (PPTX-like) | Medium | Pending |
@@ -495,7 +551,6 @@ const L1_CRITICALS = ['fpa_l1_q01', ...]; // DO NOT DO THIS
 
 | Feature | Priority |
 |---------|----------|
-| VS-27d: Benchmark Tab (#74) | High |
 | VS-27f: Target Lines (#75) | High |
 | VS15: Admin Dashboard | Medium |
 | Multi-Pillar (Liquidity, Treasury, Tax) | High |
