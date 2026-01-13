@@ -106,9 +106,6 @@ export default function AssessObjectivePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
-  const questionsContainerRef = useRef(null);
-  const [scrolledForObjective, setScrolledForObjective] = useState(null);
-
   const objectiveMeta = OBJECTIVE_META[objectiveId];
 
   // Navigation calculation
@@ -209,61 +206,6 @@ export default function AssessObjectivePage() {
     if (!spec?.questions) return [];
     return spec.questions.filter(q => getQuestionObjective(q) === objectiveId);
   }, [spec, objectiveId, getQuestionObjective]);
-
-  // Scroll to first unanswered question on navigation or initial load
-  useEffect(() => {
-    // Skip if still loading or no questions
-    if (loading || !objectiveQuestions.length) {
-      return;
-    }
-
-    // Skip if already scrolled for this objective
-    if (scrolledForObjective === objectiveId) {
-      return;
-    }
-
-    // Mark as scrolled for this objective
-    setScrolledForObjective(objectiveId);
-
-    // Find first unanswered question using current answers
-    const firstUnansweredIndex = objectiveQuestions.findIndex(
-      q => answers[q.id] === undefined
-    );
-
-    console.log('[AutoScroll]', { objectiveId, firstUnansweredIndex, totalQuestions: objectiveQuestions.length });
-
-    // If all answered or first is unanswered, scroll to top
-    if (firstUnansweredIndex <= 0) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    // Scroll to the first unanswered question after DOM is ready
-    const timeoutId = setTimeout(() => {
-      const container = questionsContainerRef.current;
-      if (!container) {
-        console.warn('[AutoScroll] Container ref is null');
-        return;
-      }
-
-      const questionElements = container.querySelectorAll('[data-question-card]');
-      const targetElement = questionElements[firstUnansweredIndex];
-
-      if (targetElement) {
-        // Calculate position to center element on screen
-        const rect = targetElement.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetPosition = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
-        window.scrollTo({ top: Math.max(0, targetPosition), behavior: 'smooth' });
-        console.log('[AutoScroll] Scrolling to position', targetPosition);
-      } else {
-        console.warn('[AutoScroll] Element not found at index', firstUnansweredIndex);
-      }
-    }, 150);
-
-    return () => clearTimeout(timeoutId);
-  }, [objectiveId, loading, objectiveQuestions, scrolledForObjective]);
-  // Note: answers excluded from deps to prevent re-scroll on answer changes
 
   // Get all questions for overall progress
   const allQuestions = useMemo(() => spec?.questions || [], [spec]);
@@ -568,7 +510,7 @@ export default function AssessObjectivePage() {
           )}
 
           {/* Questions List (flat, no collapsible) */}
-          <div ref={questionsContainerRef} className="space-y-3">
+          <div className="space-y-3">
             {objectiveQuestions.map((question, idx) => (
               <QuestionCard
                 key={question.id}
