@@ -315,7 +315,16 @@ app.get("/diagnostic-runs", async (req, res) => {
 
     const { data, error } = await req.supabase
       .from("diagnostic_runs")
-      .select("id, status, context, spec_version, created_at, finalized_at, setup_completed_at")
+      .select(`
+        id,
+        status,
+        context,
+        spec_version,
+        created_at,
+        finalized_at,
+        setup_completed_at,
+        company_profiles (name)
+      `)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -323,8 +332,15 @@ app.get("/diagnostic-runs", async (req, res) => {
       return handleDatabaseError(res, error, 'List diagnostic runs');
     }
 
-    console.log('[GET /diagnostic-runs] Found', data?.length || 0, 'runs');
-    res.json(data || []);
+    // Transform to flatten company name from joined company_profiles
+    const transformed = (data || []).map((run: any) => ({
+      ...run,
+      company_name: run.company_profiles?.name || null,
+      company_profiles: undefined
+    }));
+
+    console.log('[GET /diagnostic-runs] Found', transformed.length, 'runs');
+    res.json(transformed);
   } catch (err) {
     console.error('[GET /diagnostic-runs] Unhandled error:', err);
     return res.status(500).json({ error: "Failed to fetch diagnostic runs" });

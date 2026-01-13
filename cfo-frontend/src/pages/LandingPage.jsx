@@ -19,13 +19,14 @@ import FeedbackButton from '../components/FeedbackButton';
 const API_URL = import.meta.env.VITE_API_URL;
 const FIRST_OBJECTIVE = 'obj_budget_discipline';
 
-// Helper to extract company name from run context
+// Helper to extract company name from run
 function getCompanyName(run) {
-  if (!run.context) return 'Untitled Assessment';
-  // V1 format: { company_name: "..." }
-  if (run.context.company_name) return run.context.company_name;
-  // V2 format: { company: { name: "..." } }
-  if (run.context.company?.name) return run.context.company.name;
+  // V2 format: company_name from joined company_profiles
+  if (run.company_name) return run.company_name;
+  // V1 format: context.company.name
+  if (run.context?.company?.name) return run.context.company.name;
+  // Legacy format: context.company_name
+  if (run.context?.company_name) return run.context.company_name;
   return 'Untitled Assessment';
 }
 
@@ -519,15 +520,23 @@ export default function LandingPage() {
                             <div className="font-medium text-slate-800 truncate">
                               {getCompanyName(run)}
                             </div>
-                            <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                            <div className="text-xs text-slate-400 mt-0.5">
+                              FP&A Assessment
+                            </div>
+                            <div className="flex items-center gap-2 mt-1.5 text-sm text-slate-500">
                               <span className={`px-2 py-0.5 text-xs font-medium ${badge.color}`}>
                                 {badge.label}
                               </span>
                               <span>•</span>
-                              <span>{new Date(run.created_at).toLocaleDateString()}</span>
+                              <span>Started {new Date(run.created_at).toLocaleDateString()}</span>
                             </div>
                           </div>
-                          <ArrowRight className="w-4 h-4 text-slate-400 flex-shrink-0 mt-1" />
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-xs text-slate-400">
+                              {run.status === 'in_progress' ? 'Continue' : 'View'}
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-slate-400" />
+                          </div>
                         </div>
                       </button>
                     );
