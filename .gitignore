@@ -32,3 +32,5 @@ npm-debug.log*
 
 # Test coverage
 coverage/
+tmpclaude-*-cwd
+cfo-frontend/tmpclaude-*-cwd
