@@ -273,6 +273,36 @@ where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
 | ImportanceFactor | VS-21 Calibration | 0.50×–1.50× |
 | ContextModifier | VS-26 Pain Points | 1.0×–2.0× |
 
+### Impact & Complexity Definitions
+
+**Impact** measures value creation potential when the capability is in place:
+
+| Score | Label | CFO Lens |
+|-------|-------|----------|
+| 5 | Transformational | "Changes how we run the company" |
+| 4 | High | "Leadership uses this weekly" |
+| 3 | Moderate | "Meaningful process improvement" |
+| 2 | Low | "Nice to have, not essential" |
+
+**Complexity** measures implementation friction:
+
+| Score | Label | CFO Lens |
+|-------|-------|----------|
+| 5 | Transformational | "Board approval, multi-quarter execution" |
+| 4 | High | "Budget cycle decision, dedicated PM" |
+| 3 | Moderate | "Quarterly project, team effort" |
+| 2 | Low | "Sprint or focus area, one owner" |
+| 1 | Quick Win | "Can be done this month" |
+
+**Target Distribution (v2.19.0):** Impact follows bell curve centered on 3-4:
+- Impact 5: ~20% (transformational only)
+- Impact 4: ~35% (significant improvements)
+- Impact 3: ~35% (standard good practices)
+- Impact 2: ~10% (foundational hygiene)
+
+> Full methodology: `spec/IMPACT_COMPLEXITY.md` (cross-pillar)
+> FP&A anchors: `spec/IMPACT_COMPLEXITY_FPA.md` (pillar-specific)
+
 ### Importance Multipliers (VS21)
 | Level | Multiplier |
 |-------|------------|
