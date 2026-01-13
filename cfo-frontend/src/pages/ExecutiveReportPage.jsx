@@ -47,25 +47,23 @@ function PageHeader({ companyName, industry, runDate }) {
 
 function PrintFooter({ pageNumber, runId, printDate }) {
   return (
-    <div className="print-footer mt-auto flex-shrink-0">
-      <div className="print-footer-inner">
-        <div className="print-footer-left">
-          <div className="print-footer-left-row text-[8px] text-slate-500">
-            <span className="text-[9px] font-semibold text-slate-600">{pageNumber}</span>
-            <span>RESTRICTED DISTRIBUTION © 2026 CFO-Lens AI and/or its affiliates. All rights reserved.</span>
-          </div>
+    <div className="print-footer">
+      <div className="print-footer-left">
+        <div className="print-footer-left-row text-[8px] text-slate-500">
+          <span className="text-[9px] font-semibold text-slate-600">{pageNumber}</span>
+          <span>RESTRICTED DISTRIBUTION © 2026 CFO-Lens AI and/or its affiliates. All rights reserved.</span>
         </div>
-        <div className="print-footer-center text-[10px] text-slate-400">
-          <div>Run ID: {runId || 'Unknown'}</div>
-          <div>Print Date: {printDate}</div>
-        </div>
-        <div className="print-footer-right">
-          <img
-            src="/Logo horizontal.png"
-            alt="CFO Lens AI"
-            className="h-5 object-contain"
-          />
-        </div>
+      </div>
+      <div className="print-footer-center text-[10px] text-slate-400">
+        <div>Run ID: {runId || 'Unknown'}</div>
+        <div>Print Date: {printDate}</div>
+      </div>
+      <div className="print-footer-right">
+        <img
+          src="/Logo horizontal.png"
+          alt="CFO Lens AI"
+          className="h-5 object-contain"
+        />
       </div>
     </div>
   );
@@ -998,10 +996,6 @@ export default function ExecutiveReportPage() {
             display: none;
           }
 
-          .print-footer-inner {
-            display: none;
-          }
-
           .cover-accent {
             display: flex;
             width: 100%;
@@ -1114,10 +1108,8 @@ export default function ExecutiveReportPage() {
               border: none;
               margin-bottom: 0;
               page-break-inside: avoid;
-              display: flex;
-              flex-direction: column;
-              height: 7.7in;
-              box-sizing: border-box;
+              padding-bottom: 0.9in;
+              min-height: 8.1in;
             }
 
             .page-break-before {
@@ -1142,17 +1134,12 @@ export default function ExecutiveReportPage() {
             /* Cover page print overrides */
             .cover-page {
               padding: 0 !important;
-              height: 7.7in;
+              padding-bottom: 0.9in !important;
             }
 
             .cover-page-inner {
-              flex: 1;
-              min-height: 0;
-            }
-
-            .cover-page .print-footer {
-              padding: 12px 0.4in 0;
-              margin: 0 0.4in;
+              height: calc(8.1in - 0.9in);
+              min-height: calc(8.1in - 0.9in);
             }
 
             .cover-content {
@@ -1168,18 +1155,14 @@ export default function ExecutiveReportPage() {
             }
 
             .print-footer {
-              display: block;
-              margin-top: auto;
-              flex-shrink: 0;
-              padding-top: 12px;
-              border-top: 1px solid #e2e8f0;
-            }
-
-            .print-footer-inner {
               display: flex;
               align-items: flex-end;
               justify-content: space-between;
               gap: 12px;
+              position: absolute;
+              bottom: -0.5in;
+              left: 0.4in;
+              right: 0.4in;
             }
 
             .print-footer-left-row {
@@ -1223,7 +1206,7 @@ export default function ExecutiveReportPage() {
             }
 
             .priority-matrix-page {
-              padding: 0.35in 0.4in 0.4in !important;
+              padding: 0.35in 0.4in 0.9in !important;
             }
 
             .priority-matrix-page .matrix-grid {
@@ -1237,7 +1220,7 @@ export default function ExecutiveReportPage() {
             }
 
             .priority-matrix-page .priority-matrix-wrap {
-              flex: 1;
+              padding-bottom: 0.15in;
             }
 
             /* Ensure sections don't split */
