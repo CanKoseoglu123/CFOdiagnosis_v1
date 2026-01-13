@@ -28,20 +28,37 @@ interface PracticeConstraint {
 let _constraintsCache: Record<string, PracticeConstraint> | null = null;
 
 /**
- * Load questions.json and derive practice constraints
+ * Load questions from split theme files and derive practice constraints
  */
 function derivePracticeConstraints(): Record<string, PracticeConstraint> {
-  const questionsPath = path.join(__dirname, '../../content/questions.json');
-  const questionsData: QuestionsFile = JSON.parse(fs.readFileSync(questionsPath, 'utf-8'));
+  // Questions are split into three theme files
+  const questionFiles = [
+    'questions-foundation.json',
+    'questions-future.json',
+    'questions-intelligence.json'
+  ];
 
   const byPractice: Record<string, number[]> = {};
 
-  for (const question of questionsData.questions) {
-    const practiceId = question.practice_id;
-    if (!byPractice[practiceId]) {
-      byPractice[practiceId] = [];
+  for (const fileName of questionFiles) {
+    const filePath = path.join(__dirname, '../../content', fileName);
+    try {
+      const fileData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const questions = Array.isArray(fileData) ? fileData : fileData.questions || [];
+
+      for (const question of questions) {
+        const practiceId = question.practice_id;
+        const level = question.maturity_level ?? question.level ?? 1;
+        if (practiceId) {
+          if (!byPractice[practiceId]) {
+            byPractice[practiceId] = [];
+          }
+          byPractice[practiceId].push(level);
+        }
+      }
+    } catch (err) {
+      console.error(`[PracticeConstraints] Failed to load ${fileName}:`, err);
     }
-    byPractice[practiceId].push(question.maturity_level);
   }
 
   const constraints: Record<string, PracticeConstraint> = {};
