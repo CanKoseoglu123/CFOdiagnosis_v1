@@ -185,7 +185,7 @@ export default function FinalReportTab({
       const score24m = Math.min(100, score12m + Math.round((actions24m / totalQuestions) * 100));
 
       // Calculate current and target maturity levels for this objective
-      // Based on score thresholds: <40=L1, 40-64=L2, 65-84=L3, 85+=L4
+      // Thresholds: L4 >= 85%, L3 >= 65%, L2 >= 40%, L1 < 40%
       const scoreToLevel = (s) => {
         if (s >= 85) return 4;
         if (s >= 65) return 3;

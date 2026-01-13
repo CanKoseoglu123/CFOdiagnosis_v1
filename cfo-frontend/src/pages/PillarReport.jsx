@@ -115,11 +115,25 @@ export default function PillarReport() {
 
   const projectedTargets = useMemo(() => {
     const map = {};
+    const achievedLevels = benchmarkData?.achieved?.objectiveLevels || {};
+
     reportData.objectiveData?.forEach(obj => {
-      map[obj.id] = obj.targetLevel;
+      // If no actions for this objective, use backend achieved level
+      // Otherwise use frontend projected level
+      map[obj.id] = obj.actionCount > 0
+        ? obj.targetLevel
+        : achievedLevels[obj.id] ?? obj.currentLevel;
     });
     return map;
-  }, [reportData.objectiveData]);
+  }, [reportData.objectiveData, benchmarkData]);
+
+  // Fix: Use backend level when no actions exist
+  const projectedTotalLevel = useMemo(() => {
+    if (reportData.actionCounts.total > 0) {
+      return reportData.projectedLevel;
+    }
+    return report?.maturity_v2?.actual_level ?? report?.maturity?.achieved_level ?? 1;
+  }, [reportData.actionCounts.total, reportData.projectedLevel, report]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // VS-39: FINALIZATION STATE - MUST be before early returns (React hooks rule)
@@ -568,7 +582,7 @@ export default function PillarReport() {
                 benchmarkData={benchmarkData}
                 includeCommittedActions={includeCommittedActions}
                 projectedTargets={projectedTargets}
-                projectedTotal={reportData.projectedLevel}
+                projectedTotal={projectedTotalLevel}
               />
             )
           )}

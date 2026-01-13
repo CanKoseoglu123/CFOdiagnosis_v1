@@ -2540,7 +2540,50 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: completeError.message });
   }
 
-  // 4. Calculate and store scores (reusing VS4 scoreRun logic)
+  // 4. Create company profile with classification for benchmark support
+  const companyContext: ClassificationContext = {
+    ownership_structure: "pe_backed",
+    change_appetite: "standardize",
+    legal_entities: "4_10",
+    revenue_trajectory: "growth",
+    debt_pressure: "standard",
+    ma_intensity: "1_2_deals",
+    gross_margin_band: "high",
+    audit_rigor: "group_global",
+    erp_strategy: "unified"
+  };
+
+  const classification = classifyCompany(companyContext);
+
+  const { data: profile, error: profileError } = await req.supabase
+    .from("company_profiles")
+    .insert({
+      user_id: req.userId,
+      name: `Test Company (${scenario.name})`,
+      context: {
+        name: `Test Company (${scenario.name})`,
+        industry: "saas",
+        revenue_range: "100m_250m",
+        employee_count: "201_1000",
+        ...companyContext
+      },
+      classification
+    })
+    .select()
+    .single();
+
+  if (profileError) {
+    console.error("[Test Run] Profile creation error:", profileError);
+    // Non-fatal, continue without profile
+  } else if (profile) {
+    // Link company profile to diagnostic run
+    await req.supabase
+      .from("diagnostic_runs")
+      .update({ company_profile_id: profile.id })
+      .eq("id", runId);
+  }
+
+  // 5. Calculate and store scores (reusing VS4 scoreRun logic)
   try {
     const scores = await scoreRun(req.supabase, runId);
 
@@ -2566,6 +2609,7 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
       scenario: scenario.name,
       questions_answered: inputs.length,
       report_url: `/report/${runId}`,
+      persona: profile?.classification?.persona || null,
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || "Failed to calculate scores" });

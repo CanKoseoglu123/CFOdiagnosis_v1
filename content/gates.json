@@ -1,9 +1,9 @@
 {
   "version": "2.9.0",
   "score_thresholds": {
-    "level_2": 50,
-    "level_3": 80,
-    "level_4": 95
+    "level_2": 40,
+    "level_3": 65,
+    "level_4": 85
   },
   "critical_gates": {
     "l1_to_l2": [

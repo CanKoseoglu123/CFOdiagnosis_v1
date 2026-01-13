@@ -90,11 +90,11 @@ export interface CalculateMaturityV2Input {
  * 4. Apply caps if critical failures exist
  * 5. Return both potential and actual levels
  *
- * Thresholds:
- * - L1 (Emerging): 0-49%
- * - L2 (Defined): 50-79%
- * - L3 (Managed): 80-94%
- * - L4 (Optimized): 95-100%
+ * Thresholds (from gates.json):
+ * - L1 (Emerging): 0-39%
+ * - L2 (Defined): 40-64%
+ * - L3 (Managed): 65-84%
+ * - L4 (Optimized): 85-100%
  *
  * @param input - Answers and questions
  * @returns MaturityResultV2 with execution_score, potential_level, actual_level

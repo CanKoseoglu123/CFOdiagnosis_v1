@@ -50,7 +50,7 @@ function ScoreBar({ score }) {
 
 // Level badge (matching Executive Report style)
 function LevelBadge({ score }) {
-  // Calculate level from score: <40=L1, 40-64=L2, 65-84=L3, 85+=L4
+  // Calculate level from score: L4 >= 85%, L3 >= 65%, L2 >= 40%, L1 < 40%
   let level = 1;
   if (score >= 85) level = 4;
   else if (score >= 65) level = 3;

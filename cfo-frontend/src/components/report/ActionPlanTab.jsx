@@ -408,7 +408,7 @@ export default function ActionPlanTab({
     const currentLevel = maturityV2.actual_level ?? report?.maturity?.achieved_level ?? 1;
 
     // Calculate projected level based on projected score
-    // Thresholds: <40=L1, 40-64=L2, 65-84=L3, 85+=L4
+    // Thresholds: L4 >= 85%, L3 >= 65%, L2 >= 40%, L1 < 40%
     const scoreToLevel = (score) => {
       if (score >= 85) return 4;
       if (score >= 65) return 3;

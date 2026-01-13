@@ -31,11 +31,12 @@ export const OBJECTIVE_THEME_MAP = {
 export const LEVEL_NAMES = ['', 'Emerging', 'Defined', 'Managed', 'Optimized'];
 
 // Score to maturity level conversion
+// Thresholds: L4 >= 85%, L3 >= 65%, L2 >= 40%, L1 < 40%
 export function scoreToLevel(score) {
-  if (score >= 85) return 4;
-  if (score >= 65) return 3;
-  if (score >= 40) return 2;
-  return 1;
+  if (score >= 85) return 4;  // L4 Optimized
+  if (score >= 65) return 3;  // L3 Managed
+  if (score >= 40) return 2;  // L2 Defined
+  return 1;                   // L1 Emerging
 }
 
 /**
@@ -186,10 +187,11 @@ export default function useReportData({
   }, [questions, report, actionPlan]);
 
   const projectedLevel = useMemo(() => {
-    if (projectedScore >= 85) return 4;
-    if (projectedScore >= 65) return 3;
-    if (projectedScore >= 45) return 2;
-    return 1;
+    // Use same thresholds as scoreToLevel: L4 >= 85%, L3 >= 65%, L2 >= 40%
+    if (projectedScore >= 85) return 4;  // L4 Optimized
+    if (projectedScore >= 65) return 3;  // L3 Managed
+    if (projectedScore >= 40) return 2;  // L2 Defined
+    return 1;                             // L1 Emerging
   }, [projectedScore]);
 
   // ─────────────────────────────────────────────────────────────────────────────
