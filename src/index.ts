@@ -433,9 +433,39 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  if (!run.company_profile_id) {
+  // Try to find/link company profile if not already linked
+  let companyProfileId = run.company_profile_id;
+
+  if (!companyProfileId && req.userId) {
+    // No profile linked - try to find user's most recent profile and link it
+    const { data: userProfile, error: findError } = await req.supabase
+      .from("company_profiles")
+      .select("id")
+      .eq("user_id", req.userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (findError) {
+      console.error("[Targets] Error finding user profile:", findError);
+    } else if (userProfile) {
+      // Found a profile - link it to the run
+      const { error: linkError } = await req.supabase
+        .from("diagnostic_runs")
+        .update({ company_profile_id: userProfile.id })
+        .eq("id", runId);
+
+      if (!linkError) {
+        companyProfileId = userProfile.id;
+        console.log(`[Targets] Auto-linked profile ${userProfile.id} to run ${runId}`);
+      }
+    }
+  }
+
+  if (!companyProfileId) {
     return res.status(400).json({
-      error: "No company profile linked to this run. Complete company setup first."
+      error: "No company profile linked to this run. Please go back to Company Setup to create one.",
+      code: "NO_COMPANY_PROFILE"
     });
   }
 
@@ -443,7 +473,7 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
   const { data: profile, error: profileError } = await req.supabase
     .from("company_profiles")
     .select("id, context, classification")
-    .eq("id", run.company_profile_id)
+    .eq("id", companyProfileId)
     .single();
 
   if (profileError || !profile) {
@@ -465,7 +495,7 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
 
     res.json({
       run_id: runId,
-      company_profile_id: run.company_profile_id,
+      company_profile_id: companyProfileId,
       ...targets
     });
   } catch (err) {
@@ -495,14 +525,46 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
     return res.status(409).json({ error: "Run must be completed before benchmarking" });
   }
 
-  if (!run.company_profile_id) {
-    return res.status(400).json({ error: "No company profile linked to this run" });
+  // Try to find/link company profile if not already linked
+  let companyProfileId = run.company_profile_id;
+
+  if (!companyProfileId && req.userId) {
+    // No profile linked - try to find user's most recent profile and link it
+    const { data: userProfile, error: findError } = await req.supabase
+      .from("company_profiles")
+      .select("id")
+      .eq("user_id", req.userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (findError) {
+      console.error("[Benchmark] Error finding user profile:", findError);
+    } else if (userProfile) {
+      // Found a profile - link it to the run
+      const { error: linkError } = await req.supabase
+        .from("diagnostic_runs")
+        .update({ company_profile_id: userProfile.id })
+        .eq("id", runId);
+
+      if (!linkError) {
+        companyProfileId = userProfile.id;
+        console.log(`[Benchmark] Auto-linked profile ${userProfile.id} to run ${runId}`);
+      }
+    }
+  }
+
+  if (!companyProfileId) {
+    return res.status(400).json({
+      error: "No company profile linked to this run. Please go back to Company Setup to create one.",
+      code: "NO_COMPANY_PROFILE"
+    });
   }
 
   const { data: profile, error: profileError } = await req.supabase
     .from("company_profiles")
     .select("context, classification")
-    .eq("id", run.company_profile_id)
+    .eq("id", companyProfileId)
     .single();
 
   if (profileError || !profile) {

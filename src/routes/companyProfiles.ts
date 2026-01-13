@@ -93,15 +93,35 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Link to diagnostic run if provided (VS-27c)
     if (diagnostic_run_id && data?.id) {
-      const { error: linkError } = await req.supabase
+      // First try to link with owner_id filter (security: only link own runs)
+      const { data: updateResult, error: linkError } = await req.supabase
         .from('diagnostic_runs')
         .update({ company_profile_id: data.id })
         .eq('id', diagnostic_run_id)
-        .eq('owner_id', req.userId); // Security: only link own runs (owner_id, not user_id)
+        .eq('owner_id', req.userId)
+        .select('id');
 
       if (linkError) {
         console.error('Error linking profile to diagnostic run:', linkError);
         // Don't fail the request, profile was created successfully
+      } else if (!updateResult || updateResult.length === 0) {
+        // No rows updated - run might exist with owner_id = null (created before auth)
+        // Try to claim the run by setting owner_id along with company_profile_id
+        const { data: claimResult, error: claimError } = await req.supabase
+          .from('diagnostic_runs')
+          .update({ company_profile_id: data.id, owner_id: req.userId })
+          .eq('id', diagnostic_run_id)
+          .is('owner_id', null)
+          .select('id');
+
+        if (claimError) {
+          console.error('Error claiming orphan run:', claimError);
+        } else if (claimResult && claimResult.length > 0) {
+          console.log(`[CompanyProfiles] Claimed orphan run ${diagnostic_run_id} for user ${req.userId}`);
+        } else {
+          // Run exists but belongs to another user - this is expected, don't log error
+          console.log(`[CompanyProfiles] Run ${diagnostic_run_id} not linked - may belong to another user`);
+        }
       }
     }
 
