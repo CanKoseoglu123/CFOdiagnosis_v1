@@ -93,13 +93,14 @@ function debounce(fn, delay) {
   };
 }
 
-// Check if element is at least partially visible in viewport
+// Check if element is sufficiently visible in viewport (answer buttons must be visible)
 function isElementVisible(el) {
   if (!el) return false;
   const rect = el.getBoundingClientRect();
   const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  // Element is visible if its top is above viewport bottom and bottom is below viewport top
-  return rect.top < windowHeight && rect.bottom > 0;
+  // Element is "visible" only if its bottom (where answer buttons are) is well within viewport
+  // Require at least 100px from bottom of viewport to ensure buttons are accessible
+  return rect.top < windowHeight - 100 && rect.bottom > 100;
 }
 
 export default function AssessObjectivePage() {
