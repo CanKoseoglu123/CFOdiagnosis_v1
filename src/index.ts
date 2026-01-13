@@ -521,7 +521,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({ error: "Run must be completed before benchmarking" });
   }
 
@@ -742,7 +742,7 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   };
 
   // Only set status to in_progress if not already completed
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     updateData.status = "in_progress";
   }
 
@@ -793,7 +793,7 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
     });
   }
 
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({ error: "Run must be completed before calibration" });
   }
 
@@ -1011,7 +1011,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     });
   }
 
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({ error: "Run is not completed" });
   }
 
@@ -1087,7 +1087,7 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({
       error: "Run must be completed before results can be computed",
     });
@@ -1137,7 +1137,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({
       error: "Run must be completed before report can be generated",
     });
@@ -1263,7 +1263,7 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({ error: "Run must be completed before interpretation" });
   }
 
@@ -1879,7 +1879,7 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
   }
 
   // Run must be completed before finalization
-  if (run.status !== "completed") {
+  if (run.status !== "completed" && run.status !== "locked") {
     return res.status(409).json({ error: "Run must be completed before finalization" });
   }
 
