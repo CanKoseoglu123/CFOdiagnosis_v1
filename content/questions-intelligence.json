@@ -1,5 +1,5 @@
 {
-  "version": "2.18.0",
+  "version": "2.19.0",
   "pillar": "fpa",
   "theme": "intelligence",
   "questions": [
@@ -27,7 +27,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Implement Deal Desk Process",
@@ -59,7 +59,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Align Finance Partner Goals with Business Unit Outcomes",
@@ -107,7 +107,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Map Finance KPIs to Strategy",
@@ -123,7 +123,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
         "title": "Publish Forecast Accuracy Scorecard",
@@ -139,7 +139,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Build Profitability Ranking Report",
@@ -171,7 +171,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Establish Business Case Policy",
@@ -187,7 +187,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Implement Post-Investment Review Process",
@@ -219,7 +219,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Establish Single Source of Truth",
@@ -235,7 +235,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Develop Board Narrative Template",
@@ -251,7 +251,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_strategic_influence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Create Forecast Reconciliation Process",
@@ -283,7 +283,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_decision_support",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Enforce the 'So What?' Rule",
@@ -299,7 +299,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_decision_support",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
         "title": "Build Finance Drill-Down Capability",
@@ -315,7 +315,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_decision_support",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Shift to Proactive Analysis",
@@ -379,7 +379,7 @@
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_decision_support",
-      "impact": 4,
+      "impact": 3,
       "complexity": 4,
       "expert_action": {
         "title": "Automate Outlier Detection",
@@ -395,7 +395,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 3,
+      "impact": 2,
       "complexity": 2,
       "expert_action": {
         "title": "Document Core FP&A Processes",
@@ -411,7 +411,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Compress Budget Cycle",
@@ -427,7 +427,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Build Technical Capability",
@@ -443,7 +443,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Conduct Report Pruning Exercise",
@@ -459,7 +459,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Eliminate Key-Person Risk",
@@ -475,7 +475,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Define and Measure Forecast Cycle Time",
@@ -491,7 +491,7 @@
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
         "title": "Automate Repetitive FP&A Tasks",
@@ -507,7 +507,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
         "title": "Maximize Analysis Time",
@@ -523,7 +523,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_operational_excellence",
-      "impact": 3,
+      "impact": 2,
       "complexity": 2,
       "expert_action": {
         "title": "Establish Predictable Response Times",

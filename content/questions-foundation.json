@@ -1,5 +1,5 @@
 {
-  "version": "2.18.0",
+  "version": "2.19.0",
   "pillar": "fpa",
   "theme": "foundation",
   "questions": [
@@ -11,7 +11,7 @@
       "maturity_level": 1,
       "is_critical": true,
       "initiative_id": "init_budget_discipline",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Implement Annual Budget Cycle",
@@ -27,7 +27,7 @@
       "maturity_level": 1,
       "is_critical": true,
       "initiative_id": "init_budget_discipline",
-      "impact": 5,
+      "impact": 4,
       "complexity": 2,
       "expert_action": {
         "title": "Extend Budget to Full P&L",
@@ -43,7 +43,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 4,
+      "impact": 3,
       "complexity": 1,
       "expert_action": {
         "title": "Assign Budget Ownership",
@@ -59,7 +59,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 3,
+      "impact": 2,
       "complexity": 1,
       "expert_action": {
         "title": "Implement Budget Sign-Off",
@@ -75,7 +75,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 4,
+      "impact": 3,
       "complexity": 1,
       "expert_action": {
         "title": "Implement Revenue Sign-Off",
@@ -91,7 +91,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 4,
+      "impact": 3,
       "complexity": 1,
       "expert_action": {
         "title": "Assign CapEx Ownership",
@@ -123,7 +123,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 3,
+      "impact": 2,
       "complexity": 1,
       "expert_action": {
         "title": "Assign Budget Process Owner",
@@ -139,7 +139,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 3,
+      "impact": 2,
       "complexity": 2,
       "expert_action": {
         "title": "Clarify Budget Rules of Engagement",
@@ -155,7 +155,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 3,
+      "impact": 2,
       "complexity": 1,
       "expert_action": {
         "title": "Enforce Budget Calendar",
@@ -171,7 +171,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Reconcile Top-Down and Bottom-Up",
@@ -187,7 +187,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_budget_discipline",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
         "title": "Issue Target-Based Budget Templates",
@@ -235,7 +235,7 @@
       "maturity_level": 1,
       "is_critical": true,
       "initiative_id": "init_financial_controls",
-      "impact": 5,
+      "impact": 4,
       "complexity": 4,
       "expert_action": {
         "title": "Standardize Chart of Accounts",
@@ -251,7 +251,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
-      "impact": 3,
+      "impact": 2,
       "complexity": 2,
       "expert_action": {
         "title": "Centralize GL Creation",
@@ -267,7 +267,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_decision_support",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Rationalize Allocations",
@@ -283,7 +283,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Automate Approval Matrix",
@@ -331,7 +331,7 @@
       "maturity_level": 4,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
-      "impact": 3,
+      "impact": 4,
       "complexity": 5,
       "expert_action": {
         "title": "Deploy AI Anomaly Detection",
@@ -347,7 +347,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
-      "impact": 3,
+      "impact": 2,
       "complexity": 1,
       "expert_action": {
         "title": "Implement Close Checklist",
@@ -363,7 +363,7 @@
       "maturity_level": 1,
       "is_critical": true,
       "initiative_id": "init_financial_controls",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Implement Hard Close",
@@ -411,7 +411,7 @@
       "maturity_level": 1,
       "is_critical": true,
       "initiative_id": "init_feedback_loops",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Standardize Monthly Pack",
@@ -459,7 +459,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Implement Weekly Flash Reporting",
@@ -507,7 +507,7 @@
       "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_feedback_loops",
-      "impact": 5,
+      "impact": 4,
       "complexity": 2,
       "expert_action": {
         "title": "Implement Monthly BvA",
@@ -523,7 +523,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Define and Hit Reporting SLA",
@@ -539,7 +539,7 @@
       "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_feedback_loops",
-      "impact": 5,
+      "impact": 4,
       "complexity": 2,
       "expert_action": {
         "title": "Institutionalize Variance Reviews",
@@ -555,7 +555,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Track Variance Actions",
@@ -571,7 +571,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_feedback_loops",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Standardize Variance Decomposition",

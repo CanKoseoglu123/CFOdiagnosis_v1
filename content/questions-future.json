@@ -1,5 +1,5 @@
 {
-  "version": "2.18.0",
+  "version": "2.19.0",
   "pillar": "fpa",
   "theme": "future",
   "questions": [
@@ -11,7 +11,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Implement Quarterly Reforecast",
@@ -59,7 +59,7 @@
       "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Model Working Capital Drivers",
@@ -107,7 +107,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 5,
+      "impact": 4,
       "complexity": 3,
       "expert_action": {
         "title": "Achieve Cash Forecast Precision",
@@ -139,7 +139,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Enable Multi-User Forecasting",
@@ -155,7 +155,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forecast_infrastructure",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Centralize Forecast Assumptions",
@@ -203,7 +203,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Embed Driver Tracking",
@@ -219,7 +219,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_forward_visibility",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Implement Driver Assumption Validation",
@@ -283,7 +283,7 @@
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 4,
+      "impact": 3,
       "complexity": 2,
       "expert_action": {
         "title": "Build Scenario-Ready Model Architecture",
@@ -299,7 +299,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Validate Sub-Hour Scenario Turnaround",
@@ -315,7 +315,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 3,
+      "impact": 2,
       "complexity": 2,
       "expert_action": {
         "title": "Add Sensitivity Analysis to Forecast Presentations",
@@ -331,7 +331,7 @@
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Compress Reforecast Cycle",
@@ -363,7 +363,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Maintain Multi-Scenario Model",
@@ -427,7 +427,7 @@
       "maturity_level": 3,
       "is_critical": false,
       "initiative_id": "init_scenario_modeling",
-      "impact": 4,
+      "impact": 3,
       "complexity": 3,
       "expert_action": {
         "title": "Establish Risks & Opportunities Register",
