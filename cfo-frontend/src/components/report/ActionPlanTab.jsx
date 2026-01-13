@@ -448,10 +448,15 @@ export default function ActionPlanTab({
         incomplete.push({
           questionId,
           missingTimeline: !hasTimeline,
-          missingOwner: !hasOwner
+          missingOwner: !hasOwner,
+          data // Include data for debugging
         });
       }
     });
+    // Debug: Log incomplete actions to help identify phantom entries
+    if (incomplete.length > 0) {
+      console.log('[ActionPlanTab] Incomplete actions:', incomplete);
+    }
     return incomplete;
   }, [actionPlan]);
 
