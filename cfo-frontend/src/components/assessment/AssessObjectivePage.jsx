@@ -211,7 +211,8 @@ export default function AssessObjectivePage() {
     return spec.questions.filter(q => getQuestionObjective(q) === objectiveId);
   }, [spec, objectiveId, getQuestionObjective]);
 
-  // Scroll to first unanswered question on navigation or initial load
+  // Scroll to first unanswered question on navigation or initial load ONLY
+  // This effect should NOT run when answers change - only on page load/navigation
   useEffect(() => {
     // Reset scroll flag when objective changes
     if (prevObjectiveIdRef.current !== objectiveId) {
@@ -224,10 +225,12 @@ export default function AssessObjectivePage() {
       return;
     }
 
-    // Mark as scrolled to prevent re-scrolling on answer changes
+    // Mark as scrolled BEFORE any scroll operation to prevent re-scrolling
     hasScrolledRef.current = true;
 
-    // Find first unanswered question index
+    // Find first unanswered question index using current answers
+    // Note: answers is intentionally NOT in the dependency array because we only
+    // want to scroll on initial load/navigation, not when answers change
     const firstUnansweredIndex = objectiveQuestions.findIndex(
       q => answers[q.id] === undefined
     );
@@ -238,17 +241,28 @@ export default function AssessObjectivePage() {
       return;
     }
 
-    // Small delay to ensure DOM is rendered
-    setTimeout(() => {
-      const questionElements = questionsContainerRef.current?.querySelectorAll('[data-question-card]');
-      if (questionElements && questionElements[firstUnansweredIndex]) {
-        questionElements[firstUnansweredIndex].scrollIntoView({
+    // Delay to ensure DOM is rendered - use requestAnimationFrame for better timing
+    const scrollToQuestion = () => {
+      const container = questionsContainerRef.current;
+      if (!container) return;
+
+      const questionElements = container.querySelectorAll('[data-question-card]');
+      const targetElement = questionElements[firstUnansweredIndex];
+
+      if (targetElement) {
+        targetElement.scrollIntoView({
           behavior: 'smooth',
           block: 'center'
         });
       }
-    }, 100);
-  }, [objectiveId, loading, objectiveQuestions, answers]);
+    };
+
+    // Use requestAnimationFrame + small delay for reliable DOM access
+    requestAnimationFrame(() => {
+      setTimeout(scrollToQuestion, 50);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [objectiveId, loading, objectiveQuestions]); // answers intentionally omitted
 
   // Get all questions for overall progress
   const allQuestions = useMemo(() => spec?.questions || [], [spec]);

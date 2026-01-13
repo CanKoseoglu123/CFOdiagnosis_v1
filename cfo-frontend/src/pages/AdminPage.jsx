@@ -44,6 +44,7 @@ export default function AdminPage() {
   const [testScenarios, setTestScenarios] = useState([]);
   const [runningTest, setRunningTest] = useState(null);
   const [testResult, setTestResult] = useState(null);
+  const [creatingQuickSetup, setCreatingQuickSetup] = useState(false);
 
   // Visitors state
   const [visitors, setVisitors] = useState([]);
@@ -288,6 +289,35 @@ export default function AdminPage() {
       setTestResult({ error: err.message });
     } finally {
       setRunningTest(null);
+    }
+  }
+
+  async function createQuickSetup() {
+    setCreatingQuickSetup(true);
+    setTestResult(null);
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/admin/test-run/setup-only`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to create quick setup');
+      }
+
+      const result = await res.json();
+      // Navigate to assessment
+      window.location.href = result.assessment_url;
+    } catch (err) {
+      setTestResult({ error: err.message });
+    } finally {
+      setCreatingQuickSetup(false);
     }
   }
 
@@ -666,6 +696,35 @@ export default function AdminPage() {
                 )}
               </div>
             )}
+
+            {/* Quick Setup for MCQ Testing */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-blue-900">Quick Setup for MCQ Testing</h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Creates a test run with pre-filled company/persona/FP&A context. Skips directly to assessment questions.
+                  </p>
+                </div>
+                <button
+                  onClick={createQuickSetup}
+                  disabled={creatingQuickSetup || runningTest !== null}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {creatingQuickSetup ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Start MCQ Test
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
 
             {/* Scenario Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

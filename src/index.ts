@@ -44,6 +44,10 @@ import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
 import { requireAdmin } from "./middleware/adminAuth";
 
+// Classification engine for test run setup
+import { classifyCompany } from "./classification/engine";
+import { ClassificationContext } from "./classification/types";
+
 // Critical gates for test scenarios
 import { L1_CRITICALS, L2_CRITICALS } from "./gates";
 
@@ -2071,6 +2075,22 @@ app.delete("/admin/feedback/:id", requireAdmin, async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// Helper: Load scoring matrix for test runs
+// ------------------------------------------------------------------
+async function loadTestScoringMatrix(supabase: SupabaseClient): Promise<any | undefined> {
+  try {
+    const { data } = await supabase
+      .from('scoring_matrix')
+      .select('matrix')
+      .eq('active', true)
+      .single();
+    return data?.matrix;
+  } catch {
+    return undefined;
+  }
+}
+
+// ------------------------------------------------------------------
 // Admin Test Runner - Generate test diagnostic runs
 // ------------------------------------------------------------------
 interface TestScenario {
@@ -2516,6 +2536,113 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || "Failed to calculate scores" });
+  }
+});
+
+// POST /admin/test-run/setup-only - Create test run ready for MCQ testing (no answers)
+app.post("/admin/test-run/setup-only", requireAdmin, async (req, res) => {
+  // Classification context (9 required fields)
+  const companyContext: ClassificationContext = {
+    ownership_structure: "pe_backed",
+    change_appetite: "standardize",
+    legal_entities: "4_10",
+    revenue_trajectory: "growth",
+    debt_pressure: "standard",
+    ma_intensity: "1_2_deals",
+    gross_margin_band: "high",
+    audit_rigor: "group_global",
+    erp_strategy: "unified"
+  };
+
+  // Extended context for display
+  const displayContext = {
+    name: "Test Corp (Quick Setup)",
+    industry: "saas",
+    employee_count: "201_1000",
+    revenue_range: "100m_250m",
+    ...companyContext
+  };
+
+  // Pillar context
+  const pillarContext = {
+    tools: [
+      { tool: "excel", effectiveness: "medium" },
+      { tool: "powerbi", effectiveness: "high" }
+    ],
+    team_size: "4_10",
+    forecast_frequency: "monthly",
+    budget_process_base: "hybrid",
+    budget_process_modifiers: ["driver_based"],
+    pain_points: ["data_wrangling", "forecast_accuracy", "partner_engagement"],
+    user_role: "fpa_manager"
+  };
+
+  try {
+    // 1. Create diagnostic run first
+    const { data: run, error: runError } = await req.supabase
+      .from("diagnostic_runs")
+      .insert({
+        status: "in_progress",
+        spec_version: DEFAULT_SPEC_VERSION,
+        owner_id: req.userId,
+        user_email: req.userEmail,
+        context: {
+          company: displayContext,
+          pillar: pillarContext
+        },
+        setup_completed_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (runError || !run) {
+      return res.status(500).json({ error: runError?.message || "Failed to create run" });
+    }
+
+    // 2. Load scoring matrix and classify
+    const matrix = await loadTestScoringMatrix(req.supabase);
+    const classification = classifyCompany(companyContext, matrix);
+
+    // 3. Create company profile
+    const { data: profile, error: profileError } = await req.supabase
+      .from("company_profiles")
+      .insert({
+        user_id: req.userId,
+        name: displayContext.name,
+        context: displayContext,
+        classification
+      })
+      .select()
+      .single();
+
+    if (profileError || !profile) {
+      // Cleanup: delete the orphaned run
+      await req.supabase.from("diagnostic_runs").delete().eq("id", run.id);
+      return res.status(500).json({ error: profileError?.message || "Failed to create profile" });
+    }
+
+    // 4. Link company profile to diagnostic run
+    const { error: linkError } = await req.supabase
+      .from("diagnostic_runs")
+      .update({ company_profile_id: profile.id })
+      .eq("id", run.id);
+
+    if (linkError) {
+      console.error("Error linking profile:", linkError);
+      // Non-fatal, continue anyway
+    }
+
+    res.status(201).json({
+      success: true,
+      run_id: run.id,
+      persona: classification.persona,
+      confidence: classification.confidence,
+      assessment_url: `/assess/objective/obj_budget_discipline?runId=${run.id}`
+    });
+
+  } catch (err: any) {
+    console.error("Error in setup-only:", err);
+    res.status(500).json({ error: err.message || "Internal server error" });
   }
 });
 
