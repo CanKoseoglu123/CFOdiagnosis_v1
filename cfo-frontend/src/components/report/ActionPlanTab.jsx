@@ -118,15 +118,41 @@ export default function ActionPlanTab({
 
       if (res.ok) {
         const items = await res.json();
-        // Convert array to map keyed by question_id
+        // Build a set of valid question IDs from the current spec
+        const validQuestionIds = new Set(questions.map(q => q.id));
+
+        // Convert array to map keyed by question_id, filtering out orphaned entries
         const planMap = {};
+        const orphaned = [];
         items.forEach(item => {
-          planMap[item.question_id] = {
-            timeline: item.timeline,
-            assigned_owner: item.assigned_owner,
-            status: item.status
-          };
+          if (validQuestionIds.has(item.question_id)) {
+            planMap[item.question_id] = {
+              timeline: item.timeline,
+              assigned_owner: item.assigned_owner,
+              status: item.status
+            };
+          } else {
+            orphaned.push(item.question_id);
+          }
         });
+
+        // Auto-delete orphaned actions from database
+        if (orphaned.length > 0) {
+          console.log('[ActionPlanTab] Found orphaned actions, deleting:', orphaned);
+          const { data: { session } } = await supabase.auth.getSession();
+          const deleteToken = session?.access_token;
+          for (const qId of orphaned) {
+            try {
+              await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan/${qId}`, {
+                method: 'DELETE',
+                headers: { ...(deleteToken && { Authorization: `Bearer ${deleteToken}` }) }
+              });
+            } catch (e) {
+              console.error('[ActionPlanTab] Failed to delete orphaned action:', qId, e);
+            }
+          }
+        }
+
         setActionPlan(planMap);
       }
     } catch (err) {
