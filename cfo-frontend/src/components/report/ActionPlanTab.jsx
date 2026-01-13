@@ -454,9 +454,14 @@ export default function ActionPlanTab({
   }, [report, executionScores.projected]);
 
   // Count selected actions by timeline and owner
+  // Only count actions that are still gaps (not answered "yes")
   const actionCounts = useMemo(() => {
+    const gapIds = new Set(gaps.map(g => g.id));
     const counts = { total: 0, '6m': 0, '12m': 0, '24m': 0, unassigned: 0, withOwner: 0 };
-    Object.values(actionPlan).forEach(a => {
+    Object.entries(actionPlan).forEach(([questionId, a]) => {
+      // Skip stale actions (question now answered "yes")
+      if (!gapIds.has(questionId)) return;
+
       counts.total++;
       if (a.timeline === '6m') counts['6m']++;
       else if (a.timeline === '12m') counts['12m']++;
@@ -468,12 +473,17 @@ export default function ActionPlanTab({
       }
     });
     return counts;
-  }, [actionPlan]);
+  }, [actionPlan, gaps]);
 
   // VS-40: Check if all selected actions have both timeline AND owner
+  // Only check actions that are still gaps (not answered "yes")
   const incompleteActions = useMemo(() => {
+    const gapIds = new Set(gaps.map(g => g.id));
     const incomplete = [];
     Object.entries(actionPlan).forEach(([questionId, data]) => {
+      // Skip stale actions (question now answered "yes")
+      if (!gapIds.has(questionId)) return;
+
       const hasTimeline = data.timeline && ['6m', '12m', '24m'].includes(data.timeline);
       const hasOwner = data.assigned_owner && data.assigned_owner.trim() !== '';
       if (!hasTimeline || !hasOwner) {
@@ -490,7 +500,7 @@ export default function ActionPlanTab({
       console.log('[ActionPlanTab] Incomplete actions:', incomplete);
     }
     return incomplete;
-  }, [actionPlan]);
+  }, [actionPlan, gaps]);
 
   const canFinalize = actionCounts.total > 0 && incompleteActions.length === 0;
 
