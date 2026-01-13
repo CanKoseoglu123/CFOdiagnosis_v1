@@ -306,13 +306,14 @@ app.post("/diagnostic-runs", async (req, res) => {
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs", async (req, res) => {
   try {
-    if (!req.supabase) {
+    if (!req.supabase || !req.userId) {
       return res.status(401).json({ error: "Authentication required" });
     }
 
     // Debug: Log auth status
     console.log('[GET /diagnostic-runs] userId:', req.userId, 'userEmail:', req.userEmail);
 
+    // Explicit owner_id filter as security safeguard (in addition to RLS)
     const { data, error } = await req.supabase
       .from("diagnostic_runs")
       .select(`
@@ -325,6 +326,7 @@ app.get("/diagnostic-runs", async (req, res) => {
         setup_completed_at,
         company_profiles (name)
       `)
+      .eq("owner_id", req.userId)
       .order("created_at", { ascending: false });
 
     if (error) {
