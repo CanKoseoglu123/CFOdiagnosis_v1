@@ -93,6 +93,15 @@ function debounce(fn, delay) {
   };
 }
 
+// Check if element is at least partially visible in viewport
+function isElementVisible(el) {
+  if (!el) return false;
+  const rect = el.getBoundingClientRect();
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+  // Element is visible if its top is above viewport bottom and bottom is below viewport top
+  return rect.top < windowHeight && rect.bottom > 0;
+}
+
 export default function AssessObjectivePage() {
   const navigate = useNavigate();
   const { objectiveId } = useParams();
@@ -107,6 +116,9 @@ export default function AssessObjectivePage() {
   const [error, setError] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const objectiveMeta = OBJECTIVE_META[objectiveId];
+
+  // Refs for question cards (used for auto-scroll)
+  const questionRefs = useRef({});
 
   // Navigation calculation
   const currentIndex = OBJECTIVE_ORDER.indexOf(objectiveId);
@@ -313,10 +325,41 @@ export default function AssessObjectivePage() {
     [runId]
   );
 
-  // Handle answer
+  // Handle answer with auto-scroll
   function handleAnswer(questionId, value) {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
     saveAnswer(questionId, value);
+
+    // Auto-scroll logic: check visibility synchronously
+    // Build current answer state including the answer we just set
+    const updatedAnswers = { ...answers, [questionId]: value };
+
+    // Find all visible unanswered questions (excluding the one we just answered)
+    const visibleUnanswered = objectiveQuestions.filter(q => {
+      if (q.id === questionId) return false; // Exclude just-answered
+      if (updatedAnswers[q.id] !== undefined) return false; // Exclude already answered
+      return isElementVisible(questionRefs.current[q.id]);
+    });
+
+    // If no other visible unanswered questions, scroll to next unanswered
+    if (visibleUnanswered.length === 0) {
+      const answeredIndex = objectiveQuestions.findIndex(q => q.id === questionId);
+
+      // Find next unanswered question AFTER current one
+      const nextUnanswered = objectiveQuestions.find(
+        (q, idx) => idx > answeredIndex && updatedAnswers[q.id] === undefined
+      );
+
+      if (nextUnanswered && questionRefs.current[nextUnanswered.id]) {
+        // Small delay for visual feedback before scrolling
+        setTimeout(() => {
+          questionRefs.current[nextUnanswered.id].scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 150);
+      }
+    }
   }
 
   // Navigation handlers
@@ -512,13 +555,17 @@ export default function AssessObjectivePage() {
           {/* Questions List (flat, no collapsible) */}
           <div className="space-y-3">
             {objectiveQuestions.map((question, idx) => (
-              <QuestionCard
+              <div
                 key={question.id}
-                question={question}
-                answer={answers[question.id]}
-                onAnswer={handleAnswer}
-                index={idx}
-              />
+                ref={(el) => { questionRefs.current[question.id] = el; }}
+              >
+                <QuestionCard
+                  question={question}
+                  answer={answers[question.id]}
+                  onAnswer={handleAnswer}
+                  index={idx}
+                />
+              </div>
             ))}
           </div>
 
