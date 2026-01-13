@@ -250,7 +250,12 @@ export default function AssessObjectivePage() {
       const targetElement = questionElements[firstUnansweredIndex];
 
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Calculate position to center element on screen
+        const rect = targetElement.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetPosition = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+        window.scrollTo({ top: Math.max(0, targetPosition), behavior: 'smooth' });
+        console.log('[AutoScroll] Scrolling to position', targetPosition);
       } else {
         console.warn('[AutoScroll] Element not found at index', firstUnansweredIndex);
       }
