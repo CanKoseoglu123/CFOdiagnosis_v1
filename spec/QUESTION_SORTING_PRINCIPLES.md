@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Last Updated:** 2025-01-10
-**Purpose:** Define the canonical order of questions in `content/questions.json`
+**Purpose:** Define the canonical order of questions in the theme-based question files (`questions-foundation.json`, `questions-future.json`, `questions-intelligence.json`)
 
 ---
 
@@ -87,4 +87,4 @@ node scripts/renumber-questions.js
 Apply these principles when:
 - Adding new questions to the diagnostic
 - Reviewing question order after content changes
-- Validating that questions.json matches the expected structure
+- Validating that question files match the expected structure

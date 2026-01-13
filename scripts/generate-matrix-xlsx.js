@@ -5,9 +5,18 @@ const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 
-// Load content files
+// Load content files - questions are split into three theme files
 const contentDir = path.join(__dirname, '..', 'content');
-const questions = JSON.parse(fs.readFileSync(path.join(contentDir, 'questions.json'), 'utf8')).questions;
+const questionFiles = [
+  'questions-foundation.json',
+  'questions-future.json',
+  'questions-intelligence.json'
+];
+const questions = [];
+for (const fileName of questionFiles) {
+  const fileData = JSON.parse(fs.readFileSync(path.join(contentDir, fileName), 'utf8'));
+  questions.push(...fileData.questions);
+}
 const practices = JSON.parse(fs.readFileSync(path.join(contentDir, 'practices.json'), 'utf8')).practices;
 const initiatives = JSON.parse(fs.readFileSync(path.join(contentDir, 'initiatives.json'), 'utf8')).initiatives;
 const objectives = JSON.parse(fs.readFileSync(path.join(contentDir, 'objectives.json'), 'utf8')).objectives;

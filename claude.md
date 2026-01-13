@@ -267,8 +267,8 @@ where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
 
 | Component | Source | Values |
 |-----------|--------|--------|
-| Impact | questions.json | 1-5 |
-| Complexity | questions.json | 1-5 |
+| Impact | question files | 1-5 |
+| Complexity | question files | 1-5 |
 | CriticalBoost | is_critical flag | 1× or 2× |
 | ImportanceFactor | VS-21 Calibration | 0.50×–1.50× |
 | ContextModifier | VS-26 Pain Points | 1.0×–2.0× |

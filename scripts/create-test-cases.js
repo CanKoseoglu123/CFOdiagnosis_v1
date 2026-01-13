@@ -11,9 +11,17 @@ if (!TOKEN) {
 
 const fs = require('fs');
 const path = require('path');
-const questions = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'content', 'questions.json'), 'utf8')
-).questions;
+const contentDir = path.join(__dirname, '..', 'content');
+const questionFiles = [
+  'questions-foundation.json',
+  'questions-future.json',
+  'questions-intelligence.json'
+];
+const questions = [];
+for (const fileName of questionFiles) {
+  const fileData = JSON.parse(fs.readFileSync(path.join(contentDir, fileName), 'utf8'));
+  questions.push(...fileData.questions);
+}
 
 const L1 = questions.filter(q => q.maturity_level === 1).map(q => q.id);
 const L2 = questions.filter(q => q.maturity_level === 2).map(q => q.id);

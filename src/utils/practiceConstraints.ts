@@ -1,6 +1,7 @@
 /**
  * VS-27e: Practice Constraints
- * Derives min/max achievable maturity levels per practice from questions.json
+ * Derives min/max achievable maturity levels per practice from question files
+ * (questions-foundation.json, questions-future.json, questions-intelligence.json)
  * Used for target capping - can't set a target above max available questions
  */
 

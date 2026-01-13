@@ -1,12 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load data
-const questionsPath = path.join(__dirname, '..', 'content', 'questions.json');
-const practicesPath = path.join(__dirname, '..', 'content', 'practices.json');
-
-const questionsData = JSON.parse(fs.readFileSync(questionsPath));
-const questions = questionsData.questions;
+// Load data - questions are now split into three theme files
+const contentDir = path.join(__dirname, '..', 'content');
+const questionFiles = [
+  { name: 'questions-foundation.json', theme: 'foundation' },
+  { name: 'questions-future.json', theme: 'future' },
+  { name: 'questions-intelligence.json', theme: 'intelligence' }
+];
+const practicesPath = path.join(contentDir, 'practices.json');
 const practices = JSON.parse(fs.readFileSync(practicesPath));
 
 // Define sort orders
@@ -40,26 +42,43 @@ objectiveOrder.forEach(obj => {
   practiceOrderByObjective[obj].forEach(prac => practiceOrder.push(prac));
 });
 
-// Sort questions
-const sorted = [...questions].sort((a, b) => {
-  // 1. By practice (which implies objective order)
-  const pracA = practiceOrder.indexOf(a.practice_id);
-  const pracB = practiceOrder.indexOf(b.practice_id);
-  if (pracA !== pracB) return pracA - pracB;
+// Sort function for questions
+function sortQuestions(questions) {
+  return [...questions].sort((a, b) => {
+    // 1. By practice (which implies objective order)
+    const pracA = practiceOrder.indexOf(a.practice_id);
+    const pracB = practiceOrder.indexOf(b.practice_id);
+    if (pracA !== pracB) return pracA - pracB;
 
-  // 2. By maturity level
-  if (a.maturity_level !== b.maturity_level) return a.maturity_level - b.maturity_level;
+    // 2. By maturity level
+    if (a.maturity_level !== b.maturity_level) return a.maturity_level - b.maturity_level;
 
-  // 3. By question ID (extract number)
-  const numA = parseInt(a.id.match(/q(\d+)/)?.[1] || '0');
-  const numB = parseInt(b.id.match(/q(\d+)/)?.[1] || '0');
-  return numA - numB;
-});
+    // 3. By question ID (extract number)
+    const numA = parseInt(a.id.match(/q(\d+)/)?.[1] || '0');
+    const numB = parseInt(b.id.match(/q(\d+)/)?.[1] || '0');
+    return numA - numB;
+  });
+}
 
-// Write result
-const output = { version: questionsData.version, pillar: questionsData.pillar, questions: sorted };
-fs.writeFileSync(questionsPath, JSON.stringify(output, null, 2));
+// Process each theme file separately
+let totalSorted = 0;
+for (const { name: fileName } of questionFiles) {
+  const filePath = path.join(contentDir, fileName);
+  const fileData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const questions = fileData.questions;
 
-console.log('Sorted', sorted.length, 'questions');
-console.log('First 5:', sorted.slice(0, 5).map(q => q.id + ' (' + q.practice_id + ', L' + q.maturity_level + ')').join('\n  '));
-console.log('Last 5:', sorted.slice(-5).map(q => q.id + ' (' + q.practice_id + ', L' + q.maturity_level + ')').join('\n  '));
+  const sorted = sortQuestions(questions);
+
+  // Write result
+  const output = { version: fileData.version, pillar: fileData.pillar, questions: sorted };
+  fs.writeFileSync(filePath, JSON.stringify(output, null, 2));
+
+  console.log(`Sorted ${sorted.length} questions in ${fileName}`);
+  console.log('  First 3:', sorted.slice(0, 3).map(q => q.id + ' (' + q.practice_id + ', L' + q.maturity_level + ')').join('\n           '));
+  console.log('  Last 3:', sorted.slice(-3).map(q => q.id + ' (' + q.practice_id + ', L' + q.maturity_level + ')').join('\n          '));
+  console.log('');
+
+  totalSorted += sorted.length;
+}
+
+console.log('Total sorted:', totalSorted, 'questions across', questionFiles.length, 'files');

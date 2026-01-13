@@ -1,17 +1,30 @@
 const fs = require('fs');
 const path = require('path');
 
-// Paths
-const questionsPath = path.join(__dirname, '..', 'content', 'questions.json');
-const gatesPath = path.join(__dirname, '..', 'content', 'gates.json');
+// Paths - questions are now split into three theme files
+const contentDir = path.join(__dirname, '..', 'content');
+const questionFiles = [
+  'questions-foundation.json',
+  'questions-future.json',
+  'questions-intelligence.json'
+];
+const gatesPath = path.join(contentDir, 'gates.json');
 
-// Load data
-const questionsData = JSON.parse(fs.readFileSync(questionsPath));
+// Load and merge questions from all three files
+const allQuestions = [];
+const questionFileData = {};
+for (const fileName of questionFiles) {
+  const filePath = path.join(contentDir, fileName);
+  const fileData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  questionFileData[fileName] = fileData;
+  allQuestions.push(...fileData.questions);
+}
+
 const gatesData = JSON.parse(fs.readFileSync(gatesPath));
 
 // Build old→new ID mapping
 const idMapping = {};
-const questions = questionsData.questions;
+const questions = allQuestions;
 
 questions.forEach((q, index) => {
   const newId = `fpa_q${String(index + 1).padStart(3, '0')}`;
@@ -38,8 +51,17 @@ gatesData.critical_gates.l2_to_l3 = gatesData.critical_gates.l2_to_l3.map(oldId 
   return newId;
 });
 
-// Write updated files
-fs.writeFileSync(questionsPath, JSON.stringify(questionsData, null, 2));
+// Write updated files - update each theme file with its questions
+for (const fileName of questionFiles) {
+  const fileData = questionFileData[fileName];
+  // Update questions in this file with new IDs
+  fileData.questions = fileData.questions.map(q => {
+    const newId = idMapping[q.id];
+    if (newId) q.id = newId;
+    return q;
+  });
+  fs.writeFileSync(path.join(contentDir, fileName), JSON.stringify(fileData, null, 2));
+}
 fs.writeFileSync(gatesPath, JSON.stringify(gatesData, null, 2));
 
 // Output mapping for reference

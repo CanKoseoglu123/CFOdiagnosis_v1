@@ -7,7 +7,7 @@
 **Change Type:** Context Modifier & Pain Point Mapping (VS-26)
 **Engineering Review:** Complete — reflects actual implementation through VS-40, VS-26
 
-> **Implementation Note:** The deployed spec registry API currently returns `v2.9.0`. Content file versions: `questions.json` v2.17.0, `gates.json` v2.9.0. This spec document (v3.1.0) represents the target specification; version alignment is tracked as a future release task.
+> **Implementation Note:** The deployed spec registry API currently returns `v2.9.0`. Questions are split into three theme files: `questions-foundation.json`, `questions-future.json`, `questions-intelligence.json`. Content file versions: `gates.json` v2.9.0. This spec document (v3.1.0) represents the target specification; version alignment is tracked as a future release task.
 
 ---
 
@@ -100,7 +100,9 @@ Aligned 3 per Theme:
 |:-----|:------|:--------|
 | `objectives.json` | 9 | Objective definitions linked to themes |
 | `practices.json` | 27 | Practice definitions linked to objectives |
-| `questions.json` | 91 | Assessment questions with scoring metadata |
+| `questions-foundation.json` | 37 | Foundation theme questions |
+| `questions-future.json` | 27 | Future theme questions |
+| `questions-intelligence.json` | 33 | Intelligence theme questions |
 | `initiatives.json` | 9 | Strategic initiative groupings |
 | `gates.json` | 1 | Critical gates and score thresholds |
 | `targetMatrix.json` | 1 | Persona-specific maturity targets (VS-27e) |
@@ -438,8 +440,8 @@ See Section 5.7 for Combined Multiplier Cap rationale.
 
 | Component | Source | Values | Description |
 |:----------|:-------|:-------|:------------|
-| **Impact** | `questions.json` | 1–5 | Business impact if addressed |
-| **Complexity** | `questions.json` | 1–5 | Implementation difficulty |
+| **Impact** | question files | 1–5 | Business impact if addressed |
+| **Complexity** | question files | 1–5 | Implementation difficulty |
 | **CriticalBoost** | `is_critical` flag | 1× or 2× | Doubles score for critical blockers |
 | **ImportanceFactor** | VS-21 Calibration | 0.50×–1.50× | User-declared objective importance |
 | **ContextModifier** | VS-26 Pain Points | 1.0×–2.0× | Boost for practices matching user pain points |

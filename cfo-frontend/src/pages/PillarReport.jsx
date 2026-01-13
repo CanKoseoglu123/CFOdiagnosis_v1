@@ -393,8 +393,8 @@ export default function PillarReport() {
     setActiveTab(tab);
   }
 
-  const showBenchmarkToggle = typeof window !== 'undefined'
-    && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  // Show the "include committed actions" toggle on the Benchmark tab
+  const showBenchmarkToggle = true;
 
   const sidebarContent = (
     <WorkflowSidebar
