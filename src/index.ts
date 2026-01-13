@@ -305,16 +305,25 @@ app.post("/diagnostic-runs", async (req, res) => {
 // List diagnostic runs for authenticated user (My Reports)
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs", async (req, res) => {
-  const { data, error } = await req.supabase
-    .from("diagnostic_runs")
-    .select("id, status, context, spec_version, created_at, updated_at, finalized_at, setup_completed_at")
-    .order("created_at", { ascending: false });
+  try {
+    if (!req.supabase) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
-  if (error) {
-    return handleDatabaseError(res, error, 'List diagnostic runs');
+    const { data, error } = await req.supabase
+      .from("diagnostic_runs")
+      .select("id, status, context, spec_version, created_at, updated_at, finalized_at, setup_completed_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return handleDatabaseError(res, error, 'List diagnostic runs');
+    }
+
+    res.json(data || []);
+  } catch (err) {
+    console.error('[GET /diagnostic-runs] Unhandled error:', err);
+    return res.status(500).json({ error: "Failed to fetch diagnostic runs" });
   }
-
-  res.json(data);
 });
 
 // ------------------------------------------------------------------
@@ -1791,11 +1800,12 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
     .update({
+      status: "locked",
       finalized_at: now,
       action_plan_snapshot: actionPlanItems || []
     })
     .eq("id", runId)
-    .select("id, finalized_at, action_plan_snapshot")
+    .select("id, status, finalized_at, action_plan_snapshot")
     .single();
 
   if (error) {
