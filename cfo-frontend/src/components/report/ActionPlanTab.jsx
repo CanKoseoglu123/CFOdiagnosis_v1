@@ -87,12 +87,12 @@ export default function ActionPlanTab({
   // VS-39: Derive finalization status from report (NOT separate state)
   const isFinalized = !!report?.finalized_at;
 
-  // Fetch existing action plan on mount
+  // Fetch existing action plan on mount (wait for questions to be loaded)
   useEffect(() => {
-    if (runId) {
+    if (runId && questions.length > 0) {
       fetchActionPlan();
     }
-  }, [runId]);
+  }, [runId, questions.length]);
 
   // VS-47: Show intro modal on entry (only first time per run)
   useEffect(() => {
@@ -105,6 +105,12 @@ export default function ActionPlanTab({
   }, [runId, isFinalized]);
 
   async function fetchActionPlan() {
+    // Guard: Don't run until questions are loaded
+    if (questions.length === 0) {
+      console.log('[ActionPlanTab] Waiting for questions to load...');
+      return;
+    }
+
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
