@@ -8,7 +8,7 @@
 
 \- The system is governed by a frozen specification.
 
-\- Canonical spec: `/spec/SPEC\_v2.7.0.md`
+\- Canonical spec: `/spec/SPEC\_v3.1.0.md`
 
 \- Spec violations are \*\*BLOCKERS\*\*.
 
