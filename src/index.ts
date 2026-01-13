@@ -315,7 +315,7 @@ app.get("/diagnostic-runs", async (req, res) => {
 
     const { data, error } = await req.supabase
       .from("diagnostic_runs")
-      .select("id, status, context, spec_version, created_at, updated_at, finalized_at, setup_completed_at")
+      .select("id, status, context, spec_version, created_at, finalized_at, setup_completed_at")
       .order("created_at", { ascending: false });
 
     if (error) {
