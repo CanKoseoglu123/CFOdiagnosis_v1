@@ -9,7 +9,6 @@ import { supabase } from '../lib/supabase';
 import {
   ArrowRight,
   X,
-  AlertCircle,
   Zap,
   Crosshair,
   Layers,
@@ -20,12 +19,36 @@ import FeedbackButton from '../components/FeedbackButton';
 const API_URL = import.meta.env.VITE_API_URL;
 const FIRST_OBJECTIVE = 'obj_budget_discipline';
 
+// Helper to extract company name from run context
+function getCompanyName(run) {
+  if (!run.context) return 'Untitled Assessment';
+  // V1 format: { company_name: "..." }
+  if (run.context.company_name) return run.context.company_name;
+  // V2 format: { company: { name: "..." } }
+  if (run.context.company?.name) return run.context.company.name;
+  return 'Untitled Assessment';
+}
+
+// Helper to get status badge styling
+function getStatusBadge(status) {
+  switch (status) {
+    case 'locked':
+      return { label: 'Finalized', color: 'bg-amber-100 text-amber-700' };
+    case 'completed':
+      return { label: 'Completed', color: 'bg-green-100 text-green-700' };
+    case 'in_progress':
+      return { label: 'In Progress', color: 'bg-blue-100 text-blue-700' };
+    default:
+      return { label: 'Draft', color: 'bg-slate-100 text-slate-600' };
+  }
+}
+
 export default function LandingPage() {
   const { isAuthenticated, user, signOut, loading } = useAuth();
   const navigate = useNavigate();
-  const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+  const [showRunsModal, setShowRunsModal] = useState(false);
   const [checkingRuns, setCheckingRuns] = useState(false);
-  const [inProgressRun, setInProgressRun] = useState(null);
+  const [allRuns, setAllRuns] = useState([]);
 
   async function handleDashboardClick(e) {
     e.preventDefault();
@@ -44,58 +67,36 @@ export default function LandingPage() {
 
       if (res.ok) {
         const runs = await res.json();
-        const completedRun = runs.find(r => r.status === 'completed' || r.status === 'locked');
-        const inProgress = runs.find(r => r.status === 'in_progress');
-
-        if (completedRun) {
-          navigate(`/report/${completedRun.id}`);
-        } else {
-          setInProgressRun(inProgress);
-          setShowIncompleteModal(true);
-        }
+        // Filter out 'created' status (empty runs with no setup)
+        const actionableRuns = runs.filter(r => r.status !== 'created');
+        setAllRuns(actionableRuns);
+        setShowRunsModal(true);
       } else {
-        setInProgressRun(null);
-        setShowIncompleteModal(true);
+        setAllRuns([]);
+        setShowRunsModal(true);
       }
     } catch (err) {
       console.error('Error checking runs:', err);
-      setInProgressRun(null);
-      setShowIncompleteModal(true);
+      setAllRuns([]);
+      setShowRunsModal(true);
     } finally {
       setCheckingRuns(false);
     }
   }
 
-  async function handleResumeAssessment() {
-    if (!inProgressRun) return;
+  function handleRunClick(run) {
+    setShowRunsModal(false);
 
-    // Default destination is the start of the assessment
-    let destination = `/assess/objective/${FIRST_OBJECTIVE}?runId=${inProgressRun.id}`;
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        navigate('/login');
-        return;
+    if (run.status === 'completed' || run.status === 'locked') {
+      navigate(`/report/${run.id}`);
+    } else {
+      // In-progress: check if setup is complete (already in fetch response)
+      if (run.setup_completed_at) {
+        navigate(`/assess/objective/${FIRST_OBJECTIVE}?runId=${run.id}`);
+      } else {
+        navigate(`/run/${run.id}/setup/company`);
       }
-
-      // Fetch run to check if setup is completed
-      const res = await fetch(`${API_URL}/diagnostic-runs/${inProgressRun.id}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-
-      if (res.ok) {
-        const run = await res.json();
-        if (!run.setup_completed_at) {
-          destination = `/run/${inProgressRun.id}/setup/company`;
-        }
-      }
-    } catch (err) {
-      console.error('Error resuming assessment:', err);
     }
-
-    setShowIncompleteModal(false);
-    navigate(destination);
   }
 
   if (loading) {
@@ -474,74 +475,80 @@ export default function LandingPage() {
       <FeedbackButton currentPage="landing" />
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* INCOMPLETE DIAGNOSIS MODAL */}
+      {/* MY ASSESSMENTS MODAL */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {showIncompleteModal && (
+      {showRunsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setShowIncompleteModal(false)}
-          />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowRunsModal(false)} />
 
-          <div className="relative bg-white shadow-xl w-full max-w-md">
+          <div className="relative bg-white shadow-xl w-full max-w-lg">
+            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <AlertCircle className={`w-5 h-5 ${inProgressRun ? 'text-blue-500' : 'text-amber-500'}`} />
-                <h3 className="text-lg font-semibold text-slate-800">
-                  {inProgressRun ? 'Assessment In Progress' : 'No Reports Available'}
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowIncompleteModal(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
+              <h3 className="text-lg font-semibold text-slate-800">My Assessments</h3>
+              <button onClick={() => setShowRunsModal(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6">
-              <p className="text-slate-600 mb-6">
-                {inProgressRun
-                  ? 'You have an unfinished assessment. Would you like to continue where you left off, or start a new assessment?'
-                  : "You haven't completed a diagnostic assessment yet. Complete the assessment to generate your personalized report and action plan."}
-              </p>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowIncompleteModal(false)}
-                  className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
-                >
-                  Cancel
-                </button>
-                {inProgressRun ? (
-                  <>
-                    <Link
-                      to="/select-pillar"
-                      onClick={() => setShowIncompleteModal(false)}
-                      className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 hover:underline"
-                    >
-                      Start New
-                    </Link>
-                    <button
-                      onClick={handleResumeAssessment}
-                      className="px-4 py-2 text-sm font-medium text-white transition-colors"
-                      style={{ backgroundColor: BRAND_COLORS.navy }}
-                    >
-                      Continue Assessment
-                    </button>
-                  </>
-                ) : (
+            {/* Runs List */}
+            <div className="max-h-96 overflow-y-auto">
+              {allRuns.length === 0 ? (
+                <div className="p-6 text-center text-slate-500">
+                  <p className="mb-4">No assessments found.</p>
                   <Link
                     to="/select-pillar"
-                    onClick={() => setShowIncompleteModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-white transition-colors"
+                    onClick={() => setShowRunsModal(false)}
+                    className="inline-block px-4 py-2 text-sm font-medium text-white"
                     style={{ backgroundColor: BRAND_COLORS.navy }}
                   >
                     Start Assessment
                   </Link>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {allRuns.map(run => {
+                    const badge = getStatusBadge(run.status);
+                    return (
+                      <button
+                        key={run.id}
+                        onClick={() => handleRunClick(run)}
+                        className="w-full p-4 text-left hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-slate-800 truncate">
+                              {getCompanyName(run)}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                              <span className={`px-2 py-0.5 text-xs font-medium ${badge.color}`}>
+                                {badge.label}
+                              </span>
+                              <span>•</span>
+                              <span>{new Date(run.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-slate-400 flex-shrink-0 mt-1" />
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+
+            {/* Footer */}
+            {allRuns.length > 0 && (
+              <div className="p-4 border-t border-slate-200 bg-slate-50">
+                <Link
+                  to="/select-pillar"
+                  onClick={() => setShowRunsModal(false)}
+                  className="text-sm font-medium hover:underline"
+                  style={{ color: BRAND_COLORS.navy }}
+                >
+                  + Start New Assessment
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
