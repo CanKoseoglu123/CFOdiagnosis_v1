@@ -656,10 +656,10 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   const runId = req.params.id;
   const body = req.body;
 
-  // Verify run exists first (needed for V2 format check)
+  // Verify run exists first (needed for V2 format check and status preservation)
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, setup_completed_at, company_profile_id, finalized_at")
+    .select("id, status, setup_completed_at, company_profile_id, finalized_at")
     .eq("id", runId)
     .single();
 
@@ -735,13 +735,20 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
   }
 
   // Update context and mark setup complete
+  // Don't overwrite status if run is already completed (user is just editing context)
+  const updateData: Record<string, unknown> = {
+    context,
+    setup_completed_at: new Date().toISOString(),
+  };
+
+  // Only set status to in_progress if not already completed
+  if (run.status !== "completed") {
+    updateData.status = "in_progress";
+  }
+
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
-    .update({
-      context,
-      setup_completed_at: new Date().toISOString(),
-      status: "in_progress",
-    })
+    .update(updateData)
     .eq("id", runId)
     .select()
     .single();
