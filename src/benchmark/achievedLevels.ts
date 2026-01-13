@@ -1,31 +1,39 @@
 import { Spec, SpecQuestion } from "../specs/types";
 
+// Score thresholds matching the maturity engine (40/65/85)
+const SCORE_THRESHOLDS = {
+  L2: 40,
+  L3: 65,
+  L4: 85
+};
+
 export interface AchievedLevelsResult {
   objectiveLevels: Record<string, number>;
   practiceLevels: Record<string, number>;
 }
 
+/**
+ * Calculate achieved maturity level based on score percentage.
+ * Uses same thresholds as the main maturity engine:
+ * - L1 (Emerging): < 40%
+ * - L2 (Defined): >= 40%
+ * - L3 (Managed): >= 65%
+ * - L4 (Optimized): >= 85%
+ *
+ * Note: There is no L0 - minimum is always L1.
+ */
 function getAchievedLevel(questions: SpecQuestion[], answers: Map<string, unknown>): number {
-  if (questions.length === 0) return 0;
+  if (questions.length === 0) return 1; // No questions = L1 (not L0)
 
-  // Determine the max level present in questions for this practice
-  // This prevents advancing to levels that have no questions defined
-  const maxLevelPresent = Math.max(...questions.map((q) => q.level ?? 1));
+  // Calculate score as percentage of "yes" answers
+  const answered = questions.filter((q) => answers.get(q.id) === true).length;
+  const scorePercent = (answered / questions.length) * 100;
 
-  let achieved = 0;
-  for (let level = 1; level <= maxLevelPresent; level += 1) {
-    const eligible = questions.filter((q) => (q.level ?? 1) <= level);
-    if (eligible.length === 0) {
-      achieved = level;
-      continue;
-    }
-
-    const passed = eligible.every((q) => answers.get(q.id) === true);
-    if (!passed) break;
-    achieved = level;
-  }
-
-  return achieved;
+  // Map score to maturity level using standard thresholds
+  if (scorePercent >= SCORE_THRESHOLDS.L4) return 4;
+  if (scorePercent >= SCORE_THRESHOLDS.L3) return 3;
+  if (scorePercent >= SCORE_THRESHOLDS.L2) return 2;
+  return 1; // L1 is the minimum, never L0
 }
 
 export function computeAchievedLevels(spec: Spec, inputs: Array<{ question_id: string; value: unknown }>): AchievedLevelsResult {
