@@ -98,9 +98,9 @@ function isElementVisible(el) {
   if (!el) return false;
   const rect = el.getBoundingClientRect();
   const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  // Element is "visible" only if its bottom (where answer buttons are) is well within viewport
-  // Require at least 100px from bottom of viewport to ensure buttons are accessible
-  return rect.top < windowHeight - 100 && rect.bottom > 100;
+  // Element is "visible" only if it's well within the viewport
+  // Use 200px cushion to trigger scroll more readily
+  return rect.top < windowHeight - 200 && rect.bottom > 200;
 }
 
 export default function AssessObjectivePage() {
