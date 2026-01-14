@@ -9,6 +9,19 @@
 
 > **Implementation Note:** The deployed spec registry API currently returns `v2.9.0`. Questions are split into three theme files: `questions-foundation.json`, `questions-future.json`, `questions-intelligence.json`. Content file versions: `gates.json` v2.9.0. This spec document (v3.1.0) represents the target specification; version alignment is tracked as a future release task.
 
+### Version Alignment Status
+
+| Component | Current Version | Notes |
+|-----------|-----------------|-------|
+| This Spec Document | v3.1.0 | Authoritative specification |
+| API `/api/spec` response | v2.9.0 | Legacy — upgrade planned |
+| `gates.json` | v2.9.0 | Content version |
+| `questions-*.json` | v2.19.0 | Content version |
+| `practices.json` | v2.9.0 | Content version |
+| `objectives.json` | v2.9.0 | Content version |
+
+> **Roadmap:** Align all component versions to v3.1.0 in future release.
+
 ---
 
 ## 1. CORE ARCHITECTURE
@@ -73,18 +86,34 @@ Aligned 3 per Theme:
 | The Future | Forecasting Agility, Driver-Based Planning, Scenario Modeling |
 | The Intelligence | Strategic Influence, Decision Support, Operational Excellence |
 
-### 2.3 Practices (27 Total)
+### 2.3 Practices (26 Total)
 
-- **Standard:** 3 Practices per Objective
-- **Asymmetry:** "Strategic Influence" contains a 4th practice: **Investment Rigor**
-- **Exception:** "Operational Excellence" has 2 practices in v2.9.0 content
+| Objective | Practice Count | Notes |
+|-----------|----------------|-------|
+| Budget Discipline | 3 | |
+| Financial Controls | 3 | |
+| Performance Monitoring | 3 | |
+| Forecasting Agility | 3 | |
+| Driver-Based Planning | 2 | |
+| Scenario Modeling | 3 | |
+| Strategic Influence | 4 | Includes Investment Rigor |
+| Decision Support | 3 | |
+| Operational Excellence | 2 | |
 
-### 2.4 Questions (91 Total)
+**Total: 26 practices** (not 3×9=27 due to asymmetric distribution)
 
-- **ID Format:** `fpa_l{level}_q{num}` (e.g., `fpa_l1_q01`, `fpa_l3_q53`)
+### 2.4 Questions (97 Total)
+
+- **ID Format:** `fpa_q{num}` (e.g., `fpa_q001`, `fpa_q097`)
+- **Note:** Maturity level is stored in the `maturity_level` field (1-4), not encoded in the question ID.
 - **Fields:**
   - `help`: Contextual tooltip explaining "Why this matters"
   - `expert_action`: Structure containing `{title, recommendation, type}`
+    - `expert_action.type` enum values:
+      - `quick_win` — Can be completed within a month
+      - `structural` — Requires process/system changes
+      - `behavioral` — Requires cultural/habit changes
+      - `governance` — Requires policy/approval changes
   - `impact`: Score 1–5 (used in priority scoring)
   - `complexity`: Score 1–5 (used in priority scoring)
   - `is_critical`: Boolean (triggers 2× multiplier)
@@ -140,7 +169,7 @@ interface GatesConfig {
     l2_to_l3: string[];          // Question IDs that must pass
   };
   level_names: {
-    [level: string]: string;     // e.g., "1": "Foundational"
+    [level: string]: string;     // e.g., "1": "Emerging"
   };
 }
 ```
@@ -151,13 +180,13 @@ interface GatesConfig {
 {
   "version": "2.9.0",
   "score_thresholds": {
-    "level_2": 50,
-    "level_3": 80,
-    "level_4": 95
+    "level_2": 40,
+    "level_3": 65,
+    "level_4": 85
   },
   "critical_gates": {
-    "l1_to_l2": ["fpa_l1_q01", "fpa_l1_q02", "fpa_l1_q05", "fpa_l1_q09"],
-    "l2_to_l3": ["fpa_l2_q01", "fpa_l2_q02", "fpa_l2_q06", "fpa_l2_q07"]
+    "l1_to_l2": ["fpa_q001", "fpa_q002", "fpa_q016", "fpa_q026"],
+    "l2_to_l3": ["fpa_q031", "fpa_q033", "fpa_q046", "fpa_q041"]
   },
   "level_names": {
     "1": "Emerging",
@@ -512,15 +541,15 @@ ContextModifier = min(2.0, 1.0 × 1.5^matching_count)
 | `data_wrangling` | Endless manual data gathering | prac_collaborative_systems, prac_process_automation, prac_self_service_analytics |
 | `forecast_accuracy` | Forecasting accuracy & credibility | prac_rolling_forecast_cadence, prac_operational_drivers, prac_dynamic_targets, prac_predictive_analytics |
 | `partner_engagement` | Business partners don't engage | prac_commercial_partnership, prac_strategic_alignment, prac_variance_investigation, prac_data_visualization |
-| `budget_cycle` | Endless budget process | prac_annual_budget_cycle, prac_continuous_planning, prac_rolling_forecast_cadence, prac_process_automation |
-| `bandwidth` | Talent & bandwidth constraints | prac_process_automation, prac_shared_services_model, prac_service_level_agreements |
+| `budget_cycle` | Endless budget process | prac_annual_budget_cycle, prac_rolling_forecast_cadence, prac_process_automation |
+| `bandwidth` | Talent & bandwidth constraints | prac_process_automation, prac_service_level_agreements |
 | `tech_fragmentation` | Technology stack fragmentation | prac_collaborative_systems, prac_chart_of_accounts, prac_process_automation |
 | `scenario_planning` | Scenario planning gaps | prac_rapid_what_if_capability, prac_multi_scenario_management, prac_stress_testing |
 | `communication` | Communicating to non-finance execs | prac_data_visualization, prac_board_level_impact, prac_operational_drivers |
 | `realtime_visibility` | Real-time visibility gaps | prac_month_end_rigor, prac_self_service_analytics, prac_management_reporting |
 | `data_silos` | Data silos across systems | prac_collaborative_systems, prac_chart_of_accounts, prac_self_service_analytics |
 
-> **Note:** The `data_silos` pain point is supported in the UI/schema but does not currently receive context boosting in the backend scoring engine. This is a known gap tracked for future enhancement.
+> **Note:** All 10 pain points above are fully supported in both the UI and backend scoring engine.
 
 ### 5.7 Combined Multiplier Cap
 
@@ -979,6 +1008,13 @@ BCG-style 2×2 matrix grouping practices:
 | **Double Jeopardy Risk** | No cap on Importance × Context | Added Section 5.7: CombinedMultiplier cap at 2.0× |
 | **Legacy Tools Migration** | No transformation documented | Added Section 7.2.2: Auto-convert `current_tools` to `tools` format |
 | **data_wrangling Mapping** | Mapped to prac_chart_of_accounts | Changed to prac_self_service_analytics (causal accuracy) |
+| **Question ID Format** | `fpa_l{level}_q{num}` | Corrected to `fpa_q{num}` (e.g., `fpa_q001`) |
+| **Question Count** | 91 total | Corrected to 97 total (37+27+33) |
+| **Score Thresholds Example** | 50/80/95 | Corrected to 40/65/85 (matches actual gates.json) |
+| **Practice Count** | 27 total | Corrected to 26 total (with detailed breakdown) |
+| **Non-Existent Practices** | `prac_continuous_planning`, `prac_shared_services_model` | Removed from pain point mappings |
+| **data_silos Backend** | Not implemented | Implemented in scoring engine |
+| **Level 1 Name** | "Foundational" in example | Corrected to "Emerging" |
 
 ### v3.0.0 → v3.1.0
 

@@ -53,7 +53,7 @@ CFOdiagnosis_v1/
 │   ├── questions-foundation.json # 37 Foundation theme questions
 │   ├── questions-future.json     # 27 Future theme questions
 │   ├── questions-intelligence.json # 33 Intelligence theme questions
-│   ├── practices.json            # 27 practices
+│   ├── practices.json            # 26 practices
 │   ├── initiatives.json          # 9 initiatives
 │   ├── objectives.json           # 9 objectives
 │   ├── themes.json               # 3 themes
@@ -389,7 +389,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS19: Critical Risk Engine | "Silence is Risk" — missing criticals = risk |
 | VS20: Dynamic Action Engine | Objective-based actions with runtime priority |
 | VS21: Calibration Layer | User-declared importance (1-5) multiplies scores, full user control |
-| VS-23: Maturity Footprint | 27 practices grid with evidence states |
+| VS-23: Maturity Footprint | 26 practices grid with evidence states |
 | VS-24: JSON Content Catalog | Zod-validated content in `content/*.json` |
 | VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
 | VS-28: Action Planning | War room for gap selection, timelines, projections |

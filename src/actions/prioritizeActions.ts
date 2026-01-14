@@ -42,13 +42,11 @@ export const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
   ],
   budget_cycle: [
     'prac_annual_budget_cycle',
-    'prac_continuous_planning',
     'prac_rolling_forecast_cadence',
     'prac_process_automation'
   ],
   bandwidth: [
     'prac_process_automation',
-    'prac_shared_services_model',
     'prac_service_level_agreements'
   ],
   tech_fragmentation: [
@@ -70,6 +68,11 @@ export const PAIN_POINT_PRACTICE_MAP: Record<string, string[]> = {
     'prac_month_end_rigor',
     'prac_self_service_analytics',
     'prac_management_reporting'
+  ],
+  data_silos: [
+    'prac_collaborative_systems',
+    'prac_chart_of_accounts',
+    'prac_self_service_analytics'
   ]
 };
 
