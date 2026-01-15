@@ -42,7 +42,7 @@ import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/
 // VS-27b: Company Profile Classification routes
 import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
-import { requireAdmin } from "./middleware/adminAuth";
+import { requireAdmin, checkAdmin } from "./middleware/adminAuth";
 
 // Classification engine for test run setup
 import { classifyCompany } from "./classification/engine";
@@ -141,6 +141,17 @@ if (!supabaseAdmin) {
   if (!isJWT) {
     console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY must be a JWT (starts with 'eyJ'). Current key format is invalid.");
   }
+}
+
+/**
+ * Get the appropriate Supabase client based on user's admin status.
+ * Admins get the service role client (bypasses RLS), regular users get their authenticated client.
+ */
+function getClient(req: Request): SupabaseClient {
+  if ((req as any).isAdmin && supabaseAdmin) {
+    return supabaseAdmin;
+  }
+  return req.supabase;
 }
 
 // ------------------------------------------------------------------
@@ -507,11 +518,11 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
 // ------------------------------------------------------------------
 // VS-27d — Benchmark data + commentary (cached on diagnostic_runs)
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
+app.get("/diagnostic-runs/:id/benchmark", checkAdmin, async (req, res) => {
   const runId = req.params.id;
   const refresh = String(req.query.refresh) === "true";
 
-  const { data: run, error: runError } = await req.supabase
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, company_profile_id, benchmark_commentary")
     .eq("id", runId)
@@ -530,7 +541,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
 
   if (!companyProfileId && req.userId) {
     // No profile linked - try to find user's most recent profile and link it
-    const { data: userProfile, error: findError } = await req.supabase
+    const { data: userProfile, error: findError } = await getClient(req)
       .from("company_profiles")
       .select("id")
       .eq("user_id", req.userId)
@@ -542,7 +553,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
       console.error("[Benchmark] Error finding user profile:", findError);
     } else if (userProfile) {
       // Found a profile - link it to the run
-      const { error: linkError } = await req.supabase
+      const { error: linkError } = await getClient(req)
         .from("diagnostic_runs")
         .update({ company_profile_id: userProfile.id })
         .eq("id", runId);
@@ -561,7 +572,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
     });
   }
 
-  const { data: profile, error: profileError } = await req.supabase
+  const { data: profile, error: profileError } = await getClient(req)
     .from("company_profiles")
     .select("context, classification")
     .eq("id", companyProfileId)
@@ -578,7 +589,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
   // Debug logging for target calculation
   console.log(`[Benchmark] Profile ${companyProfileId}: persona=${profile.classification.persona}, context keys=${Object.keys(profile.context || {}).join(',')}`);
 
-  const { data: inputs, error: inputsError } = await req.supabase
+  const { data: inputs, error: inputsError } = await getClient(req)
     .from("diagnostic_inputs")
     .select("question_id, value")
     .eq("run_id", runId);
@@ -624,7 +635,7 @@ app.get("/diagnostic-runs/:id/benchmark", async (req, res) => {
         const persona = getEffectivePersona(profile.classification);
         commentary = await generateBenchmarkCommentary(companyName, persona, objectiveGaps);
 
-        await req.supabase
+        await getClient(req)
           .from("diagnostic_runs")
           .update({ benchmark_commentary: commentary })
           .eq("id", runId);
@@ -1124,10 +1135,10 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
 // ------------------------------------------------------------------
 // VS6 — Finance Report
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/report", async (req, res) => {
+app.get("/diagnostic-runs/:id/report", checkAdmin, async (req, res) => {
   const runId = req.params.id;
 
-  const { data: run, error: runError } = await req.supabase
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot, company_profile_id")
     .eq("id", runId)
@@ -1150,7 +1161,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     return res.status(500).json({ error: String(err) });
   }
 
-  const { data: scores, error: scoresError } = await req.supabase
+  const { data: scores, error: scoresError } = await getClient(req)
     .from("diagnostic_scores")
     .select("question_id, score")
     .eq("run_id", runId);
@@ -1165,7 +1176,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
     });
   }
 
-  const { data: inputs, error: inputsError } = await req.supabase
+  const { data: inputs, error: inputsError } = await getClient(req)
     .from("diagnostic_inputs")
     .select("question_id, value")
     .eq("run_id", runId);
@@ -1178,7 +1189,7 @@ app.get("/diagnostic-runs/:id/report", async (req, res) => {
   let classification: any = null;
   let companyContext: any = null;
   if (run.company_profile_id) {
-    const { data: profile } = await req.supabase
+    const { data: profile } = await getClient(req)
       .from("company_profiles")
       .select("context, classification")
       .eq("id", run.company_profile_id)
@@ -1719,11 +1730,11 @@ app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
 // ------------------------------------------------------------------
 // VS28 — Get action plan for a run
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/action-plan", async (req, res) => {
+app.get("/diagnostic-runs/:id/action-plan", checkAdmin, async (req, res) => {
   const runId = req.params.id;
 
   // Verify run exists
-  const { data: run, error: runError } = await req.supabase
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id")
     .eq("id", runId)
@@ -1734,7 +1745,7 @@ app.get("/diagnostic-runs/:id/action-plan", async (req, res) => {
   }
 
   // Get all action plan items for this run
-  const { data: actions, error } = await req.supabase
+  const { data: actions, error } = await getClient(req)
     .from("action_plans")
     .select("*")
     .eq("run_id", runId)
