@@ -923,7 +923,7 @@ app.post("/diagnostic-inputs", async (req, res) => {
   // VS-Security: Check if run is finalized before allowing modifications
   const { data: run, error: runError } = await req.supabase
     .from("diagnostic_runs")
-    .select("id, finalized_at")
+    .select("id, status, finalized_at")
     .eq("id", run_id)
     .single();
 
@@ -931,12 +931,24 @@ app.post("/diagnostic-inputs", async (req, res) => {
     return res.status(404).json({ error: "Run not found" });
   }
 
+  // Navigation: Auto de-finalize when editing answers (instead of blocking)
+  // This allows users to go back and edit at any time
   if (run.finalized_at) {
-    return res.status(403).json({
-      error: "Cannot modify finalized diagnostic run",
-      code: "RUN_FINALIZED",
-      finalized_at: run.finalized_at
-    });
+    // Clear finalization and mark scores as stale
+    const { error: definalizeError } = await req.supabase
+      .from("diagnostic_runs")
+      .update({
+        finalized_at: null,
+        scores_stale: true
+      })
+      .eq("id", run_id);
+
+    if (definalizeError) {
+      return res.status(500).json({
+        error: "Failed to de-finalize run",
+        details: definalizeError.message
+      });
+    }
   }
 
   const { data, error } = await req.supabase
@@ -950,6 +962,14 @@ app.post("/diagnostic-inputs", async (req, res) => {
 
   if (error) {
     return res.status(500).json({ error: error.message });
+  }
+
+  // If run is already completed/locked, mark scores as stale (needs recalculation)
+  if (run.status === "completed" || run.status === "locked") {
+    await req.supabase
+      .from("diagnostic_runs")
+      .update({ scores_stale: true })
+      .eq("id", run_id);
   }
 
   res.status(201).json(data);
@@ -1083,6 +1103,89 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
+// Navigation: Rescore run (after editing answers)
+// Forces overwrite and clears scores_stale flag
+// ------------------------------------------------------------------
+app.post("/diagnostic-runs/:id/rescore", async (req, res) => {
+  const runId = req.params.id;
+
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  if (run.status !== "completed" && run.status !== "locked") {
+    return res.status(409).json({ error: "Run is not completed" });
+  }
+
+  // Delete existing scores
+  const { error: delError } = await req.supabase
+    .from("diagnostic_scores")
+    .delete()
+    .eq("run_id", runId);
+
+  if (delError) {
+    return res.status(500).json({ error: delError.message });
+  }
+
+  // Recalculate scores
+  let scores;
+  try {
+    scores = await scoreRun(req.supabase, runId);
+  } catch (e) {
+    return res.status(500).json({ error: String(e) });
+  }
+
+  if (scores.length === 0) {
+    // Clear stale flag even if no scores
+    await req.supabase
+      .from("diagnostic_runs")
+      .update({ scores_stale: false })
+      .eq("id", runId);
+    return res.status(200).json({ message: "Rescored", scores: [] });
+  }
+
+  // Insert new scores
+  const { data: inserted, error: insertError } = await req.supabase
+    .from("diagnostic_scores")
+    .insert(
+      scores.map((s) => ({
+        run_id: runId,
+        question_id: s.question_id,
+        score: s.score,
+      }))
+    )
+    .select();
+
+  if (insertError) {
+    return res.status(500).json({ error: insertError.message });
+  }
+
+  // Clear scores_stale flag
+  await req.supabase
+    .from("diagnostic_runs")
+    .update({ scores_stale: false })
+    .eq("id", runId);
+
+  // Invalidate interpretation data (user will need to regenerate)
+  await req.supabase
+    .from("interpretation_sessions")
+    .delete()
+    .eq("run_id", runId);
+  await req.supabase
+    .from("interpretation_reports")
+    .delete()
+    .eq("run_id", runId);
+
+  res.status(200).json({ message: "Rescored successfully", scores: inserted });
+});
+
+// ------------------------------------------------------------------
 // VS5 — Results
 // ------------------------------------------------------------------
 app.get("/diagnostic-runs/:id/results", async (req, res) => {
@@ -1140,7 +1243,7 @@ app.get("/diagnostic-runs/:id/report", checkAdmin, async (req, res) => {
 
   const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot, company_profile_id")
+    .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot, company_profile_id, scores_stale")
     .eq("id", runId)
     .single();
 
@@ -1248,12 +1351,14 @@ app.get("/diagnostic-runs/:id/report", checkAdmin, async (req, res) => {
   // VS21: Include calibration in report response
   // VS39: Include finalized_at for Executive Report tab lock
   // VS45: Include action_plan_snapshot for Executive Report
+  // Navigation: Include scores_stale for edit-after-completion flow
   res.json({
     ...report,
     context: normalizedCtx,
     calibration: run.calibration || null,
     finalized_at: run.finalized_at || null,
     action_plan_snapshot: run.action_plan_snapshot || null,
+    scores_stale: run.scores_stale || false,
   });
 });
 

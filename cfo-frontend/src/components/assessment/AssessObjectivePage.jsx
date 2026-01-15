@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Loader, AlertTriangle, ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import { Loader, AlertTriangle, ArrowLeft, ArrowRight, Send, FileText, Info } from 'lucide-react';
 import AppShell from '../AppShell';
 import EnterpriseCanvas from '../EnterpriseCanvas';
 import ChapterHeader from '../ChapterHeader';
@@ -108,8 +108,10 @@ export default function AssessObjectivePage() {
   const { objectiveId } = useParams();
   const [searchParams] = useSearchParams();
   const runId = searchParams.get('runId');
+  const editMode = searchParams.get('editMode') === 'true';
 
   const [spec, setSpec] = useState(null);
+  const [runStatus, setRunStatus] = useState(null);
   const [answers, setAnswers] = useState({});
   const [runContext, setRunContext] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -179,6 +181,7 @@ export default function AssessObjectivePage() {
 
         setSpec(specData);
         setRunContext(runData.context);
+        setRunStatus(runData.status);
 
         // Load existing answers
         const existingAnswers = {};
@@ -450,6 +453,14 @@ export default function AssessObjectivePage() {
   // Check if current objective is complete (for Next button)
   const objectiveComplete = objectiveProgress.answered === objectiveProgress.total;
 
+  // Determine if we're in edit mode (editing a completed assessment)
+  const isEditingCompleted = editMode || runStatus === 'completed' || runStatus === 'locked';
+
+  // Handler to return to report
+  function handleBackToReport() {
+    navigate(`/report/${runId}`);
+  }
+
   // Mobile bottom navigation
   const mobileBottomNav = (
     <>
@@ -464,18 +475,28 @@ export default function AssessObjectivePage() {
         {objectiveProgress.answered}/{objectiveProgress.total}
       </div>
       {isLastObjective ? (
-        <button
-          onClick={handleSubmit}
-          disabled={overallProgress.answered !== overallProgress.total}
-          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-sm ${
-            overallProgress.answered === overallProgress.total
-              ? 'bg-emerald-600 text-white'
-              : 'bg-slate-200 text-slate-400'
-          }`}
-        >
-          <Send className="w-4 h-4" />
-          Submit
-        </button>
+        isEditingCompleted ? (
+          <button
+            onClick={handleBackToReport}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-sm"
+          >
+            <FileText className="w-4 h-4" />
+            Report
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={overallProgress.answered !== overallProgress.total}
+            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-sm ${
+              overallProgress.answered === overallProgress.total
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-200 text-slate-400'
+            }`}
+          >
+            <Send className="w-4 h-4" />
+            Submit
+          </button>
+        )
       ) : (
         <button
           onClick={handleNext}
@@ -537,6 +558,27 @@ export default function AssessObjectivePage() {
           mode="assessment"
         />
 
+        {/* Edit Mode Banner */}
+        {isEditingCompleted && (
+          <div className="bg-blue-50 border-b border-blue-200">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-blue-700">
+                <Info className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm">
+                  Editing completed assessment. Changes are auto-saved and will require score recalculation.
+                </span>
+              </div>
+              <button
+                onClick={handleBackToReport}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-white border border-blue-300 rounded-sm hover:bg-blue-50 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Back to Report
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Main Content */}
         <EnterpriseCanvas mode="assessment" className="py-6">
           {/* Error Alert */}
@@ -580,37 +622,62 @@ export default function AssessObjectivePage() {
               {isFirstObjective ? 'Back to Setup' : 'Previous Objective'}
             </button>
 
-            {isLastObjective ? (
-              <button
-                onClick={handleSubmit}
-                disabled={overallProgress.answered !== overallProgress.total}
-                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
-                  overallProgress.answered === overallProgress.total
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                <Send className="w-4 h-4" />
-                {overallProgress.answered === overallProgress.total
-                  ? 'Submit Assessment'
-                  : `${overallProgress.total - overallProgress.answered} questions remaining`}
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                disabled={!objectiveComplete}
-                className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
-                  objectiveComplete
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                {objectiveComplete
-                  ? 'Next Objective'
-                  : `${objectiveProgress.total - objectiveProgress.answered} questions remaining`}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Done Editing button - shown when editing completed assessment */}
+              {isEditingCompleted && (
+                <button
+                  onClick={handleBackToReport}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  Done Editing
+                </button>
+              )}
+
+              {/* Next/Submit buttons */}
+              {isLastObjective ? (
+                isEditingCompleted ? (
+                  /* When editing, show "Back to Report" as primary action */
+                  <button
+                    onClick={handleBackToReport}
+                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Return to Report
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={overallProgress.answered !== overallProgress.total}
+                    className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
+                      overallProgress.answered === overallProgress.total
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Send className="w-4 h-4" />
+                    {overallProgress.answered === overallProgress.total
+                      ? 'Submit Assessment'
+                      : `${overallProgress.total - overallProgress.answered} questions remaining`}
+                  </button>
+                )
+              ) : (
+                <button
+                  onClick={handleNext}
+                  disabled={!objectiveComplete}
+                  className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-sm transition-colors ${
+                    objectiveComplete
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  {objectiveComplete
+                    ? 'Next Objective'
+                    : `${objectiveProgress.total - objectiveProgress.answered} questions remaining`}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </EnterpriseCanvas>
       </div>

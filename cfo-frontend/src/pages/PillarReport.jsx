@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { Lock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -76,6 +76,9 @@ export default function PillarReport() {
 
   // VS-41: Trigger for showing finalization modal in ActionPlanTab
   const [requestFinalizeModal, setRequestFinalizeModal] = useState(false);
+
+  // Navigation: State for rescoring after answer edits
+  const [rescoring, setRescoring] = useState(false);
 
   useEffect(() => {
     if (runId) {
@@ -245,6 +248,36 @@ export default function PillarReport() {
       setBenchmarkData(null);
     } finally {
       setBenchmarkLoading(false);
+    }
+  }
+
+  // Navigation: Handler for rescoring after answer edits
+  async function handleRescore() {
+    try {
+      setRescoring(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/rescore`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to rescore: ${res.status}`);
+      }
+
+      // Refresh report data after rescoring
+      await fetchReport();
+      await fetchBenchmark();
+    } catch (err) {
+      console.error('Failed to rescore:', err);
+      setError(err.message || 'Failed to rescore');
+    } finally {
+      setRescoring(false);
     }
   }
 
@@ -432,6 +465,34 @@ export default function PillarReport() {
           description={headerDescription}
           mode="report"
         />
+
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        {/* SCORES STALE WARNING - Navigation: shown when answers changed */}
+        {/* ─────────────────────────────────────────────────────────────────── */}
+        {report?.scores_stale && (
+          <div className="bg-amber-50 border-b border-amber-200">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-amber-700">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">
+                  Your assessment answers have changed. Recalculate scores to update this report.
+                </span>
+              </div>
+              <button
+                onClick={handleRescore}
+                disabled={rescoring}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-sm transition-colors ${
+                  rescoring
+                    ? 'bg-amber-200 text-amber-500 cursor-not-allowed'
+                    : 'bg-amber-600 text-white hover:bg-amber-700'
+                }`}
+              >
+                <RefreshCw className={`w-4 h-4 ${rescoring ? 'animate-spin' : ''}`} />
+                {rescoring ? 'Recalculating...' : 'Recalculate Scores'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* MAIN CONTENT */}
