@@ -24,7 +24,7 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
         href={GOOGLE_FORM_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed bottom-32 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-emerald-700 transition-colors"
       >
         <MessageSquare className="w-4 h-4" />
         Give Feedback
@@ -107,7 +107,7 @@ export default function FeedbackButton({ runId, currentPage = 'report' }) {
           setIsSubmitted(false);
           setIsOpen(true);
         }}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed bottom-32 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-full shadow-lg hover:bg-emerald-700 transition-colors"
       >
         <MessageSquare className="w-4 h-4" />
         Give Feedback
