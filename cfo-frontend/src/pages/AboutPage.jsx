@@ -1,5 +1,5 @@
 // src/pages/AboutPage.jsx
-// About page - The problem, the vision, and who it's for
+// About page - Why we built this, who it's for, who's behind it
 
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -7,10 +7,8 @@ import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
 import {
   ArrowRight,
   Clock,
-  Users,
-  CheckCircle2,
-  XCircle,
-  Quote,
+  Zap,
+  Target,
 } from 'lucide-react';
 
 export default function AboutPage() {
@@ -23,16 +21,13 @@ export default function AboutPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Left side: Logo + Nav Links */}
           <div className="flex items-center">
             <Link to="/">
               <Logo size="sm" />
             </Link>
 
-            {/* Divider */}
             <div className="hidden sm:block h-6 w-px bg-slate-200 mx-6" />
 
-            {/* Nav Links */}
             <div className="hidden sm:flex items-center gap-1">
               <Link
                 to="/platform"
@@ -56,7 +51,6 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Right side: Auth */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
@@ -106,9 +100,9 @@ export default function AboutPage() {
       </nav>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HEADER */}
+      {/* HERO - THE TRAP */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="pt-28 pb-12 px-6">
+      <section className="pt-32 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="max-w-3xl">
             <p
@@ -118,42 +112,23 @@ export default function AboutPage() {
               Why We Built This
             </p>
             <h1
-              className="text-4xl sm:text-5xl font-bold mb-6"
+              className="text-4xl sm:text-5xl font-bold mb-8"
               style={{ color: BRAND_COLORS.navy }}
             >
-              The Trap Every Finance Leader Knows
+              The trap every finance leader knows
             </h1>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE PROBLEM */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-12 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="max-w-3xl">
             <div className="space-y-6 text-lg text-slate-600 leading-relaxed">
               <p>
-                You know something isn't working. You feel it in the variance explanations
-                that take three days, the forecasts nobody trusts, the rolling reforecasts
+                You know something isn't working. You feel it in the variance explanations 
+                that take three days, the forecasts nobody trusts, the rolling reforecasts 
                 that never roll.
               </p>
-
               <p>
-                Your team is stuck in reactive mode—closing the books, answering ad-hoc requests,
+                Your team is stuck in reactive mode—closing the books, answering ad-hoc requests, 
                 firefighting—with no time to step back and address the underlying issues.
               </p>
-
               <p className="font-medium text-slate-800">
-                And that's the trap.
-              </p>
-
-              <p>
-                You can't improve the function while you're running the function. There's always
-                a board deck due, a reforecast cycle starting, a headcount question from the CEO.
-                The strategic work—diagnosing what needs to change, building a case for investment,
-                sequencing the improvements—gets pushed to "next quarter." Every quarter.
+                And that's the trap. You can't improve the function while you're running the function.
               </p>
             </div>
           </div>
@@ -161,227 +136,169 @@ export default function AboutPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE OLD WAY */}
+      {/* THE GLOBAL PROBLEM */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-12 px-6 bg-slate-50 border-y border-slate-200">
+      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
               <h2
                 className="text-2xl font-bold mb-6"
                 style={{ color: BRAND_COLORS.navy }}
               >
-                Until now, the path forward has been consultants.
+                This isn't unique to your company.
               </h2>
-              <p className="text-slate-600 mb-4">
-                Six-figure engagements and months of work just to produce a diagnosis
-                and recommendations. Large enterprises can justify that investment.
-                Most companies can't.
-              </p>
-              <p className="text-slate-600">
-                And here's what nobody talks about: the diagnostic phase of any consulting
-                engagement follows the same structure. The questions are predictable.
-                The gaps are common. The prioritization frameworks are well-established.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center">
-              <div
-                className="p-8 border-l-4"
-                style={{ borderColor: BRAND_COLORS.gold, backgroundColor: `${BRAND_COLORS.navy}05` }}
-              >
-                <Quote className="w-8 h-8 mb-4" style={{ color: BRAND_COLORS.gold }} />
-                <p className="text-lg text-slate-700 italic">
-                  "Companies were paying premium rates for consultants to rediscover the same
-                  insights, project after project. Meanwhile, finance leaders at smaller
-                  organizations couldn't access these frameworks at all."
+              <div className="space-y-4 text-slate-600">
+                <p>
+                  Finance leaders around the world face the same challenges—the same forecast gaps, 
+                  the same reactive firefighting, the same lack of time for strategic improvement.
+                </p>
+                <p>
+                  Until now, the path forward has been consultants: six-figure engagements and 
+                  months of work just to produce a diagnosis and recommendations. Large enterprises 
+                  can justify that investment. Most companies can't.
+                </p>
+                <p className="font-medium text-slate-800">
+                  The problems are universal. The tools to address them have not been.
                 </p>
               </div>
+            </div>
+
+            <div
+              className="p-8 border-l-4"
+              style={{ 
+                borderColor: BRAND_COLORS.gold, 
+                backgroundColor: `${BRAND_COLORS.navy}05` 
+              }}
+            >
+              <LogoIcon size={32} className="mb-6" />
+              <p className="text-xl font-semibold text-slate-800 mb-4">
+                We're building the diagnostic platform for the entire finance function—globally.
+              </p>
+              <p className="text-slate-600">
+                What large enterprises get from top-tier consulting firms, we're making 
+                accessible to finance leaders everywhere—at a fraction of the cost, 
+                in a fraction of the time.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE VISION */}
+      {/* THE RECOGNITION SECTION */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6">
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <LogoIcon size={48} className="mx-auto mb-6" />
+          <div className="max-w-3xl mx-auto">
             <h2
-              className="text-3xl font-bold mb-4"
+              className="text-2xl font-bold mb-8"
               style={{ color: BRAND_COLORS.navy }}
             >
-              Diagnostic intelligence for finance leaders everywhere.
+              You know this is for you if...
             </h2>
-            <p className="text-lg text-slate-600">
-              What large enterprises get from top-tier consulting firms, we're making
-              accessible to finance leaders everywhere—at a fraction of the cost,
-              in a fraction of the time.
-            </p>
+            <div className="space-y-6 text-lg text-slate-600 leading-relaxed">
+              <p>
+                Your variance explanations take three days. Your rolling forecast doesn't roll. 
+                You've outgrown spreadsheets but can't justify a six-figure consulting engagement 
+                to figure out what's next.
+              </p>
+              <p>
+                Or you're at a larger enterprise and need a fast, credible way to benchmark 
+                your function before requesting transformation budget from leadership.
+              </p>
+              <p className="font-medium text-slate-800">
+                Either way—you already sense there are gaps. You just need a structured way to see them.
+              </p>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="text-center p-6">
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* THE TRADE-OFF */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2
+              className="text-2xl font-bold mb-6"
+              style={{ color: BRAND_COLORS.navy }}
+            >
+              Diagnosis and planning, not execution.
+            </h2>
+            <div className="space-y-4 text-slate-600">
+              <p>
+                The platform equips you with clarity on what to improve and in what order. 
+                The transformation work—hiring, implementing systems, changing processes—is yours to lead.
+              </p>
+              <p>
+                And when you need hands-on support, you'll be able to scope that engagement 
+                far more effectively.
+              </p>
+            </div>
+            <div
+              className="mt-8 p-6 inline-block"
+              style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}
+            >
+              <p className="text-slate-700 font-medium">
+                If you're looking for validation that everything is fine, this tool will disappoint you.
+                <br />
+                If you're ready to assess honestly and improve, it's built for you.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* WHAT YOU GET */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
               <div
                 className="w-12 h-12 mx-auto mb-4 flex items-center justify-center"
                 style={{ backgroundColor: `${BRAND_COLORS.navy}10` }}
               >
                 <Clock className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">Hours, Not Months</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">Hours, not months</h3>
               <p className="text-sm text-slate-600">
-                Complete a rigorous diagnostic in a single session.
+                Complete a rigorous diagnostic in a single session. 
                 Get your action plan the same day.
               </p>
             </div>
 
-            <div className="text-center p-6">
+            <div className="text-center">
               <div
                 className="w-12 h-12 mx-auto mb-4 flex items-center justify-center"
                 style={{ backgroundColor: `${BRAND_COLORS.navy}10` }}
               >
-                <Users className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
+                <Target className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">Built by Finance</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">Yours to keep</h3>
               <p className="text-sm text-slate-600">
-                Created by finance leaders who've run these transformations.
-                The methodology is battle-tested.
-              </p>
-            </div>
-
-            <div className="text-center p-6">
-              <div
-                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center"
-                style={{ backgroundColor: `${BRAND_COLORS.navy}10` }}
-              >
-                <ArrowRight className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">Yours to Keep</h3>
-              <p className="text-sm text-slate-600">
-                The War Room stays live. Revisit the model as conditions change.
+                The War Room stays live. Revisit the model as conditions change. 
                 Reprioritize on the fly.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* WHO IT'S FOR */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
-        <div className="max-w-6xl mx-auto">
-          <h2
-            className="text-2xl font-bold mb-8 text-center"
-            style={{ color: BRAND_COLORS.navy }}
-          >
-            Who This Is For
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white border border-slate-200 p-6">
+            <div className="text-center">
               <div
-                className="text-sm font-medium uppercase tracking-wide mb-4"
-                style={{ color: BRAND_COLORS.gold }}
+                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center"
+                style={{ backgroundColor: `${BRAND_COLORS.navy}10` }}
               >
-                Primary
+                <Zap className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
               </div>
-              <h3 className="font-semibold text-slate-800 mb-3">
-                CFOs and VP-level finance leaders
-              </h3>
-              <p className="text-slate-600 text-sm">
-                At companies with real FP&A complexity—multiple business units, outgrown spreadsheets,
-                rolling forecasts that don't roll. Companies that face sophisticated challenges
-                but don't have the budget for six-figure consulting engagements.
-              </p>
-              <p className="text-sm text-slate-500 mt-3 italic">
-                You know who you are.
-              </p>
-            </div>
-
-            <div className="bg-white border border-slate-200 p-6">
-              <div
-                className="text-sm font-medium uppercase tracking-wide mb-4"
-                style={{ color: BRAND_COLORS.gold }}
-              >
-                Secondary
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-3">
-                Finance leaders at larger enterprises
-              </h3>
-              <p className="text-slate-600 text-sm">
-                Who need a fast, credible way to benchmark their function or build an internal
-                business case before requesting transformation budget from leadership.
+              <h3 className="font-semibold text-slate-800 mb-2">Built by finance</h3>
+              <p className="text-sm text-slate-600">
+                Created by a finance leader with CFO experience across FMCG, 
+                Consumer Electronics, SME, and Media.
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HONEST EXPECTATIONS */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2
-            className="text-2xl font-bold mb-8 text-center"
-            style={{ color: BRAND_COLORS.navy }}
-          >
-            Setting Expectations
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Works Best When */}
-            <div>
-              <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                This works best when
-              </h3>
-              <ul className="space-y-3 text-slate-600 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-0.5">•</span>
-                  You involve multiple stakeholders (not just one person's opinion)
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-0.5">•</span>
-                  Your team is ready to confront uncomfortable truths
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-0.5">•</span>
-                  You're committed to acting on the roadmap, not just producing a report
-                </li>
-              </ul>
-            </div>
-
-            {/* What It's Not */}
-            <div>
-              <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                <XCircle className="w-5 h-5 text-slate-400" />
-                What this isn't
-              </h3>
-              <ul className="space-y-3 text-slate-600 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-0.5">•</span>
-                  Validation that everything is fine (if that's what you want, this will disappoint)
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-0.5">•</span>
-                  Execution—this is diagnosis and planning, not implementation
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-slate-400 mt-0.5">•</span>
-                  A replacement for hands-on transformation work (that's still yours to lead)
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <p className="text-center text-slate-500 text-sm mt-8 max-w-2xl mx-auto">
-            The platform equips you with clarity on what to improve and in what order.
-            When you need hands-on support, you'll be able to scope that engagement far more effectively.
-          </p>
         </div>
       </section>
 
@@ -398,14 +315,11 @@ export default function AboutPage() {
             <br />
             <span style={{ color: BRAND_COLORS.gold }}>CFO Lens gives you clarity.</span>
           </h2>
-
           <p className="text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
-            You already sense there are gaps in your finance function. What you need is a
-            structured way to see them clearly, understand how you compare to companies like yours,
-            prioritize what matters most, simulate the path forward, and build a case for investment
-            that leadership will fund.
+            You already sense there are gaps in your finance function. What you need is a 
+            structured way to see them clearly, understand how you compare to companies like yours, 
+            prioritize what matters most, and build a case for investment that leadership will fund.
           </p>
-
           <Link
             to={isAuthenticated ? '/select-pillar' : '/login'}
             className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90"

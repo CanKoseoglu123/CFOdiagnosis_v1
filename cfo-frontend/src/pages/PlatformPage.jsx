@@ -1,5 +1,5 @@
 // src/pages/PlatformPage.jsx
-// Platform page - How CFO Lens works, aligned with value proposition
+// Platform page - The methodology that powers all diagnostics
 
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -7,14 +7,8 @@ import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
 import {
   ArrowRight,
   Building2,
-  Target,
-  ClipboardList,
-  Layers,
-  AlertTriangle,
-  Shield,
+  Search,
   Swords,
-  Sparkles,
-  FileText,
   ChevronRight,
 } from 'lucide-react';
 
@@ -28,16 +22,13 @@ export default function PlatformPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Left side: Logo + Nav Links */}
           <div className="flex items-center">
             <Link to="/">
               <Logo size="sm" />
             </Link>
 
-            {/* Divider */}
             <div className="hidden sm:block h-6 w-px bg-slate-200 mx-6" />
 
-            {/* Nav Links */}
             <div className="hidden sm:flex items-center gap-1">
               <Link
                 to="/platform"
@@ -61,7 +52,6 @@ export default function PlatformPage() {
             </div>
           </div>
 
-          {/* Right side: Auth */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
@@ -111,233 +101,118 @@ export default function PlatformPage() {
       </nav>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HEADER */}
+      {/* HERO */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="pt-28 pb-12 px-6">
+      <section className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="max-w-3xl">
             <p
               className="text-sm font-medium tracking-wide uppercase mb-4"
               style={{ color: BRAND_COLORS.gold }}
             >
-              How It Works
+              The Platform
             </p>
             <h1
               className="text-4xl sm:text-5xl font-bold mb-6"
               style={{ color: BRAND_COLORS.navy }}
             >
-              A Finance Diagnostic Engine
+              One methodology.
+              <br />
+              Every corner of finance.
             </h1>
             <p className="text-xl text-slate-600 leading-relaxed">
-              CFO Lens brings your finance function into focus. It answers two questions:{' '}
-              <span className="font-medium text-slate-800">
-                Where does my FP&A function stand?
-              </span>{' '}
-              And{' '}
-              <span className="font-medium text-slate-800">
-                what's the fastest path to close the gaps that matter?
-              </span>
+              The same diagnostic rigor consultants use—applied systematically 
+              across FP&A, Accounting, Treasury, and beyond. Context-aware benchmarks, 
+              root-cause analysis, and a simulation engine that stays with you.
             </p>
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE JOURNEY - 9 Steps */}
+      {/* THREE PHASES */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
+      <section className="py-20 px-6 bg-slate-50 border-y border-slate-200">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
               style={{ color: BRAND_COLORS.navy }}
             >
-              From Diagnosis to Action Plan
+              From context to action plan
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
-              The diagnostic methodology of a top-tier consulting engagement—compressed into hours.
+              Three phases. The diagnostic methodology of a consulting engagement—compressed into hours.
             </p>
           </div>
 
-          {/* Steps Grid */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Step 1 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Phase 1: Profile */}
+            <div className="bg-white border border-slate-200 p-8">
+              <div className="flex items-center gap-4 mb-6">
                 <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
+                  className="w-12 h-12 flex items-center justify-center"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  1
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
-                <Building2 className="w-5 h-5 text-slate-400" />
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Phase 1</p>
+                  <h3 className="text-lg font-bold text-slate-800">Profile</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Intelligent Company Profiling
-              </h3>
-              <p className="text-sm text-slate-600">
-                Not just your industry—your financial character. Size, ownership, margin profile,
-                leverage. A PE-backed company has different priorities than a family business.
+              <p className="text-slate-600 mb-4">
+                We learn your financial character—size, ownership, margin profile, leverage situation. 
+                A PE-backed company has different priorities than a family business.
+              </p>
+              <p className="text-sm text-slate-500">
+                Benchmarks calibrated to a company like yours. Not a generic template.
               </p>
             </div>
 
-            {/* Step 2 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
+            {/* Phase 2: Diagnose */}
+            <div className="bg-white border border-slate-200 p-8">
+              <div className="flex items-center gap-4 mb-6">
                 <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
+                  className="w-12 h-12 flex items-center justify-center"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  2
+                  <Search className="w-6 h-6 text-white" />
                 </div>
-                <Target className="w-5 h-5 text-slate-400" />
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Phase 2</p>
+                  <h3 className="text-lg font-bold text-slate-800">Diagnose</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Context-Aware Benchmarking
-              </h3>
-              <p className="text-sm text-slate-600">
-                What "good" looks like for a $50M company is different from $500M.
-                Benchmarks calibrated to companies like yours—not generic templates.
+              <p className="text-slate-600 mb-4">
+                Structured assessment against a clear maturity model. Each question maps to one 
+                capability—no ambiguity, no overlap. Gaps tagged by root cause.
+              </p>
+              <p className="text-sm text-slate-500">
+                People, Process, Technology, Data. The path forward depends on understanding why.
               </p>
             </div>
 
-            {/* Step 3 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
+            {/* Phase 3: Plan */}
+            <div className="bg-white border border-slate-200 p-8">
+              <div className="flex items-center gap-4 mb-6">
                 <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  3
-                </div>
-                <ClipboardList className="w-5 h-5 text-slate-400" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Structured Assessment
-              </h3>
-              <p className="text-sm text-slate-600">
-                Targeted questions across 26 FP&A practices, 9 objectives, 3 themes.
-                Each question maps to exactly one capability—no ambiguity, no overlap.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  4
-                </div>
-                <Layers className="w-5 h-5 text-slate-400" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Three-Stage Maturity Journey
-              </h3>
-              <p className="text-sm text-slate-600">
-                Foundation (trust the numbers), Future (forecast with agility),
-                Intelligence (drive strategic value). Know where you are on the journey.
-              </p>
-            </div>
-
-            {/* Step 5 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  5
-                </div>
-                <AlertTriangle className="w-5 h-5 text-slate-400" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Gap & Risk Identification
-              </h3>
-              <p className="text-sm text-slate-600">
-                Gaps tagged by root cause: People, Process, Technology, Data.
-                The path forward for a technology gap is different from a culture gap.
-              </p>
-            </div>
-
-            {/* Step 6 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  6
-                </div>
-                <Shield className="w-5 h-5 text-slate-400" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Scoring with Guard Rails
-              </h3>
-              <p className="text-sm text-slate-600">
-                Fair but firm. High scores in easy areas don't mask critical gaps elsewhere.
-                Critical gates prevent misleading maturity levels.
-              </p>
-            </div>
-
-            {/* Step 7 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
+                  className="w-12 h-12 flex items-center justify-center"
                   style={{ backgroundColor: BRAND_COLORS.gold }}
                 >
-                  7
+                  <Swords className="w-6 h-6 text-white" />
                 </div>
-                <Swords className="w-5 h-5 text-slate-400" />
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Phase 3</p>
+                  <h3 className="text-lg font-bold text-slate-800">Plan</h3>
+                </div>
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                The War Room
-              </h3>
-              <p className="text-sm text-slate-600">
-                Results feed into a prioritized initiative list. Select actions, commit to timelines,
-                watch your projected maturity shift. Build the roadmap you can defend.
+              <p className="text-slate-600 mb-4">
+                The War Room turns your diagnosis into a sequenced roadmap. Select initiatives, 
+                commit to timelines, watch projected maturity shift in real time.
               </p>
-            </div>
-
-            {/* Step 8 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  8
-                </div>
-                <Sparkles className="w-5 h-5 text-slate-400" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                AI Interpretation
-              </h3>
-              <p className="text-sm text-slate-600">
-                AI generates narrative explanations—executive summaries, practice-level insights.
-                But it never changes your scores. It explains; it doesn't grade.
-              </p>
-            </div>
-
-            {/* Step 9 */}
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  9
-                </div>
-                <FileText className="w-5 h-5 text-slate-400" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                Executive Report
-              </h3>
-              <p className="text-sm text-slate-600">
-                A polished, board-ready document. Not a dashboard screenshot—a professional
-                deliverable that positions you as strategic, not reactive.
+              <p className="text-sm text-slate-500">
+                Walk away with a board-ready Executive Report—not a dashboard screenshot.
               </p>
             </div>
           </div>
@@ -345,19 +220,97 @@ export default function PlatformPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE THREE STAGES */}
+      {/* THE WAR ROOM - HERO FEATURE */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6">
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <p
+                className="text-sm font-medium tracking-wide uppercase mb-3"
+                style={{ color: BRAND_COLORS.gold }}
+              >
+                The Differentiator
+              </p>
+              <h2
+                className="text-3xl font-bold mb-6"
+                style={{ color: BRAND_COLORS.navy }}
+              >
+                The War Room
+              </h2>
+              <p className="text-lg text-slate-600 mb-6">
+                This is what consultants don't leave behind.
+              </p>
+              <div className="space-y-4 text-slate-600">
+                <p>
+                  Your diagnostic results feed directly into a prioritized initiative list, 
+                  scored by impact and complexity. High-impact, low-complexity items surface first.
+                </p>
+                <p>
+                  Select an initiative, commit to a timeline, and see your projected maturity 
+                  shift instantly. You're not staring at a static report—you're building a 
+                  transformation roadmap you can defend.
+                </p>
+                <p>
+                  And it stays live. Revisit the model as conditions change. Reprioritize 
+                  on the fly. Keep the roadmap current.
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="p-8 border-l-4"
+              style={{ 
+                borderColor: BRAND_COLORS.gold, 
+                backgroundColor: `${BRAND_COLORS.navy}05` 
+              }}
+            >
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 mb-1">Initiative selected</p>
+                  <p className="font-semibold text-slate-800">Implement driver-based forecasting</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-500 mb-1">Timeline committed</p>
+                  <p className="font-semibold text-slate-800">12 months</p>
+                </div>
+                <div
+                  className="h-px w-full"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                />
+                <div>
+                  <p className="text-sm font-medium text-slate-500 mb-1">Projected maturity shift</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-bold text-slate-400">2.4</span>
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                    <span
+                      className="text-2xl font-bold"
+                      style={{ color: BRAND_COLORS.navy }}
+                    >
+                      3.1
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* MATURITY JOURNEY */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section className="py-20 px-6 bg-slate-50 border-y border-slate-200">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
             <h2
               className="text-3xl font-bold mb-4"
               style={{ color: BRAND_COLORS.navy }}
             >
-              The Maturity Journey
+              The maturity journey
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
-              Every FP&A function evolves through three stages. The diagnostic shows you
+              Every finance function evolves through three stages. The diagnostic shows you 
               where you stand—and what it takes to move forward.
             </p>
           </div>
@@ -370,12 +323,12 @@ export default function PlatformPage() {
                 style={{ backgroundColor: BRAND_COLORS.navy }}
               />
               <div className="pl-6">
-                <div
+                <p
                   className="text-sm font-medium uppercase tracking-wide mb-2"
                   style={{ color: BRAND_COLORS.gold }}
                 >
                   Stage 1
-                </div>
+                </p>
                 <h3
                   className="text-xl font-bold mb-3"
                   style={{ color: BRAND_COLORS.navy }}
@@ -386,8 +339,8 @@ export default function PlatformPage() {
                   Control & Trust
                 </p>
                 <p className="text-slate-600 text-sm">
-                  Can leadership trust your numbers? Do budgets hold?
-                  Are variances explained with substance, not timing excuses?
+                  Can leadership trust your numbers? Do budgets hold? 
+                  Are variances explained with substance?
                 </p>
               </div>
             </div>
@@ -399,12 +352,12 @@ export default function PlatformPage() {
                 style={{ backgroundColor: BRAND_COLORS.navy }}
               />
               <div className="pl-6">
-                <div
+                <p
                   className="text-sm font-medium uppercase tracking-wide mb-2"
                   style={{ color: BRAND_COLORS.gold }}
                 >
                   Stage 2
-                </div>
+                </p>
                 <h3
                   className="text-xl font-bold mb-3"
                   style={{ color: BRAND_COLORS.navy }}
@@ -415,7 +368,7 @@ export default function PlatformPage() {
                   Speed & Agility
                 </p>
                 <p className="text-slate-600 text-sm">
-                  Can you forecast quickly and adapt when plans change?
+                  Can you forecast quickly and adapt when plans change? 
                   Does your rolling forecast actually roll?
                 </p>
               </div>
@@ -428,12 +381,12 @@ export default function PlatformPage() {
                 style={{ backgroundColor: BRAND_COLORS.gold }}
               />
               <div className="pl-6">
-                <div
+                <p
                   className="text-sm font-medium uppercase tracking-wide mb-2"
                   style={{ color: BRAND_COLORS.gold }}
                 >
                   Stage 3
-                </div>
+                </p>
                 <h3
                   className="text-xl font-bold mb-3"
                   style={{ color: BRAND_COLORS.navy }}
@@ -444,8 +397,8 @@ export default function PlatformPage() {
                   Value & Influence
                 </p>
                 <p className="text-slate-600 text-sm">
-                  Are you a strategic partner or just a reporting function?
-                  When was the last time Finance actually shaped a decision?
+                  Are you a strategic partner or just a reporting function? 
+                  When did Finance last shape a decision?
                 </p>
               </div>
             </div>
@@ -456,73 +409,29 @@ export default function PlatformPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* WHERE WE'RE HEADED */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p
-                className="text-sm font-medium uppercase tracking-wide mb-3"
-                style={{ color: BRAND_COLORS.gold }}
-              >
-                The Vision
-              </p>
-              <h2
-                className="text-3xl font-bold mb-6"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                Beyond FP&A
-              </h2>
-              <p className="text-slate-600 mb-4">
-                FP&A is where we start. But the CFO's responsibilities extend far beyond
-                planning and analysis. Each area faces the same structural challenge—leaders
-                sense there's room to improve but lack the time, frameworks, and benchmarks
-                to assess it systematically.
-              </p>
-              <p className="text-slate-600">
-                CFO Lens brings diagnostic rigor to all of them. Same methodology. Same rigor.
-                Same path from diagnosis to action.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { name: 'FP&A', status: 'Live' },
-                { name: 'Accounting & Close', status: 'Coming' },
-                { name: 'Treasury & Cash', status: 'Coming' },
-                { name: 'Tax', status: 'Coming' },
-                { name: 'Finance Team & Org', status: 'Coming' },
-                { name: 'Risk & Compliance', status: 'Coming' },
-                { name: 'AI Readiness', status: 'Coming' },
-                { name: 'Value Creation', status: 'Coming' },
-              ].map((pillar) => (
-                <div
-                  key={pillar.name}
-                  className={`p-4 border ${
-                    pillar.status === 'Live'
-                      ? 'bg-white border-slate-300'
-                      : 'bg-slate-100/50 border-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-sm font-medium ${
-                        pillar.status === 'Live' ? 'text-slate-800' : 'text-slate-500'
-                      }`}
-                    >
-                      {pillar.name}
-                    </span>
-                    {pillar.status === 'Live' && (
-                      <span
-                        className="text-xs font-medium px-2 py-0.5"
-                        style={{ backgroundColor: `${BRAND_COLORS.gold}20`, color: BRAND_COLORS.gold }}
-                      >
-                        Live
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="max-w-3xl mx-auto text-center">
+            <p
+              className="text-sm font-medium tracking-wide uppercase mb-3"
+              style={{ color: BRAND_COLORS.gold }}
+            >
+              The Roadmap
+            </p>
+            <h2
+              className="text-3xl font-bold mb-6"
+              style={{ color: BRAND_COLORS.navy }}
+            >
+              FP&A is just the beginning
+            </h2>
+            <p className="text-lg text-slate-600 mb-8">
+              The full CFO Lens platform will extend the same methodology across the entire 
+              finance function—Accounting & Close, Treasury, Tax, Team Development, Risk & Compliance, 
+              and more. Same rigor. Same path from diagnosis to action.
+            </p>
+            <p className="text-slate-500">
+              The FP&A Diagnostic is live now. More modules coming soon.
+            </p>
           </div>
         </div>
       </section>
@@ -530,26 +439,22 @@ export default function PlatformPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* CTA */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-6">
+      <section
+        className="py-20 px-6"
+        style={{ backgroundColor: BRAND_COLORS.navy }}
+      >
         <div className="max-w-4xl mx-auto text-center">
-          <LogoIcon size={48} className="mx-auto mb-6" />
-
-          <h2
-            className="text-3xl font-bold mb-6"
-            style={{ color: BRAND_COLORS.navy }}
-          >
+          <h2 className="text-3xl font-bold mb-6 text-white">
             Ready to see where you stand?
           </h2>
-
-          <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
-            The diagnosis and action-planning phase of a consulting engagement—compressed
+          <p className="text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
+            The diagnosis and action-planning phase of a consulting engagement—compressed 
             into hours, at a fraction of the cost—with a simulation tool consultants don't leave behind.
           </p>
-
           <Link
             to={isAuthenticated ? '/select-pillar' : '/login'}
-            className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: BRAND_COLORS.navy }}
+            className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90"
+            style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
           >
             Start the FP&A Diagnostic
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
