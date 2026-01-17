@@ -315,7 +315,7 @@ const ACTIONS: ActionDefinition[] = [
   {
     id: "act_fpa_l4_predict",
     title: "Evolve Analytical Capabilities",
-    description: "Implement basic algorithmic forecasting, investigate anomalies within 48 hours, monitor external signals, and continuously experiment with new methods.",
+    description: "Implement basic algorithmic forecasting, investigate anomalies promptly before the next reporting cycle, monitor external signals, and continuously experiment with new methods.",
     rationale: "Predictive analytics starts with curiosity and discipline, not PhD-level ML. The bar is continuous improvement.",
     priority: "medium"
   }

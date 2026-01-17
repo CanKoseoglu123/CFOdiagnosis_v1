@@ -79,7 +79,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Covenant Forecasting",
-        "recommendation": "The Controller or FP&A lead should add covenant metrics (leverage ratio, interest coverage, fixed charge coverage) to the monthly reporting package with a 12-month forward view. Build a simple traffic-light indicator: green (>20% headroom), yellow (10-20%), red (<10%). Complete when leadership sees projected covenant position monthly—providing early warning to manage lender relationships proactively rather than scrambling at breach.",
+        "recommendation": "The Controller or FP&A lead should add covenant metrics (leverage ratio, interest coverage, fixed charge coverage) to the monthly reporting package with a 12-month forward view. Build a simple traffic-light indicator based on your lender relationship and covenant sensitivity (e.g., green >20% headroom, yellow 10-20%, red <10%). Complete when leadership sees projected covenant position monthly—providing early warning to manage lender relationships proactively rather than scrambling at breach.",
         "type": "structural"
       }
     },
@@ -111,7 +111,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Achieve Cash Forecast Precision",
-        "recommendation": "FP&A or Treasury should refine the cash forecast by breaking collections into aging buckets and AP into vendor-level detail. Tie Week 1 forecasts to actual bank movements and track variance weekly. Investigate and correct any deviation >5%. Complete when Week 1 forecast variance to actual is consistently <5%—this precision transforms cash forecasting from directional guidance into a reliable liquidity management tool.",
+        "recommendation": "FP&A or Treasury should refine the cash forecast by breaking collections into aging buckets and AP into vendor-level detail. Tie Week 1 forecasts to actual bank movements and track variance weekly. Investigate and correct material deviations. Complete when Week 1 forecast variance to actual is consistently within acceptable tolerance—this precision transforms cash forecasting from directional guidance into a reliable liquidity management tool.",
         "type": "structural"
       }
     },
@@ -143,7 +143,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Enable Multi-User Forecasting",
-        "recommendation": "FP&A should eliminate version conflicts by moving to a collaborative platform. For sub-$100M companies: implement Google Sheets or Excel Online with strict cell-level protection. For $100M+: evaluate purpose-built tools (Pigment, Planful, Cube). Assign one person to manage access controls and version governance. Complete when Sales and Finance can update the same model at the same time without version conflicts—cutting forecast cycle time in half.",
+        "recommendation": "FP&A should eliminate version conflicts by moving to a collaborative platform. For smaller organizations: implement Google Sheets or Excel Online with strict cell-level protection. For larger or more complex organizations: evaluate purpose-built tools (Pigment, Planful, Cube). Assign one person to manage access controls and version governance. Complete when Sales and Finance can update the same model at the same time without version conflicts—significantly reducing forecast cycle time.",
         "type": "structural"
       }
     },
@@ -351,7 +351,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Embed Scenario Presentation in Decision Flow",
-        "recommendation": "FP&A should create a standard template requiring all investment requests above a threshold (e.g., $100K) to include Base, Upside, and Downside views. Make Finance sign-off a gate in the approval workflow. Complete when no major capital decision proceeds without scenario context—ensuring leadership weighs trade-offs before committing resources.",
+        "recommendation": "FP&A should create a standard template requiring all investment requests above a threshold (e.g., €100k) to include Base, Upside, and Downside views. Make Finance sign-off a gate in the approval workflow. Complete when no major capital decision proceeds without scenario context—ensuring leadership weighs trade-offs before committing resources.",
         "type": "behavioral"
       }
     },

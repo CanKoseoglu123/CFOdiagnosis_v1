@@ -15,7 +15,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Define Commercial Consultation Policy",
-        "recommendation": "The CFO or FP&A lead should establish clear thresholds (e.g., deals >$100K, pricing changes >5%) requiring Finance sign-off. Document in a policy and communicate to commercial teams. Complete when all deals above threshold have documented Finance review—preventing unprofitable deals from closing without visibility.",
+        "recommendation": "The CFO or FP&A lead should establish clear thresholds (e.g., deals >€100k, pricing changes >5%) requiring Finance sign-off. Document in a policy and communicate to commercial teams. Complete when all deals above threshold have documented Finance review—preventing unprofitable deals from closing without visibility.",
         "type": "governance"
       }
     },
@@ -31,7 +31,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Implement Deal Desk Process",
-        "recommendation": "Finance should define 'standard terms' explicitly and create an approval workflow for deviations—Sales submits, Finance reviews within 24-48 hours. Complete when deviation tracking shows margin impact quarterly—protecting margins by ensuring non-standard terms are explicitly justified.",
+        "recommendation": "Finance should define 'standard terms' explicitly and create an approval workflow for deviations—Sales submits, Finance reviews promptly (e.g., within 24-48 hours) without delaying deal momentum. Complete when deviation tracking shows margin impact quarterly—protecting margins by ensuring non-standard terms are explicitly justified.",
         "type": "governance"
       }
     },
@@ -159,7 +159,7 @@
       "complexity": 5,
       "expert_action": {
         "title": "Build Strategic Anticipation Capability",
-        "recommendation": "FP&A should monitor strategic signals: Board discussions, competitor moves, market trends, CEO statements. When a strategic question emerges, build the analysis before being asked. Present proactively: 'We noticed X and thought you'd want to see the financial implications.' Complete when FP&A has anticipated at least 3 strategic analyses before being asked.",
+        "recommendation": "FP&A should monitor strategic signals: Board discussions, competitor moves, market trends, CEO statements. When a strategic question emerges, build the analysis before being asked. Present proactively: 'We noticed X and thought you'd want to see the financial implications.' Complete when proactive analysis becomes a recognized pattern—leadership expects Finance to surface strategic implications without being asked.",
         "type": "behavioral"
       }
     },
@@ -175,7 +175,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Establish Business Case Policy",
-        "recommendation": "Finance leadership should define the threshold (e.g., >$50K capex or >$100K opex) and create a business case template: investment amount, benefits, ROI, payback, risks. Require Finance sign-off. Complete when 100% of investments above threshold have a signed-off business case—ensuring capital goes only to projects with demonstrated returns.",
+        "recommendation": "Finance leadership should define the threshold (e.g., >€50k capex or >€100k opex) and create a business case template: investment amount, benefits, ROI, payback, risks. Require Finance sign-off. Complete when 100% of investments above threshold have a signed-off business case—ensuring capital goes only to projects with demonstrated returns.",
         "type": "governance"
       }
     },
@@ -255,7 +255,7 @@
       "complexity": 3,
       "expert_action": {
         "title": "Create Forecast Reconciliation Process",
-        "recommendation": "FP&A should produce a bridge when forecasts diverge by >5%: Finance forecast → Sales forecast showing each assumption difference (deal timing, probability, pipeline inclusion). Present as 'here's why we differ' not 'we're right.' Complete when divergence discussions reference the bridge, not competing claims.",
+        "recommendation": "FP&A should produce a bridge when forecasts diverge materially (e.g., >5%): Finance forecast → Sales forecast showing each assumption difference (deal timing, probability, pipeline inclusion). Present as 'here's why we differ' not 'we're right.' Complete when divergence discussions reference the bridge, not competing claims.",
         "type": "structural"
       }
     },
@@ -335,7 +335,7 @@
       "complexity": 4,
       "expert_action": {
         "title": "Enable Business Self-Service Drill-Down",
-        "recommendation": "FP&A and IT should extend the Finance data model to business users via governed dashboards with row-level security. Train budget owners on drill-path navigation. Complete when ad-hoc Finance queries drop by 50%—freeing FP&A from data retrieval to focus on insight generation and strategic partnership.",
+        "recommendation": "FP&A and IT should extend the Finance data model to business users via governed dashboards with row-level security. Train budget owners on drill-path navigation. Complete when ad-hoc Finance queries decline measurably—freeing FP&A from data retrieval to focus on insight generation and strategic partnership.",
         "type": "structural"
       }
     },
