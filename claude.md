@@ -58,11 +58,22 @@ CFOdiagnosis_v1/
 │   ├── objectives.json           # 9 objectives
 │   ├── themes.json               # 3 themes
 │   ├── gates.json                # Maturity gates
-│   └── targetMatrix.json         # Persona-specific maturity targets (VS-27e)
+│   ├── targetMatrix.json         # Persona-specific maturity targets (VS-27e)
+│   └── pillars/                  # Multi-pillar configurations
+│       └── fpa/
+│           └── na-config.json    # N/A rules for FP&A questions
 │
 ├── cfo-frontend/                 # Frontend application
+│   ├── content/
+│   │   └── blog/                 # MDX blog posts (VS-46)
+│   ├── public/
+│   │   └── blog/                 # Blog images
 │   ├── src/
 │   │   ├── App.jsx               # Routes, auth, navigation
+│   │   ├── blog/                 # Blog components & utilities (VS-46)
+│   │   │   ├── components/       # BlogCard, BlogPostPage, etc.
+│   │   │   ├── utils/            # MDX loader, frontmatter parsing
+│   │   │   └── index.js          # Blog module exports
 │   │   ├── pages/
 │   │   │   ├── PillarReport.jsx  # Main report with 4 tabs (VS-39)
 │   │   │   ├── ExecutiveReportPage.jsx # PDF-ready executive summary (VS-45)
@@ -94,6 +105,23 @@ CFOdiagnosis_v1/
 ├── spec/                         # Specification documents
 └── scripts/                      # Test utilities
 ```
+
+---
+
+## Specification Documents
+
+The `spec/` directory contains authoritative standards and frameworks:
+
+| File | Purpose | Audience |
+|------|---------|----------|
+| `SPEC_v3.1.0.md` | Master system specification (architecture, API, database) | Engineering, Product |
+| `DESIGN_SYSTEM.md` | Visual design patterns, color system, layout rules | Frontend, Design |
+| `BLOG_STYLE_CRITERIA.md` | Blog writing standards, "SecretCFO" voice (VS-46) | Content, Marketing |
+| `IMPACT_COMPLEXITY.md` | Cross-pillar scoring methodology | Content Authors |
+| `IMPACT_COMPLEXITY_FPA.md` | FP&A-specific scoring anchor examples | FP&A Content |
+| `QUESTION_REVIEW_CRITERIA.md` | 13-point question quality checklist | Content QA |
+| `ACTION_REVIEW_CRITERIA.md` | 11-point action quality checklist | Content QA |
+| `QUESTION_SORTING_PRINCIPLES.md` | Question ordering rules (Theme→Objective→Practice→Level) | Content Maintenance |
 
 ---
 
@@ -186,6 +214,10 @@ CFOdiagnosis_v1/
 | `/` | Home | Landing page |
 | `/login` | LoginPage | User authentication |
 | `/request-access` | RequestAccessPage | Contact form for access requests (Formspark) |
+| `/blog` | BlogPage | Blog index/listing (VS-46) |
+| `/blog/:slug` | BlogPostPage | Individual blog post (VS-46) |
+| `/platform` | PlatformPage | Platform overview |
+| `/about` | AboutPage | About CFO Lens |
 | `/assess` | DiagnosticInput | Auto-creates run, redirects to setup |
 | `/run/:runId/setup/company` | CompanySetupPage | Company context intake |
 | `/run/:runId/setup/persona` | PersonaConfirmationPage | Persona classification display (VS-27c) |
@@ -417,7 +449,54 @@ VITE_BOTPOISON_KEY=pk_xxx    # Spam protection
 | VS-26: Context Modifier | Pain point → practice boosting (1.0×–2.0× multiplier) |
 | VS-27f: Target Lines | Target lines in Objectives grid (Post-MVP, #75) |
 | Contact Form | Request Access page with Formspark + Botpoison spam protection |
+| VS-46: Blog System | MDX blog with "SecretCFO" voice, FP&A Myths series, Vite auto-loading, social sharing |
 
+---
+
+## Blog System (VS-46)
+
+### Overview
+MDX-based blog with "SecretCFO" peer-to-peer voice. Uses Vite `import.meta.glob()` for zero-config post discovery.
+
+### Files
+| Location | Purpose |
+|----------|---------|
+| `cfo-frontend/content/blog/*.mdx` | Blog post content (MDX format) |
+| `cfo-frontend/public/blog/` | Blog images |
+| `cfo-frontend/src/blog/` | Blog components and utilities |
+| `spec/BLOG_STYLE_CRITERIA.md` | Writing standards and review checklist |
+
+### Routes
+| Path | Component | Description |
+|------|-----------|-------------|
+| `/blog` | BlogPage | Index with featured + latest posts |
+| `/blog/:slug` | BlogPostPage | Individual post with social sharing |
+
+### Current Series: FP&A Myths
+8 planned posts exposing common FP&A myths (4 published):
+1. Budget Accountability ✓
+2. Rolling Forecasts ✓
+3. Variance Analysis ✓
+4. Finance Influence ✓
+5. Cash Forecasting (planned)
+6. Data Alignment (planned)
+7. Scenario Agility (planned)
+8. Contingency Planning (planned)
+
+### MDX Frontmatter
+```yaml
+slug: url-friendly-slug
+title: Post Title
+excerpt: Short description for cards
+date: YYYY-MM-DD
+author: Author Name
+readingTime: X min read
+featured: true/false
+image: /blog/image.png
+tags: [tag1, tag2]
+series: FP&A Myths
+seriesOrder: 1
+```
 
 ---
 
@@ -470,6 +549,35 @@ Schema Relationships (v3.1.0):
   question.practice_id → practice.objective_id → objective.theme_id
   (3-level hierarchy: Question → Practice → Objective)
 ```
+
+---
+
+## Multi-Pillar Architecture
+
+### Current Implementation
+The platform is architected for 9-pillar scalability:
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| Pillar Registry | `src/interpretation/pillars/registry.ts` | Register and load pillar packs |
+| FPA Pillar Pack | `src/interpretation/pillars/fpa/config.ts` | FP&A-specific AI interpretation config |
+| NA Rules | `content/pillars/fpa/na-config.json` | Context-aware question applicability |
+
+### Pillar Pack Interface
+Each pillar implements:
+- `pillar_id`, `pillar_name`
+- `sections[]` — Report section configurations
+- `forbidden_phrases[]` — AI quality control
+- `fallback_templates` — Non-AI fallbacks
+
+### Adding New Pillars
+1. Create pillar pack in `src/interpretation/pillars/{pillar_id}/`
+2. Register in `registry.ts`
+3. Add NA rules in `content/pillars/{pillar_id}/`
+4. Follow Strict Vertical Rule (no shared practice IDs)
+
+### Planned Pillars
+FP&A (current), Liquidity, Treasury, Tax, Record-to-Report, Order-to-Cash (9 total)
 
 ---
 
