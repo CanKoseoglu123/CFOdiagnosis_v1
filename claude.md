@@ -235,10 +235,11 @@ The `spec/` directory contains authoritative standards and frameworks:
 | `/` | Home | Landing page |
 | `/login` | LoginPage | User authentication |
 | `/request-access` | RequestAccessPage | Contact form for access requests (Formspark) |
-| `/blog` | BlogPage | Blog index/listing (VS-46) |
+| `/blog` | ResourcesPage | Blog index/listing (VS-46) |
 | `/blog/:slug` | BlogPostPage | Individual blog post (VS-46) |
 | `/platform` | PlatformPage | Platform overview |
 | `/about` | AboutPage | About CFO Lens |
+| `/select-pillar` | SelectPillarPage | Pillar selection for new assessment |
 | `/assess` | DiagnosticInput | Auto-creates run, redirects to setup |
 | `/run/:runId/setup/company` | CompanySetupPage | Company context intake |
 | `/run/:runId/setup/persona` | PersonaConfirmationPage | Persona classification display (VS-27c) |
@@ -248,6 +249,9 @@ The `spec/` directory contains authoritative standards and frameworks:
 | `/run/:runId/calibrate` | CalibrationPage | Objective importance (VS21) |
 | `/report/:runId` | PillarReport | Main report (V2.8.0) |
 | `/report/:runId/executive` | ExecutiveReportPage | PDF-ready executive summary (VS-45) |
+| `/report-legacy/:runId` | FinanceDiagnosticReport | Legacy report view |
+| `/admin` | AdminPage | Admin dashboard |
+| `/admin/scoring-matrix` | ScoringMatrixPage | Persona scoring matrix (VS-27b) |
 
 ---
 
@@ -490,7 +494,7 @@ MDX-based blog with "SecretCFO" peer-to-peer voice. Uses Vite `import.meta.glob(
 ### Routes
 | Path | Component | Description |
 |------|-----------|-------------|
-| `/blog` | BlogPage | Index with featured + latest posts |
+| `/blog` | ResourcesPage | Index with featured + latest posts |
 | `/blog/:slug` | BlogPostPage | Individual post with social sharing |
 
 ### Current Series: FP&A Myths
