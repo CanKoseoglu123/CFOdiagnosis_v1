@@ -28,6 +28,9 @@ export interface PracticeWithEvidence {
   evidence_state: EvidenceState;
   has_critical: boolean;  // Computed from questions at runtime
   gap_score: number;      // 0 = proven, 1 = not_proven
+  is_not_assessed?: boolean;  // True if all questions were N/A (excluded from scoring)
+  na_count?: number;          // Number of N/A answers in this practice
+  applicable_count?: number;  // Number of applicable (non-N/A) questions
 }
 
 export interface LevelSummary {
@@ -121,6 +124,59 @@ function computeGapScore(evidenceState: EvidenceState): number {
 }
 
 /**
+ * Compute detailed evidence state including N/A tracking
+ */
+function computeEvidenceWithNATracking(
+  practice: Practice,
+  answers: Answer[]
+): { evidenceState: EvidenceState; naCount: number; applicableCount: number; isNotAssessed: boolean } {
+  // Get answers for this practice's questions
+  const practiceAnswers = answers.filter(a =>
+    practice.question_ids.includes(a.question_id)
+  );
+
+  // Count N/A answers
+  const naAnswers = practiceAnswers.filter(a => a.value === 'N/A');
+  const naCount = naAnswers.length;
+
+  // Filter out N/A answers for scoring
+  const applicable = practiceAnswers.filter(a =>
+    a.value !== 'N/A' && a.value !== null && a.value !== undefined
+  );
+
+  const applicableCount = applicable.length;
+  const isNotAssessed = applicableCount === 0 && naCount > 0;
+
+  if (applicableCount === 0) {
+    return {
+      evidenceState: 'not_proven',
+      naCount,
+      applicableCount,
+      isNotAssessed
+    };
+  }
+
+  // Count YES answers (true or 'YES')
+  const yesCount = applicable.filter(a =>
+    a.value === true || a.value === 'YES'
+  ).length;
+
+  const coverage = yesCount / applicableCount;
+
+  let evidenceState: EvidenceState;
+  if (coverage >= 1.0) evidenceState = 'proven';
+  else if (coverage >= 0.5) evidenceState = 'partial';
+  else evidenceState = 'not_proven';
+
+  return {
+    evidenceState,
+    naCount,
+    applicableCount,
+    isNotAssessed
+  };
+}
+
+/**
  * Build practice with evidence state attached
  */
 function buildPracticeWithEvidence(
@@ -128,7 +184,8 @@ function buildPracticeWithEvidence(
   answers: Answer[],
   questions: Question[]
 ): PracticeWithEvidence {
-  const evidenceState = computeEvidenceState(practice, answers);
+  const { evidenceState, naCount, applicableCount, isNotAssessed } =
+    computeEvidenceWithNATracking(practice, answers);
 
   return {
     id: practice.id,
@@ -138,7 +195,10 @@ function buildPracticeWithEvidence(
     theme_id: practice.theme_id,
     evidence_state: evidenceState,
     has_critical: practiceHasCritical(practice, questions),
-    gap_score: computeGapScore(evidenceState)
+    gap_score: computeGapScore(evidenceState),
+    is_not_assessed: isNotAssessed || undefined,
+    na_count: naCount > 0 ? naCount : undefined,
+    applicable_count: applicableCount
   };
 }
 
@@ -149,8 +209,10 @@ function buildPracticeWithEvidence(
 export function computeFocusNext(
   practices: PracticeWithEvidence[]
 ): FocusItem[] {
-  // Filter to gaps only (not proven)
-  const gaps = practices.filter(p => p.evidence_state !== 'proven');
+  // Filter to gaps only (not proven) - exclude "not assessed" practices
+  const gaps = practices.filter(p =>
+    p.evidence_state !== 'proven' && !p.is_not_assessed
+  );
 
   // Score each gap
   const scored = gaps.map(p => {

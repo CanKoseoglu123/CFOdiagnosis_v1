@@ -118,6 +118,8 @@ export default function AssessObjectivePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
+  const [showNaConfirmModal, setShowNaConfirmModal] = useState(false);
+  const [pendingNaQuestionId, setPendingNaQuestionId] = useState(null);
   const objectiveMeta = OBJECTIVE_META[objectiveId];
 
   // Refs for question cards (used for auto-scroll)
@@ -208,6 +210,38 @@ export default function AssessObjectivePage() {
     });
     return lookup;
   }, [spec]);
+
+  // Build N/A question ID set from na_rules
+  const naQuestionIds = useMemo(() => {
+    if (!spec?.na_rules) return new Set();
+    return new Set(spec.na_rules.map(rule => rule.question_id));
+  }, [spec]);
+
+  // Check if a question allows N/A
+  const questionAllowsNa = useCallback((questionId) => {
+    return naQuestionIds.has(questionId);
+  }, [naQuestionIds]);
+
+  // Handle N/A button click - shows confirmation modal
+  const handleNaClick = useCallback((questionId) => {
+    setPendingNaQuestionId(questionId);
+    setShowNaConfirmModal(true);
+  }, []);
+
+  // Confirm N/A selection
+  const confirmNaSelection = useCallback(() => {
+    if (pendingNaQuestionId) {
+      handleAnswer(pendingNaQuestionId, 'N/A');
+    }
+    setShowNaConfirmModal(false);
+    setPendingNaQuestionId(null);
+  }, [pendingNaQuestionId]);
+
+  // Cancel N/A selection
+  const cancelNaSelection = useCallback(() => {
+    setShowNaConfirmModal(false);
+    setPendingNaQuestionId(null);
+  }, []);
 
   // Helper: get objective_id for a question
   const getQuestionObjective = useCallback((q) => {
@@ -550,6 +584,36 @@ export default function AssessObjectivePage() {
           </div>
         )}
 
+        {/* N/A Confirmation Modal */}
+        {showNaConfirmModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white p-6 rounded-sm max-w-lg w-full border border-slate-300 shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-800">Confirm Not Applicable</h3>
+              <p className="text-sm text-slate-600 mt-3">
+                By selecting <strong>N/A</strong>, you confirm that this capability is handled by another department
+                (e.g., Treasury, Operations) and is <strong>not in scope</strong> of this Finance diagnostic.
+              </p>
+              <p className="text-sm text-slate-500 mt-2">
+                This question will be excluded from your maturity score calculation.
+              </p>
+              <div className="flex justify-end gap-3 mt-5">
+                <button
+                  onClick={cancelNaSelection}
+                  className="px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-sm hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmNaSelection}
+                  className="px-4 py-2.5 bg-slate-700 text-white text-sm font-medium rounded-sm hover:bg-slate-800 transition-colors"
+                >
+                  Confirm N/A
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Chapter Header */}
         <ChapterHeader
           label={`Objective ${currentIndex + 1} of 9 | ${objectiveMeta?.themeLabel || ''}`}
@@ -607,6 +671,8 @@ export default function AssessObjectivePage() {
                   answer={answers[question.id]}
                   onAnswer={handleAnswer}
                   index={idx}
+                  allowNa={questionAllowsNa(question.id)}
+                  onNaClick={handleNaClick}
                 />
               </div>
             ))}

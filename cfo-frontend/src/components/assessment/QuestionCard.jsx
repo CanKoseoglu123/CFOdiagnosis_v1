@@ -1,20 +1,24 @@
 // src/components/assessment/QuestionCard.jsx
 // VS-30: Polished question card with Action Planning design language
+// N/A Support: Added N/A button for context-dependent questions
 
 import React, { useState } from 'react';
-import { HelpCircle, CheckCircle, X, AlertCircle } from 'lucide-react';
+import { HelpCircle, CheckCircle, X, AlertCircle, Minus } from 'lucide-react';
 
 export default function QuestionCard({
   question,
   answer,
   onAnswer,
-  index
+  index,
+  allowNa = false,    // Whether this question allows N/A
+  onNaClick           // Callback when N/A is clicked (triggers confirmation modal)
 }) {
   const [showHelp, setShowHelp] = useState(true);
 
   const isAnswered = answer !== null && answer !== undefined;
   const isYes = answer === true;
   const isNo = answer === false;
+  const isNA = answer === 'N/A';
 
   return (
     <div data-question-card className={`bg-white border rounded-sm overflow-hidden transition-all ${
@@ -116,6 +120,21 @@ export default function QuestionCard({
           {isNo && <X className="w-4 h-4" />}
           No
         </button>
+
+        {/* N/A Button - only shown for questions that allow N/A */}
+        {allowNa && (
+          <button
+            onClick={() => onNaClick?.(question.id)}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded transition-all ${
+              isNA
+                ? 'bg-slate-500 text-white shadow-sm'
+                : 'bg-white text-slate-500 border border-slate-300 hover:border-slate-400 hover:text-slate-600'
+            }`}
+          >
+            {isNA && <Minus className="w-4 h-4" />}
+            N/A
+          </button>
+        )}
 
         {/* Answered indicator */}
         {isAnswered && (

@@ -22,6 +22,10 @@ export default function MatrixLegend() {
           <span className="w-3 h-3 rounded bg-[#6699CC]" />
           <span>Gap</span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded bg-slate-200 border border-dashed border-slate-400" />
+          <span>Not Assessed</span>
+        </div>
       </div>
 
       {/* Zone Legend - Warm tones theme */}

@@ -48,6 +48,9 @@ import { requireAdmin, checkAdmin } from "./middleware/adminAuth";
 import { classifyCompany } from "./classification/engine";
 import { ClassificationContext } from "./classification/types";
 
+// N/A configuration for context-dependent questions
+import { loadNAConfig, allowsNA } from "./specs/naConfig";
+
 // Critical gates for test scenarios
 import { L1_CRITICALS, L2_CRITICALS } from "./gates";
 
@@ -263,6 +266,10 @@ app.get("/spec/questions", (_req, res) => {
 // Full spec endpoint - Single Source of Truth for frontend
 app.get("/api/spec", (_req, res) => {
   const spec = SpecRegistry.getWithThemes();
+
+  // Load pillar-specific N/A rules (currently only FPA)
+  const naConfig = loadNAConfig('fpa');
+
   res.json({
     version: spec.version,
     pillars: spec.pillars,
@@ -273,6 +280,7 @@ app.get("/api/spec", (_req, res) => {
     themes: (spec as any).themes || [],
     initiatives: spec.initiatives || [],  // V2.1 Initiative Engine
     practices: spec.practices || [],  // v2.9.0: question → practice → objective
+    na_rules: naConfig.na_rules,  // N/A rules for context-dependent questions
   });
 });
 
@@ -918,6 +926,16 @@ app.post("/diagnostic-inputs", async (req, res) => {
     return res.status(400).json({
       error: "run_id, question_id and value are required",
     });
+  }
+
+  // N/A validation: Only allow N/A for questions in the pillar's na_rules
+  if (value === 'N/A') {
+    if (!allowsNA('fpa', question_id)) {
+      return res.status(400).json({
+        error: "N/A is not allowed for this question",
+        question_id
+      });
+    }
   }
 
   // VS-Security: Check if run is finalized before allowing modifications

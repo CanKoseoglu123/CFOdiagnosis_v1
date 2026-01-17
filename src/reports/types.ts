@@ -40,12 +40,13 @@ export interface ObjectiveScore {
   objective_id: string;
   objective_name: string;
   level: number;                      // Maturity level (1-4)
-  score: number;                      // 0-100
+  score: number;                      // 0-100 (0 if all N/A - check questions_total for "Not Assessed")
   status: 'green' | 'yellow' | 'red'; // Traffic light
   overridden: boolean;                // True if critical override applied
   override_reason: string | null;     // Tooltip text if overridden
-  questions_total: number;
+  questions_total: number;            // Count of applicable questions (excludes N/A)
   questions_passed: number;
+  questions_na?: number;              // Count of N/A answers (for "Not Assessed" detection)
   failed_criticals: string[];         // IDs of failed criticals in this objective
 }
 
@@ -146,6 +147,9 @@ export interface PracticeWithEvidence {
   evidence_state: EvidenceState;
   has_critical: boolean;
   gap_score: number;
+  is_not_assessed?: boolean;  // True if all questions were N/A (excluded from scoring)
+  na_count?: number;          // Number of N/A answers in this practice
+  applicable_count?: number;  // Number of applicable (non-N/A) questions
 }
 
 export interface LevelSummary {

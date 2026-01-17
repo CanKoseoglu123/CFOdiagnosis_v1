@@ -1,0 +1,22 @@
+{
+  "pillar": "fpa",
+  "version": "1.0.0",
+  "description": "N/A rules for FPA (FP&A) pillar questions. Questions listed here will show an N/A button during assessment.",
+  "na_rules": [
+    {
+      "question_id": "fpa_q042",
+      "context_conditions": {
+        "debt_pressure": ["none"]
+      },
+      "rationale": "Covenant forecasting only applies to companies with debt obligations. Companies without debt have no covenant compliance requirements."
+    },
+    {
+      "question_id": "fpa_q044",
+      "context_conditions": {
+        "debt_pressure": ["none"],
+        "revenue_trajectory": ["stable", "growth"]
+      },
+      "rationale": "Direct method (13-week) cash forecasting is optional for stable, debt-free companies. These organizations may use simpler cash management approaches."
+    }
+  ]
+}

@@ -60,6 +60,9 @@ const STATE_BG = {
   not_proven: 'bg-[#6699CC]'   // Light blue - gap
 };
 
+// Special styling for "Not Assessed" practices (all questions N/A)
+const NOT_ASSESSED_STYLE = 'bg-slate-200 text-slate-500 border border-dashed border-slate-400';
+
 // Score to color for bubble
 function getScoreColor(score) {
   if (score >= 70) return 'bg-emerald-500';
@@ -75,16 +78,23 @@ const PRACTICE_BOX_HEIGHT = 40;
 // ═══════════════════════════════════════════════════════════════════════════
 
 function PracticeBox({ practice }) {
-  const bgColor = STATE_BG[practice.evidence_state] || STATE_BG.not_proven;
+  // Check if practice is "not assessed" (all questions N/A)
+  const isNotAssessed = practice.is_not_assessed === true;
+
+  // Use special styling for "not assessed", otherwise use evidence state
+  const boxStyle = isNotAssessed
+    ? NOT_ASSESSED_STYLE
+    : `${STATE_BG[practice.evidence_state] || STATE_BG.not_proven} text-white`;
 
   return (
     <div
       className={`
-        ${bgColor} text-white rounded-sm px-1.5 py-1
+        ${boxStyle} rounded-sm px-1.5 py-1
         flex items-center justify-center text-center
         w-full
       `}
       style={{ height: `${PRACTICE_BOX_HEIGHT}px` }}
+      title={isNotAssessed ? 'Not Assessed (all questions marked N/A)' : undefined}
     >
       <span className="text-[9px] font-medium leading-tight line-clamp-2">
         {practice.title}
@@ -143,6 +153,10 @@ function Legend() {
       <div className="flex items-center gap-1">
         <div className="w-3 h-3 bg-[#6699CC] rounded-sm" />
         <span>Gap</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <div className="w-3 h-3 bg-slate-200 rounded-sm border border-dashed border-slate-400" />
+        <span>Not Assessed</span>
       </div>
     </div>
   );

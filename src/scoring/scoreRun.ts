@@ -59,6 +59,12 @@ export async function scoreRun(
   for (const question of spec.questions) {
     const value = inputMap.get(question.id);
 
+    // N/A answers are excluded from scoring entirely
+    // They don't count toward the numerator OR denominator
+    if (value === 'N/A') {
+      continue;
+    }
+
     // FIXED: Missing input = score 0 (conservative scoring)
     // Previously we skipped, which caused "grade inflation"
     let rawScore: number;

@@ -3,8 +3,15 @@
 
 /**
  * Map evidence_state from backend to display status
+ * @param {string} evidenceState - Evidence state from backend
+ * @param {boolean} isNotAssessed - Whether all questions were N/A
  */
-function mapEvidenceToStatus(evidenceState) {
+function mapEvidenceToStatus(evidenceState, isNotAssessed) {
+  // "Not Assessed" practices (all N/A) get special status
+  if (isNotAssessed) {
+    return 'not_assessed';
+  }
+
   switch (evidenceState) {
     case 'proven':
     case 'full':
@@ -47,14 +54,19 @@ export function derivePracticeData(footprintLevels, specPractices, specObjective
 
       // Check if practice has critical question(s) that failed (not proven = critical failure)
       const hasCritical = fp.has_critical || fp.is_critical || false;
+      const isNotAssessed = fp.is_not_assessed || false;
       const isGap = fp.evidence_state === 'not_proven' || fp.evidence_state === 'none';
-      const hasCriticalFailure = hasCritical && isGap;
+      // Only count as critical failure if it's a real gap (not just "not assessed")
+      const hasCriticalFailure = hasCritical && isGap && !isNotAssessed;
 
       // Critical failures force Strategic Focus regardless of importance
-      const priorityRow = (hasCriticalFailure || importance >= 4) ? 'strategic' : 'operational';
+      // "Not assessed" practices go to operational row (low priority)
+      const priorityRow = isNotAssessed
+        ? 'operational'
+        : (hasCriticalFailure || importance >= 4) ? 'strategic' : 'operational';
 
       // Map evidence state to status
-      const status = mapEvidenceToStatus(fp.evidence_state);
+      const status = mapEvidenceToStatus(fp.evidence_state, isNotAssessed);
 
       practices.push({
         id: fp.id,
@@ -67,7 +79,8 @@ export function derivePracticeData(footprintLevels, specPractices, specObjective
         status,
         evidence_state: fp.evidence_state,
         has_critical: hasCritical,
-        has_critical_failure: hasCriticalFailure
+        has_critical_failure: hasCriticalFailure,
+        is_not_assessed: isNotAssessed
       });
     });
   });
@@ -134,8 +147,8 @@ export function groupPracticesIntoGrid(practiceData, columns) {
     grid[practice.priorityRow][column.id].push(practice);
   });
 
-  // Sort each cell: gaps first, then partial, then complete
-  const statusOrder = { gap: 0, partial: 1, complete: 2 };
+  // Sort each cell: gaps first, then partial, then complete, then not_assessed (lowest priority)
+  const statusOrder = { gap: 0, partial: 1, complete: 2, not_assessed: 3 };
 
   Object.keys(grid).forEach(row => {
     Object.keys(grid[row]).forEach(col => {
@@ -172,7 +185,8 @@ export function getMatrixStats(practiceData) {
   const gaps = practiceData.filter(p => p.status === 'gap').length;
   const partial = practiceData.filter(p => p.status === 'partial').length;
   const complete = practiceData.filter(p => p.status === 'complete').length;
+  const notAssessed = practiceData.filter(p => p.status === 'not_assessed').length;
   const strategicGaps = practiceData.filter(p => p.priorityRow === 'strategic' && p.status === 'gap').length;
 
-  return { total, gaps, partial, complete, strategicGaps };
+  return { total, gaps, partial, complete, notAssessed, strategicGaps };
 }

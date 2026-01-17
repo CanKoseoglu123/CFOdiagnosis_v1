@@ -76,6 +76,11 @@ export default function PriorityMatrix({
           <span>
             <span className="font-semibold text-[#003366]">{stats.complete}</span> proven
           </span>
+          {stats.notAssessed > 0 && (
+            <span>
+              <span className="font-semibold text-slate-400">{stats.notAssessed}</span> not assessed
+            </span>
+          )}
           {stats.strategicGaps > 0 && (
             <span className="text-red-600 font-medium">
               {stats.strategicGaps} urgent gaps

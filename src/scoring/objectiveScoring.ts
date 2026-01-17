@@ -94,13 +94,17 @@ export function calculateObjectiveScores(
     // Calculate objective score
     let passed = 0;
     let total = 0;
+    let naCount = 0;
     const failedCriticals: string[] = [];
 
     for (const q of questions) {
       const answer = inputMap.get(q.id);
 
-      // Skip N/A answers from scoring
-      if (answer === 'N/A') continue;
+      // Track and skip N/A answers from scoring
+      if (answer === 'N/A') {
+        naCount += 1;
+        continue;
+      }
 
       total += 1;
       if (answer === true) {
@@ -126,6 +130,7 @@ export function calculateObjectiveScores(
       override_reason: trafficLight.override_reason,
       questions_total: total,
       questions_passed: passed,
+      questions_na: naCount > 0 ? naCount : undefined, // Only include if there are N/A answers
       failed_criticals: failedCriticals,
     });
   }
