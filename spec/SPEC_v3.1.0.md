@@ -53,7 +53,7 @@ Pillar (FP&A)
 │   └── Objective 3: Performance Monitoring (3 Practices)
 ├── Theme 2: The Future (Speed & Agility)
 │   ├── Objective 4: Forecasting Agility (3 Practices)
-│   ├── Objective 5: Driver-Based Planning (3 Practices)
+│   ├── Objective 5: Driver-Based Planning (2 Practices)
 │   └── Objective 6: Scenario Modeling (3 Practices)
 └── Theme 3: The Intelligence (Value & Influence)
     ├── Objective 7: Strategic Influence (4 Practices)*
@@ -128,7 +128,7 @@ Aligned 3 per Theme:
 | File | Count | Purpose |
 |:-----|:------|:--------|
 | `objectives.json` | 9 | Objective definitions linked to themes |
-| `practices.json` | 27 | Practice definitions linked to objectives |
+| `practices.json` | 26 | Practice definitions linked to objectives |
 | `questions-foundation.json` | 37 | Foundation theme questions |
 | `questions-future.json` | 27 | Future theme questions |
 | `questions-intelligence.json` | 33 | Intelligence theme questions |
@@ -943,15 +943,15 @@ Internal/admin endpoints for system management:
 ### 12.1 Assessment Flow
 
 ```
-Company Setup → Persona Confirmation → Pillar Setup → Intro → Objective Assessment → Calibration → Report
-   (VS-27c)          (VS-27b)           (VS-18)               (Core, per-objective)    (VS-21)     (VS-28/VS-39)
+Intro → Company Setup → Persona Confirmation → Pillar Setup → Objective Assessment → Calibration → Report
+              (VS-27c)          (VS-27b)           (VS-18)    (Core, per-objective)    (VS-21)     (VS-28/VS-39)
 ```
 
 **Flow Details:**
-1. **Company Setup** — User enters company information; system classifies persona
-2. **Persona Confirmation** — User reviews/adjusts persona classification
-3. **Pillar Setup** — User enters pillar-specific context (team size, tools, pain points)
-4. **Intro** — Assessment introduction screen
+1. **Intro** — Assessment introduction screen
+2. **Company Setup** — User enters company information; system classifies persona
+3. **Persona Confirmation** — User reviews/adjusts persona classification
+4. **Pillar Setup** — User enters pillar-specific context (team size, tools, pain points)
 5. **Objective Assessment** — Questions presented grouped by objective (not flat list)
 6. **Calibration** — User assigns importance weights to objectives
 7. **Report** — Results dashboard with embedded Action Planning (War Room) and Executive Report
@@ -987,7 +987,7 @@ BCG-style 2×2 matrix grouping practices:
 
 | VS | Feature | Status |
 |:---|:--------|:-------|
-| VS-43 | Multi-pillar support | Planned |
+| VS-47 | Multi-pillar support | Planned |
 | VS-50 | Team collaboration | Backlog |
 
 ### 13.2 Extensibility Points

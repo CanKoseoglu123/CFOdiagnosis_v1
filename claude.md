@@ -168,6 +168,13 @@ The `spec/` directory contains authoritative standards and frameworks:
 | PATCH | `/api/company-profiles/:id/persona` | Switch persona selection (VS-27c) | Yes |
 | GET | `/api/company-profiles/meta/personas` | Get persona definitions (VS-27b) | Yes |
 | GET | `/api/company-profiles/meta/matrix` | Get scoring matrix (VS-27b) | Yes |
+| POST | `/diagnostic-runs/:id/interpret/answer` | Submit critic question answer (VS25) | Yes |
+| POST | `/diagnostic-runs/:id/interpret/feedback` | Submit feedback on AI quality | Yes |
+| POST | `/diagnostic-runs/:id/interpret-v32` | Begin v32 AI interpretation | Yes |
+| GET | `/diagnostic-runs/:id/interpret-v32/status` | Get v32 interpretation status | Yes |
+| GET | `/admin/feedback` | List all feedback (admin only) | Yes |
+| DELETE | `/admin/feedback/:id` | Delete feedback entry | Yes |
+| DELETE | `/admin/sessions/:id` | Delete run + all related data ⚠️ | Yes |
 
 ### Authentication
 - Bearer token in Authorization header
@@ -205,6 +212,20 @@ The `spec/` directory contains authoritative standards and frameworks:
 - `interpretation_steps` — AI call logs
 - `interpretation_reports` — Generated reports
 
+### Additional Tables
+
+**scoring_matrix** (VS-27b)
+- Admin-editable persona scoring weights
+- Fields: `id`, `version`, `matrix` (JSONB), `active`, `created_by`, `created_at`
+
+**planning_context** (VS-32d)
+- Wizard state for action planning flow
+- Fields: `run_id`, `target_maturity_level`, `bandwidth`, `priority_focus`, `team_size_override`
+
+**feedback**
+- Beta feedback collection
+- Fields: `id`, `user_id`, `run_id`, `type`, `content`, `metadata`, `created_at`
+
 ---
 
 ## Frontend Routes
@@ -223,9 +244,7 @@ The `spec/` directory contains authoritative standards and frameworks:
 | `/run/:runId/setup/persona` | PersonaConfirmationPage | Persona classification display (VS-27c) |
 | `/run/:runId/setup/pillar` | PillarSetupPage | FP&A context intake |
 | `/run/:runId/intro` | IntroPage | Methodology explanation (VS-31) |
-| `/assess/foundation` | AssessFoundation | Theme-based questions (VS-30) |
-| `/assess/future` | AssessFuture | Theme-based questions (VS-30) |
-| `/assess/intelligence` | AssessIntelligence | Theme-based questions (VS-30) |
+| `/assess/objective/:objectiveId` | AssessObjectivePage | Objective-based questions (VS-44) |
 | `/run/:runId/calibrate` | CalibrationPage | Objective importance (VS21) |
 | `/report/:runId` | PillarReport | Main report (V2.8.0) |
 | `/report/:runId/executive` | ExecutiveReportPage | PDF-ready executive summary (VS-45) |
@@ -260,6 +279,8 @@ The `spec/` directory contains authoritative standards and frameworks:
 - All selected actions must have a timeline (6m/12m/24m)
 - All selected actions must have an owner assigned
 - Confirmation modal: "Are you sure you want to finalize?"
+
+> **Note:** Timeline/owner validation is currently client-side only. Server-side validation planned for future release.
 
 **Executive Report (VS-45):**
 - Accessed via `/report/:runId/executive` after finalization
