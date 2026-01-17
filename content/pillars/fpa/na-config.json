@@ -4,11 +4,21 @@
   "description": "N/A rules for FPA (FP&A) pillar questions. Questions listed here will show an N/A button during assessment.",
   "na_rules": [
     {
+      "question_id": "fpa_q041",
+      "context_conditions": {},
+      "rationale": "Working capital assumptions (DSO, DIO, DPO) modeling may be handled by Treasury or Operations in some organizations."
+    },
+    {
       "question_id": "fpa_q042",
       "context_conditions": {
         "debt_pressure": ["none"]
       },
       "rationale": "Covenant forecasting only applies to companies with debt obligations. Companies without debt have no covenant compliance requirements."
+    },
+    {
+      "question_id": "fpa_q043",
+      "context_conditions": {},
+      "rationale": "Cash flow and liquidity projection may be handled by Treasury rather than FP&A in some organizations."
     },
     {
       "question_id": "fpa_q044",

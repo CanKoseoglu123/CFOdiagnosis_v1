@@ -13,6 +13,8 @@
  * - All existing v2.8.x APIs remain compatible
  */
 
+import type { NARule } from './naConfig';
+
 // =============================================================================
 // PILLAR TYPES
 // =============================================================================
@@ -192,6 +194,7 @@ export interface Spec {
   actions: ActionDefinition[];
   initiatives?: Initiative[];  // V2.1 Initiative Engine
   practices?: SpecPractice[];  // v2.9.0: question → practice → objective
+  na_rules?: NARule[];         // N/A rules for context-dependent questions
 }
 
 // v2.7.0 style
