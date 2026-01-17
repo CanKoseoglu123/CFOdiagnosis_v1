@@ -5,20 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generate-sitemap.js && vite build",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@botpoison/browser": "^0.1.30",
+    "@mdx-js/react": "^3.1.1",
+    "@mdx-js/rollup": "^3.1.1",
     "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/postcss": "^4.1.18",
+    "date-fns": "^4.1.0",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.561.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-helmet-async": "^2.0.5",
+    "react-is": "^19.2.3",
     "react-router-dom": "^7.12.0",
     "react-to-print": "^3.0.5",
-    "recharts": "^3.6.0"
+    "reading-time": "^1.5.0",
+    "recharts": "^3.6.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx-frontmatter": "^5.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

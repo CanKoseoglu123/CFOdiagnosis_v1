@@ -25,6 +25,10 @@ const ScoringMatrixPage = lazy(() => import('./pages/admin/ScoringMatrixPage'))
 const AssessObjectivePage = lazy(() => import('./components/assessment/AssessObjectivePage'))
 const ExecutiveReportPage = lazy(() => import('./pages/ExecutiveReportPage'))
 const RequestAccessPage = lazy(() => import('./pages/RequestAccessPage'))
+const ResourcesPage = lazy(() => import('./pages/ResourcesPage'))
+const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
+const PlatformPage = lazy(() => import('./pages/PlatformPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
 
 // Loading fallback component
 function PageLoader() {
@@ -152,6 +156,14 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/request-access" element={<RequestAccessPage />} />
+          {/* Public pages */}
+          <Route path="/platform" element={<PlatformPage />} />
+          <Route path="/blog" element={<ResourcesPage />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          {/* Legacy redirect for old /resources URLs */}
+          <Route path="/resources" element={<Navigate to="/blog" replace />} />
+          <Route path="/resources/:slug" element={<RedirectWithParams to="/blog" />} />
           <Route path="/select-pillar" element={
             <ProtectedRoute>
               <SelectPillarPage />

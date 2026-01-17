@@ -175,14 +175,46 @@ export default function LandingPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Logo size="sm" />
+          {/* Left side: Logo + Nav Links */}
+          <div className="flex items-center">
+            <Link to="/">
+              <Logo size="sm" />
+            </Link>
 
-          <div className="flex items-center gap-4">
+            {/* Divider */}
+            <div className="hidden sm:block h-6 w-px bg-slate-200 mx-6" />
+
+            {/* Nav Links */}
+            <div className="hidden sm:flex items-center gap-1">
+              <Link
+                to="/platform"
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Platform
+              </Link>
+              <Link
+                to="/blog"
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Blog
+              </Link>
+              <Link
+                to="/about"
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                About
+              </Link>
+            </div>
+          </div>
+
+          {/* Right side: Auth */}
+          <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <span className="text-sm text-slate-500 hidden sm:block">
-                  {user?.email}
-                </span>
+                <div className="hidden sm:flex flex-col items-end mr-2">
+                  <span className="text-sm font-medium text-slate-700">Welcome back</span>
+                  <span className="text-xs text-slate-500">{user?.email}</span>
+                </div>
                 <button
                   onClick={handleDashboardClick}
                   disabled={checkingRuns}
@@ -193,7 +225,7 @@ export default function LandingPage() {
                 </button>
                 <button
                   onClick={signOut}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                  className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
                 >
                   Sign Out
                 </button>
@@ -202,13 +234,13 @@ export default function LandingPage() {
               <>
                 <Link
                   to="/request-access"
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors hidden sm:block"
                 >
                   Request Access
                 </Link>
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   Sign In
                 </Link>

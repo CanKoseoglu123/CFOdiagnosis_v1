@@ -1,0 +1,14 @@
+# robots.txt for CFO Lens AI
+# https://cfodiagnosisv1.vercel.app
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://cfodiagnosisv1.vercel.app/sitemap.xml
+
+# Disallow admin and authenticated-only pages
+Disallow: /admin
+Disallow: /run/
+Disallow: /assess/
+Disallow: /report/
