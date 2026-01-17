@@ -24,6 +24,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 const ScoringMatrixPage = lazy(() => import('./pages/admin/ScoringMatrixPage'))
 const AssessObjectivePage = lazy(() => import('./components/assessment/AssessObjectivePage'))
 const ExecutiveReportPage = lazy(() => import('./pages/ExecutiveReportPage'))
+const RequestAccessPage = lazy(() => import('./pages/RequestAccessPage'))
 
 // Loading fallback component
 function PageLoader() {
@@ -125,9 +126,17 @@ function LoginPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: '#9CA3AF' }}>
-          Invite-only access. Contact admin for an account.
-        </p>
+        <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 12 }}>
+            Invite-only access.
+          </p>
+          <Link
+            to="/request-access"
+            style={{ fontSize: 14, color: NAVY, fontWeight: 500, textDecoration: 'none' }}
+          >
+            Don't have an account? Request Access
+          </Link>
+        </div>
       </div>
     </div>
   )
@@ -142,6 +151,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/request-access" element={<RequestAccessPage />} />
           <Route path="/select-pillar" element={
             <ProtectedRoute>
               <SelectPillarPage />
