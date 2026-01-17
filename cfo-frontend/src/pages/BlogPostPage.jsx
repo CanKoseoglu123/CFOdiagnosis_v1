@@ -22,7 +22,10 @@ export default function BlogPostPage() {
     return <Navigate to="/resources" replace />;
   }
 
-  const { title, excerpt, date, readingTime, author, Component } = post;
+  const { title, excerpt, date, readingTime, author, Component, tags, series } = post;
+
+  // Get first tag or series as category
+  const category = tags?.[0] || series || null;
 
   // Get related posts (excluding current)
   const relatedPosts = getLatestPosts(4, false).filter(p => p.slug !== slug).slice(0, 3);
@@ -128,15 +131,47 @@ export default function BlogPostPage() {
       </nav>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HERO SECTION - Deeper blue gradient */}
+      {/* HERO SECTION - Gradient with decorative elements */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section
-        className="pt-24 pb-12 px-6"
+        className="pt-24 pb-12 px-6 relative overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #C5E3F6 0%, #E3F1FA 40%, #FFFFFF 100%)',
         }}
       >
-        <div className="max-w-4xl mx-auto">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Large circle - top right */}
+          <div
+            className="absolute -right-20 -top-20 w-96 h-96 rounded-full"
+            style={{
+              background: `radial-gradient(circle, ${BRAND_COLORS.navy}08 0%, transparent 70%)`,
+            }}
+          />
+          {/* Medium circle - right side */}
+          <div
+            className="absolute right-10 top-1/2 w-64 h-64 rounded-full"
+            style={{
+              background: `radial-gradient(circle, ${BRAND_COLORS.navy}06 0%, transparent 70%)`,
+            }}
+          />
+          {/* Small circle - left side */}
+          <div
+            className="absolute -left-10 top-1/3 w-48 h-48 rounded-full"
+            style={{
+              background: `radial-gradient(circle, ${BRAND_COLORS.navy}05 0%, transparent 70%)`,
+            }}
+          />
+          {/* Large faded letter - decorative */}
+          <div
+            className="absolute right-16 top-20 text-[200px] font-bold leading-none select-none"
+            style={{ color: `${BRAND_COLORS.navy}04` }}
+          >
+            ?
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto relative z-10">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm mb-8">
             <Link
@@ -144,10 +179,21 @@ export default function BlogPostPage() {
               className="hover:underline"
               style={{ color: BRAND_COLORS.navy }}
             >
-              Blog
+              Resources
             </Link>
             <span className="text-slate-400">•</span>
-            <span className="text-slate-600">Article</span>
+            <span className="text-slate-600">Blog</span>
+            {category && (
+              <>
+                <span className="text-slate-300">|</span>
+                <span
+                  className="font-medium"
+                  style={{ color: BRAND_COLORS.navy }}
+                >
+                  {category}
+                </span>
+              </>
+            )}
           </div>
 
           {/* Title and Share Row */}

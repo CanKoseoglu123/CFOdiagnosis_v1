@@ -192,22 +192,8 @@ export const MDXComponents = {
     <em className="italic" {...props}>{children}</em>
   ),
 
-  // Images
-  img: ({ src, alt, ...props }) => (
-    <figure className="my-6">
-      <img
-        src={src}
-        alt={alt}
-        className="w-full border border-slate-200"
-        {...props}
-      />
-      {alt && (
-        <figcaption className="text-sm text-slate-500 mt-2 text-center">
-          {alt}
-        </figcaption>
-      )}
-    </figure>
-  ),
+  // Images - hidden in blog posts (Innovid-inspired text-focused design)
+  img: () => null,
 
   // Custom components
   Callout,

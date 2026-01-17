@@ -1,62 +1,64 @@
 // src/blog/components/BlogCard.jsx
-// Blog post card - Image-forward design (Innovid-inspired)
+// Blog post card - Text-focused design (Innovid-inspired, no images)
 
 import { Link } from 'react-router-dom';
 import { formatDate } from '../utils/blogUtils';
 import { BRAND_COLORS } from '../../components/Logo';
 
 export default function BlogCard({ post }) {
-  const { slug, title, image, date, readingTime } = post;
+  const { slug, title, excerpt, date, readingTime, tags, series } = post;
+
+  // Get up to 3 labels for display at bottom
+  const labels = [];
+  if (series) labels.push(series);
+  if (tags?.length) {
+    const remainingSlots = 3 - labels.length;
+    labels.push(...tags.slice(0, remainingSlots));
+  }
+  const displayLabels = labels.slice(0, 3);
 
   return (
     <Link
       to={`/blog/${slug}`}
-      className="group block bg-white overflow-hidden"
+      className="group flex flex-col bg-white p-6 border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all h-full"
     >
-      {/* Image - Takes up most of the card */}
-      <div className="aspect-[4/3] bg-slate-100 overflow-hidden rounded-lg">
-        {image ? (
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div
-            className="w-full h-full flex items-center justify-center"
-            style={{ backgroundColor: `${BRAND_COLORS.navy}10` }}
-          >
-            {/* Placeholder with gradient pattern */}
-            <div
-              className="w-full h-full flex items-center justify-center"
+      {/* Title */}
+      <h3
+        className="text-lg font-semibold leading-tight group-hover:underline line-clamp-2 mb-2"
+        style={{ color: BRAND_COLORS.navy }}
+      >
+        {title}
+      </h3>
+
+      {/* Excerpt */}
+      {excerpt && (
+        <p className="text-sm text-slate-600 line-clamp-2 mb-4 flex-1">
+          {excerpt}
+        </p>
+      )}
+
+      {/* Meta */}
+      <p className="text-sm text-slate-500 mb-3">
+        {formatDate(date)} • {readingTime} min read
+      </p>
+
+      {/* Labels at bottom */}
+      {displayLabels.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100">
+          {displayLabels.map((label, index) => (
+            <span
+              key={index}
+              className="text-xs font-medium px-2 py-1"
               style={{
-                background: `linear-gradient(135deg, ${BRAND_COLORS.navy}15 0%, ${BRAND_COLORS.navy}05 100%)`,
+                backgroundColor: `${BRAND_COLORS.navy}08`,
+                color: BRAND_COLORS.navy,
               }}
             >
-              <span
-                className="text-5xl font-bold opacity-20"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                {title.charAt(0)}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Content - Minimal, below image */}
-      <div className="pt-4">
-        <h3
-          className="text-lg font-semibold leading-tight group-hover:underline line-clamp-2"
-          style={{ color: BRAND_COLORS.navy }}
-        >
-          {title}
-        </h3>
-
-        <p className="text-sm text-slate-500 mt-2">
-          {formatDate(date)} • {readingTime} min read
-        </p>
-      </div>
+              {label}
+            </span>
+          ))}
+        </div>
+      )}
     </Link>
   );
 }
