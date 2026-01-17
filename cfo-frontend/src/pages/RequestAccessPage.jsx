@@ -26,6 +26,8 @@ export default function RequestAccessPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    company: '',
+    linkedin: '',
     topic: '',
     message: ''
   })
@@ -56,6 +58,7 @@ export default function RequestAccessPage() {
     const valid = (
       formData.name.trim().length >= 1 &&
       isValidEmail(formData.email) &&
+      formData.company.trim().length >= 1 &&
       formData.topic !== '' &&
       formData.message.trim().length >= 1
     )
@@ -103,6 +106,8 @@ export default function RequestAccessPage() {
         body: JSON.stringify({
           name: formData.name.trim(),
           email: formData.email.trim(),
+          company: formData.company.trim(),
+          linkedin: formData.linkedin.trim() || undefined,
           topic: topicLabel,
           message: formData.message.trim(),
           _email: {
@@ -245,6 +250,49 @@ export default function RequestAccessPage() {
               value={formData.email}
               onChange={handleChange('email')}
               required
+              style={{
+                width: '100%',
+                padding: 14,
+                border: '1px solid #E5E7EB',
+                fontSize: 15,
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* Company */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 500, color: '#374151' }}>
+              Company <span style={{ color: '#DC2626' }}>*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Your company name"
+              value={formData.company}
+              onChange={handleChange('company')}
+              required
+              style={{
+                width: '100%',
+                padding: 14,
+                border: '1px solid #E5E7EB',
+                fontSize: 15,
+                boxSizing: 'border-box',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* LinkedIn (optional) */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 500, color: '#374151' }}>
+              LinkedIn Profile <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(optional)</span>
+            </label>
+            <input
+              type="url"
+              placeholder="https://linkedin.com/in/yourprofile"
+              value={formData.linkedin}
+              onChange={handleChange('linkedin')}
               style={{
                 width: '100%',
                 padding: 14,
