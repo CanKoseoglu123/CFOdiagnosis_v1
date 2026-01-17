@@ -184,6 +184,8 @@ CFOdiagnosis_v1/
 | Path | Component | Description |
 |------|-----------|-------------|
 | `/` | Home | Landing page |
+| `/login` | LoginPage | User authentication |
+| `/request-access` | RequestAccessPage | Contact form for access requests (Formspark) |
 | `/assess` | DiagnosticInput | Auto-creates run, redirects to setup |
 | `/run/:runId/setup/company` | CompanySetupPage | Company context intake |
 | `/run/:runId/setup/persona` | PersonaConfirmationPage | Persona classification display (VS-27c) |
@@ -377,6 +379,8 @@ PORT=8080
 VITE_API_URL=https://cfodiagnosisv1-production.up.railway.app
 VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_FORMSPARK_ID=xxx        # Contact form submission
+VITE_BOTPOISON_KEY=pk_xxx    # Spam protection
 ```
 
 ---
@@ -412,6 +416,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 | VS-27d: Benchmark Tab | Targets vs actuals comparison with persona context, practice detail table, and "Include committed actions" toggle in the report sidebar |
 | VS-26: Context Modifier | Pain point → practice boosting (1.0×–2.0× multiplier) |
 | VS-27f: Target Lines | Target lines in Objectives grid (Post-MVP, #75) |
+| Contact Form | Request Access page with Formspark + Botpoison spam protection |
 
 
 ---
