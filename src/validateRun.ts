@@ -37,6 +37,11 @@ export async function validateRun(
       continue;
     }
 
+    // Skip validation for N/A answers - these are valid responses for applicable questions
+    if (value === "N/A") {
+      continue;
+    }
+
     switch (question.type) {
       case "number":
         if (typeof value !== "number") {
