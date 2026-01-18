@@ -14,6 +14,7 @@ import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
+import SetupHelpModal from '../components/SetupHelpModal';
 import {
   PLANNING_TOOLS, TEAM_SIZES, FORECAST_FREQUENCIES,
   BUDGET_PROCESS_BASE, BUDGET_PROCESS_MODIFIERS, PAIN_POINTS, USER_ROLES,
@@ -567,6 +568,12 @@ export default function PillarSetupPage() {
 
   return (
     <AppShell sidebarContent={<SetupSidebar currentStep={1} />}>
+      <SetupHelpModal
+        title="Your FP&A Environment"
+        mainText="Tell us about your FP&A function—the tools you use, your team structure, and the challenges you face today. Be honest about your current state. This isn't a test. Select pain points that genuinely resonate, not aspirational ones."
+        whyTitle="Why we ask:"
+        whyText="Your tooling and team size affect what's achievable in your context. Pain points help us prioritize which gaps matter most to you. This context makes your action plan practical, not theoretical."
+      />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-slate-800 text-white py-6">

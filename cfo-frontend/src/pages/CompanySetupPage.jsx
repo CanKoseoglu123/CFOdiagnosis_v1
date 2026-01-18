@@ -16,6 +16,7 @@ import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import SetupSidebar from '../components/SetupSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
+import SetupHelpModal from '../components/SetupHelpModal';
 import {
   INDUSTRIES, REVENUE_RANGES, EMPLOYEE_COUNTS,
   FINANCE_STRUCTURES, OWNERSHIP_STRUCTURES, CHANGE_APPETITES,
@@ -410,6 +411,12 @@ export default function CompanySetupPage() {
 
   return (
     <AppShell sidebarContent={<SetupSidebar currentStep={1} />}>
+      <SetupHelpModal
+        title="Understanding Your Organization"
+        mainText="We're building a profile of your organization to calibrate your diagnostic. Tell us about your company's size, structure, and current business dynamics. Use your best estimate where you're unsure—precision isn't critical here."
+        whyTitle="Why we ask:"
+        whyText="Your company size and structure shape what 'good' looks like. A startup has different needs than a multi-entity enterprise. We use this information to tailor your results and benchmark against similar organizations."
+      />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-slate-800 text-white py-6">

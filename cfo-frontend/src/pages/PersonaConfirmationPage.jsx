@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import SetupProgress from '../components/setup/SetupProgress';
+import SetupHelpModal from '../components/SetupHelpModal';
 import {
   Building2,
   TrendingUp,
@@ -278,6 +279,12 @@ export default function PersonaConfirmationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SetupHelpModal
+        title="Your Finance Persona"
+        mainText="Based on your inputs, we've classified your organization into one of six finance archetypes. Review the persona below and confirm it feels right. If it doesn't match how you see your organization, select a different one—you know your business best."
+        whyTitle="Why this matters:"
+        whyText="Your persona determines the maturity targets we'll measure you against. A high-growth company is benchmarked differently than a governance-focused enterprise. Getting this right ensures your recommendations are relevant, not generic."
+      />
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 py-4">
