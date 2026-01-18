@@ -34,71 +34,61 @@ const THEME_CONFIG = {
 // Intro Modal Component - shown on every page visit
 function CalibrationIntroModal({ onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-sm max-w-lg w-full shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-lg font-bold text-navy">Calibrate Your Priorities</h2>
+        <div className="flex items-center justify-between p-4 border-b border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800">Calibrate Your Priorities</h3>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-slate-400 hover:text-slate-600"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* What To Do */}
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
-              What To Do
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-600">
-              <li className="flex gap-2">
-                <span className="text-primary font-bold">1.</span>
-                Rate each objective's importance to your organization
-              </li>
-              <li className="flex gap-2">
-                <span className="text-primary font-bold">2.</span>
-                All 9 objectives must be rated before proceeding
-              </li>
-            </ul>
+        <div className="p-5 space-y-4">
+          {/* Main text - what & expectations */}
+          <p className="text-sm text-slate-700 leading-relaxed">
+            Rate each objective's importance to your organization. All 9 objectives must be rated before proceeding.
+          </p>
+
+          {/* Why section */}
+          <div className="bg-slate-50 border border-slate-200 rounded p-4">
+            <p className="text-xs font-semibold text-slate-600 mb-1">
+              Why we ask:
+            </p>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Your priorities impact which gaps are highlighted. Higher priority objectives receive stronger weighting in your action plan.
+            </p>
           </div>
 
-          {/* Why We Ask */}
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
-              Why We Ask
-            </h3>
-            <ul className="space-y-2 text-sm text-slate-600">
-              <li className="flex gap-2">
-                <span className="text-slate-400">•</span>
-                Your priorities impact which gaps are highlighted
-              </li>
-              <li className="flex gap-2">
-                <span className="text-slate-400">•</span>
-                Higher priority objectives receive stronger weighting in your action plan
-              </li>
+          {/* Priority Constraints */}
+          <div className="bg-slate-50 border border-slate-200 rounded p-4">
+            <p className="text-xs font-semibold text-slate-600 mb-2">Priority Constraints:</p>
+            <ul className="space-y-1 text-xs text-slate-500">
+              <li><span className="font-medium text-amber-600">Top</span> (highest weight): Limited to 2 selections</li>
+              <li><span className="font-medium text-blue-600">High + Top</span> combined: Limited to 4 selections</li>
+              <li><span className="font-medium text-slate-500">Med, Low, Min</span>: Unlimited</li>
             </ul>
-            <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-sm">
-              <p className="text-xs font-semibold text-slate-700 mb-2">Priority Constraints:</p>
-              <ul className="space-y-1 text-xs text-slate-600">
-                <li><span className="font-medium text-amber-600">Top</span> (highest weight): Limited to 2 selections</li>
-                <li><span className="font-medium text-blue-600">High + Top</span> combined: Limited to 4 selections</li>
-                <li><span className="font-medium text-slate-500">Med, Low, Min</span>: Unlimited</li>
-              </ul>
-            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-200">
+        <div className="flex justify-end p-4 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="w-full py-3 bg-primary text-white rounded-sm font-semibold hover:bg-primary-hover transition-colors"
+            className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors"
           >
-            Got It
+            Got it
           </button>
         </div>
       </div>
