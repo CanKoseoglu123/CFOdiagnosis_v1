@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Lock, AlertTriangle, ChevronRight, LogOut } from 'lucide-react';
+import { Lock, AlertTriangle, ChevronRight, LogOut, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -31,10 +31,93 @@ const THEME_CONFIG = {
   intelligence: { title: 'The Intelligence', icon: '🧠', color: 'border-l-purple-500' },
 };
 
+// Intro Modal Component - shown on every page visit
+function CalibrationIntroModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-sm max-w-lg w-full shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <h2 className="text-lg font-bold text-navy">Calibrate Your Priorities</h2>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* What To Do */}
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
+              What To Do
+            </h3>
+            <ul className="space-y-2 text-sm text-slate-600">
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">1.</span>
+                Rate each objective's importance to your organization
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">2.</span>
+                All 9 objectives must be rated before proceeding
+              </li>
+            </ul>
+          </div>
+
+          {/* Why We Ask */}
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
+              Why We Ask
+            </h3>
+            <ul className="space-y-2 text-sm text-slate-600">
+              <li className="flex gap-2">
+                <span className="text-slate-400">•</span>
+                Your priorities impact which gaps are highlighted
+              </li>
+              <li className="flex gap-2">
+                <span className="text-slate-400">•</span>
+                Higher priority objectives receive stronger weighting in your action plan
+              </li>
+            </ul>
+            <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-sm">
+              <p className="text-xs font-semibold text-slate-700 mb-2">Priority Constraints:</p>
+              <ul className="space-y-1 text-xs text-slate-600">
+                <li><span className="font-medium text-amber-600">Top</span> (highest weight): Limited to 2 selections</li>
+                <li><span className="font-medium text-blue-600">High + Top</span> combined: Limited to 4 selections</li>
+                <li><span className="font-medium text-slate-500">Med, Low, Min</span>: Unlimited</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-slate-200">
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-primary text-white rounded-sm font-semibold hover:bg-primary-hover transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ObjectiveImportanceCard Component
 function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriorityDisabled, highPriorityDisabled }) {
+  const isUnselected = value === null || value === undefined;
+
   return (
-    <div className={`bg-white border border-slate-300 rounded-sm p-4 ${locked ? 'bg-red-50' : ''}`}>
+    <div className={`bg-white border rounded-sm p-4 ${
+      locked
+        ? 'bg-red-50 border-slate-300'
+        : isUnselected
+          ? 'border-amber-300 bg-amber-50/30'
+          : 'border-slate-300'
+    }`}>
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           <h3 className="text-sm font-semibold text-navy">{objective.name}</h3>
@@ -53,6 +136,11 @@ function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriori
             Top Priority
           </span>
         )}
+        {isUnselected && !locked && (
+          <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-sm ml-2">
+            Not Rated
+          </span>
+        )}
       </div>
 
       <div className="flex gap-2">
@@ -68,6 +156,8 @@ function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriori
           if (isTopDisabled) tooltipMsg = 'Maximum 2 Top Priorities reached';
           if (isHighDisabled) tooltipMsg = 'Maximum 4 High + Top Priorities reached';
 
+          const isSelected = value === level;
+
           return (
             <button
               key={level}
@@ -76,7 +166,7 @@ function ObjectiveImportanceCard({ objective, value, onChange, locked, topPriori
               title={tooltipMsg}
               className={`
                 flex-1 py-2 text-sm border rounded-sm transition-colors
-                ${value === level
+                ${isSelected
                   ? level === 5
                     ? 'bg-amber-500 text-white border-amber-500'
                     : 'bg-primary text-white border-primary'
@@ -167,9 +257,11 @@ function PriorityCounter({ topCount, maxTop, combinedCount, maxCombined }) {
 }
 
 // Sidebar Component
-function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSkip, onSaveAndExit }) {
+function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSaveAndExit, saving }) {
   const totalObjectives = objectives.length;
-  const configuredCount = Object.keys(importanceMap).length;
+  const selectedCount = Object.keys(importanceMap).length;
+  const allSelected = selectedCount === totalObjectives;
+  const remainingCount = totalObjectives - selectedCount;
 
   return (
     <div className="h-full flex flex-col">
@@ -179,48 +271,44 @@ function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPr
         <p className="text-xs text-slate-500 mt-1">Calibrate Priorities</p>
       </div>
 
-      {/* Top Priority Status */}
+      {/* Completion Progress */}
       <div className="p-6 border-b border-slate-200">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-600">Top Priorities</span>
-          <div className="flex gap-1">
-            {Array.from({ length: MAX_TOP_PRIORITIES }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-3 h-3 rounded-full ${
-                  i < topPriorityCount ? 'bg-amber-500' : 'bg-slate-200'
-                }`}
-              />
-            ))}
-          </div>
+          <span className="text-sm font-medium text-slate-700">Progress</span>
+          <span className={`text-sm font-bold ${allSelected ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {selectedCount} / {totalObjectives}
+          </span>
         </div>
-        <p className="text-xs text-slate-500">
-          {topPriorityCount >= MAX_TOP_PRIORITIES
-            ? 'Maximum reached'
-            : `${MAX_TOP_PRIORITIES - topPriorityCount} slot${MAX_TOP_PRIORITIES - topPriorityCount !== 1 ? 's' : ''} remaining`}
+        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div
+            className={`h-full transition-all ${allSelected ? 'bg-emerald-500' : 'bg-amber-500'}`}
+            style={{ width: `${(selectedCount / totalObjectives) * 100}%` }}
+          />
+        </div>
+        <p className="text-xs text-slate-500 mt-2">
+          {allSelected
+            ? 'All objectives rated'
+            : `${remainingCount} objective${remainingCount !== 1 ? 's' : ''} remaining`}
         </p>
       </div>
 
-      {/* Combined High + Top Priority Status */}
-      <div className="p-6 border-b border-slate-200">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-600">High + Top</span>
-          <div className="flex gap-1">
-            {Array.from({ length: MAX_HIGH_PRIORITY_COMBINED }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-3 h-3 rounded-full ${
-                  i < combinedPriorityCount ? 'bg-blue-500' : 'bg-slate-200'
-                }`}
-              />
-            ))}
-          </div>
+      {/* Priority Constraints */}
+      <div className="p-6 border-b border-slate-200 space-y-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Priority Limits
+        </h3>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-slate-600">Top</span>
+          <span className={`text-sm font-medium ${topPriorityCount >= MAX_TOP_PRIORITIES ? 'text-amber-600' : 'text-slate-600'}`}>
+            {topPriorityCount}/{MAX_TOP_PRIORITIES} used
+          </span>
         </div>
-        <p className="text-xs text-slate-500">
-          {combinedPriorityCount >= MAX_HIGH_PRIORITY_COMBINED
-            ? 'Maximum reached'
-            : `${MAX_HIGH_PRIORITY_COMBINED - combinedPriorityCount} slot${MAX_HIGH_PRIORITY_COMBINED - combinedPriorityCount !== 1 ? 's' : ''} remaining`}
-        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-slate-600">High+Top</span>
+          <span className={`text-sm font-medium ${combinedPriorityCount >= MAX_HIGH_PRIORITY_COMBINED ? 'text-blue-600' : 'text-slate-600'}`}>
+            {combinedPriorityCount}/{MAX_HIGH_PRIORITY_COMBINED} used
+          </span>
+        </div>
       </div>
 
       {/* Info */}
@@ -231,19 +319,15 @@ function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPr
         <ul className="space-y-2 text-sm text-slate-600">
           <li className="flex gap-2">
             <span className="text-amber-500">•</span>
-            Choose up to 2 Top Priorities (highest weight)
+            Top: highest weight (1.5x)
           </li>
           <li className="flex gap-2">
             <span className="text-blue-500">•</span>
-            Choose up to 4 High + Top combined
+            High: elevated weight (1.25x)
           </li>
           <li className="flex gap-2">
             <span className="text-primary">•</span>
-            Rate other objectives from Min to Med
-          </li>
-          <li className="flex gap-2">
-            <span className="text-red-600">•</span>
-            Critical blockers are locked and cannot be changed
+            Med/Low/Min: standard to reduced
           </li>
         </ul>
       </div>
@@ -252,17 +336,21 @@ function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPr
       <div className="p-6 border-t border-slate-200 space-y-3">
         <button
           onClick={onSubmit}
-          className="w-full py-3 bg-primary text-white rounded-sm font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-2"
+          disabled={!allSelected || saving}
+          className={`w-full py-3 rounded-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+            allSelected && !saving
+              ? 'bg-primary text-white hover:bg-primary-hover'
+              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+          }`}
         >
-          Generate Report
+          {saving ? 'Saving...' : 'Generate Report'}
           <ChevronRight className="w-4 h-4" />
         </button>
-        <button
-          onClick={onSkip}
-          className="w-full py-2 text-slate-600 hover:text-navy text-sm transition-colors"
-        >
-          Skip (use defaults)
-        </button>
+        {!allSelected && (
+          <p className="text-xs text-amber-600 text-center">
+            Rate all {totalObjectives} objectives to continue ({remainingCount} remaining)
+          </p>
+        )}
         <button
           onClick={onSaveAndExit}
           className="w-full py-2 text-slate-500 hover:text-slate-600 text-sm transition-colors flex items-center justify-center gap-2 border border-slate-200 rounded-sm"
@@ -286,6 +374,7 @@ export default function CalibrationPage() {
   const [objectives, setObjectives] = useState([]);
   const [importanceMap, setImportanceMap] = useState({});
   const [lockedObjectives, setLockedObjectives] = useState([]);
+  const [showIntroModal, setShowIntroModal] = useState(true);
 
   // Fetch objectives and calibration data
   useEffect(() => {
@@ -305,8 +394,20 @@ export default function CalibrationPage() {
         if (!calibRes.ok) throw new Error('Failed to load calibration');
         const calibData = await calibRes.json();
 
-        setObjectives(specData.objectives || []);
-        setImportanceMap(calibData.importance_map || {});
+        const loadedObjectives = specData.objectives || [];
+        const existingMap = calibData.importance_map || {};
+
+        // Initialize missing objectives to default level 3 (Medium - 1.0x multiplier)
+        // This ensures users can proceed immediately with defaults or adjust as needed
+        const initializedMap = { ...existingMap };
+        loadedObjectives.forEach(obj => {
+          if (!(obj.id in initializedMap)) {
+            initializedMap[obj.id] = 3;  // Default to Medium (1.0x)
+          }
+        });
+
+        setObjectives(loadedObjectives);
+        setImportanceMap(initializedMap);
         setLockedObjectives(calibData.locked || []);
       } catch (err) {
         setError(err.message);
@@ -356,12 +457,6 @@ export default function CalibrationPage() {
     }
   };
 
-  // Skip calibration (use defaults)
-  const handleSkip = async () => {
-    // Just navigate - the backend will use defaults
-    navigate(`/report/${runId}`);
-  };
-
   // Group objectives by theme
   const objectivesByTheme = objectives.reduce((acc, obj) => {
     const theme = obj.theme || 'foundation';
@@ -409,6 +504,12 @@ export default function CalibrationPage() {
     );
   }
 
+  // Completion tracking
+  const totalObjectives = objectives.length;
+  const selectedCount = Object.keys(importanceMap).length;
+  const allSelected = selectedCount === totalObjectives && totalObjectives > 0;
+  const remainingCount = totalObjectives - selectedCount;
+
   const sidebar = (
     <CalibrationSidebar
       objectives={objectives}
@@ -417,74 +518,83 @@ export default function CalibrationPage() {
       topPriorityCount={topPriorityCount}
       combinedPriorityCount={combinedPriorityCount}
       onSubmit={handleSubmit}
-      onSkip={handleSkip}
       onSaveAndExit={() => navigate('/')}
+      saving={saving}
     />
   );
 
   return (
-    <AppShell sidebarContent={sidebar}>
-      <EnterpriseCanvas mode="assessment" className="py-8">
-        <h1 className="text-2xl font-bold text-navy mb-2">
-          Calibrate Priorities
-        </h1>
-        <p className="text-slate-600 mb-6">
-          Tell us which areas matter most to your organization right now.
-          This helps us prioritize your action plan.
-        </p>
+    <>
+      {/* Intro Modal - shown on every page visit */}
+      {showIntroModal && (
+        <CalibrationIntroModal onClose={() => setShowIntroModal(false)} />
+      )}
 
-        {/* Priority Counter */}
-        <PriorityCounter
-          topCount={topPriorityCount}
-          maxTop={MAX_TOP_PRIORITIES}
-          combinedCount={combinedPriorityCount}
-          maxCombined={MAX_HIGH_PRIORITY_COMBINED}
-        />
+      <AppShell sidebarContent={sidebar}>
+        <EnterpriseCanvas mode="assessment" className="py-8">
+          <h1 className="text-2xl font-bold text-navy mb-2">
+            Calibrate Priorities
+          </h1>
+          <p className="text-slate-600 mb-6">
+            Tell us which areas matter most to your organization right now.
+            This helps us prioritize your action plan.
+          </p>
 
-        {/* Objectives grouped by theme */}
-        {Object.entries(objectivesByTheme).map(([themeId, themeObjectives]) => {
-          const theme = THEME_CONFIG[themeId] || { title: themeId, icon: '📋', color: 'border-l-slate-500' };
+          {/* Objectives grouped by theme */}
+          {Object.entries(objectivesByTheme).map(([themeId, themeObjectives]) => {
+            const theme = THEME_CONFIG[themeId] || { title: themeId, icon: '📋', color: 'border-l-slate-500' };
 
-          return (
-            <div key={themeId} className="mb-8">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4 flex items-center gap-2">
-                <span>{theme.icon}</span>
-                {theme.title}
-              </h2>
-              <div className="space-y-4">
-                {themeObjectives.map(obj => (
-                  <ObjectiveImportanceCard
-                    key={obj.id}
-                    objective={obj}
-                    value={importanceMap[obj.id] || 3}
-                    onChange={(val) => handleImportanceChange(obj.id, val)}
-                    locked={lockedObjectives.includes(obj.id)}
-                    topPriorityDisabled={topPriorityDisabled}
-                    highPriorityDisabled={highPriorityDisabled}
-                  />
-                ))}
+            return (
+              <div key={themeId} className="mb-8">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4 flex items-center gap-2">
+                  <span>{theme.icon}</span>
+                  {theme.title}
+                </h2>
+                <div className="space-y-4">
+                  {themeObjectives.map(obj => (
+                    <ObjectiveImportanceCard
+                      key={obj.id}
+                      objective={obj}
+                      value={importanceMap[obj.id] ?? null}
+                      onChange={(val) => handleImportanceChange(obj.id, val)}
+                      locked={lockedObjectives.includes(obj.id)}
+                      topPriorityDisabled={topPriorityDisabled}
+                      highPriorityDisabled={highPriorityDisabled}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {/* Mobile-only submit button */}
-        <div className="lg:hidden mt-8 space-y-3">
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="w-full py-3 bg-primary text-white rounded-sm font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Generate Report'}
-          </button>
-          <button
-            onClick={handleSkip}
-            className="w-full py-2 text-slate-600 hover:text-navy text-sm transition-colors"
-          >
-            Skip (use defaults)
-          </button>
-        </div>
-      </EnterpriseCanvas>
-    </AppShell>
+          {/* Mobile-only submit button */}
+          <div className="lg:hidden mt-8 space-y-3">
+            <button
+              onClick={handleSubmit}
+              disabled={!allSelected || saving}
+              className={`w-full py-3 rounded-sm font-semibold transition-colors ${
+                allSelected && !saving
+                  ? 'bg-primary text-white hover:bg-primary-hover'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              {saving ? 'Saving...' : 'Generate Report'}
+            </button>
+            {!allSelected && (
+              <p className="text-xs text-amber-600 text-center">
+                Rate all {totalObjectives} objectives to continue ({remainingCount} remaining)
+              </p>
+            )}
+            <button
+              onClick={() => navigate('/')}
+              className="w-full py-2 text-slate-500 hover:text-slate-600 text-sm transition-colors flex items-center justify-center gap-2 border border-slate-200 rounded-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              Save & Exit
+            </button>
+          </div>
+        </EnterpriseCanvas>
+      </AppShell>
+    </>
   );
 }

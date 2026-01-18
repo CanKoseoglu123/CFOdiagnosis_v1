@@ -2421,7 +2421,7 @@ const TEST_SCENARIOS: TestScenario[] = [
     description: "Pass L1 criticals, YES to L1 + half L2 = ~52%, L2 Defined",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      const l2Questions = questions.filter((q: any) => q.maturity_level === 2);
+      const l2Questions = questions.filter((q: any) => q.level === 2);
       const halfL2Count = Math.ceil(l2Questions.length / 2);
       const halfL2Ids = l2Questions.slice(0, halfL2Count).map((q: any) => q.id);
 
@@ -2431,7 +2431,7 @@ const TEST_SCENARIOS: TestScenario[] = [
           answers.set(q.id, true);
         }
         // YES to all L1 questions
-        else if (q.maturity_level === 1) {
+        else if (q.level === 1) {
           answers.set(q.id, true);
         }
         // YES to first half of L2
@@ -2465,7 +2465,7 @@ const TEST_SCENARIOS: TestScenario[] = [
     description: "Pass L1 criticals, fail L2 criticals, high L1-L2 scores = ~77%, capped at L2",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      const l3Questions = questions.filter((q: any) => q.maturity_level === 3);
+      const l3Questions = questions.filter((q: any) => q.level === 3);
       const thirtyPercentL3 = Math.ceil(l3Questions.length * 0.3);
       const l3YesIds = l3Questions.slice(0, thirtyPercentL3).map((q: any) => q.id);
 
@@ -2479,11 +2479,11 @@ const TEST_SCENARIOS: TestScenario[] = [
           answers.set(q.id, false);
         }
         // YES to all L1
-        else if (q.maturity_level === 1) {
+        else if (q.level === 1) {
           answers.set(q.id, true);
         }
         // YES to all L2 (except criticals already handled)
-        else if (q.maturity_level === 2) {
+        else if (q.level === 2) {
           answers.set(q.id, true);
         }
         // YES to first 30% of L3
@@ -2517,7 +2517,7 @@ const TEST_SCENARIOS: TestScenario[] = [
     description: "Pass L1+L2 criticals, YES to L1+L2 + half L3 = ~82%, L3 Managed",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      const l3Questions = questions.filter((q: any) => q.maturity_level === 3);
+      const l3Questions = questions.filter((q: any) => q.level === 3);
       const halfL3Count = Math.ceil(l3Questions.length / 2);
       const halfL3Ids = l3Questions.slice(0, halfL3Count).map((q: any) => q.id);
 
@@ -2527,7 +2527,7 @@ const TEST_SCENARIOS: TestScenario[] = [
           answers.set(q.id, true);
         }
         // YES to all L1+L2
-        else if (q.maturity_level <= 2) {
+        else if (q.level <= 2) {
           answers.set(q.id, true);
         }
         // YES to first half of L3
@@ -2561,7 +2561,7 @@ const TEST_SCENARIOS: TestScenario[] = [
     description: "Pass L1+L2 criticals, YES to L1+L2+L3 + half L4 = ~92%, strong L3",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      const l4Questions = questions.filter((q: any) => q.maturity_level === 4);
+      const l4Questions = questions.filter((q: any) => q.level === 4);
       const halfL4Count = Math.ceil(l4Questions.length / 2);
       const halfL4Ids = l4Questions.slice(0, halfL4Count).map((q: any) => q.id);
 
@@ -2571,7 +2571,7 @@ const TEST_SCENARIOS: TestScenario[] = [
           answers.set(q.id, true);
         }
         // YES to all L1+L2+L3
-        else if (q.maturity_level <= 3) {
+        else if (q.level <= 3) {
           answers.set(q.id, true);
         }
         // YES to first half of L4
@@ -2605,7 +2605,7 @@ const TEST_SCENARIOS: TestScenario[] = [
     description: "~90% score but fail L1 criticals - capped at L1 Emerging",
     generateAnswers: (questions) => {
       const answers = new Map<string, boolean>();
-      const l4Questions = questions.filter((q: any) => q.maturity_level === 4);
+      const l4Questions = questions.filter((q: any) => q.level === 4);
       // Fail ~10 questions to hit ~90% score (97 * 0.1 = ~10)
       const failL4Ids = l4Questions.slice(0, 6).map((q: any) => q.id);
 
@@ -2647,9 +2647,9 @@ const TEST_SCENARIOS: TestScenario[] = [
       const answers = new Map<string, boolean>();
       questions.forEach((q: any) => {
         // Realistic distribution based on maturity level
-        if (q.maturity_level === 1) answers.set(q.id, Math.random() < 0.85);
-        else if (q.maturity_level === 2) answers.set(q.id, Math.random() < 0.65);
-        else if (q.maturity_level === 3) answers.set(q.id, Math.random() < 0.35);
+        if (q.level === 1) answers.set(q.id, Math.random() < 0.85);
+        else if (q.level === 2) answers.set(q.id, Math.random() < 0.65);
+        else if (q.level === 3) answers.set(q.id, Math.random() < 0.35);
         else answers.set(q.id, Math.random() < 0.15);
       });
       return answers;

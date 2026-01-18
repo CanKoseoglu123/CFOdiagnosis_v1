@@ -16,12 +16,12 @@ const headers = {
 const SCENARIOS = [
   {
     name: 'Perfect Score (100%)',
-    description: 'All 48 questions YES - should be Level 4 Optimized',
+    description: 'All 97 questions YES - should be Level 4 Optimized',
     answers: () => true, // All YES
   },
   {
     name: 'Total Failure (0%)',
-    description: 'All 48 questions NO - should be Level 1 with all criticals failed',
+    description: 'All 97 questions NO - should be Level 1 with all criticals failed',
     answers: () => false, // All NO
   },
   {
@@ -36,8 +36,8 @@ const SCENARIOS = [
   },
   {
     name: 'High Score But L1 Critical Fail',
-    description: 'Answer YES to 47/48, but NO to first L1 critical - should cap at L1',
-    answers: (q) => q.id !== 'fpa_l1_q01',
+    description: 'Answer YES to 96/97, but NO to first L1 critical - should cap at L1',
+    answers: (q) => q.id !== 'fpa_q001',
   },
 ];
 
@@ -110,7 +110,7 @@ async function runScenario(scenario, questions, index) {
 
   // Submit answers
   const yesCount = await submitAnswers(run.id, questions, scenario.answers);
-  console.log(`Answers: ${yesCount}/48 YES`);
+  console.log(`Answers: ${yesCount}/${questions.length} YES`);
 
   // Complete and score
   await completeAndScore(run.id);

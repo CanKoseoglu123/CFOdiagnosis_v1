@@ -206,7 +206,8 @@
       "Bash(git cherry-pick:*)",
       "Bash(npx cloc:*)",
       "Bash(gh pr close:*)",
-      "Bash(git for-each-ref:*)"
+      "Bash(git for-each-ref:*)",
+      "Bash(git revert:*)"
     ]
   }
 }
