@@ -55,6 +55,9 @@ import { loadNAConfig, allowsNA } from "./specs/naConfig";
 // Critical gates for test scenarios
 import { L1_CRITICALS, L2_CRITICALS } from "./gates";
 
+// Transparency module for admin calculation audit
+import { generateTransparency } from "./transparency";
+
 const app = express();
 
 // CORS: Allow production domains, Vercel preview deployments, and local dev
@@ -226,7 +229,7 @@ app.get("/admin/key-check", async (req, res) => {
     return res.status(401).json({ error: "Authentication required" });
   }
   const { data: { user } } = await req.supabase.auth.getUser();
-  const adminEmails = (process.env.ADMIN_EMAILS || "koseoglucan@gmail.com").split(',').map(e => e.trim().toLowerCase());
+  const adminEmails = (process.env.ADMIN_EMAILS || "admin@cfo-lens.com").split(',').map(e => e.trim().toLowerCase());
   if (!user?.email || !adminEmails.includes(user.email.toLowerCase())) {
     return res.status(403).json({ error: "Admin access required" });
   }
@@ -3232,6 +3235,26 @@ app.get("/admin/visitors/stats", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("Failed to get visitor stats:", err);
     return res.status(500).json({ error: "Failed to retrieve visitor statistics" });
+  }
+});
+
+// GET /admin/runs/:id/transparency - Full calculation transparency (admin only)
+// Shows complete audit trail: Question → Practice → Objective → Overall
+app.get("/admin/runs/:id/transparency", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  try {
+    const transparency = await generateTransparency(supabaseAdmin, req.params.id);
+    res.json(transparency);
+  } catch (err) {
+    console.error("Failed to generate transparency:", err);
+    return res.status(500).json({
+      error: err instanceof Error ? err.message : "Failed to generate transparency report"
+    });
   }
 });
 

@@ -8,8 +8,9 @@ import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
   AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings,
   FlaskConical, Play, Loader2, Globe, MapPin, Monitor, Smartphone, Tablet,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Calculator
 } from 'lucide-react';
+import TransparencyTab from '../components/admin/TransparencyTab';
 
 // Device Badge component for consistent styling
 function DeviceBadge({ type }) {
@@ -148,6 +149,22 @@ export default function AdminPage() {
             fetchVisitorStats(token),
             fetchVisitorList(token)
           ]);
+        } else if (activeTab === 'transparency') {
+          // Fetch sessions if not already loaded (needed for run selector)
+          if (sessions.length === 0) {
+            const res = await fetch(`${API_URL}/admin/sessions`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.status === 403) {
+              setError('Admin access denied. Your email is not whitelisted.');
+              setLoading(false);
+              return;
+            }
+
+            if (!res.ok) throw new Error('Failed to fetch sessions');
+            setSessions(await res.json());
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -465,6 +482,17 @@ export default function AdminPage() {
               </span>
             </button>
             <button
+              onClick={() => setActiveTab('transparency')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'transparency'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              <Calculator className="w-4 h-4" />
+              Transparency
+            </button>
+            <button
               onClick={() => navigate('/admin/scoring-matrix')}
               className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-800 transition-colors"
             >
@@ -483,6 +511,7 @@ export default function AdminPage() {
             {activeTab === 'sessions' ? 'All Diagnostic Sessions' :
              activeTab === 'feedback' ? 'User Feedback' :
              activeTab === 'visitors' ? 'Visitor Analytics' :
+             activeTab === 'transparency' ? 'Calculation Transparency' :
              'Test Scenario Runner'}
           </h2>
           <button
@@ -963,8 +992,13 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Transparency Tab */}
+        {!loading && activeTab === 'transparency' && (
+          <TransparencyTab sessions={sessions} getToken={getToken} />
+        )}
+
         {/* Stats Footer */}
-        {!loading && (
+        {!loading && activeTab !== 'transparency' && (
           <div className="mt-4 text-sm text-slate-500">
             {activeTab === 'sessions' ? (
               <span>
