@@ -230,16 +230,16 @@
     {
       "id": "fpa_q016",
       "practice_id": "prac_chart_of_accounts",
-      "text": "Is there a single, documented chart of accounts used by all business units?",
-      "help": "A unified chart of accounts is the foundation of comparable reporting. Without it, consolidating data across business units becomes manual, error-prone, and slow.",
-      "maturity_level": 1,
+      "text": "Is there a documented chart of accounts that enables consistent consolidated reporting across all business units?",
+      "help": "Multi-entity organizations often maintain regional or legacy charts of accounts. The test is whether consolidation is reliable and governed—not whether everyone uses identical account codes. A well-documented mapping that enables consistent reporting passes this bar.",
+      "maturity_level": 2,
       "is_critical": true,
       "initiative_id": "init_financial_controls",
       "impact": 4,
-      "complexity": 4,
+      "complexity": 3,
       "expert_action": {
         "title": "Standardize Chart of Accounts",
-        "recommendation": "The Controller should document a canonical chart of accounts and map all local variations to it. Establish a governance process for new account requests. Complete when all business units report on a single CoA—enabling consistent consolidation and comparable reporting across the organization.",
+        "recommendation": "The Controller should document a canonical chart of accounts and map all local variations to it. Establish a governance process for new account requests. Complete when consolidated reporting is consistent and reliable across all business units.",
         "type": "structural"
       }
     },
@@ -278,32 +278,32 @@
     {
       "id": "fpa_q018",
       "practice_id": "prac_approval_workflows",
-      "text": "Is the ERP or procurement system configured to block unapproved spend by default?",
-      "help": "Controls are only effective if enforced consistently. System-enforced blocks prevent unauthorized spend from entering the pipeline in the first place.",
+      "text": "Is there a defined approval authority that specifies who can approve purchases at different amounts?",
+      "help": "A documented delegation of authority is foundational to spend control. The test: does everyone know who needs to approve what? If there's no documented matrix, this is a 'No'.",
       "maturity_level": 1,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
       "impact": 3,
-      "complexity": 2,
+      "complexity": 1,
       "expert_action": {
-        "title": "Automate Approval Matrix",
-        "recommendation": "Finance and IT should configure the delegation of authority (DOA) directly in the ERP or procurement system. Eliminate email-based approvals. System-enforced controls ensure consistent policy application and create an auditable approval trail.",
-        "type": "structural"
+        "title": "Define Approval Authority",
+        "recommendation": "Finance should document a clear approval matrix: who can approve what, at what amounts. Publish it and ensure all managers know the thresholds. This is the foundation for any effective spend control.",
+        "type": "governance"
       }
     },
     {
       "id": "fpa_q019",
       "practice_id": "prac_approval_workflows",
-      "text": "Does the system prevent a PO from being raised if there is no remaining budget (hard or soft block)?",
-      "help": "Preventative controls are cheaper than detective ones. Stopping unbudgeted spend before it happens is more effective than explaining a variance after the fact.",
+      "text": "Is there an effective process that prevents unauthorized or over-budget spend from being committed?",
+      "help": "System-enforced controls are ideal, but effective manual processes also qualify. The test: can someone commit spend without proper authorization OR beyond available budget? If your process reliably catches both, this is a 'Yes'.",
       "maturity_level": 2,
       "is_critical": false,
       "initiative_id": "init_financial_controls",
       "impact": 3,
-      "complexity": 4,
+      "complexity": 3,
       "expert_action": {
-        "title": "Enable System Budget Control",
-        "recommendation": "The Controller should work with IT to enable budget checks in the PO system (encumbrance accounting). Start with soft warnings, then move to hard blocks. Preventative controls stop unbudgeted spend before it happens—far more effective than explaining variances after the fact.",
+        "title": "Strengthen Spend Controls",
+        "recommendation": "Finance should ensure all purchases require documented approval before commitment, and over-budget requests are caught before PO issuance. System controls are ideal—configure approval workflows and budget checks in the ERP. Manual processes work if consistently followed and documented.",
         "type": "structural"
       }
     },
