@@ -2701,8 +2701,22 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: String(err) });
   }
 
+  // DEBUG: Verify level field is present on questions
+  const questionsWithLevel = spec.questions.filter((q: any) => q.level !== undefined);
+  console.log(`[TEST-SCENARIO] Questions with level field: ${questionsWithLevel.length} / ${spec.questions.length}`);
+  console.log(`[TEST-SCENARIO] First question sample:`, JSON.stringify({
+    id: spec.questions[0]?.id,
+    level: spec.questions[0]?.level,
+    maturity_level: (spec.questions[0] as any)?.maturity_level,
+  }));
+
   // Generate answers for this scenario
   const answers = scenario.generateAnswers(spec.questions);
+
+  // DEBUG: Show answer distribution
+  const yesCount = Array.from(answers.values()).filter(v => v === true).length;
+  const noCount = Array.from(answers.values()).filter(v => v === false).length;
+  console.log(`[TEST-SCENARIO] Answer distribution: ${yesCount} YES, ${noCount} NO (${(yesCount / (yesCount + noCount) * 100).toFixed(1)}% YES)`);
 
   // 1. Create diagnostic run
   const { data: run, error: runError } = await req.supabase
