@@ -145,8 +145,8 @@ export const GatesFileSchema = z.object({
     level_4: z.number().int()
   }),
   critical_gates: z.object({
-    l1_to_l2: z.array(z.string()).min(4).max(4),
-    l2_to_l3: z.array(z.string()).min(4).max(4)
+    l1_to_l2: z.array(z.string()).min(3).max(6),
+    l2_to_l3: z.array(z.string()).min(3).max(6)
   }),
   level_names: z.record(z.string(), z.string())
 });
