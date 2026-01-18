@@ -299,16 +299,9 @@ export default function PersonaConfirmationPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Your Organization's Persona
           </h1>
-          <p className="text-gray-600 mb-4">
-            Based on your inputs, we've identified the finance archetype that best matches your organization.
+          <p className="text-gray-600">
+            Review the classification below. If it doesn't feel right, you can switch to an alternative.
           </p>
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-left">
-            <p className="text-sm text-slate-700">
-              <strong>Why this matters:</strong> Your persona helps us deliver benchmarks and recommendations
-              specifically tailored to organizations like yours. Finance teams with similar profiles face
-              common challenges — we use this classification to surface the most relevant insights for your situation.
-            </p>
-          </div>
         </div>
 
         {/* Confidence Warning */}
@@ -445,10 +438,6 @@ export default function PersonaConfirmationPage() {
           </button>
         </div>
 
-        {/* Help Text */}
-        <p className="text-xs text-gray-400 text-center mt-6">
-          Your persona helps us tailor benchmarks and recommendations. You can always return here to change it.
-        </p>
       </div>
     </div>
   );
