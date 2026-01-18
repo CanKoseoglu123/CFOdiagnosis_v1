@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import AppShell from '../components/AppShell';
+import WorkflowSidebar from '../components/WorkflowSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import SetupHelpModal from '../components/SetupHelpModal';
 import {
@@ -278,167 +280,176 @@ export default function PersonaConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <SetupHelpModal
-        title="Your Finance Persona"
-        mainText="Based on your inputs, we've classified your organization into one of six finance archetypes. Review the persona below and confirm it feels right. If it doesn't match how you see your organization, select a different one—you know your business best."
-        whyTitle="Why this matters:"
-        whyText="Your persona determines the maturity targets we'll measure you against. A high-growth company is benchmarked differently than a governance-focused enterprise. Getting this right ensures your recommendations are relevant, not generic."
+    <AppShell sidebarContent={
+      <WorkflowSidebar
+        currentStep="setup"
+        completedSteps={[]}
+        runId={runId}
+        isFinalized={false}
       />
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-4">
-          <SetupProgress currentStep="persona" />
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        {/* Page Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Your Organization's Persona
-          </h1>
-          <p className="text-gray-600">
-            Review the classification below. If it doesn't feel right, you can switch to an alternative.
-          </p>
-        </div>
-
-        {/* Confidence Warning */}
-        {showCloseScoreWarning && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-amber-800">Close Classification</p>
-              <p className="text-sm text-amber-700">
-                Your inputs suggest two equally valid personas. Review both options below and choose the one that best represents your organization's priorities.
-              </p>
-            </div>
+    }>
+      <div className="min-h-screen bg-gray-50">
+        <SetupHelpModal
+          title="Your Finance Persona"
+          mainText="Based on your inputs, we've classified your organization into one of six finance archetypes. Review the persona below and confirm it feels right. If it doesn't match how you see your organization, select a different one—you know your business best."
+          whyTitle="Why this matters:"
+          whyText="Your persona determines the maturity targets we'll measure you against. A high-growth company is benchmarked differently than a governance-focused enterprise. Getting this right ensures your recommendations are relevant, not generic."
+        />
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-3xl mx-auto px-6 py-4">
+            <SetupProgress currentStep="persona" />
           </div>
-        )}
-
-        {/* Override Notice */}
-        {override && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <RefreshCw className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-blue-800">Persona Override Active</p>
-              <p className="text-sm text-blue-700">
-                You switched from {PERSONAS[override.from_persona]?.name || override.from_persona} to {PERSONAS[override.to_persona]?.name || override.to_persona}.
-                {override.reason && ` Reason: "${override.reason}"`}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Primary Persona - always show full description when alternatives exist */}
-        <div className="mb-6">
-          {renderPersonaCard(primaryPersona, true, showAlternative || showDetails)}
         </div>
 
-        {/* Show Details Toggle - only show if no alternatives */}
-        {!showAlternative && (
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 mx-auto"
-          >
-            {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            {showDetails ? 'Hide details' : 'Show more details'}
-          </button>
-        )}
+        {/* Main Content */}
+        <div className="max-w-3xl mx-auto px-6 py-8">
+          {/* Page Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Your Organization's Persona
+            </h1>
+            <p className="text-gray-600">
+              Review the classification below. If it doesn't feel right, you can switch to an alternative.
+            </p>
+          </div>
 
-        {/* Alternative Persona (if close scores) - show detailed descriptions for both */}
-        {showAlternative && (
-          <div className="mb-6">
-            <div className="border-t border-gray-200 pt-6 mt-2">
-              <p className="text-sm font-medium text-gray-700 mb-3">
-                Alternative classification:
-              </p>
-              <p className="text-sm text-gray-500 mb-4">
-                Your inputs also align with this persona. Review both options and select
-                the one that best represents your organization's current priorities and challenges.
-              </p>
-              <div
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={handleSwitch}
-              >
-                {renderPersonaCard(alternativePersona, false, true)}
+          {/* Confidence Warning */}
+          {showCloseScoreWarning && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-amber-800">Close Classification</p>
+                <p className="text-sm text-amber-700">
+                  Your inputs suggest two equally valid personas. Review both options below and choose the one that best represents your organization's priorities.
+                </p>
               </div>
-              <p className="text-xs text-gray-400 text-center mt-2">
-                Click to switch to this persona
-              </p>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Switching indicator */}
-        {switching && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center justify-center gap-3">
-            <Loader className="w-5 h-5 animate-spin text-blue-600" />
-            <span className="text-sm text-blue-700">Switching persona...</span>
-          </div>
-        )}
-
-        {/* Classification Breakdown */}
-        {showDetails && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">Classification Breakdown</h3>
-            <div className="space-y-2">
-              {sortedPersonas.map(([personaId, score]) => {
-                const persona = PERSONAS[personaId];
-                if (!persona) return null;
-                const isTop = personaId === primaryPersonaId;
-                const percentage = topScore > 0 ? Math.round((score / topScore) * 100) : 0;
-
-                return (
-                  <div key={personaId} className="flex items-center gap-3">
-                    <div className="w-32 text-sm text-gray-600 truncate">
-                      {persona.name}
-                    </div>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${percentage}%`,
-                          backgroundColor: isTop ? persona.color : '#9CA3AF'
-                        }}
-                      />
-                    </div>
-                    <div className="w-16 text-right text-sm text-gray-500">
-                      {score} pts
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Override Notice */}
+          {override && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <RefreshCw className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-blue-800">Persona Override Active</p>
+                <p className="text-sm text-blue-700">
+                  You switched from {PERSONAS[override.from_persona]?.name || override.from_persona} to {PERSONAS[override.to_persona]?.name || override.to_persona}.
+                  {override.reason && ` Reason: "${override.reason}"`}
+                </p>
+              </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
-                Confidence: <span className="font-medium capitalize">{confidence}</span>
-              </p>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-4 mt-8">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
-          >
-            <ArrowLeft size={18} />
-            Edit Company Info
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-white rounded transition-colors font-medium"
-            style={{ backgroundColor: NAVY }}
-          >
-            Confirm & Continue
-            <ArrowRight size={18} />
-          </button>
+          {/* Primary Persona - always show full description when alternatives exist */}
+          <div className="mb-6">
+            {renderPersonaCard(primaryPersona, true, showAlternative || showDetails)}
+          </div>
+
+          {/* Show Details Toggle - only show if no alternatives */}
+          {!showAlternative && (
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 mx-auto"
+            >
+              {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {showDetails ? 'Hide details' : 'Show more details'}
+            </button>
+          )}
+
+          {/* Alternative Persona (if close scores) - show detailed descriptions for both */}
+          {showAlternative && (
+            <div className="mb-6">
+              <div className="border-t border-gray-200 pt-6 mt-2">
+                <p className="text-sm font-medium text-gray-700 mb-3">
+                  Alternative classification:
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Your inputs also align with this persona. Review both options and select
+                  the one that best represents your organization's current priorities and challenges.
+                </p>
+                <div
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={handleSwitch}
+                >
+                  {renderPersonaCard(alternativePersona, false, true)}
+                </div>
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  Click to switch to this persona
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Switching indicator */}
+          {switching && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-center justify-center gap-3">
+              <Loader className="w-5 h-5 animate-spin text-blue-600" />
+              <span className="text-sm text-blue-700">Switching persona...</span>
+            </div>
+          )}
+
+          {/* Classification Breakdown */}
+          {showDetails && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">Classification Breakdown</h3>
+              <div className="space-y-2">
+                {sortedPersonas.map(([personaId, score]) => {
+                  const persona = PERSONAS[personaId];
+                  if (!persona) return null;
+                  const isTop = personaId === primaryPersonaId;
+                  const percentage = topScore > 0 ? Math.round((score / topScore) * 100) : 0;
+
+                  return (
+                    <div key={personaId} className="flex items-center gap-3">
+                      <div className="w-32 text-sm text-gray-600 truncate">
+                        {persona.name}
+                      </div>
+                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: isTop ? persona.color : '#9CA3AF'
+                          }}
+                        />
+                      </div>
+                      <div className="w-16 text-right text-sm text-gray-500">
+                        {score} pts
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  Confidence: <span className="font-medium capitalize">{confidence}</span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 mt-8">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+            >
+              <ArrowLeft size={18} />
+              Edit Company Info
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-white rounded transition-colors font-medium"
+              style={{ backgroundColor: NAVY }}
+            >
+              Confirm & Continue
+              <ArrowRight size={18} />
+            </button>
+          </div>
+
         </div>
-
       </div>
-    </div>
+    </AppShell>
   );
 }

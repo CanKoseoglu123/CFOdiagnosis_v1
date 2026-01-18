@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
-import SetupSidebar from '../components/SetupSidebar';
+import WorkflowSidebar from '../components/WorkflowSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import SetupHelpModal from '../components/SetupHelpModal';
 import {
@@ -410,7 +410,14 @@ export default function CompanySetupPage() {
   }
 
   return (
-    <AppShell sidebarContent={<SetupSidebar currentStep={1} />}>
+    <AppShell sidebarContent={
+      <WorkflowSidebar
+        currentStep="setup"
+        completedSteps={[]}
+        runId={runId}
+        isFinalized={false}
+      />
+    }>
       <SetupHelpModal
         title="Understanding Your Organization"
         mainText="We're building a profile of your organization to calibrate your diagnostic. Tell us about your company's size, structure, and current business dynamics. Use your best estimate where you're unsure—precision isn't critical here."

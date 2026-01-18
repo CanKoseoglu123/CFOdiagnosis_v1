@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
-import SetupSidebar from '../components/SetupSidebar';
+import WorkflowSidebar from '../components/WorkflowSidebar';
 import SetupProgress from '../components/setup/SetupProgress';
 import SetupHelpModal from '../components/SetupHelpModal';
 import {
@@ -567,7 +567,14 @@ export default function PillarSetupPage() {
   }
 
   return (
-    <AppShell sidebarContent={<SetupSidebar currentStep={1} />}>
+    <AppShell sidebarContent={
+      <WorkflowSidebar
+        currentStep="setup"
+        completedSteps={[]}
+        runId={runId}
+        isFinalized={false}
+      />
+    }>
       <SetupHelpModal
         title="Your FP&A Environment"
         mainText="Tell us about your FP&A function—the tools you use, your team structure, and the challenges you face today. Be honest about your current state. This isn't a test. Select pain points that genuinely resonate, not aspirational ones."
