@@ -138,12 +138,14 @@ const supabaseAdmin = supabaseServiceRoleKey
   : null;
 
 if (!supabaseAdmin) {
-  console.warn("WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Admin features will be limited.");
+  console.warn("WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Admin features (cross-user report access) will NOT work.");
 } else {
   // Validate service role key is a JWT (not old format)
   const isJWT = supabaseServiceRoleKey?.startsWith("eyJ");
   if (!isJWT) {
     console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY must be a JWT (starts with 'eyJ'). Current key format is invalid.");
+  } else {
+    console.log("INFO: SUPABASE_SERVICE_ROLE_KEY configured. Admin cross-user access enabled.");
   }
 }
 
@@ -1260,6 +1262,16 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
 app.get("/diagnostic-runs/:id/report", checkAdmin, async (req, res) => {
   const runId = req.params.id;
 
+  // DEBUG: Log admin access details for troubleshooting cross-user access
+  console.log('[DEBUG /report]', {
+    runId,
+    userId: req.userId,
+    userEmail: req.userEmail,
+    isAdmin: (req as any).isAdmin,
+    hasServiceRoleKey: !!supabaseAdmin,
+    clientUsed: (req as any).isAdmin && supabaseAdmin ? 'supabaseAdmin' : 'req.supabase'
+  });
+
   const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot, company_profile_id, scores_stale")
@@ -1267,6 +1279,13 @@ app.get("/diagnostic-runs/:id/report", checkAdmin, async (req, res) => {
     .single();
 
   if (runError || !run) {
+    // DEBUG: Log the actual error for troubleshooting RLS issues
+    console.log('[DEBUG /report] Run fetch failed:', {
+      runId,
+      error: runError?.message || 'No run data returned',
+      code: runError?.code,
+      hint: runError?.hint
+    });
     return res.status(404).json({ error: "Run not found" });
   }
 

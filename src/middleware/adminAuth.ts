@@ -65,10 +65,19 @@ export async function checkAdmin(req: Request, _res: Response, next: NextFunctio
     const { data: { user } } = await req.supabase.auth.getUser();
     if (user?.email) {
       const adminEmails = getAdminEmails();
-      (req as any).isAdmin = adminEmails.includes(user.email.toLowerCase());
+      const isAdmin = adminEmails.includes(user.email.toLowerCase());
+      (req as any).isAdmin = isAdmin;
+
+      // DEBUG: Log admin check results
+      console.log('[DEBUG checkAdmin]', {
+        userEmail: user.email,
+        isAdmin,
+        adminEmailsCount: adminEmails.length
+      });
     }
-  } catch {
-    // Silently fail - user is just not admin
+  } catch (err) {
+    // Log admin check failures
+    console.log('[DEBUG checkAdmin] Error:', err);
   }
 
   next();
