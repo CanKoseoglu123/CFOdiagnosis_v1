@@ -1,7 +1,7 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -29,6 +29,8 @@ const ResourcesPage = lazy(() => import('./pages/ResourcesPage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 
 // Loading fallback component
 function PageLoader() {
@@ -66,6 +68,20 @@ function RedirectWithParams({ to }) {
 // Component to track visitor page views
 function VisitorTracker() {
   useVisitorTracking()
+  return null
+}
+
+// Component to redirect to reset password page when in recovery mode
+function RecoveryRedirect() {
+  const { recoveryMode } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (recoveryMode) {
+      navigate('/reset-password')
+    }
+  }, [recoveryMode, navigate])
+
   return null
 }
 
@@ -130,6 +146,15 @@ function LoginPage() {
           </button>
         </form>
 
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Link
+            to="/forgot-password"
+            style={{ fontSize: 14, color: '#64748B', textDecoration: 'none' }}
+          >
+            Forgot your password?
+          </Link>
+        </div>
+
         <div style={{ textAlign: 'center', marginTop: 20 }}>
           <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 12 }}>
             Invite-only access.
@@ -151,10 +176,13 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <VisitorTracker />
+        <RecoveryRedirect />
         <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/request-access" element={<RequestAccessPage />} />
           {/* Public pages */}
           <Route path="/platform" element={<PlatformPage />} />
