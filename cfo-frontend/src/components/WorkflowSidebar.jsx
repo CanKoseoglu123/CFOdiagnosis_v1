@@ -2,6 +2,7 @@
 // Global sidebar for workflow navigation and page-specific progress
 // VS-39: Updated workflow to include Executive Report step
 // VS-41: New navigation buttons - Back to Assessment, Back to Calibration, Action Planning/Generate Executive Report
+// Completed steps are clickable to allow users to navigate back and review/edit their context
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -51,6 +52,24 @@ export default function WorkflowSidebar({
     if (step.id === currentStep) return 'active';
     if (completedSteps.includes(step.id)) return 'completed';
     return 'pending';
+  };
+
+  // Get navigation path for a step
+  const getStepPath = (step) => {
+    switch (step.id) {
+      case 'setup':
+        return `/run/${runId}/setup/company`;
+      case 'assess':
+        return `/assess/objective/obj_budget_discipline?runId=${runId}`;
+      case 'calibrate':
+        return `/run/${runId}/calibrate`;
+      case 'report':
+        return `/report/${runId}`;
+      case 'executive':
+        return `/report/${runId}/executive`;
+      default:
+        return null;
+    }
   };
 
   // Navigation handlers
@@ -106,12 +125,16 @@ export default function WorkflowSidebar({
         <div className="space-y-1">
           {WORKFLOW_STEPS.map((step) => {
             const state = getStepState(step);
+            const isClickable = state === 'completed';
+            const path = isClickable ? getStepPath(step) : null;
+
             return (
               <div
                 key={step.id}
-                className={`flex items-center gap-2.5 py-1.5 ${
+                onClick={isClickable && path ? () => navigate(path) : undefined}
+                className={`flex items-center gap-2.5 py-1.5 px-1 -mx-1 ${
                   state === 'active' ? 'text-blue-700 font-medium' :
-                  state === 'completed' ? 'text-emerald-600' :
+                  state === 'completed' ? 'text-emerald-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
                   state === 'locked' ? 'text-slate-300' :
                   'text-slate-400'
                 }`}
