@@ -547,6 +547,7 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
+                    <th className="text-left px-4 py-3 font-medium text-slate-600">Run ID</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-600">User</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-600">Company</th>
                     <th className="text-left px-4 py-3 font-medium text-slate-600">Status</th>
@@ -558,7 +559,7 @@ export default function AdminPage() {
                 <tbody className="divide-y divide-slate-100">
                   {sessions.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                      <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                         No sessions found
                       </td>
                     </tr>
@@ -566,13 +567,19 @@ export default function AdminPage() {
                     sessions.map((session) => (
                       <tr key={session.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3">
+                          <code className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
+                            {session.id.slice(0, 8)}
+                          </code>
+                        </td>
+                        <td className="px-4 py-3">
                           <div className="font-medium text-slate-800">
-                            {session.user_name || session.user_email}
+                            {session.user_email && session.user_email !== 'unknown'
+                              ? session.user_email
+                              : <span className="text-slate-400 italic">No email</span>}
                           </div>
                           {session.user_name && (
-                            <div className="text-xs text-slate-500">{session.user_email}</div>
+                            <div className="text-xs text-slate-500">{session.user_name}</div>
                           )}
-                          <div className="text-xs text-slate-400 font-mono">{session.id.slice(0, 8)}...</div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="text-slate-800">{session.company_name || '-'}</div>
