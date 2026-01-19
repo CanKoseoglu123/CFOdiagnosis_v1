@@ -32,6 +32,7 @@ const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 // Loading fallback component
 function PageLoader() {
@@ -276,6 +277,8 @@ export default function App() {
               <ScoringMatrixPage />
             </ProtectedRoute>
           } />
+          {/* NAV-001: Catch-all 404 route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         </Suspense>
       </BrowserRouter>
