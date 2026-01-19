@@ -2223,6 +2223,22 @@ app.patch("/diagnostic-runs/:id/step", async (req, res) => {
     });
   }
 
+  // Prevent step regression once past calibration (race condition guard)
+  // Fire-and-forget updateProgress calls from frontend can arrive after /complete
+  // This prevents those stale calls from corrupting workflow state
+  const currentIndex = VALID_STEPS.indexOf(run.current_step as WorkflowStep);
+  const newIndex = VALID_STEPS.indexOf(step as WorkflowStep);
+  const calibrationIndex = VALID_STEPS.indexOf('calibration');
+
+  if (currentIndex >= calibrationIndex && newIndex < currentIndex) {
+    // Silent success - don't break fire-and-forget calls from frontend
+    return res.json({
+      success: true,
+      step: run.current_step,
+      note: 'step_regression_prevented'
+    });
+  }
+
   // Build update object
   const updateData: Record<string, any> = {
     current_step: step,
