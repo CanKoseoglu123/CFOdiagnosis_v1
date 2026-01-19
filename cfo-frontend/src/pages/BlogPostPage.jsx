@@ -2,6 +2,7 @@
 // Individual blog post page - Innovid-inspired design with gradient hero
 
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Logo, BRAND_COLORS } from '../components/Logo';
 import BlogSEO from '../blog/components/BlogSEO';
@@ -14,6 +15,11 @@ import BlogCard from '../blog/components/BlogCard';
 export default function BlogPostPage() {
   const { slug } = useParams();
   const { isAuthenticated, user, signOut } = useAuth();
+
+  // Scroll to top on mount or when slug changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
 
   const post = getPostBySlug(slug);
 
