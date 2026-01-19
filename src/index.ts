@@ -2096,6 +2096,37 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
     return res.status(500).json({ error: planError.message });
   }
 
+  // NAV-006: Server-side finalization validation
+  // 1. At least one action must be selected
+  if (!actionPlanItems || actionPlanItems.length === 0) {
+    return res.status(400).json({
+      error: "At least one action must be selected before finalizing",
+      code: "NO_ACTIONS_SELECTED"
+    });
+  }
+
+  // 2. All selected actions must have a timeline
+  const missingTimeline = actionPlanItems.filter(item => !item.timeline);
+  if (missingTimeline.length > 0) {
+    return res.status(400).json({
+      error: `${missingTimeline.length} action(s) missing timeline`,
+      code: "MISSING_TIMELINE",
+      missing_count: missingTimeline.length,
+      question_ids: missingTimeline.map(item => item.question_id)
+    });
+  }
+
+  // 3. All selected actions must have an owner
+  const missingOwner = actionPlanItems.filter(item => !item.assigned_owner);
+  if (missingOwner.length > 0) {
+    return res.status(400).json({
+      error: `${missingOwner.length} action(s) missing assigned owner`,
+      code: "MISSING_OWNER",
+      missing_count: missingOwner.length,
+      question_ids: missingOwner.map(item => item.question_id)
+    });
+  }
+
   // Create snapshot and set finalized_at + current_step
   const now = new Date().toISOString();
   const { data, error } = await req.supabase

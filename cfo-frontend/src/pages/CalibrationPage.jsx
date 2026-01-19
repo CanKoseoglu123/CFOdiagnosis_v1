@@ -374,6 +374,20 @@ export default function CalibrationPage() {
         const token = session?.access_token;
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
+        // NAV-010: Fetch run data to check if assessment is complete
+        const runRes = await fetch(`${API_BASE_URL}/diagnostic-runs/${runId}`, { headers });
+        if (!runRes.ok) throw new Error('Failed to load run data');
+        const runData = await runRes.json();
+
+        // NAV-010: Gate check - redirect to assessment if not ready for calibration
+        const validCalibrationSteps = ['calibration', 'report', 'finalized'];
+        if (!validCalibrationSteps.includes(runData.current_step)) {
+          // User hasn't completed assessment yet, redirect to first objective
+          const targetObjective = runData.last_visited_objective_id || 'obj_budget_discipline';
+          navigate(`/assess/objective/${targetObjective}?runId=${runId}`, { replace: true });
+          return;
+        }
+
         // Fetch spec for objectives
         const specRes = await fetch(`${API_BASE_URL}/api/spec`);
         if (!specRes.ok) throw new Error('Failed to load spec');
@@ -407,7 +421,7 @@ export default function CalibrationPage() {
     };
 
     fetchData();
-  }, [runId]);
+  }, [runId, navigate]);
 
   // Scroll to top on mount
   useEffect(() => {

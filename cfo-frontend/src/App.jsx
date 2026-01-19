@@ -94,6 +94,7 @@ function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // Brand colors
   const NAVY = '#1e3a5f'
@@ -105,7 +106,9 @@ function LoginPage() {
     setLoading(true)
     try {
       await signIn(email, password)
-      navigate('/')
+      // NAV-004: Redirect to the original destination or dashboard
+      const destination = location.state?.from || '/dashboard'
+      navigate(destination, { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {

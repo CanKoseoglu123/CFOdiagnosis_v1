@@ -290,10 +290,17 @@ export default function PillarReport() {
   }
 
   if (error || !report) {
+    // NAV-009: Actionable error recovery with navigation to dashboard
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <div className="text-red-600">
-          {error || 'Failed to load report'}
+        <div className="text-center">
+          <div className="text-red-600 mb-4">{error || 'Failed to load report'}</div>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );

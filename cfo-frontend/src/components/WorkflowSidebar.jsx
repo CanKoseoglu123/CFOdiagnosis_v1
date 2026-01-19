@@ -126,7 +126,9 @@ export default function WorkflowSidebar({
 
   // Navigation handlers
   function handleBackToAssessment() {
-    navigate(`/assess/foundation?runId=${runId}`);
+    // NAV-003: Use objective-based route instead of legacy theme route
+    const targetObjective = runData?.last_visited_objective_id || 'obj_budget_discipline';
+    navigate(`/assess/objective/${targetObjective}?runId=${runId}`);
   }
 
   function handleBackToCalibration() {
