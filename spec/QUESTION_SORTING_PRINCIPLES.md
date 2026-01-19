@@ -4,6 +4,9 @@
 **Last Updated:** 2025-01-10
 **Purpose:** Define the canonical order of questions in the theme-based question files (`questions-foundation.json`, `questions-future.json`, `questions-intelligence.json`)
 
+> **Scope:** This document defines UNIVERSAL sorting principles.
+> **Pillar-specific hierarchy:** See `spec/pillars/{pillar}/CONTENT_GUIDE.md` for the specific practice order within each pillar.
+
 ---
 
 ## Overview

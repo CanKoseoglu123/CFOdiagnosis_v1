@@ -1,8 +1,11 @@
 # Question Review Criteria
 
 **Version:** 1.3
-**Last Updated:** 2025-01-12  
+**Last Updated:** 2025-01-12
 **Purpose:** Standard framework for evaluating diagnostic questions before release
+
+> **Scope:** This document defines UNIVERSAL criteria that apply to ALL pillars.
+> **Pillar-specific guidance:** See `spec/pillars/{pillar}/CONTENT_GUIDE.md` for content structure and `spec/pillars/{pillar}/IMPACT_ANCHORS.md` for calibration examples.
 
 ---
 

@@ -4,6 +4,9 @@
 **Last Updated:** 2026-01-11
 **Purpose:** Standard framework for evaluating action recommendations before release
 
+> **Scope:** This document defines UNIVERSAL criteria that apply to ALL pillars.
+> **Pillar-specific guidance:** See `spec/pillars/{pillar}/CONTENT_GUIDE.md` for pillar-specific content rules.
+
 ---
 
 ## Criteria

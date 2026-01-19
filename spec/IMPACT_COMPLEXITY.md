@@ -1,6 +1,7 @@
 # Impact & Complexity Calibration Framework
 
-> **Scope:** Cross-pillar methodology applicable to all Finance function assessments (FP&A, Treasury, Tax, Internal Audit, etc.)
+> **Scope:** This document defines the CROSS-PILLAR methodology for Impact and Complexity scoring.
+> **Pillar-specific anchors:** See `spec/pillars/{pillar}/IMPACT_ANCHORS.md` for calibration examples specific to each pillar.
 
 ---
 
@@ -202,6 +203,6 @@ When building new pillars (Treasury, Tax, etc.):
 
 ## Related Documents
 
-- `IMPACT_COMPLEXITY_FPA.md` — FP&A pillar anchor examples
+- `spec/pillars/fpa/IMPACT_ANCHORS.md` — FP&A pillar anchor examples
 - `CLAUDE.md` — Project reference (summary definitions)
-- `spec/SPEC_v3.1.0.md` — Full specification
+- `spec/SPEC.md` — Full specification

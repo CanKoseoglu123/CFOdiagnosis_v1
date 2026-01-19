@@ -1,720 +1,284 @@
-# CFO Diagnostic Platform - Project Reference
+# CFO Lens AI — Project Guide
 
-## Overview
-
-A financial maturity assessment tool that helps organizations evaluate their finance function capabilities. Users answer diagnostic questions, the system scores their maturity level, identifies gaps, and provides actionable recommendations.
-
-## Production URLs
-
-| Component | URL |
-|-----------|-----|
-| **Frontend** | https://cfodiagnosisv1.vercel.app |
-| **Backend API** | https://cfodiagnosisv1-production.up.railway.app |
-| **GitHub Repo** | https://github.com/CanKoseoglu123/CFOdiagnosis_v1 |
+**Purpose:** Entry point for Claude Code. Orientation, principles, decision framework.
+**Philosophy:** Inline the essentials, point to depth.
 
 ---
 
-## Architecture
+## What We're Building
 
-### Tech Stack
+**CFO Lens AI** is a finance diagnostic platform that helps CFOs assess their FP&A function's maturity, identify gaps, and build action plans. We compress a 6-figure consulting engagement into hours.
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Express.js + TypeScript |
-| Frontend | React 19 + Vite (JavaScript) |
-| Database | Supabase (PostgreSQL) |
-| Authentication | Supabase Auth |
-| Backend Hosting | Railway (auto-deploy on push) |
-| Frontend Hosting | Vercel (auto-deploy on push) |
+**User journey:** Company profiling → Persona classification → 97-question assessment → Calibration → Results & benchmarks → War Room (action planning) → Executive Report (PDF)
 
-### Repository Structure
+**Tech stack:** Express.js + TypeScript (backend, Railway) | React 19 + Vite (frontend, Vercel) | Supabase (PostgreSQL + Auth)
+
+---
+
+## Repository Structure
 
 ```
 CFOdiagnosis_v1/
-├── src/                          # Backend source code
-│   ├── index.ts                  # Express server, API routes, middleware
-│   ├── specs/                    # Specification layer
-│   │   ├── types.ts              # Spec interface definitions
-│   │   ├── schemas.ts            # Zod validation schemas
-│   │   ├── loader.ts             # JSON content loaders
-│   │   └── registry.ts           # Spec version registry (default: v2.9.0)
-│   ├── gates/                    # Critical gate definitions (SSOT)
-│   │   └── index.ts              # Centralized gate loader from content/gates.json
-│   ├── scoring/                  # Scoring engine (pure functions)
-│   ├── results/                  # Score aggregation
-│   ├── maturity/                 # Maturity evaluation + footprint
-│   ├── reports/                  # Report generation
-│   ├── actions/                  # Action derivation + calibration
-│   ├── risks/                    # Critical risk engine
-│   ├── interpretation/           # AI interpretation layer (VS-25)
-│   └── tests/                    # QA test suites
-│
-├── content/                      # JSON content catalog (v3.1.0)
-│   ├── questions-foundation.json # 37 Foundation theme questions
-│   ├── questions-future.json     # 27 Future theme questions
-│   ├── questions-intelligence.json # 33 Intelligence theme questions
-│   ├── practices.json            # 26 practices
-│   ├── initiatives.json          # 9 initiatives
-│   ├── objectives.json           # 9 objectives
-│   ├── themes.json               # 3 themes
-│   ├── gates.json                # Maturity gates
-│   ├── targetMatrix.json         # Persona-specific maturity targets (VS-27e)
-│   └── pillars/                  # Multi-pillar configurations
-│       └── fpa/
-│           └── na-config.json    # N/A rules for FP&A questions
-│
-├── cfo-frontend/                 # Frontend application
-│   ├── content/
-│   │   └── blog/                 # MDX blog posts (VS-46)
-│   ├── public/
-│   │   └── blog/                 # Blog images
-│   ├── src/
-│   │   ├── App.jsx               # Routes, auth, navigation
-│   │   ├── blog/                 # Blog components & utilities (VS-46)
-│   │   │   ├── components/       # BlogCard, BlogPostPage, etc.
-│   │   │   ├── utils/            # MDX loader, frontmatter parsing
-│   │   │   └── index.js          # Blog module exports
-│   │   ├── pages/
-│   │   │   ├── PillarReport.jsx  # Main report with 4 tabs (VS-39)
-│   │   │   ├── ExecutiveReportPage.jsx # PDF-ready executive summary (VS-45)
-│   │   │   ├── PersonaConfirmationPage.jsx # Persona classification display (VS-27c)
-│   │   │   └── CalibrationPage.jsx # VS21 importance calibration
-│   │   ├── components/
-│   │   │   ├── AppShell.jsx      # Responsive layout wrapper
-│   │   │   ├── WorkflowSidebar.jsx # Report sidebar (VS-29)
-│   │   │   ├── assessment/
-│   │   │   │   └── AssessmentSidebar.jsx # Assessment sidebar (VS-42)
-│   │   │   ├── ChapterHeader.jsx # Unified dark header (VS-30)
-│   │   │   ├── EnterpriseCanvas.jsx # Max-width content wrapper (VS-30)
-│   │   │   ├── ExecutiveSpine.jsx # Report header component (VS-30)
-│   │   │   ├── ExecutiveSummaryV2.jsx # Executive Report content (VS-45)
-│   │   │   └── report/           # Report components
-│   │   │       ├── ActionPlanTab.jsx   # Action Planning (VS-28)
-│   │   │       ├── SimulatorHUD.jsx    # Score + maturity level projections (VS-38)
-│   │   │       ├── CommandCenter.jsx   # Gap list with controls (VS-28)
-│   │   │       ├── ActionSidebar.jsx   # Planning progress + AI placeholder (VS-38)
-│   │   │       ├── PriorityMatrix.jsx  # BCG-style triage grid (VS-33)
-│   │   │       └── ObjectivesPracticesOverview.jsx # Objectives grid
-│   │   ├── utils/
-│   │   │   └── matrixUtils.js    # Priority Matrix data derivation (VS-33)
-│   │   └── data/
-│   │       └── spec.js           # Question titles, lookups
-│   └── tailwind.config.js        # Gartner enterprise colors
-│
-├── supabase/migrations/          # Database migrations
-├── spec/                         # Specification documents
-└── scripts/                      # Test utilities
+├── CLAUDE.md                 # You are here
+├── src/                      # Backend (Express + scoring engine)
+│   ├── scoring/              # Pure scoring functions
+│   ├── gates/                # Critical gate definitions (SSOT)
+│   └── interpretation/       # AI layer
+├── content/                  # JSON content catalog (questions, practices, gates)
+│   ├── questions-*.json      # Split by theme
+│   ├── practices.json
+│   ├── gates.json            # Score thresholds, critical gates
+│   └── pillars/fpa/          # Pillar-specific config
+├── cfo-frontend/             # React frontend
+│   ├── src/components/       # UI components
+│   └── content/blog/         # MDX blog posts
+├── spec/                     # Specification documents
+│   ├── SPEC.md               # Design contract
+│   ├── DESIGN_SYSTEM.md      # Visual design
+│   ├── NAVIGATION_PRINCIPLES.md
+│   ├── BLOG_STYLE_CRITERIA.md
+│   ├── QUESTION_REVIEW_CRITERIA.md    # Universal (all pillars)
+│   ├── ACTION_REVIEW_CRITERIA.md      # Universal (all pillars)
+│   ├── IMPACT_COMPLEXITY.md           # Cross-pillar methodology
+│   ├── QUESTION_SORTING_PRINCIPLES.md
+│   └── pillars/fpa/
+│       ├── CONTENT_GUIDE.md           # FP&A specific
+│       └── IMPACT_ANCHORS.md          # FP&A calibration examples
+└── supabase/migrations/      # Database migrations
 ```
 
 ---
 
-## Specification Documents
+## Core Principles (Non-Negotiable)
 
-The `spec/` directory contains authoritative standards and frameworks:
+### 1. Strict Vertical Isolation
+Practice → Objective → Theme → Pillar. No sharing across pillars. Enables multi-pillar scalability.
 
-| File | Purpose | Audience |
-|------|---------|----------|
-| `SPEC_v3.1.0.md` | Master system specification (architecture, API, database) | Engineering, Product |
-| `DESIGN_SYSTEM.md` | Visual design patterns, color system, layout rules | Frontend, Design |
-| `BLOG_STYLE_CRITERIA.md` | Blog writing standards, "SecretCFO" voice (VS-46) | Content, Marketing |
-| `IMPACT_COMPLEXITY.md` | Cross-pillar scoring methodology | Content Authors |
-| `IMPACT_COMPLEXITY_FPA.md` | FP&A-specific scoring anchor examples | FP&A Content |
-| `QUESTION_REVIEW_CRITERIA.md` | 13-point question quality checklist | Content QA |
-| `ACTION_REVIEW_CRITERIA.md` | 11-point action quality checklist | Content QA |
-| `QUESTION_SORTING_PRINCIPLES.md` | Question ordering rules (Theme→Objective→Practice→Level) | Content Maintenance |
-
----
-
-## Key Principles (DO NOT VIOLATE)
-
-1. **Current spec is v3.1.0** — Question → Practice → Objective schema (see `spec/SPEC_v3.1.0.md`)
-2. **Scoring is pure functions** — No side effects, deterministic
-3. **Missing answers = 0 score** — Conservative scoring
-4. **Gates are sequential** — Must pass all previous levels
-5. **Critical failures surface in Priority Matrix** — Forced to Strategic Focus row
-6. **Critical gates from SSOT** — All gate constants imported from `src/gates/index.ts`, never hardcoded
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/health` | Health check | No |
-| GET | `/api/spec` | Get full spec | No |
-| POST | `/diagnostic-runs` | Create new run | Yes |
-| GET | `/diagnostic-runs/:id` | Get run details | Yes |
-| POST | `/diagnostic-runs/:id/setup` | Save context | Yes |
-| POST | `/diagnostic-inputs` | Save answer | Yes |
-| POST | `/diagnostic-runs/:id/complete` | Mark complete | Yes |
-| POST | `/diagnostic-runs/:id/score` | Calculate scores | Yes |
-| GET/POST | `/diagnostic-runs/:id/calibration` | Importance calibration (VS21) | Yes |
-| GET | `/diagnostic-runs/:id/report` | Get full report | Yes |
-| POST | `/diagnostic-runs/:id/interpret/start` | Start AI interpretation (VS25) | Yes |
-| GET | `/diagnostic-runs/:id/interpret/status` | Poll interpretation status | Yes |
-| GET | `/diagnostic-runs/:id/interpret/report` | Get interpreted report | Yes |
-| GET | `/diagnostic-runs/:id/action-plan` | Get saved action plan (VS28) | Yes |
-| POST | `/diagnostic-runs/:id/action-plan` | Upsert action item (VS28) | Yes |
-| DELETE | `/diagnostic-runs/:id/action-plan/:questionId` | Remove action item (VS28) | Yes |
-| POST | `/diagnostic-runs/:id/finalize` | Lock action plan, enable Executive Report (VS39) | Yes |
-| GET | `/diagnostic-runs/:id/company-profile` | Get linked company profile (VS-27c) | Yes |
-| GET | `/diagnostic-runs/:id/targets` | Persona-specific maturity targets (VS-27e) | Yes |
-| GET | `/diagnostic-runs/:id/benchmark` | Maturity benchmarks + commentary (VS-27d) | Yes |
-| POST | `/api/company-profiles` | Create company profile with persona classification (VS-27c) | Yes |
-| GET | `/api/company-profiles` | List company profiles (VS-27b) | Yes |
-| GET | `/api/company-profiles/:id` | Get company profile (VS-27b) | Yes |
-| PUT | `/api/company-profiles/:id` | Update company profile + reclassify (VS-27b) | Yes |
-| POST | `/api/company-profiles/:id/reclassify` | Re-run classification (VS-27b) | Yes |
-| PATCH | `/api/company-profiles/:id/persona` | Switch persona selection (VS-27c) | Yes |
-| GET | `/api/company-profiles/meta/personas` | Get persona definitions (VS-27b) | Yes |
-| GET | `/api/company-profiles/meta/matrix` | Get scoring matrix (VS-27b) | Yes |
-| POST | `/diagnostic-runs/:id/interpret/answer` | Submit critic question answer (VS25) | Yes |
-| POST | `/diagnostic-runs/:id/interpret/feedback` | Submit feedback on AI quality | Yes |
-| POST | `/diagnostic-runs/:id/interpret-v32` | Begin v32 AI interpretation | Yes |
-| GET | `/diagnostic-runs/:id/interpret-v32/status` | Get v32 interpretation status | Yes |
-| GET | `/admin/feedback` | List all feedback (admin only) | Yes |
-| DELETE | `/admin/feedback/:id` | Delete feedback entry | Yes |
-| DELETE | `/admin/sessions/:id` | Delete run + all related data ⚠️ | Yes |
-
-### Authentication
-- Bearer token in Authorization header
-- Token from Supabase Auth
-- RLS enforced at database level
-
----
-
-## Database Schema
-
-### Core Tables
-
-**diagnostic_runs**
-- `id`, `owner_id`, `status`, `spec_version`
-- `context` (JSONB): `{company_name, industry, ...}`
-- `calibration` (JSONB): `{importance_map, locked: []}` (locked always empty)
-- `company_profile_id` (FK): Links to company_profiles table (VS-27c)
-- `finalized_at` (TIMESTAMPTZ): When user locked their action plan (VS-39)
-- `action_plan_snapshot` (JSONB): Frozen action plan at finalization (VS-39)
-- `benchmark_commentary` (JSONB): Cached benchmark commentary (VS-27d)
-- `created_at`, `updated_at`
-
-**diagnostic_inputs** — Question answers per run
-
-**company_profiles** (VS-27c)
-- `id`, `user_id`, `context` (JSONB): 9 classification fields
-- `classification` (JSONB): `{persona, scores, flags, modifiers, confidence, personaDetails, computedAt, override}`
-- `diagnostic_run_id` (FK): Links profile to diagnostic run
-- `created_at`, `updated_at`
-
-**diagnostic_scores** — Calculated scores per run
-
-### Interpretation Tables (VS-25)
-- `interpretation_sessions` — Pipeline progress
-- `interpretation_steps` — AI call logs
-- `interpretation_reports` — Generated reports
-
-### Additional Tables
-
-**scoring_matrix** (VS-27b)
-- Admin-editable persona scoring weights
-- Fields: `id`, `version`, `matrix` (JSONB), `active`, `created_by`, `created_at`
-
-**planning_context** (VS-32d)
-- Wizard state for action planning flow
-- Fields: `run_id`, `target_maturity_level`, `bandwidth`, `priority_focus`, `team_size_override`
-
-**feedback**
-- Beta feedback collection
-- Fields: `id`, `user_id`, `run_id`, `type`, `content`, `metadata`, `created_at`
-
----
-
-## Frontend Routes
-
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/` | Home | Landing page |
-| `/login` | LoginPage | User authentication |
-| `/request-access` | RequestAccessPage | Contact form for access requests (Formspark) |
-| `/blog` | ResourcesPage | Blog index/listing (VS-46) |
-| `/blog/:slug` | BlogPostPage | Individual blog post (VS-46) |
-| `/platform` | PlatformPage | Platform overview |
-| `/about` | AboutPage | About CFO Lens |
-| `/select-pillar` | SelectPillarPage | Pillar selection for new assessment |
-| `/assess` | DiagnosticInput | Auto-creates run, redirects to setup |
-| `/run/:runId/setup/company` | CompanySetupPage | Company context intake |
-| `/run/:runId/setup/persona` | PersonaConfirmationPage | Persona classification display (VS-27c) |
-| `/run/:runId/setup/pillar` | PillarSetupPage | FP&A context intake |
-| `/run/:runId/intro` | IntroPage | Methodology explanation (VS-31) |
-| `/assess/objective/:objectiveId` | AssessObjectivePage | Objective-based questions (VS-44) |
-| `/run/:runId/calibrate` | CalibrationPage | Objective importance (VS21) |
-| `/report/:runId` | PillarReport | Main report (V2.8.0) |
-| `/report/:runId/executive` | ExecutiveReportPage | PDF-ready executive summary (VS-45) |
-| `/report-legacy/:runId` | FinanceDiagnosticReport | Legacy report view |
-| `/admin` | AdminPage | Admin dashboard |
-| `/admin/scoring-matrix` | ScoringMatrixPage | Persona scoring matrix (VS-27b) |
-
----
-
-## Assessment Flow
-
-1. Click "Start Assessment" → `/assess` (auto-creates run)
-2. Redirects to → `/run/:id/intro`
-3. Read methodology → `/run/:id/setup/company`
-4. Enter company context → `/run/:id/setup/persona`
-5. Review/confirm persona classification → `/run/:id/setup/pillar`
-6. Enter FP&A context → `/assess/objective/obj_budget_discipline?runId=:id`
-7. Answer questions (9 objectives) → Complete + Score
-8. Calibrate importance → `/run/:id/calibrate`
-9. View report → `/report/:runId`
-
----
-
-## Report Tabs (PillarReport)
-
-| Order | Tab | Status | Description |
-|-------|-----|--------|-------------|
-| 1 | Executive Report | Locked until finalized | Final summary with action plan snapshot |
-| 2 | Overview | Default active | Executive summary, AI insights, risks |
-| 3 | Benchmark | | Maturity benchmark vs targets, persona context, practice detail table |
-| 4 | Maturity Footprint | | Objectives grid, Priority Matrix |
-| 5 | Action Planning | | War room for gap selection, timelines, owners |
-
-**Finalization Requirements (VS-40):**
-- All selected actions must have a timeline (6m/12m/24m)
-- All selected actions must have an owner assigned
-- Confirmation modal: "Are you sure you want to finalize?"
-
-> **Note:** Timeline/owner validation is currently client-side only. Server-side validation planned for future release.
-
-**Executive Report (VS-45):**
-- Accessed via `/report/:runId/executive` after finalization
-- Single-page PDF-optimized layout designed for browser print
-- Content includes:
-  - Company name, maturity level, overall score
-  - AI-generated executive summary
-  - Top 3 strengths and critical risks
-  - Action plan snapshot (frozen at finalization)
-  - Maturity Benchmark page (uses Benchmark tab view without practice detail tables)
-- Print button triggers browser print dialog for PDF export
-
----
-
-## Question Distribution (v3.1.0)
-
-| Theme | File | Questions |
-|-------|------|-----------|
-| Foundation | `questions-foundation.json` | 37 |
-| Future | `questions-future.json` | 27 |
-| Intelligence | `questions-intelligence.json` | 33 |
-| **Total** | | **97** |
-
-Questions are sorted per `spec/QUESTION_SORTING_PRINCIPLES.md`:
-1. By Objective (theme order)
-2. By Practice within Objective (logical flow)
-3. By Maturity Level within Practice (L1 → L4)
-
----
-
-## Scoring System
-
-### Score Formula (v3.1.0)
+### 2. Scoring is Deterministic
 ```
 Score = (Impact² / Complexity) × CriticalBoost × CombinedMultiplier
-
-where: CombinedMultiplier = min(2.0, ImportanceFactor × ContextModifier)
 ```
+AI **explains** scores but never **changes** them. Missing answers = 0.
 
-| Component | Source | Values |
-|-----------|--------|--------|
-| Impact | question files | 1-5 |
-| Complexity | question files | 1-5 |
-| CriticalBoost | is_critical flag | 1× or 2× |
-| ImportanceFactor | VS-21 Calibration | 0.50×–1.50× |
-| ContextModifier | VS-26 Pain Points | 1.0×–2.0× |
+### 3. Content is King
+All diagnostic content lives in `content/*.json`. Code reads it; code never hardcodes it.
 
-### Impact & Complexity Definitions
+### 4. Gates from SSOT
+Critical gates imported from `src/gates/index.ts`. Never hardcode gate question IDs.
 
-**Impact** measures value creation potential when the capability is in place:
+### 5. Fair but Firm
+Critical gate failures cap maturity level regardless of score. P1 blockers prevent "Green" status.
 
-| Score | Label | CFO Lens |
-|-------|-------|----------|
+### 6. Enterprise Aesthetic
+Dense, data-heavy, print-friendly. No shadows, no gradients. CFO cockpit, not consumer app.
+
+---
+
+## Decision Framework
+
+### Adding or Editing Questions
+
+**Inline essentials (memorize these):**
+- Binary clarity: Yes/No without "it depends"
+- Plain language: No jargon a non-finance exec couldn't understand
+- FP&A centricity: Tests FP&A capability, not just outcomes
+- Capability over tools: Tests skill/process maturity, not software features
+- Maturity fit: L1=basic, L2=structured, L3=optimized, L4=advanced/predictive
+
+**Impact scoring guide:**
+| Score | Meaning | CFO test |
+|-------|---------|----------|
 | 5 | Transformational | "Changes how we run the company" |
 | 4 | High | "Leadership uses this weekly" |
 | 3 | Moderate | "Meaningful process improvement" |
 | 2 | Low | "Nice to have, not essential" |
 
-**Complexity** measures implementation friction:
+**Complexity scoring guide:**
+| Score | Meaning | Timeline |
+|-------|---------|----------|
+| 5 | Transformational | Multi-quarter, board approval |
+| 4 | High | 6-12 months, dedicated PM |
+| 3 | Moderate | 3-6 months, team effort |
+| 2 | Low | 1-3 months, one owner |
+| 1 | Quick win | This month, policy change |
 
-| Score | Label | CFO Lens |
-|-------|-------|----------|
-| 5 | Transformational | "Board approval, multi-quarter execution" |
-| 4 | High | "Budget cycle decision, dedicated PM" |
-| 3 | Moderate | "Quarterly project, team effort" |
-| 2 | Low | "Sprint or focus area, one owner" |
-| 1 | Quick Win | "Can be done this month" |
-
-**Target Distribution (v2.19.0):** Impact follows bell curve centered on 3-4:
-- Impact 5: ~20% (transformational only)
-- Impact 4: ~35% (significant improvements)
-- Impact 3: ~35% (standard good practices)
-- Impact 2: ~10% (foundational hygiene)
-
-> Full methodology: `spec/IMPACT_COMPLEXITY.md` (cross-pillar)
-> FP&A anchors: `spec/IMPACT_COMPLEXITY_FPA.md` (pillar-specific)
-
-### Importance Multipliers (VS21)
-| Level | Multiplier |
-|-------|------------|
-| 5 Critical | 1.50x |
-| 4 High | 1.25x |
-| 3 Medium | 1.00x (default) |
-| 2 Low | 0.75x |
-| 1 Minimal | 0.50x |
-
-### Maturity Levels
-| Level | Name | Score Threshold | Gate Requirements |
-|-------|------|-----------------|-------------------|
-| 1 | Emerging | < 40% | — |
-| 2 | Defined | >= 40% | Pass L1 critical gates |
-| 3 | Managed | >= 65% | Pass L1 + L2 critical gates |
-| 4 | Optimized | >= 85% | Pass L1 + L2 critical gates |
-
-**Note:** Critical gate failures cap the level regardless of score. For example, a user with 70% score but failed L1 criticals will be capped at L1.
+**Workflow:**
+1. Read `spec/QUESTION_REVIEW_CRITERIA.md` — full 13-point checklist
+2. Read `spec/pillars/fpa/CONTENT_GUIDE.md` — practices, gates, mappings
+3. Read `spec/pillars/fpa/IMPACT_ANCHORS.md` — calibrate against examples
+4. Edit `content/questions-{theme}.json`
+5. Run `npm run test:vs24`
+6. Run `node scripts/sort-questions.js`
 
 ---
 
-## Development
+### Adding or Editing Actions
 
-### Run Locally
-```bash
-# Backend
-cd CFOdiagnosis_v1
-npm install
-npm run dev          # localhost:3000
+**Inline essentials (memorize these):**
+- Actionable first step: Reader knows what to do Monday morning
+- Outcome-oriented title: "Implement Budget Sign-Off" not "Work on Process"
+- Owner clarity: Finance team, business owner, or cross-functional—never ambiguous
+- Plain language: No jargon, no consultant-speak
+- Type-appropriate detail: Quick wins = exact steps; Structural = directional
 
-# Frontend
-cd cfo-frontend
-npm install
-npm run dev          # Vite dev server
-```
+**Action types:**
+| Type | Meaning | Detail level |
+|------|---------|--------------|
+| `quick_win` | Days, minimal coordination | High — specific steps |
+| `structural` | Process/system changes | Medium — key milestones |
+| `behavioral` | How people work | Medium — behavior change |
+| `governance` | Rules, policies, oversight | Low-Medium — policy intent |
 
-### Run Tests
-```bash
-npm run test:all     # All tests
-npm run test:vs24    # Content validation
-```
-
-### Build
-```bash
-npm run build        # Backend → dist/
-cd cfo-frontend && npm run build  # Frontend → dist/
-```
+**Workflow:**
+1. Read `spec/ACTION_REVIEW_CRITERIA.md` — full 11-point checklist
+2. Check Zero-to-L4 completeness for the objective
+3. Edit `expert_action` field in question JSON
 
 ---
 
-## Deployment
+### Building UI
 
-- **Backend**: Push to `main` → Railway auto-deploys
-- **Frontend**: Push to `main` → Vercel auto-deploys
-- **CORS**: Restricted to production frontend
-- **Health Check**: `/health` endpoint
+**Inline essentials (memorize these):**
+- No shadows — borders only
+- No gradients — flat colors
+- No rounded gimmicks — `rounded-sm` maximum
+- Use `BRAND_COLORS` from `Logo.jsx`, never inline hex
+- Enterprise width scale: Auth=448px, Setup=1024px, Report=1280px
 
----
-
-## Environment Variables
-
-### Backend (Railway)
-```
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-OPENAI_API_KEY=sk-...  # For VS-25 interpretation
-PORT=8080
-```
-
-### Frontend (Vercel)
-```
-VITE_API_URL=https://cfodiagnosisv1-production.up.railway.app
-VITE_SUPABASE_URL=https://xxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
-VITE_FORMSPARK_ID=xxx        # Contact form submission
-VITE_BOTPOISON_KEY=pk_xxx    # Spam protection
-```
-
----
-
-## Feature Summary
-
-| Feature | Description |
-|---------|-------------|
-| VS18: Context Intake | Company name + industry before assessment |
-| VS19: Critical Risk Engine | "Silence is Risk" — missing criticals = risk |
-| VS20: Dynamic Action Engine | Objective-based actions with runtime priority |
-| VS21: Calibration Layer | User-declared importance (1-5) multiplies scores, full user control |
-| VS-23: Maturity Footprint | 26 practices grid with evidence states |
-| VS-24: JSON Content Catalog | Zod-validated content in `content/*.json` |
-| VS-25: Interpretation Layer | AI-powered personalized insights (OpenAI) |
-| VS-28: Action Planning | War room for gap selection, timelines, projections |
-| VS-29: Global Sidebar | AppShell + WorkflowSidebar layout pattern |
-| VS-30: Enterprise Layout | ChapterHeader, EnterpriseCanvas, ExecutiveSpine components |
-| VS-31: Page Normalization | Consulting-document paradigm, no rounded buttons |
-| VS-33: Priority Matrix | BCG-style triage grid, critical failures forced to Strategic row |
-| VS-36: Interpretation Restart | User-friendly warnings + "Provide More Context" button |
-| VS-38: Simulator Enhancements | Maturity level progression (L2→L3) in Execution Score card |
-| VS-38: Action Sidebar | Removed workflow steps, added AI "Generate Action Plan" placeholder |
-| VS-39: Finalization Workflow | Lock action plan → unlock Executive Report (irreversible) |
-| VS-40: Finalization Validation | Require timeline + owner for all actions before finalizing |
-| VS-42: Assessment Sidebar Polish | Matches Report sidebar styling, back button navigation |
-| VS-43: IntroPage Redesign | Marketing-focused, horizontal layout, journey + value props |
-| VS-44: Objective-Based Assessment | 9 objective pages replace 3 theme pages |
-| VS-45: Executive Report | PDF-ready single-page summary with action plan snapshot |
-| VS-27b: Classification Engine | 9-input persona classification → 6 finance archetypes |
-| VS-27c: Persona Confirmation | Frontend persona display with one-click switching |
-| VS-27e: Target Calculation | Persona-specific maturity targets per objective |
-| VS-27d: Benchmark Tab | Targets vs actuals comparison with persona context, practice detail table, and "Include committed actions" toggle in the report sidebar |
-| VS-26: Context Modifier | Pain point → practice boosting (1.0×–2.0× multiplier) |
-| VS-27f: Target Lines | Target lines in Objectives grid (Post-MVP, #75) |
-| Contact Form | Request Access page with Formspark + Botpoison spam protection |
-| VS-46: Blog System | MDX blog with "SecretCFO" voice, FP&A Myths series, Vite auto-loading, social sharing |
-
----
-
-## Blog System (VS-46)
-
-### Overview
-MDX-based blog with "SecretCFO" peer-to-peer voice. Uses Vite `import.meta.glob()` for zero-config post discovery.
-
-### Files
-| Location | Purpose |
-|----------|---------|
-| `cfo-frontend/content/blog/*.mdx` | Blog post content (MDX format) |
-| `cfo-frontend/public/blog/` | Blog images |
-| `cfo-frontend/src/blog/` | Blog components and utilities |
-| `spec/BLOG_STYLE_CRITERIA.md` | Writing standards and review checklist |
-
-### Routes
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/blog` | ResourcesPage | Index with featured + latest posts |
-| `/blog/:slug` | BlogPostPage | Individual post with social sharing |
-
-### Current Series: FP&A Myths
-8 planned posts exposing common FP&A myths (4 published):
-1. Budget Accountability ✓
-2. Rolling Forecasts ✓
-3. Variance Analysis ✓
-4. Finance Influence ✓
-5. Cash Forecasting (planned)
-6. Data Alignment (planned)
-7. Scenario Agility (planned)
-8. Contingency Planning (planned)
-
-### MDX Frontmatter
-```yaml
-slug: url-friendly-slug
-title: Post Title
-excerpt: Short description for cards
-date: YYYY-MM-DD
-author: Author Name
-readingTime: X min read
-featured: true/false
-image: /blog/image.png
-tags: [tag1, tag2]
-series: FP&A Myths
-seriesOrder: 1
-```
-
----
-
-## UI Design Principles (VS-30/31)
-
-### Consulting-Document Paradigm
-Pages read like chapters in a consulting report. No playful UI elements.
-
-### Key Components
-| Component | Purpose |
-|-----------|---------|
-| `ChapterHeader` | Dark slate header with label, title, description |
-| `EnterpriseCanvas` | Max-width (1100px) centered content wrapper |
-| `ExecutiveSpine` | Report header with company name, score, maturity level |
-
-### Styling Conventions
-- **No rounded buttons** — Enterprise style, sharp corners
-- **Neutral colors** — Slate palette, no theme color pills
-- **No sidebar on intro pages** — Distraction-free single column
-- **Auto-redirect** — `/assess` creates run and redirects immediately
-
-### Tailwind Colors (tailwind.config.js)
+**Brand colors:**
 ```js
-primary: '#1e3a5f'      // Dark blue
-primary-hover: '#2d4a6f'
-accent: '#f59e0b'       // Amber highlights
+navy: '#1a365d'    // Headlines, buttons, dark UI
+gold: '#c9a050'    // Accents, CTAs, premium
 ```
 
----
-
-## Content Architecture (v3.1.0)
-
-```
-content/*.json (Source of Truth)
-       ↓
-src/specs/schemas.ts (Zod Validation)
-       ↓
-src/specs/loader.ts (Load + Merge Theme Files)
-       ↓
-src/specs/registry.ts (Version Registry)
-       ↓
-API / Reports / Tests
-
-Question Files (split by theme for maintainability):
-  questions-foundation.json  → Foundation theme (37 questions)
-  questions-future.json      → Future theme (27 questions)
-  questions-intelligence.json → Intelligence theme (33 questions)
-
-Schema Relationships (v3.1.0):
-  question.practice_id → practice.objective_id → objective.theme_id
-  (3-level hierarchy: Question → Practice → Objective)
-```
+**Workflow:**
+1. Read `spec/DESIGN_SYSTEM.md` — full color system, typography, components
+2. Read `spec/NAVIGATION_PRINCIPLES.md` — if touching navigation
+3. Follow existing component patterns
 
 ---
 
-## Multi-Pillar Architecture
+### Writing Blog Posts
 
-### Current Implementation
-The platform is architected for 9-pillar scalability:
+**Inline essentials (memorize these):**
+- SecretCFO voice: Sharp, peer-to-peer, rooted in real FP&A pressure
+- Open with pressure moment: Board question, leadership tension, the silence
+- You/We voice: Never "I" — avoids one-man-show feel
+- Plain language: Non-native English speaker can understand
+- 800-1200 words, 5-7 headlines for scanning
+- Single CTA linking to diagnostic
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| Pillar Registry | `src/interpretation/pillars/registry.ts` | Register and load pillar packs |
-| FPA Pillar Pack | `src/interpretation/pillars/fpa/config.ts` | FP&A-specific AI interpretation config |
-| NA Rules | `content/pillars/fpa/na-config.json` | Context-aware question applicability |
-
-### Pillar Pack Interface
-Each pillar implements:
-- `pillar_id`, `pillar_name`
-- `sections[]` — Report section configurations
-- `forbidden_phrases[]` — AI quality control
-- `fallback_templates` — Non-AI fallbacks
-
-### Adding New Pillars
-1. Create pillar pack in `src/interpretation/pillars/{pillar_id}/`
-2. Register in `registry.ts`
-3. Add NA rules in `content/pillars/{pillar_id}/`
-4. Follow Strict Vertical Rule (no shared practice IDs)
-
-### Planned Pillars
-FP&A (current), Liquidity, Treasury, Tax, Record-to-Report, Order-to-Cash (9 total)
+**Workflow:**
+1. Read `spec/BLOG_STYLE_CRITERIA.md` — full criteria, pressure moments library
+2. Create `.mdx` file in `cfo-frontend/content/blog/`
+3. Add images to `cfo-frontend/public/blog/`
 
 ---
 
-## Gates Architecture (SSOT)
+### Touching Scoring Logic
 
-Critical gates control maturity level progression. All gate constants **MUST** be imported from `src/gates/index.ts`:
+**Key numbers (memorize these):**
+| Level | Name | Threshold | Gate requirement |
+|-------|------|-----------|------------------|
+| 1 | Emerging | < 40% | — |
+| 2 | Defined | ≥ 40% | Pass L1 critical gates |
+| 3 | Managed | ≥ 65% | Pass L1 + L2 critical gates |
+| 4 | Optimized | ≥ 85% | Pass all critical gates |
 
-```
-content/gates.json (Source of Truth)
-       ↓
-src/specs/loader.ts (loadGates function)
-       ↓
-src/gates/index.ts (Exports readonly arrays)
-       ↓
-All consumers (maturity, scoring, tests)
-```
+**Multipliers:**
+| Calibration level | Multiplier |
+|-------------------|------------|
+| 5 Critical | 1.50× |
+| 4 High | 1.25× |
+| 3 Medium | 1.00× |
+| 2 Low | 0.75× |
+| 1 Minimal | 0.50× |
 
-### Exported Constants
+**Context modifier (pain points):** 1.0× base, ×1.5 per match, capped at 2.0×
 
-| Export | Type | Source |
-|--------|------|--------|
-| `L1_CRITICALS` | `readonly string[]` | `critical_gates.l1_to_l2` |
-| `L2_CRITICALS` | `readonly string[]` | `critical_gates.l2_to_l3` |
-| `ALL_CRITICALS` | `readonly string[]` | Combined L1 + L2 |
-| `SCORE_THRESHOLDS` | `object` | `score_thresholds` |
-| `LEVEL_NAMES` | `object` | `level_names` |
+**Combined multiplier cap:** `min(2.0, ImportanceFactor × ContextModifier)`
 
-### Usage
-
-```typescript
-// ✅ CORRECT: Import from centralized module
-import { L1_CRITICALS, L2_CRITICALS } from '../gates';
-
-// ❌ WRONG: Never hardcode gate arrays
-const L1_CRITICALS = ['fpa_l1_q01', ...]; // DO NOT DO THIS
-```
+**Workflow:**
+1. Read `spec/SPEC.md` — scoring philosophy, invariants
+2. Scoring functions are pure — no side effects
+3. Test with `npm run test:all`
 
 ---
 
-## AI Interpretation (VS-25)
+### Adding a New Pillar
 
-### Pipeline
-1. **Tonality Injector** — Code-based tone (celebrate/refine/remediate/urgent)
-2. **Generator (AI1)** — Creates draft report
-3. **Quality Heuristics** — Traffic light validation
-4. **Critic (AI2)** — Assesses gaps, generates clarifying questions
-5. **Gap Prioritizer** — Ranks gaps by criticality
-
-### Tonality Rules
-| Score | Has Critical | Tone |
-|-------|--------------|------|
-| 80-100 | No | Celebrate |
-| 40-79 | No | Refine |
-| 0-39 | No | Remediate |
-| Any | Yes | Urgent |
+**Workflow:**
+1. Read `spec/SPEC.md` — Strict Vertical Rule, extension points
+2. Create `content/pillars/{pillar_id}/` with config
+3. Create `spec/pillars/{pillar_id}/CONTENT_GUIDE.md`
+4. Create `spec/pillars/{pillar_id}/IMPACT_ANCHORS.md`
+5. Create pillar pack in `src/interpretation/pillars/{pillar_id}/`
+6. Register in `src/interpretation/pillars/registry.ts`
 
 ---
 
-## Known Issues
-
-1. **TypeScript strict mode** — Map callbacks need explicit type annotations
-2. **erasableSyntaxOnly** — Frontend cannot use `enum`, use `const` objects
-3. **Review mode field population** — Some optional fields (ownership_structure, finance_ftes) may not repopulate when navigating back to setup pages (#60)
-
----
-
-## MVP Polish (Pre-Launch)
-
-| Task | Priority | Status |
-|------|----------|--------|
-| Domain QA (cfo-lens.com) | High | Pending |
-| Move Intro page before Company Setup | High | **Done** |
-| Post-completion flow (return to landing) | High | Pending |
-| PDF export for reports | High | **Done** (VS-45 Executive Report) |
-| Executive Report comprehensive export (PPTX-like) | Medium | Pending |
-| Review diagnostic questions | Medium | Pending |
-| Review AI report generation | Medium | Pending |
-| Logo on all pages | High | Pending |
-| Implement code/Supabase audit findings | High | Pending |
-
----
-
-## Roadmap (Post-MVP)
-
-| Feature | Priority |
-|---------|----------|
-| VS-27f: Target Lines (#75) | High |
-| VS15: Admin Dashboard | Medium |
-| Multi-Pillar (Liquidity, Treasury, Tax) | High |
-| 9-Pillar Scalability (#73) | High |
-| Benchmarking | Medium |
-| Trend Analysis | Low |
-| SSO Integration | Medium |
-
----
-
-## Quick Reference
+## Quick Commands
 
 ```bash
-# Health check
-curl https://cfodiagnosisv1-production.up.railway.app/health
+# Development
+npm run dev                    # Backend localhost:3000
+cd cfo-frontend && npm run dev # Frontend Vite server
 
-# Create diagnostic run
-curl -X POST https://cfodiagnosisv1-production.up.railway.app/diagnostic-runs \
-  -H "Authorization: Bearer <token>"
+# Testing
+npm run test:all               # All tests
+npm run test:vs24              # Content validation
+
+# Content tools
+node scripts/sort-questions.js
+node scripts/renumber-questions.js
+
+# Build
+npm run build                  # Backend
+cd cfo-frontend && npm run build
 ```
 
 ---
 
-## Resources
+## Key URLs
 
-- **GitHub**: https://github.com/CanKoseoglu123/CFOdiagnosis_v1
-- **Frontend**: https://cfodiagnosisv1.vercel.app
-- **API**: https://cfodiagnosisv1-production.up.railway.app
-- **Supabase**: https://app.supabase.com
+| Environment | URL |
+|-------------|-----|
+| Frontend | https://cfodiagnosisv1.vercel.app |
+| Backend API | https://cfodiagnosisv1-production.up.railway.app |
+| GitHub | https://github.com/CanKoseoglu123/CFOdiagnosis_v1 |
+| Health check | `GET /health` |
+
+---
+
+## Anti-Patterns (Do NOT)
+
+| Anti-pattern | Why it's wrong |
+|--------------|----------------|
+| Hardcode gate question IDs | Use `src/gates/index.ts` |
+| Inline hex colors | Use `BRAND_COLORS` or CSS variables |
+| Add shadows or gradients | Enterprise aesthetic forbids them |
+| Let AI change scores | AI explains, never grades |
+| Skip reading spec docs | They exist for a reason |
+| Duplicate content across docs | Single source of truth |
+| Put implementation details here | This file is for orientation |
+
+---
+
+## Document Map
+
+| Document | Purpose | When to read |
+|----------|---------|--------------|
+| `spec/SPEC.md` | Design contract, invariants | Architecture decisions, scoring logic |
+| `spec/DESIGN_SYSTEM.md` | Visual design | Any UI work |
+| `spec/NAVIGATION_PRINCIPLES.md` | Nav rules | Navigation changes |
+| `spec/BLOG_STYLE_CRITERIA.md` | Writing voice | Blog posts |
+| `spec/QUESTION_REVIEW_CRITERIA.md` | 13-point checklist | Adding/editing questions |
+| `spec/ACTION_REVIEW_CRITERIA.md` | 11-point checklist | Adding/editing actions |
+| `spec/IMPACT_COMPLEXITY.md` | Scoring methodology | Calibrating Impact/Complexity |
+| `spec/QUESTION_SORTING_PRINCIPLES.md` | Ordering rules | Reordering questions |
+| `spec/pillars/fpa/CONTENT_GUIDE.md` | FP&A specifics | FP&A content work |
+| `spec/pillars/fpa/IMPACT_ANCHORS.md` | FP&A calibration | FP&A Impact/Complexity |
+
+---
+
+*This guide tells you how to think and where to look. Implementation lives in code and spec docs.*
