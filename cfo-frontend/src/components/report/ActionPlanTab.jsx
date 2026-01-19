@@ -11,7 +11,8 @@ import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
 import ActionPlanningWizard from './ActionPlanningWizard';
-import { AlertTriangle, CheckCircle, CheckCircle2, Wand2, FileText, Home } from 'lucide-react';
+import ProgressiveWizard from './ProgressiveWizard';
+import { AlertTriangle, CheckCircle, CheckCircle2, Wand2, FileText, Home, Sparkles } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -83,6 +84,9 @@ export default function ActionPlanTab({
   const [showWizard, setShowWizard] = useState(false);
   const [wizardSummary, setWizardSummary] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
+
+  // Progressive Wizard state
+  const [showProgressiveWizard, setShowProgressiveWizard] = useState(false);
 
   // VS-39: Derive finalization status from report (NOT separate state)
   const isFinalized = !!report?.finalized_at;
@@ -320,6 +324,38 @@ export default function ActionPlanTab({
     // Clear summary after 5 seconds
     setTimeout(() => setWizardSummary(null), 5000);
   }, [saveAction]);
+
+  // Progressive Wizard completion handler
+  const handleProgressiveWizardComplete = useCallback(async (actionPlanData) => {
+    // Clear existing action plan
+    const existingIds = Object.keys(actionPlan);
+    for (const questionId of existingIds) {
+      setActionPlan(prev => {
+        const next = { ...prev };
+        delete next[questionId];
+        return next;
+      });
+      await saveAction(questionId, null);
+    }
+
+    // Apply new action plan from wizard
+    for (const item of actionPlanData) {
+      const newData = {
+        timeline: item.timeline,
+        assigned_owner: item.assigned_owner,
+        status: item.status || 'planned'
+      };
+      setActionPlan(prev => ({ ...prev, [item.question_id]: newData }));
+      await saveAction(item.question_id, newData);
+    }
+
+    // Show summary toast
+    setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
+    setTimeout(() => setWizardSummary(null), 5000);
+
+    // Show finalization modal
+    setShowFinalizeModal(true);
+  }, [actionPlan, saveAction]);
 
   // Get gaps (questions not answered yes)
   const gaps = useMemo(() => {
@@ -626,8 +662,9 @@ export default function ActionPlanTab({
           onSave={handleSidebarSave}
           saving={saving}
           isFinalized={isFinalized}
-          // VS-46: Wizard trigger
-          onOpenWizard={() => setShowWizard(true)}
+          // Wizard triggers
+          onOpenProgressiveWizard={() => setShowProgressiveWizard(true)}
+          onOpenSmartLensWizard={() => setShowWizard(true)}
         />
       </div>
 
@@ -713,68 +750,74 @@ export default function ActionPlanTab({
         </div>
       )}
 
-      {/* VS-47: Action Planning Intro Modal */}
+      {/* VS-47: Action Planning Intro Modal - Updated with Progressive Wizard */}
       {showIntroModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-sm max-w-lg border border-slate-300 shadow-xl">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-slate-800">Action Planning</h3>
               <p className="text-sm text-slate-600 mt-1">
-                We’ve curated actions that address your organization’s development opportunities.
-                Select the actions you want to pursue below.
-                You can view the same list grouped by Objective or Initiative using the toggle.
-                After selecting, assign timelines and owners.
-              </p>
-              <p className="text-sm text-slate-600 mt-2">
-                This is the last step before finalizing the pillar diagnostic.
-              </p>
-              <h4 className="text-base font-semibold text-violet-600 mt-3">Prefer assistance?</h4>
-              <p className="text-sm text-slate-600 mt-1">
-                Use the Action Planning Wizard below, or launch it anytime from the right-hand sidebar.
+                Choose how you'd like to build your action plan. This is the last step before generating your Executive Report.
               </p>
             </div>
 
-            <div className="border border-slate-200 rounded-sm p-4 bg-slate-50 mb-4">
+            {/* Guided Action Planning - Recommended */}
+            <div className="border-2 border-slate-800 rounded-sm p-4 bg-slate-50 mb-3">
               <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center flex-shrink-0">
-                  <Wand2 className="w-5 h-5 text-violet-600" />
+                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-900">Smart Planning</h4>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-slate-900">Guided Action Planning</h4>
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-800 text-white rounded">Recommended</span>
+                  </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Build your plan with guided selection across pain points, priorities, quick wins, and critical risks.
+                    Step-by-step wizard: Select objectives → Actions → Timelines → Owners → Review
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => {
                   setShowIntroModal(false);
-                  setShowWizard(true);
+                  setShowProgressiveWizard(true);
                   window.localStorage.setItem(`actionPlanIntroSeen:${runId}`, 'true');
                 }}
-                className="w-full px-4 py-2 text-white text-sm font-medium rounded flex items-center justify-center gap-2 transition-colors bg-violet-600 hover:bg-violet-700"
+                className="w-full px-4 py-2.5 text-white text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors bg-slate-800 hover:bg-slate-900"
               >
-                <Wand2 className="w-4 h-4" />
-                <span>Action Planning Wizard</span>
+                <Sparkles className="w-4 h-4" />
+                <span>Start Guided Planning</span>
               </button>
             </div>
 
-            <div className="flex items-center justify-end">
+            {/* Manual Selection */}
+            <div className="border border-slate-200 rounded-sm p-4 bg-white">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <Wand2 className="w-5 h-5 text-slate-500" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700">Manual Selection</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Browse all actions directly. Use Smart Lens filters from the sidebar.
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => {
                   setShowIntroModal(false);
                   window.localStorage.setItem(`actionPlanIntroSeen:${runId}`, 'true');
                 }}
-                className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
+                className="w-full px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors hover:bg-slate-50"
               >
-                Select Actions Manually
+                <span>Select Actions Manually</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* VS-46: Action Planning Wizard */}
+      {/* VS-46: Action Planning Wizard (Smart Lens) */}
       <ActionPlanningWizard
         isOpen={showWizard}
         onClose={() => setShowWizard(false)}
@@ -784,6 +827,18 @@ export default function ActionPlanTab({
         report={report}
         actionPlan={actionPlan}
         onApplySelections={handleWizardApply}
+      />
+
+      {/* Progressive Wizard (Guided Action Planning) */}
+      <ProgressiveWizard
+        isOpen={showProgressiveWizard}
+        onClose={() => setShowProgressiveWizard(false)}
+        gaps={gaps}
+        questions={questions}
+        objectives={objectives}
+        practices={practices}
+        report={report}
+        onComplete={handleProgressiveWizardComplete}
       />
 
       {/* VS-46: Wizard Summary Toast */}

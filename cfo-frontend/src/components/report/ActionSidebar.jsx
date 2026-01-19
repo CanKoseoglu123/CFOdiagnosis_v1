@@ -2,9 +2,10 @@
 // VS-28: Universal sidebar for Action Planning - context, progress, and controls
 // VS-41: Removed Finalize button (moved to left sidebar), removed Back/Proceed, restored progress tracker
 // VS-46: Added Action Planning Wizard trigger
+// VS-48: Updated with Progressive Wizard and Smart Lens options
 
 import React from 'react';
-import { Save, Sparkles, Wand2 } from 'lucide-react';
+import { Save, Sparkles, Wand2, Filter } from 'lucide-react';
 
 export default function ActionSidebar({
   companyName,
@@ -21,8 +22,9 @@ export default function ActionSidebar({
   onSave,
   saving = false,
   isFinalized = false,
-  // VS-46: Wizard trigger
-  onOpenWizard
+  // Wizard triggers
+  onOpenProgressiveWizard,
+  onOpenSmartLensWizard
 }) {
   const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
   const timelinePercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
@@ -120,36 +122,55 @@ export default function ActionSidebar({
 
       {/* Actions */}
       <div className="px-4 py-3 space-y-3">
-        {/* VS-46: Action Planning Wizard */}
+        {/* Guided Action Planning (Progressive Wizard) */}
         <div className="pb-3 border-b border-slate-200">
           <div className="flex items-start gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center flex-shrink-0">
-              <Wand2 className="w-5 h-5 text-violet-600" />
+            <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-slate-900">Smart Planning</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Build your plan with guided selection</p>
+              <h4 className="text-sm font-semibold text-slate-900">Guided Planning</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Step-by-step wizard with assignments</p>
             </div>
           </div>
           <button
-            onClick={onOpenWizard}
+            onClick={onOpenProgressiveWizard}
             disabled={isFinalized}
-            className={`w-full px-4 py-2 text-white text-sm font-medium rounded flex items-center justify-center gap-2 transition-colors ${
+            className={`w-full px-4 py-2 text-white text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors ${
               isFinalized
                 ? 'bg-slate-400 cursor-not-allowed'
-                : 'bg-violet-600 hover:bg-violet-700'
+                : 'bg-slate-800 hover:bg-slate-900'
             }`}
           >
-            <Wand2 className="w-4 h-4" />
-            <span>Action Planning Wizard</span>
+            <Sparkles className="w-4 h-4" />
+            <span>Start Guided Planning</span>
           </button>
+        </div>
+
+        {/* Smart Lens (Quick Add) */}
+        <div className="pb-3 border-b border-slate-200">
+          <button
+            onClick={onOpenSmartLensWizard}
+            disabled={isFinalized}
+            className={`w-full px-3 py-2 text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors border ${
+              isFinalized
+                ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+            }`}
+          >
+            <Filter className="w-4 h-4" />
+            <span>Quick Add (Smart Lens)</span>
+          </button>
+          <p className="text-[10px] text-slate-400 mt-1.5 text-center">
+            Filter by pain points, priorities, quick wins
+          </p>
         </div>
 
         {/* Save Button */}
         <button
           onClick={onSave}
           disabled={saving || isFinalized}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded border border-slate-300 hover:bg-slate-200 transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Saving...' : isFinalized ? 'Locked' : 'Save Progress'}
