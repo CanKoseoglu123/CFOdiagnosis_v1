@@ -184,21 +184,41 @@ async function createSupabaseMiddleware(req: Request, _res: Response, next: Next
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
-    
+
     // Create client WITH the user's token - RLS will see auth.uid()
     req.supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
-    
+
     // AWAIT the user check - do not proceed until we know who this is
     try {
-      const { data: { user } } = await req.supabase.auth.getUser(token);
+      const { data: { user }, error } = await req.supabase.auth.getUser(token);
+
+      if (error) {
+        console.error(`[AUTH] getUser error: ${error.message}`);
+      }
+
       if (user) {
         req.userId = user.id;
         req.userEmail = user.email || undefined;
+
+        // Fallback: Extract email from JWT if not in user object
+        if (!req.userEmail) {
+          try {
+            const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+            if (payload.email) {
+              req.userEmail = payload.email;
+              console.log(`[AUTH] Email extracted from JWT fallback: ${req.userEmail}`);
+            } else {
+              console.warn(`[AUTH] No email in user object or JWT for userId=${user.id}`);
+            }
+          } catch (jwtErr) {
+            console.error(`[AUTH] JWT decode failed:`, jwtErr);
+          }
+        }
       }
     } catch (err) {
-      console.error("Auth check failed", err);
+      console.error("[AUTH] getUser exception:", err);
       // Downgrade to Anon if the token was invalid/expired
       req.supabase = supabaseAnon;
     }
@@ -206,7 +226,7 @@ async function createSupabaseMiddleware(req: Request, _res: Response, next: Next
     // No token - use anon client
     req.supabase = supabaseAnon;
   }
-  
+
   next();
 }
 
@@ -2565,6 +2585,55 @@ app.delete("/admin/feedback/:id", requireAdmin, async (req, res) => {
   }
 
   res.json({ success: true, deleted: id });
+});
+
+// POST /admin/backfill-emails - Fix runs with missing user_email
+app.post("/admin/backfill-emails", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({ error: "Admin client not configured" });
+  }
+
+  const { data: runs, error } = await supabaseAdmin
+    .from("diagnostic_runs")
+    .select("id, owner_id")
+    .is("user_email", null)
+    .not("owner_id", "is", null);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  let updated = 0;
+  let failed = 0;
+  const results: Array<{ id: string; status: string; email?: string }> = [];
+
+  for (const run of runs || []) {
+    try {
+      const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(run.owner_id);
+      if (user?.email) {
+        await supabaseAdmin
+          .from("diagnostic_runs")
+          .update({ user_email: user.email })
+          .eq("id", run.id);
+        updated++;
+        results.push({ id: run.id, status: 'updated', email: user.email });
+      } else {
+        failed++;
+        results.push({ id: run.id, status: 'no_email_found' });
+      }
+    } catch (err: unknown) {
+      failed++;
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      results.push({ id: run.id, status: 'error', email: errorMessage });
+    }
+  }
+
+  res.json({
+    total: runs?.length || 0,
+    updated,
+    failed,
+    results
+  });
 });
 
 // ------------------------------------------------------------------
