@@ -86,7 +86,7 @@ export default function AuthPage() {
     }}>
       <div style={{
         background: '#FFF',
-        borderRadius: 16,
+        borderRadius: 2,
         border: '1px solid #E5E7EB',
         padding: 40,
         width: '100%',
@@ -98,14 +98,14 @@ export default function AuthPage() {
           <div style={{
             width: 56,
             height: 56,
-            background: '#EEF2FF',
-            borderRadius: 12,
+            background: '#E6ECF4',
+            borderRadius: 2,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 16px',
           }}>
-            <User size={28} color="#4F46E5" />
+            <User size={28} color="#1a365d" />
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>
             {mode === 'login' ? 'Welcome Back' : 'Create Account'}
@@ -122,7 +122,7 @@ export default function AuthPage() {
           <div style={{
             background: '#FEF2F2',
             border: '1px solid #FECACA',
-            borderRadius: 8,
+            borderRadius: 2,
             padding: 12,
             marginBottom: 20,
             display: 'flex',
@@ -139,7 +139,7 @@ export default function AuthPage() {
           <div style={{
             background: '#DCFCE7',
             border: '1px solid #86EFAC',
-            borderRadius: 8,
+            borderRadius: 2,
             padding: 12,
             marginBottom: 20,
             color: '#166534',
@@ -169,7 +169,7 @@ export default function AuthPage() {
                     width: '100%',
                     padding: '12px 12px 12px 42px',
                     border: '1px solid #E5E7EB',
-                    borderRadius: 8,
+                    borderRadius: 2,
                     fontSize: 15,
                     outline: 'none',
                     boxSizing: 'border-box',
@@ -196,7 +196,7 @@ export default function AuthPage() {
                   width: '100%',
                   padding: '12px 12px 12px 42px',
                   border: '1px solid #E5E7EB',
-                  borderRadius: 8,
+                  borderRadius: 2,
                   fontSize: 15,
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -223,7 +223,7 @@ export default function AuthPage() {
                   width: '100%',
                   padding: '12px 12px 12px 42px',
                   border: '1px solid #E5E7EB',
-                  borderRadius: 8,
+                  borderRadius: 2,
                   fontSize: 15,
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -239,10 +239,10 @@ export default function AuthPage() {
             style={{
               width: '100%',
               padding: '14px',
-              background: loading ? '#9CA3AF' : '#4F46E5',
+              background: loading ? '#9CA3AF' : '#1a365d',
               color: '#FFF',
               border: 'none',
-              borderRadius: 8,
+              borderRadius: 2,
               fontSize: 15,
               fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -267,7 +267,7 @@ export default function AuthPage() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#4F46E5',
+              color: '#1a365d',
               fontSize: 14,
               fontWeight: 600,
               cursor: 'pointer',
@@ -283,8 +283,8 @@ export default function AuthPage() {
             to { transform: rotate(360deg); }
           }
           input:focus {
-            border-color: #4F46E5 !important;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: #1a365d !important;
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
           }
         `}</style>
       </div>

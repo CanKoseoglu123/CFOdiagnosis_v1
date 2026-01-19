@@ -395,13 +395,30 @@ Print output must be board‑ready without modification.
 
 ---
 
+### 10.1 Permitted Exceptions
+
+The above laws apply to **data-dense report views**. The following exceptions are permitted for interactive UI elements:
+
+| Element | Allowed | Rationale |
+|---------|---------|-----------|
+| Circular indicators | `rounded-full` | Progress dots, avatars, step indicators require circles |
+| Modals/overlays | `shadow-xl` | Depth cue for floating elements above page |
+| Marketing pages | Shadows, rounded corners | Consumer appeal on public-facing pages |
+| Tooltips | `shadow-lg` | Floating UI convention for hover states |
+| Dropdown menus | `shadow-md` | Separation from triggering element |
+| Loaders/spinners | `rounded-full` | Standard animation affordance |
+
+**Why exceptions exist:** The "no shadows, no rounded" rule optimizes for audit-grade printed output. Interactive UI elements (modals, tooltips, dropdowns) are never printed and require visual depth cues to communicate their floating nature to users.
+
+---
+
 ## 11. KNOWN ISSUES & MIGRATION TASKS
 
 ### 11.1 Color Inconsistencies to Fix
 
 | File | Issue | Fix Required |
 |------|-------|--------------|
-| `AuthPage.jsx` | Uses Indigo `#4F46E5` instead of brand navy | Replace with `BRAND_COLORS.navy` to match Landing page |
+| ~~`AuthPage.jsx`~~ | ~~Uses Indigo `#4F46E5` instead of brand navy~~ | ✅ Fixed — uses `#1a365d` and `rounded-sm` (2px) |
 | `CompanySetupPage.jsx` | Uses Tailwind `blue-600` inconsistently | Standardize to --primary or BRAND_COLORS |
 | `ExecutiveReportPage.jsx` | Defines local `NAVY = '#1e3a5f'` | Import from BRAND_COLORS instead |
 
@@ -429,7 +446,7 @@ Both should be migrated to use CSS variables or CHART_COLORS constants.
 
 ### 11.4 Migration Priority
 
-1. **High**: AuthPage (user-facing, brand inconsistency)
+1. ~~**High**: AuthPage (user-facing, brand inconsistency)~~ ✅ Complete
 2. **Medium**: Setup pages (onboarding flow)
 3. **Low**: Internal components using legacy --navy
 
