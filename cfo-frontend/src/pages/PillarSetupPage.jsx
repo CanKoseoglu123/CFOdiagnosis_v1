@@ -20,6 +20,7 @@ import {
   BUDGET_PROCESS_BASE, BUDGET_PROCESS_MODIFIERS, PAIN_POINTS, USER_ROLES,
   TOOL_EFFECTIVENESS, TOOL_EFFECTIVENESS_LEGEND
 } from '../data/contextOptions';
+import useStepTransition from '../hooks/useStepTransition';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -303,6 +304,7 @@ export default function PillarSetupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isReviewMode = searchParams.get('review') === 'true';
+  const { updateStep } = useStepTransition();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -547,7 +549,8 @@ export default function PillarSetupPage() {
         throw new Error(data.details?.join(', ') || data.error || 'Failed to save');
       }
 
-      // Navigate to first assessment objective
+      // Update step tracking and navigate to first assessment objective
+      await updateStep(runId, 'assessment', { last_visited_objective_id: 'obj_budget_discipline' });
       navigate(`/assess/objective/obj_budget_discipline?runId=${runId}`);
     } catch (err) {
       setError(err.message);

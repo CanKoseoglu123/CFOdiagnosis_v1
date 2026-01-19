@@ -8,7 +8,6 @@ import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
 import { supabase } from '../lib/supabase';
 import {
   ArrowRight,
-  X,
   Zap,
   Crosshair,
   Layers,
@@ -17,147 +16,53 @@ import {
 import FeedbackButton from '../components/FeedbackButton';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const FIRST_OBJECTIVE = 'obj_budget_discipline';
-
-// Objective order for resume navigation (9 objectives in assessment sequence)
-const OBJECTIVE_ORDER = [
-  'obj_budget_discipline',
-  'obj_financial_controls',
-  'obj_performance_monitoring',
-  'obj_forecasting_agility',
-  'obj_driver_based_planning',
-  'obj_scenario_modeling',
-  'obj_strategic_influence',
-  'obj_decision_support',
-  'obj_operational_excellence'
-];
-
-// Helper to extract company name from run
-function getCompanyName(run) {
-  // V2 format: company_name from joined company_profiles
-  if (run.company_name) return run.company_name;
-  // V1 format: context.company.name
-  if (run.context?.company?.name) return run.context.company.name;
-  // Legacy format: context.company_name
-  if (run.context?.company_name) return run.context.company_name;
-  return 'Untitled Assessment';
-}
-
-// Helper to get status badge styling
-function getStatusBadge(status) {
-  switch (status) {
-    case 'locked':
-      return { label: 'Finalized', color: 'bg-amber-100 text-amber-700' };
-    case 'completed':
-      return { label: 'Completed', color: 'bg-green-100 text-green-700' };
-    case 'in_progress':
-      return { label: 'In Progress', color: 'bg-blue-100 text-blue-700' };
-    default:
-      return { label: 'Draft', color: 'bg-slate-100 text-slate-600' };
-  }
-}
 
 export default function LandingPage() {
   const { isAuthenticated, user, signOut, loading } = useAuth();
   const navigate = useNavigate();
-  const [showRunsModal, setShowRunsModal] = useState(false);
-  const [checkingRuns, setCheckingRuns] = useState(false);
-  const [allRuns, setAllRuns] = useState([]);
+  const [incompleteRun, setIncompleteRun] = useState(null);
+  const [dismissedResume, setDismissedResume] = useState(false);
 
-  async function handleDashboardClick(e) {
-    e.preventDefault();
-    setCheckingRuns(true);
+  // Check for incomplete runs on mount (smart resume)
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        navigate('/login');
-        return;
-      }
+    async function checkIncompleteRuns() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
 
-      const res = await fetch(`${API_URL}/diagnostic-runs`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+        const res = await fetch(`${API_URL}/diagnostic-runs`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
 
-      if (res.ok) {
-        const runs = await res.json();
-        // Filter out 'created' status (empty runs with no setup)
-        const actionableRuns = runs.filter(r => r.status !== 'created');
-        setAllRuns(actionableRuns);
-        setShowRunsModal(true);
-      } else {
-        setAllRuns([]);
-        setShowRunsModal(true);
-      }
-    } catch (err) {
-      console.error('Error checking runs:', err);
-      setAllRuns([]);
-      setShowRunsModal(true);
-    } finally {
-      setCheckingRuns(false);
-    }
-  }
-
-  async function handleRunClick(run) {
-    setShowRunsModal(false);
-
-    if (run.status === 'completed' || run.status === 'locked') {
-      navigate(`/report/${run.id}`);
-      return;
-    }
-
-    // In-progress: check if setup is complete
-    if (!run.setup_completed_at) {
-      navigate(`/run/${run.id}/setup/company`);
-      return;
-    }
-
-    // Setup complete - try to determine last answered objective
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`${API_URL}/diagnostic-runs/${run.id}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-
-      if (res.ok) {
-        const runData = await res.json();
-        const inputs = runData.inputs || [];
-
-        if (inputs.length > 0) {
-          // Fetch spec to build question -> objective mapping
-          const specRes = await fetch(`${API_URL}/api/spec`);
-          const spec = await specRes.json();
-
-          // Build question -> objective mapping
-          const questionToObjective = {};
-          spec.questions.forEach(q => {
-            const practice = spec.practices.find(p => p.id === q.practice_id);
-            if (practice) {
-              questionToObjective[q.id] = practice.objective_id;
-            }
-          });
-
-          // Find highest objective index with answers
-          let lastObjectiveIndex = 0;
-          inputs.forEach(input => {
-            const objId = questionToObjective[input.question_id];
-            const index = OBJECTIVE_ORDER.indexOf(objId);
-            if (index > lastObjectiveIndex) {
-              lastObjectiveIndex = index;
-            }
-          });
-
-          const lastObjective = OBJECTIVE_ORDER[lastObjectiveIndex];
-          navigate(`/assess/objective/${lastObjective}?runId=${run.id}`);
-          return;
+        if (res.ok) {
+          const runs = await res.json();
+          // Find most recent in-progress run
+          const inProgress = runs.find(r => r.status === 'in_progress');
+          if (inProgress) {
+            setIncompleteRun(inProgress);
+          }
         }
+      } catch (err) {
+        console.error('Error checking incomplete runs:', err);
       }
-    } catch (err) {
-      console.error('Error determining last objective:', err);
     }
 
-    // Fallback to first objective
-    navigate(`/assess/objective/${FIRST_OBJECTIVE}?runId=${run.id}`);
+    checkIncompleteRuns();
+  }, [isAuthenticated]);
+
+  // Handle resume button click
+  function handleResumeClick() {
+    if (!incompleteRun) return;
+
+    // Use the computed resume_path if available
+    if (incompleteRun.resume_path) {
+      navigate(incompleteRun.resume_path);
+    } else {
+      // Fallback: go to dashboard
+      navigate('/dashboard');
+    }
   }
 
   if (loading) {
@@ -215,14 +120,13 @@ export default function LandingPage() {
                   <span className="text-sm font-medium text-slate-700">Welcome back</span>
                   <span className="text-xs text-slate-500">{user?.email}</span>
                 </div>
-                <button
-                  onClick={handleDashboardClick}
-                  disabled={checkingRuns}
-                  className="px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-70"
+                <Link
+                  to="/dashboard"
+                  className="px-4 py-2 text-sm font-medium text-white transition-colors"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  {checkingRuns ? 'Loading...' : 'My Reports'}
-                </button>
+                  My Reports
+                </Link>
                 <button
                   onClick={signOut}
                   className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
@@ -574,96 +478,34 @@ export default function LandingPage() {
       <FeedbackButton currentPage="landing" />
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* MY ASSESSMENTS MODAL */}
+      {/* SMART RESUME BANNER */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {showRunsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowRunsModal(false)} />
-
-          <div className="relative bg-white shadow-xl w-full max-w-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-800">My Assessments</h3>
-              <button onClick={() => setShowRunsModal(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
+      {incompleteRun && !dismissedResume && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-xl w-full px-4">
+          <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-4 flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-900">
+                Continue your assessment?
+              </p>
+              <p className="text-sm text-slate-500">
+                {incompleteRun.company_name || 'Your assessment'} is {incompleteRun.assessment_progress_pct || 0}% complete
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setDismissedResume(true)}
+                className="px-3 py-1.5 text-sm text-slate-500 hover:text-slate-700"
+              >
+                Dismiss
+              </button>
+              <button
+                onClick={handleResumeClick}
+                className="px-4 py-1.5 text-sm font-medium text-white rounded"
+                style={{ backgroundColor: BRAND_COLORS.navy }}
+              >
+                Resume
               </button>
             </div>
-
-            {/* Runs Table */}
-            <div className="max-h-96 overflow-y-auto">
-              {allRuns.length === 0 ? (
-                <div className="p-6 text-center text-slate-500">
-                  <p className="mb-4">No assessments found.</p>
-                  <Link
-                    to="/select-pillar"
-                    onClick={() => setShowRunsModal(false)}
-                    className="inline-block px-4 py-2 text-sm font-medium text-white"
-                    style={{ backgroundColor: BRAND_COLORS.navy }}
-                  >
-                    Start Assessment
-                  </Link>
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Company</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pillar</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Started</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {allRuns.map(run => {
-                      const badge = getStatusBadge(run.status);
-                      return (
-                        <tr
-                          key={run.id}
-                          onClick={() => handleRunClick(run)}
-                          className="hover:bg-slate-50 cursor-pointer transition-colors"
-                        >
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-slate-800 truncate max-w-[180px]">
-                              {getCompanyName(run)}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-600">FP&A</td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-1 text-xs font-medium ${badge.color}`}>
-                              {badge.label}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-500">
-                            {new Date(run.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <span className="text-sm font-medium text-slate-600 flex items-center justify-end gap-1">
-                              {run.status === 'in_progress' ? 'Continue' : 'View'}
-                              <ArrowRight className="w-4 h-4" />
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            {/* Footer */}
-            {allRuns.length > 0 && (
-              <div className="p-4 border-t border-slate-200 bg-slate-50">
-                <Link
-                  to="/select-pillar"
-                  onClick={() => setShowRunsModal(false)}
-                  className="text-sm font-medium hover:underline"
-                  style={{ color: BRAND_COLORS.navy }}
-                >
-                  + Start New Assessment
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       )}

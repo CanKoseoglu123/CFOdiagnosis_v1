@@ -315,6 +315,8 @@ app.post("/diagnostic-runs", async (req, res) => {
       spec_version: DEFAULT_SPEC_VERSION,
       owner_id: req.userId || null,
       // user_email: req.userEmail || null, // TODO: Enable after migration is applied to production
+      current_step: "intro",
+      last_activity_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -327,8 +329,37 @@ app.post("/diagnostic-runs", async (req, res) => {
 });
 
 // ------------------------------------------------------------------
-// List diagnostic runs for authenticated user (My Reports)
+// List diagnostic runs for authenticated user (My Reports / Dashboard)
 // ------------------------------------------------------------------
+
+// Helper: Compute resume path based on current step
+function computeResumePath(run: any): string {
+  const step = run.current_step || 'intro';
+  const runId = run.id;
+
+  switch (step) {
+    case 'intro':
+      return `/run/${runId}/intro`;
+    case 'company_setup':
+      return `/run/${runId}/setup/company`;
+    case 'persona':
+      return `/run/${runId}/setup/persona`;
+    case 'pillar_setup':
+      return `/run/${runId}/setup/pillar`;
+    case 'assessment':
+      // Resume at last visited objective, or first objective
+      const objectiveId = run.last_visited_objective_id || 'obj_budget_discipline';
+      return `/assess/objective/${objectiveId}?runId=${runId}`;
+    case 'calibration':
+      return `/run/${runId}/calibrate`;
+    case 'report':
+    case 'finalized':
+      return `/report/${runId}`;
+    default:
+      return `/run/${runId}/intro`;
+  }
+}
+
 app.get("/diagnostic-runs", async (req, res) => {
   try {
     if (!req.supabase || !req.userId) {
@@ -339,6 +370,7 @@ app.get("/diagnostic-runs", async (req, res) => {
     console.log('[GET /diagnostic-runs] userId:', req.userId, 'userEmail:', req.userEmail);
 
     // Explicit owner_id filter as security safeguard (in addition to RLS)
+    // Include new progress tracking columns
     const { data, error } = await req.supabase
       .from("diagnostic_runs")
       .select(`
@@ -349,21 +381,27 @@ app.get("/diagnostic-runs", async (req, res) => {
         created_at,
         finalized_at,
         setup_completed_at,
+        current_step,
+        last_visited_objective_id,
+        assessment_progress_pct,
+        last_activity_at,
         company_profiles (name)
       `)
       .eq("owner_id", req.userId)
-      .order("created_at", { ascending: false });
+      .order("last_activity_at", { ascending: false, nullsFirst: false });
 
     if (error) {
       console.error('[GET /diagnostic-runs] Supabase error:', JSON.stringify(error));
       return handleDatabaseError(res, error, 'List diagnostic runs');
     }
 
-    // Transform to flatten company name from joined company_profiles
+    // Transform to flatten company name and compute resume_path
     const transformed = (data || []).map((run: any) => ({
       ...run,
       company_name: run.company_profiles?.name || null,
-      company_profiles: undefined
+      company_profiles: undefined,
+      // Compute resume_path based on current_step
+      resume_path: computeResumePath(run)
     }));
 
     console.log('[GET /diagnostic-runs] Found', transformed.length, 'runs');
@@ -847,10 +885,14 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
     locked: [],  // No locked objectives - user has full control
   };
 
-  // Save to database
+  // Save to database + set current_step to report
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
-    .update({ calibration: calibrationData })
+    .update({
+      calibration: calibrationData,
+      current_step: "report",
+      last_activity_at: new Date().toISOString()
+    })
     .eq("id", runId)
     .select()
     .single();
@@ -1030,7 +1072,11 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
 
   const { error: updateError } = await req.supabase
     .from("diagnostic_runs")
-    .update({ status: "completed" })
+    .update({
+      status: "completed",
+      current_step: "calibration",
+      last_activity_at: new Date().toISOString()
+    })
     .eq("id", runId);
 
   if (updateError) {
@@ -2050,14 +2096,16 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
     return res.status(500).json({ error: planError.message });
   }
 
-  // Create snapshot and set finalized_at
+  // Create snapshot and set finalized_at + current_step
   const now = new Date().toISOString();
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
     .update({
       status: "locked",
       finalized_at: now,
-      action_plan_snapshot: actionPlanItems || []
+      action_plan_snapshot: actionPlanItems || [],
+      current_step: "finalized",
+      last_activity_at: now
     })
     .eq("id", runId)
     .select("id, status, finalized_at, action_plan_snapshot")
@@ -2072,6 +2120,149 @@ app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
     finalized_at: data.finalized_at,
     action_count: (actionPlanItems || []).length
   });
+});
+
+// ------------------------------------------------------------------
+// Progress Tracking: Update workflow step
+// ------------------------------------------------------------------
+const VALID_STEPS = [
+  'intro',
+  'company_setup',
+  'persona',
+  'pillar_setup',
+  'assessment',
+  'calibration',
+  'report',
+  'finalized'
+] as const;
+
+type WorkflowStep = typeof VALID_STEPS[number];
+
+app.patch("/diagnostic-runs/:id/step", async (req, res) => {
+  const runId = req.params.id;
+  const { step, last_visited_objective_id, assessment_progress_pct } = req.body;
+
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  // Validate step
+  if (!step || !VALID_STEPS.includes(step)) {
+    return res.status(400).json({
+      error: `Invalid step. Must be one of: ${VALID_STEPS.join(', ')}`
+    });
+  }
+
+  // Verify run exists and belongs to user
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, status, finalized_at, current_step")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Cannot modify finalized runs
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot modify finalized diagnostic run",
+      code: "RUN_FINALIZED"
+    });
+  }
+
+  // Build update object
+  const updateData: Record<string, any> = {
+    current_step: step,
+    last_activity_at: new Date().toISOString()
+  };
+
+  // Optional: track last visited objective (for assessment resume)
+  if (last_visited_objective_id !== undefined) {
+    updateData.last_visited_objective_id = last_visited_objective_id;
+  }
+
+  // Optional: track assessment progress percentage
+  if (typeof assessment_progress_pct === 'number' &&
+      assessment_progress_pct >= 0 &&
+      assessment_progress_pct <= 100) {
+    updateData.assessment_progress_pct = Math.round(assessment_progress_pct);
+  }
+
+  const { error: updateError } = await req.supabase
+    .from("diagnostic_runs")
+    .update(updateData)
+    .eq("id", runId);
+
+  if (updateError) {
+    return res.status(500).json({ error: updateError.message });
+  }
+
+  res.json({ success: true, step, last_activity_at: updateData.last_activity_at });
+});
+
+// ------------------------------------------------------------------
+// User Delete: Delete own diagnostic run (non-finalized only)
+// ------------------------------------------------------------------
+app.delete("/diagnostic-runs/:id", async (req, res) => {
+  const runId = req.params.id;
+
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  // Verify run exists and check ownership + finalization status
+  const { data: run, error: runError } = await req.supabase
+    .from("diagnostic_runs")
+    .select("id, owner_id, finalized_at")
+    .eq("id", runId)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Verify ownership (additional check beyond RLS)
+  if (run.owner_id !== req.userId) {
+    return res.status(403).json({ error: "You can only delete your own runs" });
+  }
+
+  // Cannot delete finalized runs
+  if (run.finalized_at) {
+    return res.status(403).json({
+      error: "Cannot delete finalized diagnostic runs",
+      code: "RUN_FINALIZED"
+    });
+  }
+
+  // Delete related data first (cascade)
+  // These use the authenticated user's client so RLS is enforced
+  await req.supabase.from("diagnostic_inputs").delete().eq("run_id", runId);
+  await req.supabase.from("diagnostic_scores").delete().eq("run_id", runId);
+  await req.supabase.from("action_plans").delete().eq("run_id", runId);
+
+  // Note: interpretation tables may need service role client if RLS is strict
+  // For now, we allow these to potentially fail silently
+  try {
+    await req.supabase.from("interpretation_sessions").delete().eq("run_id", runId);
+    await req.supabase.from("interpretation_reports").delete().eq("run_id", runId);
+  } catch (e) {
+    console.warn(`[DELETE /diagnostic-runs/${runId}] Interpretation cleanup may have failed:`, e);
+  }
+
+  // Delete the run itself
+  const { error: deleteError } = await req.supabase
+    .from("diagnostic_runs")
+    .delete()
+    .eq("id", runId);
+
+  if (deleteError) {
+    return res.status(500).json({ error: deleteError.message });
+  }
+
+  console.log(`[DELETE /diagnostic-runs] User ${req.userId} deleted run ${runId}`);
+  res.json({ success: true, deleted: runId });
 });
 
 // ------------------------------------------------------------------

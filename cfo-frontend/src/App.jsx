@@ -26,6 +26,7 @@ const AssessObjectivePage = lazy(() => import('./components/assessment/AssessObj
 const ExecutiveReportPage = lazy(() => import('./pages/ExecutiveReportPage'))
 const RequestAccessPage = lazy(() => import('./pages/RequestAccessPage'))
 const ResourcesPage = lazy(() => import('./pages/ResourcesPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
@@ -192,6 +193,12 @@ export default function App() {
           {/* Legacy redirect for old /resources URLs */}
           <Route path="/resources" element={<Navigate to="/blog" replace />} />
           <Route path="/resources/:slug" element={<RedirectWithParams to="/blog" />} />
+          {/* Dashboard - Assessment management */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          } />
           <Route path="/select-pillar" element={
             <ProtectedRoute>
               <SelectPillarPage />

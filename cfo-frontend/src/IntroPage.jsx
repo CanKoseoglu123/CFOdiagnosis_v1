@@ -9,6 +9,7 @@ import ChapterHeader from './components/ChapterHeader';
 import EnterpriseCanvas from './components/EnterpriseCanvas';
 import FeedbackButton from './components/FeedbackButton';
 import { BRAND_COLORS } from './components/Logo';
+import useStepTransition from './hooks/useStepTransition';
 
 // Journey steps
 const JOURNEY_STEPS = [
@@ -76,11 +77,18 @@ const THEMES = [
 export default function IntroPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
+  const { updateStep } = useStepTransition();
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Handle begin assessment - update step and navigate
+  async function handleBeginAssessment() {
+    await updateStep(runId, 'company_setup');
+    navigate(`/run/${runId}/setup/company`);
+  }
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -227,12 +235,13 @@ export default function IntroPage() {
               <LogOut className="w-4 h-4" />
               Save & Exit
             </button>
-            <Link to={`/run/${runId}/setup/company`}>
-              <button className="flex items-center gap-2 bg-[#1a365d] text-white px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition-colors rounded-sm">
-                Begin Assessment
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </Link>
+            <button
+              onClick={handleBeginAssessment}
+              className="flex items-center gap-2 bg-[#1a365d] text-white px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition-colors rounded-sm"
+            >
+              Begin Assessment
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </section>
 

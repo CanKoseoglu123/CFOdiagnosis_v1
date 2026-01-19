@@ -10,6 +10,7 @@ import EnterpriseCanvas from '../EnterpriseCanvas';
 import ChapterHeader from '../ChapterHeader';
 import AssessmentSidebar from './AssessmentSidebar';
 import QuestionCard from './QuestionCard';
+import useStepTransition from '../../hooks/useStepTransition';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -109,6 +110,7 @@ export default function AssessObjectivePage() {
   const [searchParams] = useSearchParams();
   const runId = searchParams.get('runId');
   const editMode = searchParams.get('editMode') === 'true';
+  const { updateProgress } = useStepTransition();
 
   const [spec, setSpec] = useState(null);
   const [runStatus, setRunStatus] = useState(null);
@@ -400,6 +402,19 @@ export default function AssessObjectivePage() {
     }
   }
 
+  // Track progress when objective changes (debounced)
+  useEffect(() => {
+    if (!runId || !objectiveId || loading) return;
+
+    // Calculate progress percentage
+    const totalQuestions = allQuestions.length || 97; // Default to 97 total questions
+    const answeredCount = Object.keys(answers).filter(k => answers[k] !== undefined).length;
+    const progressPct = Math.round((answeredCount / totalQuestions) * 100);
+
+    // Update progress tracking (fire-and-forget)
+    updateProgress(runId, objectiveId, progressPct);
+  }, [runId, objectiveId, loading]); // Only update when objective changes, not on every answer
+
   // Navigation handlers
   function handleBack() {
     if (isFirstObjective) {
@@ -409,8 +424,15 @@ export default function AssessObjectivePage() {
     }
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (nextObjective) {
+      // Calculate current progress before navigating
+      const totalQuestions = allQuestions.length || 97;
+      const answeredCount = Object.keys(answers).filter(k => answers[k] !== undefined).length;
+      const progressPct = Math.round((answeredCount / totalQuestions) * 100);
+
+      // Update progress with next objective as the target
+      await updateProgress(runId, nextObjective, progressPct);
       navigate(`/assess/objective/${nextObjective}?runId=${runId}`);
     }
   }

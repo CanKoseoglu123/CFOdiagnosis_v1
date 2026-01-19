@@ -2,11 +2,13 @@
 // Global sidebar for workflow navigation and page-specific progress
 // VS-39: Updated workflow to include Executive Report step
 // VS-41: New navigation buttons - Back to Assessment, Back to Calibration, Action Planning/Generate Executive Report
+// Progress Tracking: Now can derive state from runData.current_step
 // Completed steps are clickable to allow users to navigate back and review/edit their context
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Circle, Lock, ChevronLeft, ChevronRight, FileText, Home } from 'lucide-react';
+import { getCompletedSteps, WORKFLOW_STEPS as STEP_ORDER } from '../hooks/useStepTransition';
 
 // Workflow steps for the diagnostic journey
 // VS-39: Merged Report Review & Action Planning, added Executive Report
@@ -18,11 +20,45 @@ const WORKFLOW_STEPS = [
   { id: 'executive', label: 'Executive Report', path: '/report', requiresFinalization: true }
 ];
 
+// Map database current_step to sidebar step IDs
+const STEP_MAPPING = {
+  'intro': 'setup',
+  'company_setup': 'setup',
+  'persona': 'setup',
+  'pillar_setup': 'setup',
+  'assessment': 'assess',
+  'calibration': 'calibrate',
+  'report': 'report',
+  'finalized': 'executive'
+};
+
+// Get sidebar step ID from database step
+function getSidebarStep(dbStep) {
+  return STEP_MAPPING[dbStep] || 'report';
+}
+
+// Get completed sidebar steps from database step
+function getCompletedSidebarSteps(dbStep) {
+  const sidebarStep = getSidebarStep(dbStep);
+  const completed = [];
+
+  // Add steps before current
+  for (const step of WORKFLOW_STEPS) {
+    if (step.id === sidebarStep) break;
+    completed.push(step.id);
+  }
+
+  return completed;
+}
+
 export default function WorkflowSidebar({
-  // Current step identifier
-  currentStep = 'report',
-  // All steps before currentStep are considered completed
-  completedSteps = ['setup', 'assess', 'calibrate'],
+  // Current step identifier (legacy prop, still supported)
+  currentStep: currentStepProp = 'report',
+  // All steps before currentStep are considered completed (legacy prop)
+  completedSteps: completedStepsProp = ['setup', 'assess', 'calibrate'],
+  // Progress Tracking: Optional runData with current_step from API
+  // When provided, currentStep and completedSteps are derived from it
+  runData = null,
   // VS-39: Whether pillar is finalized (unlocks Executive Report)
   isFinalized = false,
   // Page-specific content slot
@@ -42,6 +78,22 @@ export default function WorkflowSidebar({
 }) {
   const navigate = useNavigate();
   const [showTooltip, setShowTooltip] = useState(false);
+
+  // Derive currentStep and completedSteps from runData if available
+  const { currentStep, completedSteps } = useMemo(() => {
+    if (runData?.current_step) {
+      const dbStep = runData.current_step;
+      return {
+        currentStep: getSidebarStep(dbStep),
+        completedSteps: getCompletedSidebarSteps(dbStep)
+      };
+    }
+    // Fall back to legacy props
+    return {
+      currentStep: currentStepProp,
+      completedSteps: completedStepsProp
+    };
+  }, [runData, currentStepProp, completedStepsProp]);
 
   // Determine step states
   const getStepState = (step) => {

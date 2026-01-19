@@ -25,6 +25,7 @@ import {
   REVENUE_TRAJECTORY, DEBT_PRESSURE, MA_INTENSITY,
   GROSS_MARGIN_BAND, AUDIT_RIGOR, ERP_STRATEGY
 } from '../data/contextOptions';
+import useStepTransition from '../hooks/useStepTransition';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -137,6 +138,7 @@ export default function CompanySetupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isReviewMode = searchParams.get('review') === 'true';
+  const { updateStep } = useStepTransition();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -388,7 +390,8 @@ export default function CompanySetupPage() {
         confidence: profile.classification?.confidence
       });
 
-      // Navigate to persona confirmation page (no localStorage needed)
+      // Update step tracking and navigate to persona confirmation page
+      await updateStep(runId, 'persona');
       const reviewParam = isReviewMode ? '?review=true' : '';
       navigate(`/run/${runId}/setup/persona${reviewParam}`);
     } catch (err) {

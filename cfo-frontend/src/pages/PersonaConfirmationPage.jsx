@@ -25,6 +25,7 @@ import {
   ChevronUp,
   Info
 } from 'lucide-react';
+import useStepTransition from '../hooks/useStepTransition';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -103,6 +104,7 @@ export default function PersonaConfirmationPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { updateStep } = useStepTransition();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -194,7 +196,8 @@ export default function PersonaConfirmationPage() {
   };
 
   // Handle confirmation
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    await updateStep(runId, 'pillar_setup');
     const reviewParam = isReviewMode ? '?review=true' : '';
     navigate(`/run/${runId}/setup/pillar${reviewParam}`);
   };
