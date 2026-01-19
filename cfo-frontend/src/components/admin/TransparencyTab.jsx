@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Calculator, ChevronDown, ChevronRight, AlertTriangle, CheckCircle,
-  Lock, Target, TrendingUp, FileText, Loader2
+  Lock, Target, TrendingUp, FileText, Loader2, Building2, User, Info
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -67,6 +67,24 @@ function AnswerBadge({ answer }) {
   return (
     <span className={`px-2 py-0.5 text-xs font-medium rounded ${config.bg} ${config.text}`}>
       {answer}
+    </span>
+  );
+}
+
+// Run status badge component
+function RunStatusBadge({ status, progress }) {
+  const config = {
+    draft: { bg: 'bg-slate-100', text: 'text-slate-600', label: 'Draft' },
+    in_progress: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'In Progress' },
+    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Completed' },
+    locked: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Finalized' },
+  }[status] || { bg: 'bg-slate-100', text: 'text-slate-600', label: status };
+
+  const showProgress = status === 'in_progress' && typeof progress === 'number';
+
+  return (
+    <span className={`px-2 py-0.5 text-xs font-medium rounded ${config.bg} ${config.text}`}>
+      {config.label}{showProgress ? ` (${Math.round(progress)}%)` : ''}
     </span>
   );
 }
@@ -394,7 +412,7 @@ function BlockingAnalysisCard({ blocking }) {
 }
 
 // Action impact card
-function ActionImpactCard({ actions, overall }) {
+function ActionImpactCard({ actions }) {
   if (!actions || actions.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded p-4">
@@ -494,11 +512,27 @@ function ActionImpactCard({ actions, overall }) {
   );
 }
 
-// Run selector component
+// Run selector component - shows ALL runs sorted by status
 function RunSelector({ sessions, selectedRunId, onSelect, loading }) {
-  const completedSessions = sessions.filter(
-    (s) => s.status === 'completed' || s.status === 'locked'
-  );
+  // Sort sessions: completed/locked first, then in_progress, then draft
+  const statusOrder = { locked: 0, completed: 1, in_progress: 2, draft: 3 };
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const orderA = statusOrder[a.status] ?? 4;
+    const orderB = statusOrder[b.status] ?? 4;
+    if (orderA !== orderB) return orderA - orderB;
+    // Within same status, sort by date (newest first)
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      draft: '[Draft]',
+      in_progress: '[In Progress]',
+      completed: '[Completed]',
+      locked: '[Finalized]',
+    };
+    return labels[status] || `[${status}]`;
+  };
 
   return (
     <div className="bg-white border border-slate-200 rounded p-4 mb-4">
@@ -511,17 +545,154 @@ function RunSelector({ sessions, selectedRunId, onSelect, loading }) {
         disabled={loading}
         className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
-        <option value="">-- Select a completed run --</option>
-        {completedSessions.map((session) => (
+        <option value="">-- Select a run --</option>
+        {sortedSessions.map((session) => (
           <option key={session.id} value={session.id}>
             {session.company_name || 'Unnamed'} - {new Date(session.created_at).toLocaleDateString()}{' '}
-            ({session.status})
+            {getStatusLabel(session.status)}
           </option>
         ))}
       </select>
-      {completedSessions.length === 0 && (
-        <p className="text-xs text-slate-500 mt-2">No completed diagnostic runs available.</p>
+      {sortedSessions.length === 0 && (
+        <p className="text-xs text-slate-500 mt-2">No diagnostic runs available.</p>
       )}
+    </div>
+  );
+}
+
+// Setup context only view - for runs with 0 answers
+function SetupContextOnlyView({ transparency }) {
+  const { context, persona, data_availability, status, assessment_progress_pct } = transparency;
+
+  return (
+    <div className="space-y-4">
+      {/* Warning Banner */}
+      <div className="bg-amber-50 border border-amber-200 rounded p-4 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+        <div>
+          <div className="font-medium text-amber-800">No Assessment Answers Yet</div>
+          <p className="text-sm text-amber-700 mt-1">
+            This run has not completed any diagnostic questions. Only setup context is available.
+          </p>
+        </div>
+      </div>
+
+      {/* Run Status Card */}
+      <div className="bg-white border border-slate-200 rounded p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Info className="w-5 h-5 text-slate-600" />
+          <h3 className="font-semibold text-slate-800">Run Status</h3>
+          <RunStatusBadge status={status} progress={assessment_progress_pct} />
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="text-slate-500">Questions Answered:</span>{' '}
+            <span className="font-medium text-slate-800">
+              {data_availability.answered_count} / {data_availability.total_questions}
+            </span>
+          </div>
+          <div>
+            <span className="text-slate-500">Calibration:</span>{' '}
+            <span className="font-medium text-slate-800">
+              {data_availability.has_calibration ? 'Completed' : 'Not Started'}
+            </span>
+          </div>
+          <div>
+            <span className="text-slate-500">Status:</span>{' '}
+            <span className="font-medium text-slate-800 capitalize">{status?.replace('_', ' ')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Company Context Card */}
+      {context?.company && (
+        <div className="bg-white border border-slate-200 rounded p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Building2 className="w-5 h-5 text-slate-600" />
+            <h3 className="font-semibold text-slate-800">Company Context</h3>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            {context.company.name && (
+              <div>
+                <span className="text-slate-500">Company Name:</span>{' '}
+                <span className="font-medium text-slate-800">{context.company.name}</span>
+              </div>
+            )}
+            {context.company.industry && (
+              <div>
+                <span className="text-slate-500">Industry:</span>{' '}
+                <span className="font-medium text-slate-800">{context.company.industry}</span>
+              </div>
+            )}
+            {context.company.revenue_range && (
+              <div>
+                <span className="text-slate-500">Revenue Range:</span>{' '}
+                <span className="font-medium text-slate-800">{context.company.revenue_range}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Persona Card */}
+      {persona && (
+        <div className="bg-white border border-slate-200 rounded p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <User className="w-5 h-5 text-slate-600" />
+            <h3 className="font-semibold text-slate-800">Persona Classification</h3>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-slate-500">Persona Type:</span>{' '}
+              <span className="font-medium text-slate-800 capitalize">{persona.type?.replace(/_/g, ' ')}</span>
+            </div>
+            <div>
+              <span className="text-slate-500">Confidence:</span>{' '}
+              <span className="font-medium text-slate-800">{Math.round(persona.confidence * 100)}%</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty context message */}
+      {!context?.company && !persona && (
+        <div className="bg-slate-50 border border-slate-200 rounded p-4 text-center">
+          <p className="text-slate-500">No setup context available for this run.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Partial data warning card - for incomplete runs with some answers
+function PartialDataCard({ dataAvailability, status, progress }) {
+  return (
+    <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+      <div className="flex items-start gap-3">
+        <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-medium text-blue-800">Partial Assessment Data</span>
+            <RunStatusBadge status={status} progress={progress} />
+          </div>
+          <div className="text-sm text-blue-700 space-y-1">
+            <p>
+              Questions answered: <strong>{dataAvailability.answered_count}</strong> / {dataAvailability.total_questions}
+            </p>
+            <p>
+              Calibration: <strong>{dataAvailability.has_calibration ? 'Completed' : 'Not Completed'}</strong>
+            </p>
+            {!dataAvailability.has_calibration && (
+              <p className="text-blue-600">
+                (Default importance multiplier of 1.0x is used for all objectives)
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -642,72 +813,94 @@ export default function TransparencyTab({ sessions, getToken }) {
 
       {!loading && transparency && (
         <>
-          {/* Header */}
+          {/* Header with status badge */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-slate-800">{transparency.company_name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-800">{transparency.company_name}</h2>
+                <RunStatusBadge status={transparency.status} progress={transparency.assessment_progress_pct} />
+              </div>
               <div className="text-sm text-slate-500">
                 Spec {transparency.spec_version} | Generated {new Date(transparency.generated_at).toLocaleString()}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={expandAll}
-                className="px-3 py-1.5 text-xs font-medium border border-slate-300 rounded hover:bg-slate-50"
-              >
-                Expand All
-              </button>
-              <button
-                onClick={collapseAll}
-                className="px-3 py-1.5 text-xs font-medium border border-slate-300 rounded hover:bg-slate-50"
-              >
-                Collapse All
-              </button>
-            </div>
+            {/* Only show expand/collapse buttons if there's data to expand */}
+            {transparency.data_availability?.answered_count > 0 && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={expandAll}
+                  className="px-3 py-1.5 text-xs font-medium border border-slate-300 rounded hover:bg-slate-50"
+                >
+                  Expand All
+                </button>
+                <button
+                  onClick={collapseAll}
+                  className="px-3 py-1.5 text-xs font-medium border border-slate-300 rounded hover:bg-slate-50"
+                >
+                  Collapse All
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Overall Score */}
-          <OverallScoreCard overall={transparency.overall} />
+          {/* View for runs with NO answers - show context only */}
+          {transparency.data_availability?.answered_count === 0 && (
+            <SetupContextOnlyView transparency={transparency} />
+          )}
 
-          {/* Blocking Analysis */}
-          <BlockingAnalysisCard blocking={transparency.blocking} />
-
-          {/* Hierarchy View */}
-          <div className="bg-white border border-slate-200 rounded p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-slate-600" />
-              <h3 className="font-semibold text-slate-800">Hierarchy View</h3>
-              <span className="text-sm text-slate-500">
-                ({transparency.objectives.length} objectives)
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {transparency.objectives.map((objective) => (
-                <ObjectiveAccordion
-                  key={objective.objective_id}
-                  objective={objective}
-                  isExpanded={expandedObjectives.has(objective.objective_id)}
-                  onToggle={() => toggleObjective(objective.objective_id)}
-                  expandedPractices={expandedPractices}
-                  togglePractice={togglePractice}
+          {/* View for runs WITH some answers */}
+          {transparency.data_availability?.answered_count > 0 && (
+            <>
+              {/* Show partial data warning for incomplete runs */}
+              {!transparency.data_availability?.is_complete && (
+                <PartialDataCard
+                  dataAvailability={transparency.data_availability}
+                  status={transparency.status}
+                  progress={transparency.assessment_progress_pct}
                 />
-              ))}
-            </div>
-          </div>
+              )}
 
-          {/* Action Impact */}
-          <ActionImpactCard
-            actions={transparency.action_impact}
-            overall={transparency.overall}
-          />
+              {/* Overall Score */}
+              <OverallScoreCard overall={transparency.overall} />
+
+              {/* Blocking Analysis */}
+              <BlockingAnalysisCard blocking={transparency.blocking} />
+
+              {/* Hierarchy View */}
+              <div className="bg-white border border-slate-200 rounded p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <FileText className="w-5 h-5 text-slate-600" />
+                  <h3 className="font-semibold text-slate-800">Hierarchy View</h3>
+                  <span className="text-sm text-slate-500">
+                    ({transparency.objectives.length} objectives)
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {transparency.objectives.map((objective) => (
+                    <ObjectiveAccordion
+                      key={objective.objective_id}
+                      objective={objective}
+                      isExpanded={expandedObjectives.has(objective.objective_id)}
+                      onToggle={() => toggleObjective(objective.objective_id)}
+                      expandedPractices={expandedPractices}
+                      togglePractice={togglePractice}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Impact */}
+              <ActionImpactCard actions={transparency.action_impact} />
+            </>
+          )}
         </>
       )}
 
       {!loading && !transparency && selectedRunId === '' && (
         <div className="bg-white border border-slate-200 rounded p-8 text-center">
           <Calculator className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <p className="text-slate-500">Select a completed diagnostic run to view calculation transparency.</p>
+          <p className="text-slate-500">Select a diagnostic run to view calculation transparency.</p>
         </div>
       )}
     </div>

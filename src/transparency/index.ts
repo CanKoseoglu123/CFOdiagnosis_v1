@@ -89,11 +89,40 @@ interface ActionImpact {
   action_formula: string;
 }
 
+export interface DataAvailability {
+  answered_count: number;
+  total_questions: number;
+  has_calibration: boolean;
+  has_scores: boolean;
+  is_complete: boolean;
+}
+
+export interface RunContext {
+  company?: {
+    name?: string;
+    industry?: string;
+    revenue_range?: string;
+  };
+  fpa?: Record<string, unknown>;
+}
+
+export interface PersonaInfo {
+  type: string;
+  confidence: number;
+}
+
 export interface TransparencyResult {
   run_id: string;
   company_name: string;
   spec_version: string;
   generated_at: string;
+
+  // Run status fields
+  status: 'draft' | 'in_progress' | 'completed' | 'locked';
+  assessment_progress_pct: number;
+  data_availability: DataAvailability;
+  context: RunContext | null;
+  persona: PersonaInfo | null;
 
   // Level 4: Overall
   overall: {
@@ -172,10 +201,10 @@ export async function generateTransparency(
   supabase: SupabaseClient,
   runId: string
 ): Promise<TransparencyResult> {
-  // 1) Load run data
+  // 1) Load run data with extended fields
   const { data: run, error: runError } = await supabase
     .from("diagnostic_runs")
-    .select("id, spec_version, context, calibration, company_profile_id")
+    .select("id, spec_version, context, calibration, company_profile_id, status, assessment_progress_pct")
     .eq("id", runId)
     .single();
 
@@ -197,7 +226,105 @@ export async function generateTransparency(
     (inputs || []).map((i: { question_id: string; value: unknown }) => [i.question_id, i.value])
   );
 
-  // 3) Load action plan (for action impact)
+  // 3) Load company profile for persona if available
+  let personaInfo: PersonaInfo | null = null;
+  if (run.company_profile_id) {
+    const { data: profile } = await supabase
+      .from("company_profiles")
+      .select("classification")
+      .eq("id", run.company_profile_id)
+      .single();
+
+    if (profile?.classification?.persona) {
+      personaInfo = {
+        type: profile.classification.persona,
+        confidence: profile.classification.confidence || 0
+      };
+    }
+  }
+
+  // 4) Get spec for total question count
+  const spec = SpecRegistry.get(run.spec_version);
+  const totalQuestions = spec.questions.length;
+  const answeredCount = inputs?.length || 0;
+
+  // Extract context
+  const runContext: RunContext | null = run.context ? {
+    company: run.context.company || {
+      name: run.context.company_name,
+      industry: run.context.industry,
+      revenue_range: run.context.revenue_range
+    },
+    fpa: run.context.fpa
+  } : null;
+
+  const companyName = runContext?.company?.name || run.context?.company_name || 'Unknown Company';
+
+  // Calculate data availability
+  const calibration: CalibrationData | null = run.calibration;
+  const hasCalibration = !!(calibration?.importance_map && Object.keys(calibration.importance_map).length > 0);
+
+  const dataAvailability: DataAvailability = {
+    answered_count: answeredCount,
+    total_questions: totalQuestions,
+    has_calibration: hasCalibration,
+    has_scores: answeredCount > 0,
+    is_complete: run.status === 'completed' || run.status === 'locked'
+  };
+
+  // 5) Early return for runs with no answers - return minimal response
+  if (answeredCount === 0) {
+    return {
+      run_id: runId,
+      company_name: companyName,
+      spec_version: run.spec_version,
+      generated_at: new Date().toISOString(),
+      status: run.status || 'draft',
+      assessment_progress_pct: run.assessment_progress_pct || 0,
+      data_availability: dataAvailability,
+      context: runContext,
+      persona: personaInfo,
+      overall: {
+        total_possible_points: 0,
+        total_achieved_points: 0,
+        execution_score: 0,
+        total_questions: totalQuestions,
+        applicable_questions: 0,
+        yes_count: 0,
+        no_count: 0,
+        na_count: 0,
+        potential_maturity: { level: 1, label: LEVEL_NAMES[1] || 'Level 1' },
+        actual_maturity: { level: 1, label: LEVEL_NAMES[1] || 'Level 1' },
+        capped: false,
+        cap_reason: null
+      },
+      blocking: {
+        current_blockers: [],
+        l1_gate_status: {
+          gate_level: 'L1',
+          total_criticals: L1_CRITICALS.length,
+          passed: 0,
+          failed: 0,
+          passed_questions: [],
+          failed_questions: []
+        },
+        l2_gate_status: {
+          gate_level: 'L2',
+          total_criticals: L2_CRITICALS.length,
+          passed: 0,
+          failed: 0,
+          passed_questions: [],
+          failed_questions: []
+        },
+        unlock_l2_requires: [],
+        unlock_l3_requires: { score_needed: SCORE_THRESHOLDS.LEVEL_3, criticals_needed: [] }
+      },
+      objectives: [],
+      action_impact: []
+    };
+  }
+
+  // 6) Load action plan (for action impact)
   const { data: actionPlan } = await supabase
     .from("action_plans")
     .select("question_id, timeline, owner")
@@ -209,12 +336,7 @@ export async function generateTransparency(
     )
   );
 
-  // 4) Get spec
-  const spec = SpecRegistry.get(run.spec_version);
-  const calibration: CalibrationData | null = run.calibration;
-  const companyName = run.context?.company?.name || run.context?.company_name || 'Unknown Company';
-
-  // 5) Build lookup maps
+  // 7) Build lookup maps
   const objectiveMap = new Map<string, SpecObjective>(
     (spec.objectives || []).map((o: SpecObjective) => [o.id, o])
   );
@@ -579,6 +701,11 @@ export async function generateTransparency(
     company_name: companyName,
     spec_version: run.spec_version,
     generated_at: new Date().toISOString(),
+    status: run.status || 'draft',
+    assessment_progress_pct: run.assessment_progress_pct || 0,
+    data_availability: dataAvailability,
+    context: runContext,
+    persona: personaInfo,
 
     overall: {
       total_possible_points: totalPossible,
