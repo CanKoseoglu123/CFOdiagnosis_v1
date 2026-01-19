@@ -314,7 +314,7 @@ app.post("/diagnostic-runs", async (req, res) => {
       status: "created",
       spec_version: DEFAULT_SPEC_VERSION,
       owner_id: req.userId || null,
-      // user_email: req.userEmail || null, // TODO: Enable after migration is applied to production
+      user_email: req.userEmail || null,
       current_step: "intro",
       last_activity_at: new Date().toISOString(),
     })
@@ -2355,7 +2355,8 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
         calibration,
         setup_completed_at,
         finalized_at,
-        created_at
+        created_at,
+        company_profiles (name)
       `)
       .eq("owner_id", req.userId || "")
       .order("created_at", { ascending: false });
@@ -2368,8 +2369,10 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       ...session,
       user_email: session.user_email || req.userEmail || "unknown",
       user_name: null,
-      company_name: session.context?.company?.name || session.context?.company_name || null,
+      // V2 format: company in company_profiles, V1/Legacy: company in context
+      company_name: session.company_profiles?.name || session.context?.company?.name || session.context?.company_name || null,
       industry: session.context?.company?.industry || session.context?.industry || null,
+      company_profiles: undefined, // Don't expose raw joined data
     }));
 
     res.setHeader("X-Admin-Debug", "adminClient=missing,fallback=owner_only");
@@ -2389,7 +2392,8 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       calibration,
       setup_completed_at,
       finalized_at,
-      created_at
+      created_at,
+      company_profiles (name)
     `)
     .order("created_at", { ascending: false });
 
@@ -2448,8 +2452,10 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       ...session,
       user_email: email,
       user_name: userData?.name || null,
-      company_name: session.context?.company?.name || session.context?.company_name || null,
+      // V2 format: company in company_profiles, V1/Legacy: company in context
+      company_name: session.company_profiles?.name || session.context?.company?.name || session.context?.company_name || null,
       industry: session.context?.company?.industry || session.context?.industry || null,
+      company_profiles: undefined, // Don't expose raw joined data
     };
   });
 
