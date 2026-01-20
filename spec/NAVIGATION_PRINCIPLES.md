@@ -213,7 +213,7 @@ const saveAnswer = async (questionId, value) => {
     await api.saveAnswer(runId, questionId, value);
   } catch (err) {
     console.error('Save failed:', err);
-    setAnswers(prev => { const u = {...prev}; delete u[questionId]; return u; }); // Silent revert
+    setAnswers(({ [questionId]: _, ...rest }) => rest); // Silent revert
   }
 };
 ```
