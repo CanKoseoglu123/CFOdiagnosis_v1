@@ -75,24 +75,41 @@ const allowedOrigins = [
 const vercelPreviewPattern = /^https:\/\/cfodiagnosisv1-git-[a-z0-9-]+(-cans-projects-[a-z0-9]+)?\.vercel\.app$/;
 const cfoLensPattern = /^https:\/\/(www\.)?cfo-lens\.com$/;
 
+// Helper function to check if origin is allowed
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true; // Allow requests with no origin (mobile apps, curl, etc.)
+  if (allowedOrigins.includes(origin)) return true;
+  if (vercelPreviewPattern.test(origin)) return true;
+  if (cfoLensPattern.test(origin)) return true;
+  return false;
+};
+
+// Explicit OPTIONS handler to prevent Railway proxy redirects from breaking preflight
+app.options('*', (req: Request, res: Response) => {
+  const origin = req.headers.origin as string | undefined;
+  if (isOriginAllowed(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    res.sendStatus(204);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    // Allow Vercel preview deployments
-    if (vercelPreviewPattern.test(origin)) {
-      return callback(null, true);
-    }
-    // Allow cfo-lens.com and www.cfo-lens.com
-    if (cfoLensPattern.test(origin)) {
+    if (isOriginAllowed(origin)) {
       return callback(null, true);
     }
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400, // Cache preflight for 24 hours
 }));
 
 // Security headers via helmet
