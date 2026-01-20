@@ -75,19 +75,41 @@ const allowedOrigins = [
 const vercelPreviewPattern = /^https:\/\/cfodiagnosisv1-git-[a-z0-9-]+(-cans-projects-[a-z0-9]+)?\.vercel\.app$/;
 const cfoLensPattern = /^https:\/\/(www\.)?cfo-lens\.com$/;
 
+// Helper function to check if origin is allowed
+// Security note: Requests without Origin header are allowed to support:
+// - Server-to-server API calls (no browser involved)
+// - Mobile app requests (React Native, etc.)
+// - CLI tools (curl, httpie, etc.)
+// - Same-origin requests (browsers don't send Origin for same-origin)
+// These requests bypass CORS entirely at the browser level anyway.
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  if (vercelPreviewPattern.test(origin)) return true;
+  if (cfoLensPattern.test(origin)) return true;
+  return false;
+};
+
+// Explicit OPTIONS handler to prevent Railway proxy redirects from breaking preflight
+app.options('*', (req: Request, res: Response) => {
+  const origin = req.headers.origin as string | undefined;
+  if (isOriginAllowed(origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    res.sendStatus(204);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
+// CORS middleware for non-preflight requests (sets Access-Control-Allow-Origin on responses)
+// Note: Preflight OPTIONS requests are handled by the explicit handler above
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    // Allow Vercel preview deployments
-    if (vercelPreviewPattern.test(origin)) {
-      return callback(null, true);
-    }
-    // Allow cfo-lens.com and www.cfo-lens.com
-    if (cfoLensPattern.test(origin)) {
+    if (isOriginAllowed(origin)) {
       return callback(null, true);
     }
     return callback(new Error("Not allowed by CORS"));
