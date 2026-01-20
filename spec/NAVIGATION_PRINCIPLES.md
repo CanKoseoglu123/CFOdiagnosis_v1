@@ -1,6 +1,6 @@
 # Navigation Principles - CFO Diagnostic Platform
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Created:** 2026-01-19
 **Last Updated:** 2026-01-20
 **Status:** Authoritative
@@ -13,6 +13,7 @@ This document establishes binding navigation principles for the CFO Diagnostic P
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2.0 | 2026-01-20 | Critical review: clarified P5/P7 scope, fixed Button Matrix terminology, added P7 enforcement points, separated current vs planned in P4, added Accessibility section, fixed stale SPEC reference |
 | 1.1.0 | 2026-01-20 | Added Principle 7 (Contextual UI Relevance), added Visual Cleanliness Rule to Principle 5 |
 | 1.0.1 | 2026-01-19 | Added concurrent edit handling, clarified Locked state, fixed examples |
 | 1.0.0 | 2026-01-19 | Initial version from navigation audit |
@@ -195,43 +196,35 @@ navigate(`/assess/objective/${nextObjective.id}?runId=${runId}`);
 | Auth expired | Redirect | Preserve return URL |
 | Degraded connection | Continue | Queue saves, sync when stable |
 
-**Auto-Save Failure Handling:**
+**Auto-Save Failure Handling (Current Implementation):**
 
-Auto-save for question answers uses the following strategy:
+Auto-save for question answers currently uses this strategy:
 
 1. **Optimistic UI** - Selection updates immediately in UI
 2. **Background save** - API call fires asynchronously
-3. **On failure** - Revert UI state, show toast "Answer not saved, please try again"
-4. **Retry logic** - 3 attempts with exponential backoff (1s, 2s, 4s)
-5. **Offline queue** - If navigator.onLine is false, queue saves for when connection returns
+3. **On failure** - Silent revert + console.log (user may not notice)
 
-**Current vs Target State:**
-
-| Behavior | Current State | Target State |
-|----------|---------------|--------------|
-| Optimistic UI | Implemented | Implemented |
-| Background save | Implemented | Implemented |
-| On failure | Silent revert + console.log | Toast notification + revert |
-| Retry logic | None | 3 attempts with exponential backoff |
-| Offline queue | None | Queue saves when navigator.onLine is false |
-
-**Target Implementation (not yet implemented):**
+**Code Example - Current Implementation:**
 ```jsx
-// TARGET STATE: Auto-save with retry and user feedback
-const saveAnswer = async (questionId, value, attempt = 1) => {
+// Current auto-save behavior
+const saveAnswer = async (questionId, value) => {
   setAnswers(prev => ({ ...prev, [questionId]: value })); // Optimistic
   try {
     await api.saveAnswer(runId, questionId, value);
   } catch (err) {
-    if (attempt < 3) {
-      setTimeout(() => saveAnswer(questionId, value, attempt + 1), 1000 * attempt);
-    } else {
-      setAnswers(prev => { const u = {...prev}; delete u[questionId]; return u; }); // Revert
-      toast.error('Answer not saved. Please try again.');
-    }
+    console.error('Save failed:', err);
+    setAnswers(prev => { const u = {...prev}; delete u[questionId]; return u; }); // Silent revert
   }
 };
 ```
+
+**Planned Enhancements (not yet implemented):**
+
+| Enhancement | Description | Status |
+|-------------|-------------|--------|
+| Toast notification on failure | Show "Answer not saved, please try again" | Planned |
+| Retry logic | 3 attempts with exponential backoff (1s, 2s, 4s) | Planned |
+| Offline queue | Queue saves when `navigator.onLine` is false | Planned |
 
 **Anti-patterns (DO NOT):**
 - Show blank pages on error
@@ -312,10 +305,8 @@ The lock icon visually communicates that this step requires intentional action, 
 - Use inconsistent icons or colors
 
 **Visual Cleanliness Rule:**
-- Prefer hiding over disabling for unreachable actions
-- Keep button groups minimal (max 2-3 primary actions)
-- Remove visual clutter - if something isn't actionable, it shouldn't be visible
-- Exception: Sidebar steps can show pending state to communicate overall journey
+- Keep button groups minimal (max 2-3 primary actions per view)
+- For specific button visibility rules, see **Principle 7: Contextual UI Relevance**
 
 ---
 
@@ -386,22 +377,39 @@ const handleFinalizeConfirm = async () => {
 
 **Rule:** Only show controls that are actionable in the current state.
 
+**Scope:** This principle governs button and action visibility. It does NOT apply to the sidebar, which shows all steps (including pending/locked) to communicate the overall journey (see Principle 5).
+
 **Implementation:**
 - Hide navigation buttons that lead to non-existent or inaccessible content
 - On first page of a new diagnostic: no "View Report" button (report doesn't exist yet)
 - On assessment page before completion: no "Calibrate" button
-- Report buttons only appear after finalization
+- "Generate Executive Report" only appears when action plan is complete
+- Prefer hiding over disabling for unreachable actions
 - Action buttons reflect actual available actions, not potential future actions
 
 **Button Visibility Matrix:**
-| Context | "Back" | "Next" | "View Report" | "Generate Executive" |
-|---------|--------|--------|---------------|---------------------|
-| First assessment question | Hidden | Visible | Hidden | Hidden |
-| Mid-assessment | Visible | Visible | Hidden | Hidden |
-| Calibration | Visible | Visible | Hidden | Hidden |
-| Action Planning (incomplete) | Visible | N/A | Visible | Hidden |
-| Action Planning (complete) | Visible | N/A | Visible | Visible |
-| Executive Report | Hidden | N/A | N/A | N/A |
+
+Uses terminology from Principle 5's Terminology Consistency table:
+
+| Context | Primary Back Action | Primary Forward Action | "Generate Executive" |
+|---------|--------------------|-----------------------|---------------------|
+| First assessment objective | Hidden | "Next Objective" | Hidden |
+| Mid-assessment | "Previous Objective" | "Next Objective" | Hidden |
+| Last assessment objective | "Previous Objective" | "Continue to Calibration" | Hidden |
+| Calibration | "Back to Assessment" | "View Report" | Hidden |
+| Report / Action Planning (incomplete) | "Back to Calibration" | N/A | Hidden |
+| Report / Action Planning (complete) | "Back to Calibration" | N/A | Visible |
+| Executive Report | "Back to Report" | N/A | N/A (already generated) |
+
+**Note:** Executive Report allows "Back to Report" for review purposes, consistent with Principle 1 (Free Review).
+
+**Enforcement Points:**
+| Location | File | Check |
+|----------|------|-------|
+| `AssessObjectivePage` | `src/components/assessment/AssessObjectivePage.jsx` | Hide "Previous" on first objective |
+| `CalibrationPage` | `src/pages/CalibrationPage.jsx` | Hide "View Report" until calibration saved |
+| `PillarReport` | `src/pages/PillarReport.jsx` | Hide "Generate Executive" until action plan complete |
+| `ActionPlanningTab` | `src/components/report/ActionPlanningTab.jsx` | Conditional render of finalization button |
 
 **Anti-patterns (DO NOT):**
 - Show disabled buttons for future states (use hidden instead)
@@ -471,7 +479,7 @@ Every navigation path must be tested for:
 | P4 | Navigate to `/report/invalid-uuid` → shows "Run not found" with dashboard link |
 | P5 | Click completed "Setup" step in sidebar from Report → navigates to company setup |
 | P6 | Click "Generate Executive Report" → confirmation modal appears (not browser dialog) |
-| P7 | First assessment question → no "Back" or "View Report" buttons visible |
+| P7 | First assessment objective → no "Previous Objective" button visible; Report page with incomplete action plan → no "Generate Executive Report" button |
 
 ---
 
@@ -489,8 +497,39 @@ Every navigation path must be tested for:
 
 ---
 
+## Accessibility Requirements
+
+Navigation must support users with disabilities:
+
+**Keyboard Navigation:**
+- All navigation controls must be reachable via Tab key
+- Enter/Space activates focused buttons
+- Escape closes modals
+- Focus trap within modals (Tab cycles within modal, not page)
+
+**Screen Readers:**
+- Sidebar steps announce state: "Setup, completed" / "Assessment, current step" / "Report, not yet available"
+- Progress announcements on step transitions: "Step 2 of 5: Assessment"
+- Error states announced via `aria-live="polite"`
+
+**ARIA Attributes:**
+| Element | Required ARIA |
+|---------|--------------|
+| Sidebar step (completed) | `aria-current="false"`, clickable |
+| Sidebar step (active) | `aria-current="step"` |
+| Sidebar step (pending) | `aria-disabled="true"` |
+| Navigation buttons | `aria-label` if icon-only |
+| Progress indicator | `aria-valuenow`, `aria-valuemax` |
+
+**Focus Management:**
+- On step transition, focus moves to main content heading
+- On error, focus moves to error message
+- On modal open, focus moves to first focusable element in modal
+
+---
+
 ## Related Documents
 
 - `spec/NAVIGATION_AUDIT_FINDINGS.md` - Current issues and fixes
-- `spec/SPEC_v3.1.0.md` - Master system specification
+- `spec/SPEC.md` - Master system specification (v4.0)
 - `spec/DESIGN_SYSTEM.md` - Visual design patterns
