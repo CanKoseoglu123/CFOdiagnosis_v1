@@ -273,16 +273,37 @@ const phase = useMemo(() => {
 
 ### Fix for P7-002 (Medium)
 
-**Derive workflow step states from props:**
+**Derive workflow step states from runData prop:**
 
 ```jsx
-// Instead of hardcoded WORKFLOW_STEPS, derive from a prop
+// In AssessmentSidebar.jsx - accept runData prop and derive step states dynamically
+
+// Step mapping from database current_step to sidebar display step
+const DB_STEP_TO_SIDEBAR_STEP = {
+  'intro': 'setup',
+  'company_setup': 'setup',
+  'persona': 'setup',
+  'pillar_setup': 'pillar',
+  'assessment': 'assessment',
+  'calibration': 'calibration',
+  'report': 'report',
+  'finalized': 'report'
+};
+
+// Step labels for display
+const STEP_LABELS = {
+  setup: 'Company Setup',
+  pillar: 'Pillar Setup',
+  assessment: 'Assessment',
+  calibration: 'Calibration',
+  report: 'Report'
+};
+
+// Instead of hardcoded WORKFLOW_STEPS constant, derive from runData
 function getWorkflowSteps(dbCurrentStep) {
   const stepOrder = ['setup', 'pillar', 'assessment', 'calibration', 'report'];
-  const currentIndex = stepOrder.indexOf(
-    dbCurrentStep === 'setup' || dbCurrentStep === 'pillar' ? 'assessment' :
-    // ... map db step to workflow step
-  );
+  const currentSidebarStep = DB_STEP_TO_SIDEBAR_STEP[dbCurrentStep] || 'assessment';
+  const currentIndex = stepOrder.indexOf(currentSidebarStep);
 
   return stepOrder.map((step, index) => ({
     id: step,
@@ -291,9 +312,25 @@ function getWorkflowSteps(dbCurrentStep) {
     current: index === currentIndex
   }));
 }
+
+// Usage in component:
+export default function AssessmentSidebar({ runData, currentObjective, ... }) {
+  const workflowSteps = useMemo(() => {
+    if (runData?.current_step) {
+      return getWorkflowSteps(runData.current_step);
+    }
+    // Fall back to current hardcoded behavior if no runData
+    return WORKFLOW_STEPS;
+  }, [runData]);
+
+  // ... render workflowSteps instead of WORKFLOW_STEPS
+}
 ```
 
-**Alternative:** Accept `runData` prop (like WorkflowSidebar does) and derive states from `runData.current_step`.
+**Implementation Notes:**
+1. AssessmentSidebar must receive `runData` prop from parent (AssessObjectivePage already fetches this)
+2. The mapping mirrors WorkflowSidebar's existing STEP_MAPPING for consistency
+3. Fallback to existing behavior ensures no regression if runData is unavailable
 
 ---
 

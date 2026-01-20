@@ -110,6 +110,11 @@ export default function WorkflowSidebar({
       case 'executive':
         return 'report';  // Show all buttons
       default:
+        // Unknown step - default to setup (safest, hides all nav buttons)
+        // Log warning to help debug unexpected states
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`[WorkflowSidebar] Unknown currentStep: "${currentStep}". Defaulting to 'setup' phase.`);
+        }
         return 'setup';
     }
   }, [currentStep]);
