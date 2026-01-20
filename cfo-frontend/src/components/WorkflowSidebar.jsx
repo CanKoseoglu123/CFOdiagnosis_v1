@@ -4,6 +4,7 @@
 // VS-41: New navigation buttons - Back to Assessment, Back to Calibration, Action Planning/Generate Executive Report
 // Progress Tracking: Now can derive state from runData.current_step
 // Completed steps are clickable to allow users to navigate back and review/edit their context
+// P7-001 Fix: Navigation buttons now respect workflow phase (setup pages don't show report buttons)
 
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -94,6 +95,24 @@ export default function WorkflowSidebar({
       completedSteps: completedStepsProp
     };
   }, [runData, currentStepProp, completedStepsProp]);
+
+  // P7-001: Determine workflow phase for contextual button visibility
+  // Phase determines which navigation buttons are shown (Principle 7: Contextual UI Relevance)
+  const workflowPhase = useMemo(() => {
+    switch (currentStep) {
+      case 'setup':
+        return 'setup';  // No report-related buttons
+      case 'assess':
+        return 'assessment';  // Assessment has its own sidebar, but if WorkflowSidebar is used, show minimal
+      case 'calibrate':
+        return 'calibration';  // Show "Back to Assessment"
+      case 'report':
+      case 'executive':
+        return 'report';  // Show all buttons
+      default:
+        return 'setup';
+    }
+  }, [currentStep]);
 
   // Determine step states
   const getStepState = (step) => {
@@ -281,58 +300,65 @@ export default function WorkflowSidebar({
           </>
         ) : (
           // Pre-finalization navigation
+          // P7-001: Only show buttons contextually relevant to current workflow phase
           <>
-            {/* Back to Assessment */}
-            <button
-              onClick={handleBackToAssessment}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Back to Assessment
-            </button>
-
-            {/* Back to Calibration */}
-            <button
-              onClick={handleBackToCalibration}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Back to Calibration
-            </button>
-
-            {/* Third button: Action Planning OR Generate Executive Report */}
-            {showGenerateButton ? (
-              // Generate Executive Report (Action Planning tab, not finalized)
-              <div
-                className="relative"
-                onMouseEnter={() => !canFinalize && setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-              >
-                <button
-                  onClick={handleGenerateExecutiveReport}
-                  disabled={!canFinalize}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed"
-                >
-                  <FileText className="w-4 h-4" />
-                  Generate Executive Report
-                </button>
-                {/* Tooltip for disabled state */}
-                {showTooltip && !canFinalize && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-10">
-                    {getDisabledReason()}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Go to Action Planning (Overview/Footprint tabs)
+            {/* Back to Assessment - only show in calibration or report phase */}
+            {['calibration', 'report'].includes(workflowPhase) && (
               <button
-                onClick={handleGoToActionPlanning}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-sm hover:bg-blue-700 transition-colors"
+                onClick={handleBackToAssessment}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
               >
-                Action Planning
-                <ChevronRight className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" />
+                Back to Assessment
               </button>
+            )}
+
+            {/* Back to Calibration - only show in report phase */}
+            {workflowPhase === 'report' && (
+              <button
+                onClick={handleBackToCalibration}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-600 text-sm font-medium rounded-sm border border-slate-300 hover:bg-slate-50 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back to Calibration
+              </button>
+            )}
+
+            {/* Action Planning / Generate Executive Report - only show in report phase */}
+            {workflowPhase === 'report' && (
+              showGenerateButton ? (
+                // Generate Executive Report (Action Planning tab, not finalized)
+                <div
+                  className="relative"
+                  onMouseEnter={() => !canFinalize && setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                >
+                  <button
+                    onClick={handleGenerateExecutiveReport}
+                    disabled={!canFinalize}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Generate Executive Report
+                  </button>
+                  {/* Tooltip for disabled state */}
+                  {showTooltip && !canFinalize && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-10">
+                      {getDisabledReason()}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Go to Action Planning (Overview/Footprint tabs)
+                <button
+                  onClick={handleGoToActionPlanning}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-sm hover:bg-blue-700 transition-colors"
+                >
+                  Action Planning
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )
             )}
           </>
         )}
