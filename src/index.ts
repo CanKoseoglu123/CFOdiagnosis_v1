@@ -76,8 +76,14 @@ const vercelPreviewPattern = /^https:\/\/cfodiagnosisv1-git-[a-z0-9-]+(-cans-pro
 const cfoLensPattern = /^https:\/\/(www\.)?cfo-lens\.com$/;
 
 // Helper function to check if origin is allowed
+// Security note: Requests without Origin header are allowed to support:
+// - Server-to-server API calls (no browser involved)
+// - Mobile app requests (React Native, etc.)
+// - CLI tools (curl, httpie, etc.)
+// - Same-origin requests (browsers don't send Origin for same-origin)
+// These requests bypass CORS entirely at the browser level anyway.
 const isOriginAllowed = (origin: string | undefined): boolean => {
-  if (!origin) return true; // Allow requests with no origin (mobile apps, curl, etc.)
+  if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
   if (vercelPreviewPattern.test(origin)) return true;
   if (cfoLensPattern.test(origin)) return true;
@@ -99,6 +105,8 @@ app.options('*', (req: Request, res: Response) => {
   }
 });
 
+// CORS middleware for non-preflight requests (sets Access-Control-Allow-Origin on responses)
+// Note: Preflight OPTIONS requests are handled by the explicit handler above
 app.use(cors({
   origin: (origin, callback) => {
     if (isOriginAllowed(origin)) {
@@ -107,9 +115,6 @@ app.use(cors({
     return callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  maxAge: 86400, // Cache preflight for 24 hours
 }));
 
 // Security headers via helmet
