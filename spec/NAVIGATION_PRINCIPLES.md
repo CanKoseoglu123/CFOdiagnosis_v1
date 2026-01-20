@@ -1,8 +1,8 @@
 # Navigation Principles - CFO Diagnostic Platform
 
-**Version:** 1.0.1
+**Version:** 1.1.0
 **Created:** 2026-01-19
-**Last Updated:** 2026-01-19
+**Last Updated:** 2026-01-20
 **Status:** Authoritative
 
 This document establishes binding navigation principles for the CFO Diagnostic Platform. All new navigation code must adhere to these principles.
@@ -13,6 +13,7 @@ This document establishes binding navigation principles for the CFO Diagnostic P
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1.0 | 2026-01-20 | Added Principle 7 (Contextual UI Relevance), added Visual Cleanliness Rule to Principle 5 |
 | 1.0.1 | 2026-01-19 | Added concurrent edit handling, clarified Locked state, fixed examples |
 | 1.0.0 | 2026-01-19 | Initial version from navigation audit |
 
@@ -24,7 +25,7 @@ Navigation in the CFO Diagnostic Platform follows a **guided journey** paradigm.
 
 ---
 
-## The Six Navigation Principles
+## The Seven Navigation Principles
 
 ### Principle 1: Linear Progression with Free Review
 
@@ -310,6 +311,12 @@ The lock icon visually communicates that this step requires intentional action, 
 - Make only some completed steps clickable
 - Use inconsistent icons or colors
 
+**Visual Cleanliness Rule:**
+- Prefer hiding over disabling for unreachable actions
+- Keep button groups minimal (max 2-3 primary actions)
+- Remove visual clutter - if something isn't actionable, it shouldn't be visible
+- Exception: Sidebar steps can show pending state to communicate overall journey
+
 ---
 
 ### Principle 6: No Surprises
@@ -375,6 +382,48 @@ const handleFinalizeConfirm = async () => {
 
 ---
 
+### Principle 7: Contextual UI Relevance
+
+**Rule:** Only show controls that are actionable in the current state.
+
+**Implementation:**
+- Hide navigation buttons that lead to non-existent or inaccessible content
+- On first page of a new diagnostic: no "View Report" button (report doesn't exist yet)
+- On assessment page before completion: no "Calibrate" button
+- Report buttons only appear after finalization
+- Action buttons reflect actual available actions, not potential future actions
+
+**Button Visibility Matrix:**
+| Context | "Back" | "Next" | "View Report" | "Generate Executive" |
+|---------|--------|--------|---------------|---------------------|
+| First assessment question | Hidden | Visible | Hidden | Hidden |
+| Mid-assessment | Visible | Visible | Hidden | Hidden |
+| Calibration | Visible | Visible | Hidden | Hidden |
+| Action Planning (incomplete) | Visible | N/A | Visible | Hidden |
+| Action Planning (complete) | Visible | N/A | Visible | Visible |
+| Executive Report | Hidden | N/A | N/A | N/A |
+
+**Anti-patterns (DO NOT):**
+- Show disabled buttons for future states (use hidden instead)
+- Display "Coming Soon" placeholders
+- Show buttons that lead to error pages
+- Clutter the UI with conditional explanatory text about why buttons are hidden
+
+**Code Example - Correct Contextual Visibility:**
+```jsx
+// Only show "Generate Executive Report" when action plan is complete
+{isActionPlanComplete && (
+  <Button onClick={handleGenerateExecutive}>
+    Generate Executive Report
+  </Button>
+)}
+
+// DO NOT do this (disabled button for future state):
+// <Button disabled={!isActionPlanComplete}>Generate Executive Report</Button>
+```
+
+---
+
 ## Implementation Checklist
 
 When implementing new navigation:
@@ -383,8 +432,9 @@ When implementing new navigation:
 - [ ] **P2: Single Source** - Where does state come from? Is it DB-backed?
 - [ ] **P3: URL = State** - Does the URL work in a new tab?
 - [ ] **P4: Forgiving** - What happens on error? Is there recovery?
-- [ ] **P5: Consistent** - Does it match existing patterns?
+- [ ] **P5: Consistent** - Does it match existing patterns? Is the UI clean?
 - [ ] **P6: No Surprises** - Any destructive actions? Confirmation needed?
+- [ ] **P7: Contextual UI** - Are all visible buttons actionable? Any buttons shown for future states?
 
 ---
 
@@ -409,6 +459,7 @@ Every navigation path must be tested for:
 | P4: Forgiving | | | | | X | X |
 | P5: Consistent | X | | X | | | |
 | P6: No Surprises | X | | X | | | |
+| P7: Contextual UI | X | X | | X | | |
 
 **Key Test Scenarios by Principle:**
 
@@ -420,6 +471,7 @@ Every navigation path must be tested for:
 | P4 | Navigate to `/report/invalid-uuid` → shows "Run not found" with dashboard link |
 | P5 | Click completed "Setup" step in sidebar from Report → navigates to company setup |
 | P6 | Click "Generate Executive Report" → confirmation modal appears (not browser dialog) |
+| P7 | First assessment question → no "Back" or "View Report" buttons visible |
 
 ---
 
