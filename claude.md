@@ -122,12 +122,20 @@ Claude Code operates in distinct modes to separate planning from execution. Trig
 
 DO NOT write code or make changes during planning.
 
-**Implement Mode:**
-- One file at a time, validate before next
-- If blocked twice: Stop, report error, wait for guidance
-- DO NOT work around blockers
+**Implement Mode (auto-reviews):**
+1. **Execute** — One file at a time, validate before next
+2. **If blocked twice** — Stop, report error, wait for guidance
+3. **Self-Review** — After all changes, check:
+   - Did changes stay within scope?
+   - Any regressions introduced?
+   - What might break?
+4. **Output** — Summary of changes + review notes
+5. **End with** — "Manual checks recommended: [list]"
 
-**Review Mode:**
+DO NOT work around blockers.
+
+**Review Mode (standalone):**
+Use when reviewing changes made outside of Implement mode, or for deeper review.
 - Summarize changes, list validations run, flag what might break
 - DO NOT make additional changes
 - End with: "Manual checks recommended: [list]"
