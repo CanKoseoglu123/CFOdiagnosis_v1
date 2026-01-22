@@ -6,7 +6,6 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import WorkflowSidebar from '../components/WorkflowSidebar';
-import SetupProgress from '../components/setup/SetupProgress';
 import SetupHelpModal from '../components/SetupHelpModal';
 import {
   Building2,
@@ -298,13 +297,6 @@ export default function PersonaConfirmationPage() {
           whyTitle="Why this matters:"
           whyText="Your persona determines the maturity targets we'll measure you against. A high-growth company is benchmarked differently than a governance-focused enterprise. Getting this right ensures your recommendations are relevant, not generic."
         />
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-3xl mx-auto px-6 py-4">
-            <SetupProgress currentStep="persona" />
-          </div>
-        </div>
-
         {/* Main Content */}
         <div className="max-w-3xl mx-auto px-6 py-8">
           {/* Page Title */}

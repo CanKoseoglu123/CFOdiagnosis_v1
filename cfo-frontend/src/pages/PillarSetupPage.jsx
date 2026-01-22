@@ -13,7 +13,6 @@ import {
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import WorkflowSidebar from '../components/WorkflowSidebar';
-import SetupProgress from '../components/setup/SetupProgress';
 import SetupHelpModal from '../components/SetupHelpModal';
 import {
   PLANNING_TOOLS, TEAM_SIZES, FORECAST_FREQUENCIES,
@@ -595,8 +594,6 @@ export default function PillarSetupPage() {
         </div>
 
         <EnterpriseCanvas mode="setup" className="py-8">
-          <SetupProgress currentStep="pillar" />
-
           {error && (
             <div className="bg-red-50 border border-red-200 rounded p-4 mb-6 flex items-start gap-3">
               <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />

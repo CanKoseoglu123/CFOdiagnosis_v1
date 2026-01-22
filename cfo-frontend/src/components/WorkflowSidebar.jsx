@@ -6,14 +6,21 @@
 // Completed steps are clickable to allow users to navigate back and review/edit their context
 
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle2, Circle, Lock, ChevronLeft, ChevronRight, FileText, Home } from 'lucide-react';
 import { getCompletedSteps, WORKFLOW_STEPS as STEP_ORDER } from '../hooks/useStepTransition';
 
 // Workflow steps for the diagnostic journey
 // VS-39: Merged Report Review & Action Planning, added Executive Report
+// Setup sub-steps for nested navigation
+const SETUP_SUB_STEPS = [
+  { id: 'company', label: 'Company', pathSegment: '/setup/company' },
+  { id: 'persona', label: 'Persona', pathSegment: '/setup/persona' },
+  { id: 'pillar', label: 'FP&A', pathSegment: '/setup/pillar' }
+];
+
 const WORKFLOW_STEPS = [
-  { id: 'setup', label: 'Company Setup', path: '/setup' },
+  { id: 'setup', label: 'Setup', path: '/setup' },
   { id: 'assess', label: 'Assessment', path: '/assess' },
   { id: 'calibrate', label: 'Priority Calibration', path: '/calibrate' },
   { id: 'report', label: 'Report Review & Action Planning', path: '/report' },
@@ -80,7 +87,35 @@ export default function WorkflowSidebar({
   reachableSteps = []
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showTooltip, setShowTooltip] = useState(false);
+
+  // URL-based detection for setup sub-steps
+  const getCurrentSetupSubStep = () => {
+    const path = location.pathname;
+    if (path.includes('/setup/pillar')) return 'pillar';
+    if (path.includes('/setup/persona')) return 'persona';
+    if (path.includes('/setup/company')) return 'company';
+    return null; // Not on a setup page
+  };
+
+  // Determine sub-step state based on URL position
+  const getSetupSubStepState = (subStepId, completedSteps) => {
+    const currentSubStep = getCurrentSetupSubStep();
+
+    // Not on setup = all completed (if setup step itself is completed)
+    if (!currentSubStep) {
+      return completedSteps.includes('setup') ? 'completed' : 'pending';
+    }
+
+    const order = ['company', 'persona', 'pillar'];
+    const currentIdx = order.indexOf(currentSubStep);
+    const subStepIdx = order.indexOf(subStepId);
+
+    if (subStepIdx < currentIdx) return 'completed';
+    if (subStepIdx === currentIdx) return 'active';
+    return 'pending';
+  };
 
   // Derive currentStep and completedSteps from runData if available
   const { currentStep, completedSteps } = useMemo(() => {
@@ -185,29 +220,64 @@ export default function WorkflowSidebar({
             // Clickable if completed OR if in reachableSteps (High Water Mark)
             const isClickable = state === 'completed' || reachableSteps.includes(step.id);
             const path = isClickable ? getStepPath(step) : null;
+            // Show sub-steps when on setup OR when setup is completed (for backward nav)
+            const showSubSteps = step.id === 'setup' && (state === 'active' || state === 'completed');
 
             return (
-              <div
-                key={step.id}
-                onClick={isClickable && path ? () => navigate(path) : undefined}
-                className={`flex items-center gap-2.5 py-1.5 px-1 -mx-1 ${
-                  state === 'active' ? 'text-blue-700 font-medium' :
-                  state === 'completed' ? 'text-emerald-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
-                  isClickable ? 'text-slate-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
-                  state === 'locked' ? 'text-slate-300' :
-                  'text-slate-400'
-                }`}
-              >
-                {state === 'completed' ? (
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                ) : state === 'active' ? (
-                  <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
-                ) : state === 'locked' ? (
-                  <Lock className="w-4 h-4 flex-shrink-0" />
-                ) : (
-                  <Circle className="w-4 h-4 flex-shrink-0" />
+              <div key={step.id}>
+                <div
+                  onClick={isClickable && path ? () => navigate(path) : undefined}
+                  className={`flex items-center gap-2.5 py-1.5 px-1 -mx-1 ${
+                    state === 'active' ? 'text-blue-700 font-medium' :
+                    state === 'completed' ? 'text-emerald-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
+                    isClickable ? 'text-slate-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
+                    state === 'locked' ? 'text-slate-300' :
+                    'text-slate-400'
+                  }`}
+                >
+                  {state === 'completed' ? (
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  ) : state === 'active' ? (
+                    <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
+                  ) : state === 'locked' ? (
+                    <Lock className="w-4 h-4 flex-shrink-0" />
+                  ) : (
+                    <Circle className="w-4 h-4 flex-shrink-0" />
+                  )}
+                  <span className="text-sm">{step.label}</span>
+                </div>
+
+                {/* Setup sub-steps */}
+                {showSubSteps && (
+                  <div className="ml-6 mt-1 space-y-0.5">
+                    {SETUP_SUB_STEPS.map((subStep) => {
+                      const subState = getSetupSubStepState(subStep.id, completedSteps);
+                      const subClickable = subState === 'completed';
+                      const subPath = subClickable ? `/run/${runId}/setup/${subStep.id}?review=true` : null;
+
+                      return (
+                        <div
+                          key={subStep.id}
+                          onClick={subClickable && subPath ? () => navigate(subPath) : undefined}
+                          className={`flex items-center gap-2 py-1 px-1 -mx-1 ${
+                            subState === 'active' ? 'text-blue-600' :
+                            subState === 'completed' ? 'text-emerald-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
+                            'text-slate-400'
+                          }`}
+                        >
+                          {subState === 'completed' ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                          ) : subState === 'active' ? (
+                            <div className="w-3.5 h-3.5 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
+                          ) : (
+                            <Circle className="w-3.5 h-3.5 flex-shrink-0" />
+                          )}
+                          <span className="text-xs">{subStep.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
-                <span className="text-sm">{step.label}</span>
               </div>
             );
           })}
