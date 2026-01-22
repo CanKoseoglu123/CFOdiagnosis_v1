@@ -419,11 +419,12 @@ export default function CompanySetupPage() {
         completedSteps={[]}
         runId={runId}
         isFinalized={false}
+        reachableSteps={isReviewMode ? ['assess'] : []}
       />
     }>
       <SetupHelpModal
         title="Understanding Your Organization"
-        mainText="We're building a profile of your organization to calibrate your diagnostic. Tell us about your company's size, structure, and current business dynamics. Use your best estimate where you're unsure—precision isn't critical here."
+        mainText="We're building a profile of your organization to calibrate your diagnostic. Tell us about your company's size, structure, and current business dynamics."
         whyTitle="Why we ask:"
         whyText="Your company size and structure shape what 'good' looks like. A startup has different needs than a multi-entity enterprise. We use this information to tailor your results and benchmark against similar organizations."
       />
