@@ -300,11 +300,29 @@ export default function AssessObjectivePage() {
     };
   }, [allQuestions, answers]);
 
+  // High Water Mark: furthest objective the user has reached (with at least one answer)
+  // This persists even when user navigates back to earlier objectives
+  const maxReachedIndex = useMemo(() => {
+    // Find furthest objective with at least one answer
+    for (let i = OBJECTIVE_ORDER.length - 1; i >= 0; i--) {
+      const objId = OBJECTIVE_ORDER[i];
+      const progress = allObjectivesProgress[objId];
+      if (progress && progress.answered > 0) {
+        return i;
+      }
+    }
+    // If no answers yet, user can only access current objective (first one)
+    return currentIndex;
+  }, [allObjectivesProgress, currentIndex]);
+
   // Gate check: Can user access this objective?
+  // Uses High Water Mark rule - user can access any objective they've reached before
   const canAccessObjective = useMemo(() => {
     if (currentIndex === 0) return true; // First objective always accessible
+    if (currentIndex <= maxReachedIndex) return true; // Within HWM - allow access
 
-    // Check all previous objectives are complete
+    // Beyond HWM: check if user can legitimately advance
+    // (all previous objectives must be complete to move forward)
     for (let i = 0; i < currentIndex; i++) {
       const prevObjId = OBJECTIVE_ORDER[i];
       const prevProgress = allObjectivesProgress[prevObjId];
@@ -313,7 +331,7 @@ export default function AssessObjectivePage() {
       }
     }
     return true;
-  }, [currentIndex, allObjectivesProgress]);
+  }, [currentIndex, maxReachedIndex, allObjectivesProgress]);
 
   // Redirect if trying to access locked objective
   useEffect(() => {
@@ -342,27 +360,53 @@ export default function AssessObjectivePage() {
     }
   }, [loading, isFirstObjective, runId]);
 
-  // Debounced save
-  const saveAnswer = useCallback(
-    debounce(async (questionId, value) => {
-      if (!runId) return;
-      try {
-        setSaving(true);
-        const headers = await getAuthHeaders();
-        const res = await fetch(`${API_URL}/diagnostic-inputs`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ run_id: runId, question_id: questionId, value })
-        });
-        if (!res.ok) throw new Error('Failed to save');
-      } catch (err) {
-        console.error('Save failed:', err);
-        setError('Failed to save answer');
-      } finally {
-        setSaving(false);
+  // Save answer with retry logic (3 attempts, exponential backoff: 1s, 2s, 4s)
+  const saveAnswerWithRetry = useCallback(async (questionId, value, attempt = 1) => {
+    if (!runId) return;
+
+    const MAX_RETRIES = 3;
+    const BACKOFF_MS = [1000, 2000, 4000]; // Exponential backoff delays
+
+    try {
+      setSaving(true);
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/diagnostic-inputs`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ run_id: runId, question_id: questionId, value })
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      // Success - clear any previous save error
+      if (error === 'Failed to save answer. Please try again.') {
+        setError(null);
       }
+    } catch (err) {
+      console.error(`Save failed (attempt ${attempt}/${MAX_RETRIES}):`, err);
+
+      if (attempt < MAX_RETRIES) {
+        // Retry with exponential backoff
+        const delay = BACKOFF_MS[attempt - 1];
+        setTimeout(() => saveAnswerWithRetry(questionId, value, attempt + 1), delay);
+      } else {
+        // Final failure - revert optimistic update and show error
+        setAnswers(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+        setError('Failed to save answer. Please try again.');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }, [runId, error]);
+
+  // Debounced save wrapper
+  const saveAnswer = useCallback(
+    debounce((questionId, value) => {
+      saveAnswerWithRetry(questionId, value, 1);
     }, 300),
-    [runId]
+    [saveAnswerWithRetry]
   );
 
   // Handle answer with auto-scroll
@@ -503,6 +547,7 @@ export default function AssessObjectivePage() {
       allObjectivesProgress={allObjectivesProgress}
       overallProgress={overallProgress}
       runId={runId}
+      maxReachedIndex={maxReachedIndex}
     />
   );
 
@@ -586,9 +631,6 @@ export default function AssessObjectivePage() {
               </p>
               <p className="text-sm text-slate-600 mt-2">
                 We recommend completing the assessment in one sitting, but you can save and return at any time.
-              </p>
-              <p className="text-sm text-slate-600 mt-2">
-                If it’s not clear why a question is being asked, click the ? icon in the top right for an explanation.
               </p>
               <div className="flex justify-end mt-4">
                 <button
