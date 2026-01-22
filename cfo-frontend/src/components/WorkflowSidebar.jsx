@@ -279,8 +279,8 @@ export default function WorkflowSidebar({
               Return to Home
             </button>
           </>
-        ) : (
-          // Pre-finalization navigation
+        ) : currentStep === 'report' ? (
+          // Pre-finalization navigation - only show on report page
           <>
             {/* Back to Assessment */}
             <button
@@ -335,7 +335,7 @@ export default function WorkflowSidebar({
               </button>
             )}
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );
