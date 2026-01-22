@@ -74,7 +74,10 @@ export default function WorkflowSidebar({
   onFinalizeRequest,
   canFinalize = false,
   incompleteCount = 0,
-  selectedCount = 0
+  selectedCount = 0,
+  // High Water Mark: Steps that user has reached and can navigate back to
+  // When true for 'assess', allows clicking Assessment even from setup pages
+  reachableSteps = []
 }) {
   const navigate = useNavigate();
   const [showTooltip, setShowTooltip] = useState(false);
@@ -179,7 +182,8 @@ export default function WorkflowSidebar({
         <div className="space-y-1">
           {WORKFLOW_STEPS.map((step) => {
             const state = getStepState(step);
-            const isClickable = state === 'completed';
+            // Clickable if completed OR if in reachableSteps (High Water Mark)
+            const isClickable = state === 'completed' || reachableSteps.includes(step.id);
             const path = isClickable ? getStepPath(step) : null;
 
             return (
@@ -189,6 +193,7 @@ export default function WorkflowSidebar({
                 className={`flex items-center gap-2.5 py-1.5 px-1 -mx-1 ${
                   state === 'active' ? 'text-blue-700 font-medium' :
                   state === 'completed' ? 'text-emerald-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
+                  isClickable ? 'text-slate-600 cursor-pointer hover:bg-slate-50 rounded-sm transition-colors' :
                   state === 'locked' ? 'text-slate-300' :
                   'text-slate-400'
                 }`}

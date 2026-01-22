@@ -576,6 +576,7 @@ export default function PillarSetupPage() {
         completedSteps={[]}
         runId={runId}
         isFinalized={false}
+        reachableSteps={isReviewMode ? ['assess'] : []}
       />
     }>
       <SetupHelpModal

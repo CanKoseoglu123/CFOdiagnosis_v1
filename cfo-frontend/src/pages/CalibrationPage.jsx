@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Lock, AlertTriangle, ChevronRight, LogOut, X } from 'lucide-react';
+import { Lock, AlertTriangle, ChevronRight, ChevronLeft, LogOut, X, CheckCircle2, Circle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
@@ -247,18 +247,57 @@ function PriorityCounter({ topCount, maxTop, combinedCount, maxCombined }) {
 }
 
 // Sidebar Component
-function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSaveAndExit, saving }) {
+function CalibrationSidebar({ objectives, importanceMap, lockedObjectives, topPriorityCount, combinedPriorityCount, onSubmit, onSaveAndExit, saving, runId }) {
+  const navigate = useNavigate();
   const totalObjectives = objectives.length;
   const selectedCount = Object.keys(importanceMap).length;
   const allSelected = selectedCount === totalObjectives;
   const remainingCount = totalObjectives - selectedCount;
 
+  // Workflow steps for navigation
+  const workflowSteps = [
+    { id: 'setup', label: 'Company Setup', completed: true, path: `/run/${runId}/setup/company` },
+    { id: 'assess', label: 'Assessment', completed: true, path: `/assess/objective/obj_budget_discipline?runId=${runId}` },
+    { id: 'calibrate', label: 'Calibration', current: true, path: null },
+    { id: 'report', label: 'Report', completed: false, path: null }
+  ];
+
   return (
     <div className="h-full flex flex-col">
-      {/* Logo */}
+      {/* Workflow Navigation */}
       <div className="p-6 border-b border-slate-200">
-        <h1 className="text-lg font-bold text-navy">CFO Diagnostic</h1>
-        <p className="text-xs text-slate-500 mt-1">Calibrate Priorities</p>
+        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          Workflow
+        </div>
+        <div className="space-y-1">
+          {workflowSteps.map((step) => {
+            const canClick = step.completed && step.path;
+            return (
+              <button
+                key={step.id}
+                onClick={canClick ? () => navigate(step.path) : undefined}
+                disabled={!canClick}
+                className={`group w-full flex items-center gap-2.5 py-1.5 px-2 rounded transition-colors text-left ${
+                  step.current ? 'text-blue-700 font-medium' :
+                  step.completed ? 'text-emerald-600 hover:bg-slate-100 cursor-pointer' :
+                  'text-slate-400 cursor-default'
+                }`}
+              >
+                {step.completed ? (
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                ) : step.current ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
+                ) : (
+                  <Circle className="w-4 h-4 flex-shrink-0" />
+                )}
+                <span className="text-sm flex-1">{step.label}</span>
+                {canClick && (
+                  <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Completion Progress */}
@@ -524,6 +563,7 @@ export default function CalibrationPage() {
       onSubmit={handleSubmit}
       onSaveAndExit={() => navigate('/')}
       saving={saving}
+      runId={runId}
     />
   );
 

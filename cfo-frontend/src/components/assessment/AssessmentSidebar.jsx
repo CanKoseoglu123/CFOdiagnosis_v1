@@ -44,20 +44,21 @@ const OBJECTIVE_ORDER = [
   'obj_strategic_influence', 'obj_decision_support', 'obj_operational_excellence'
 ];
 
-// Workflow steps
+// Workflow steps with navigation paths
 const WORKFLOW_STEPS = [
-  { id: 'setup', label: 'Company Setup', completed: true },
-  { id: 'pillar', label: 'Pillar Setup', completed: true },
-  { id: 'assessment', label: 'Assessment', current: true },
-  { id: 'calibration', label: 'Calibration', completed: false },
-  { id: 'report', label: 'Report', completed: false }
+  { id: 'setup', label: 'Company Setup', completed: true, path: (runId) => `/run/${runId}/setup/company?review=true` },
+  { id: 'pillar', label: 'Pillar Setup', completed: true, path: (runId) => `/run/${runId}/setup/pillar?review=true` },
+  { id: 'assessment', label: 'Assessment', current: true, path: null },
+  { id: 'calibration', label: 'Calibration', completed: false, path: null },
+  { id: 'report', label: 'Report', completed: false, path: null }
 ];
 
 export default function AssessmentSidebar({
   currentObjective,
   allObjectivesProgress,
   overallProgress,
-  runId
+  runId,
+  maxReachedIndex = 0  // High Water Mark: furthest objective index ever reached
 }) {
   const navigate = useNavigate();
 
@@ -71,12 +72,13 @@ export default function AssessmentSidebar({
     return progress && progress.answered === progress.total && progress.total > 0;
   };
 
-  // Check if user can navigate to an objective (must be completed or current)
+  // Check if user can navigate to an objective
+  // Uses High Water Mark rule - user can navigate to any objective within HWM
   const canNavigateTo = (objId) => {
     const targetIndex = OBJECTIVE_ORDER.indexOf(objId);
     if (targetIndex === currentIndex) return false; // Already there
-    if (targetIndex < currentIndex) return true; // Can go back to previous
-    return false; // Can't skip ahead
+    if (targetIndex <= maxReachedIndex) return true; // Within HWM - can navigate
+    return false; // Beyond HWM - cannot skip ahead
   };
 
   // Handle objective click - navigate to completed objectives for review
@@ -109,25 +111,39 @@ export default function AssessmentSidebar({
           Workflow
         </div>
         <div className="space-y-1">
-          {WORKFLOW_STEPS.map((step) => (
-            <div
-              key={step.id}
-              className={`flex items-center gap-2.5 py-1.5 ${
-                step.current ? 'text-blue-700 font-medium' :
-                step.completed ? 'text-emerald-600' :
-                'text-slate-400'
-              }`}
-            >
-              {step.completed ? (
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-              ) : step.current ? (
-                <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
-              ) : (
-                <Circle className="w-4 h-4 flex-shrink-0" />
-              )}
-              <span className="text-sm">{step.label}</span>
-            </div>
-          ))}
+          {WORKFLOW_STEPS.map((step) => {
+            const canClickStep = step.completed && step.path && runId;
+            const handleStepClick = () => {
+              if (canClickStep) {
+                navigate(step.path(runId));
+              }
+            };
+
+            return (
+              <button
+                key={step.id}
+                onClick={handleStepClick}
+                disabled={!canClickStep}
+                className={`group w-full flex items-center gap-2.5 py-1.5 px-2 rounded transition-colors text-left ${
+                  step.current ? 'text-blue-700 font-medium' :
+                  step.completed ? 'text-emerald-600 hover:bg-slate-100 cursor-pointer' :
+                  'text-slate-400 cursor-default'
+                }`}
+              >
+                {step.completed ? (
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                ) : step.current ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
+                ) : (
+                  <Circle className="w-4 h-4 flex-shrink-0" />
+                )}
+                <span className="text-sm flex-1">{step.label}</span>
+                {canClickStep && (
+                  <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
