@@ -374,11 +374,29 @@ app.post("/diagnostic-runs", async (req, res) => {
 // List diagnostic runs for authenticated user (My Reports / Dashboard)
 // ------------------------------------------------------------------
 
-// Helper: Compute resume path based on current step
+// Helper: Compute resume path based on the MOST ADVANCED step reached
 function computeResumePath(run: any): string {
-  const step = run.current_step || 'intro';
   const runId = run.id;
 
+  // Priority 1: If completed/locked with calibration data → report
+  if ((run.status === 'completed' || run.status === 'locked') &&
+      run.calibration && Object.keys(run.calibration).length > 0) {
+    return `/report/${runId}`;
+  }
+
+  // Priority 2: If completed/locked without calibration → calibration page
+  if (run.status === 'completed' || run.status === 'locked') {
+    return `/run/${runId}/calibrate`;
+  }
+
+  // Priority 3: If setup completed → assessment (at last visited objective or first)
+  if (run.setup_completed_at) {
+    const objectiveId = run.last_visited_objective_id || 'obj_budget_discipline';
+    return `/assess/objective/${objectiveId}?runId=${runId}`;
+  }
+
+  // Priority 4: Fallback to current_step
+  const step = run.current_step || 'intro';
   switch (step) {
     case 'intro':
       return `/run/${runId}/intro`;
@@ -389,7 +407,6 @@ function computeResumePath(run: any): string {
     case 'pillar_setup':
       return `/run/${runId}/setup/pillar`;
     case 'assessment':
-      // Resume at last visited objective, or first objective
       const objectiveId = run.last_visited_objective_id || 'obj_budget_discipline';
       return `/assess/objective/${objectiveId}?runId=${runId}`;
     case 'calibration':
@@ -457,11 +474,11 @@ app.get("/diagnostic-runs", async (req, res) => {
 // ------------------------------------------------------------------
 // VS18 — Get diagnostic run details (includes inputs for resume)
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id", async (req, res) => {
+app.get("/diagnostic-runs/:id", checkAdmin, async (req, res) => {
   const runId = req.params.id;
 
-  // Fetch run details
-  const { data: run, error } = await req.supabase
+  // Fetch run details (uses admin client if admin, else user's client with RLS)
+  const { data: run, error } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, spec_version, context, setup_completed_at, created_at, finalized_at, company_profile_id")
     .eq("id", runId)
@@ -472,7 +489,7 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
   }
 
   // Fetch inputs (answers) for the run - allows frontend to restore progress
-  const { data: inputs } = await req.supabase
+  const { data: inputs } = await getClient(req)
     .from("diagnostic_inputs")
     .select("question_id, value")
     .eq("run_id", runId);
@@ -488,11 +505,11 @@ app.get("/diagnostic-runs/:id", async (req, res) => {
 // ------------------------------------------------------------------
 // VS-27c — Get company profile linked to a diagnostic run
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/company-profile", async (req, res) => {
+app.get("/diagnostic-runs/:id/company-profile", checkAdmin, async (req, res) => {
   const runId = req.params.id;
 
-  // Fetch run with company_profile_id
-  const { data: run, error: runError } = await req.supabase
+  // Fetch run with company_profile_id (uses admin client if admin, else user's client with RLS)
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, company_profile_id")
     .eq("id", runId)
@@ -507,7 +524,7 @@ app.get("/diagnostic-runs/:id/company-profile", async (req, res) => {
   }
 
   // Fetch the company profile
-  const { data: profile, error: profileError } = await req.supabase
+  const { data: profile, error: profileError } = await getClient(req)
     .from("company_profiles")
     .select("*")
     .eq("id", run.company_profile_id)
@@ -524,11 +541,12 @@ app.get("/diagnostic-runs/:id/company-profile", async (req, res) => {
 // VS-27e — Get persona-specific maturity targets for a diagnostic run
 // Returns objective targets and derived practice targets
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/targets", async (req, res) => {
+app.get("/diagnostic-runs/:id/targets", checkAdmin, async (req, res) => {
   const runId = req.params.id;
+  const client = getClient(req);
 
-  // Fetch run with company_profile_id
-  const { data: run, error: runError } = await req.supabase
+  // Fetch run with company_profile_id (uses admin client if admin, else user's client with RLS)
+  const { data: run, error: runError } = await client
     .from("diagnostic_runs")
     .select("id, company_profile_id")
     .eq("id", runId)
@@ -543,7 +561,7 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
 
   if (!companyProfileId && req.userId) {
     // No profile linked - try to find user's most recent profile and link it
-    const { data: userProfile, error: findError } = await req.supabase
+    const { data: userProfile, error: findError } = await client
       .from("company_profiles")
       .select("id")
       .eq("user_id", req.userId)
@@ -555,7 +573,7 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
       console.error("[Targets] Error finding user profile:", findError);
     } else if (userProfile) {
       // Found a profile - link it to the run
-      const { error: linkError } = await req.supabase
+      const { error: linkError } = await client
         .from("diagnostic_runs")
         .update({ company_profile_id: userProfile.id })
         .eq("id", runId);
@@ -575,7 +593,7 @@ app.get("/diagnostic-runs/:id/targets", async (req, res) => {
   }
 
   // Fetch the company profile with classification
-  const { data: profile, error: profileError } = await req.supabase
+  const { data: profile, error: profileError } = await client
     .from("company_profiles")
     .select("id, context, classification")
     .eq("id", companyProfileId)
@@ -757,12 +775,12 @@ app.get("/diagnostic-runs/:id/benchmark", checkAdmin, async (req, res) => {
 //   - V1 format: { company, pillar }
 //   - V2 format (VS-27c): { pillar } - company already linked via company_profile_id
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/setup", async (req, res) => {
+app.post("/diagnostic-runs/:id/setup", checkAdmin, async (req, res) => {
   const runId = req.params.id;
   const body = req.body;
 
-  // Verify run exists first (needed for V2 format check and status preservation)
-  const { data: run, error: runError } = await req.supabase
+  // Verify run exists first (uses admin client if admin, else user's client with RLS)
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, setup_completed_at, company_profile_id, finalized_at")
     .eq("id", runId)
@@ -851,7 +869,7 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
     updateData.status = "in_progress";
   }
 
-  const { data, error } = await req.supabase
+  const { data, error } = await getClient(req)
     .from("diagnostic_runs")
     .update(updateData)
     .eq("id", runId)
@@ -868,7 +886,7 @@ app.post("/diagnostic-runs/:id/setup", async (req, res) => {
 // ------------------------------------------------------------------
 // VS21 — Save calibration (objective importance)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
+app.post("/diagnostic-runs/:id/calibration", checkAdmin, async (req, res) => {
   const runId = req.params.id;
   const { importance_map } = req.body;
 
@@ -878,8 +896,8 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
     });
   }
 
-  // Verify run exists and is completed
-  const { data: run, error: runError } = await req.supabase
+  // Verify run exists and is completed (uses admin client if admin, else user's client with RLS)
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, spec_version, finalized_at")
     .eq("id", runId)
@@ -928,7 +946,7 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
   };
 
   // Save to database + set current_step to report
-  const { data, error } = await req.supabase
+  const { data, error } = await getClient(req)
     .from("diagnostic_runs")
     .update({
       calibration: calibrationData,
@@ -949,14 +967,15 @@ app.post("/diagnostic-runs/:id/calibration", async (req, res) => {
 // ------------------------------------------------------------------
 // VS21 — Get calibration data
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
+app.get("/diagnostic-runs/:id/calibration", checkAdmin, async (req, res) => {
   const runId = req.params.id;
+  const client = getClient(req);
 
-  // First try with calibration column
+  // First try with calibration column (uses admin client if admin, else user's client with RLS)
   let run: any;
   let runError: any;
 
-  const result = await req.supabase
+  const result = await client
     .from("diagnostic_runs")
     .select("id, calibration, status, spec_version")
     .eq("id", runId)
@@ -967,7 +986,7 @@ app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
 
   // If calibration column doesn't exist, try without it
   if (runError && runError.message?.includes("calibration")) {
-    const fallbackResult = await req.supabase
+    const fallbackResult = await client
       .from("diagnostic_runs")
       .select("id, status, spec_version")
       .eq("id", runId)
@@ -1009,7 +1028,7 @@ app.get("/diagnostic-runs/:id/calibration", async (req, res) => {
 // ------------------------------------------------------------------
 // VS2 — Persist diagnostic input
 // ------------------------------------------------------------------
-app.post("/diagnostic-inputs", async (req, res) => {
+app.post("/diagnostic-inputs", checkAdmin, async (req, res) => {
   const { run_id, question_id, value } = req.body;
 
   if (!run_id || !question_id || value === undefined) {
@@ -1029,7 +1048,7 @@ app.post("/diagnostic-inputs", async (req, res) => {
   }
 
   // VS-Security: Check if run is finalized before allowing modifications
-  const { data: run, error: runError } = await req.supabase
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, finalized_at")
     .eq("id", run_id)
@@ -1043,7 +1062,7 @@ app.post("/diagnostic-inputs", async (req, res) => {
   // This allows users to go back and edit at any time
   if (run.finalized_at) {
     // Clear finalization and mark scores as stale
-    const { error: definalizeError } = await req.supabase
+    const { error: definalizeError } = await getClient(req)
       .from("diagnostic_runs")
       .update({
         finalized_at: null,
@@ -1059,7 +1078,7 @@ app.post("/diagnostic-inputs", async (req, res) => {
     }
   }
 
-  const { data, error } = await req.supabase
+  const { data, error } = await getClient(req)
     .from("diagnostic_inputs")
     .upsert(
       { run_id, question_id, value },
@@ -1074,7 +1093,7 @@ app.post("/diagnostic-inputs", async (req, res) => {
 
   // If run is already completed/locked, mark scores as stale (needs recalculation)
   if (run.status === "completed" || run.status === "locked") {
-    await req.supabase
+    await getClient(req)
       .from("diagnostic_runs")
       .update({ scores_stale: true })
       .eq("id", run_id);
@@ -1086,10 +1105,11 @@ app.post("/diagnostic-inputs", async (req, res) => {
 // ------------------------------------------------------------------
 // VS3 — Complete / commit run
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/complete", async (req, res) => {
+app.post("/diagnostic-runs/:id/complete", checkAdmin, async (req, res) => {
   const runId = req.params.id;
+  const client = getClient(req);
 
-  const { data: run, error: runError } = await req.supabase
+  const { data: run, error: runError } = await client
     .from("diagnostic_runs")
     .select("id, status")
     .eq("id", runId)
@@ -1103,7 +1123,7 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
     return res.status(409).json({ error: "Run already completed" });
   }
 
-  const result = await validateRun(req.supabase, runId);
+  const result = await validateRun(client, runId);
 
   if (!result.valid) {
     return res.status(400).json({
@@ -1112,7 +1132,7 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
     });
   }
 
-  const { error: updateError } = await req.supabase
+  const { error: updateError } = await client
     .from("diagnostic_runs")
     .update({
       status: "completed",
@@ -1131,11 +1151,12 @@ app.post("/diagnostic-runs/:id/complete", async (req, res) => {
 // ------------------------------------------------------------------
 // VS4 — Score run
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/score", async (req, res) => {
+app.post("/diagnostic-runs/:id/score", checkAdmin, async (req, res) => {
   const runId = req.params.id;
   const overwrite = String(req.query.overwrite) === "true";
+  const client = getClient(req);
 
-  const { data: run, error: runError } = await req.supabase
+  const { data: run, error: runError } = await client
     .from("diagnostic_runs")
     .select("id, status, finalized_at")
     .eq("id", runId)
@@ -1158,7 +1179,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     return res.status(409).json({ error: "Run is not completed" });
   }
 
-  const { data: existingScores, error: existingError } = await req.supabase
+  const { data: existingScores, error: existingError } = await client
     .from("diagnostic_scores")
     .select("id")
     .eq("run_id", runId)
@@ -1175,7 +1196,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
   }
 
   if (hasScores && overwrite) {
-    const { error: delError } = await req.supabase
+    const { error: delError } = await client
       .from("diagnostic_scores")
       .delete()
       .eq("run_id", runId);
@@ -1187,7 +1208,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
 
   let scores;
   try {
-    scores = await scoreRun(req.supabase, runId);
+    scores = await scoreRun(client, runId);
   } catch (e) {
     return res.status(500).json({ error: String(e) });
   }
@@ -1196,7 +1217,7 @@ app.post("/diagnostic-runs/:id/score", async (req, res) => {
     return res.status(200).json([]);
   }
 
-  const { data: inserted, error: insertError } = await req.supabase
+  const { data: inserted, error: insertError } = await client
     .from("diagnostic_scores")
     .insert(
       scores.map((s) => ({
@@ -2211,7 +2232,7 @@ const VALID_STEPS = [
 
 type WorkflowStep = typeof VALID_STEPS[number];
 
-app.patch("/diagnostic-runs/:id/step", async (req, res) => {
+app.patch("/diagnostic-runs/:id/step", checkAdmin, async (req, res) => {
   const runId = req.params.id;
   const { step, last_visited_objective_id, assessment_progress_pct } = req.body;
 
@@ -2226,8 +2247,8 @@ app.patch("/diagnostic-runs/:id/step", async (req, res) => {
     });
   }
 
-  // Verify run exists and belongs to user
-  const { data: run, error: runError } = await req.supabase
+  // Verify run exists (uses admin client if admin, else user's client with RLS)
+  const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, finalized_at, current_step")
     .eq("id", runId)
@@ -2279,7 +2300,7 @@ app.patch("/diagnostic-runs/:id/step", async (req, res) => {
     updateData.assessment_progress_pct = Math.round(assessment_progress_pct);
   }
 
-  const { error: updateError } = await req.supabase
+  const { error: updateError } = await getClient(req)
     .from("diagnostic_runs")
     .update(updateData)
     .eq("id", runId);
@@ -2445,6 +2466,8 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
         setup_completed_at,
         finalized_at,
         created_at,
+        current_step,
+        last_visited_objective_id,
         company_profiles (name)
       `)
       .eq("owner_id", req.userId || "")
@@ -2462,6 +2485,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       company_name: session.company_profiles?.name || session.context?.company?.name || session.context?.company_name || null,
       industry: session.context?.company?.industry || session.context?.industry || null,
       company_profiles: undefined, // Don't expose raw joined data
+      resume_path: computeResumePath(session),
     }));
 
     res.setHeader("X-Admin-Debug", "adminClient=missing,fallback=owner_only");
@@ -2482,6 +2506,8 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       setup_completed_at,
       finalized_at,
       created_at,
+      current_step,
+      last_visited_objective_id,
       company_profiles (name)
     `)
     .order("created_at", { ascending: false });
@@ -2545,6 +2571,7 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       company_name: session.company_profiles?.name || session.context?.company?.name || session.context?.company_name || null,
       industry: session.context?.company?.industry || session.context?.industry || null,
       company_profiles: undefined, // Don't expose raw joined data
+      resume_path: computeResumePath(session),
     };
   });
 
@@ -2581,6 +2608,48 @@ app.delete("/admin/sessions/:id", requireAdmin, async (req, res) => {
   }
 
   res.json({ success: true, deleted: id });
+});
+
+// POST /admin/sessions/:id/unlock - Unlock a finalized/locked run for editing
+app.post("/admin/sessions/:id/unlock", requireAdmin, async (req, res) => {
+  if (!supabaseAdmin) {
+    return res.status(503).json({
+      error: "Admin features unavailable. SUPABASE_SERVICE_ROLE_KEY not configured."
+    });
+  }
+
+  const { id } = req.params;
+
+  // Verify run exists
+  const { data: run, error: runError } = await supabaseAdmin
+    .from("diagnostic_runs")
+    .select("id, status, finalized_at")
+    .eq("id", id)
+    .single();
+
+  if (runError || !run) {
+    return res.status(404).json({ error: "Run not found" });
+  }
+
+  // Unlock the run: set status to in_progress, clear finalized_at, mark scores stale
+  const { data, error } = await supabaseAdmin
+    .from("diagnostic_runs")
+    .update({
+      status: "in_progress",
+      finalized_at: null,
+      current_step: "assessment",
+      scores_stale: true,
+      last_activity_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ success: true, run: data });
 });
 
 // GET /admin/feedback - List all feedback
