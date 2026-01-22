@@ -20,6 +20,7 @@
 ```
 CFOdiagnosis_v1/
 ├── CLAUDE.md                 # You are here
+├── .claude/templates/        # Work mode templates (Plan, Implement, Review)
 ├── src/                      # Backend (Express + scoring engine)
 │   ├── scoring/              # Pure scoring functions
 │   ├── gates/                # Critical gate definitions (SSOT)
@@ -71,6 +72,83 @@ Critical gate failures cap maturity level regardless of score. P1 blockers preve
 
 ### 6. Enterprise Aesthetic
 Dense, data-heavy, print-friendly. No shadows, no gradients. CFO cockpit, not consumer app.
+
+---
+
+## Work Modes
+
+Claude Code operates in distinct modes to separate planning from execution. Trigger with prefixes or reference templates in `.claude/templates/`.
+
+### Mode Summary
+
+| Mode | Trigger | Output |
+|------|---------|--------|
+| **Plan** | `Plan:` or ref `.claude/templates/PLAN.md` | File list, sequence, decisions, risks |
+| **Implement** | `Implement:` or ref `.claude/templates/IMPLEMENT.md` | Code changes, one file at a time |
+| **Review** | `Review:` or ref `.claude/templates/REVIEW.md` | Change summary, validation status, risks |
+
+### When to Use Each Mode
+
+| Task Scope | Mode Sequence |
+|------------|---------------|
+| Single file, clear scope | Implement directly |
+| 2-3 files, low risk | Implement → Review |
+| 3+ files OR crosses layers | Plan → [confirm] → Implement → Review |
+| Scoring/gates/migrations | Plan → [confirm] → Implement → Review → [approve] |
+
+### Approver Gates
+
+**Require explicit "proceed" before implementing:**
+- Any change to `src/gates/`
+- Any change to `src/scoring/`
+- Any database migration
+- Any deletion of content or code
+- Changes spanning 5+ files
+
+**Format:** State the change, then stop. Do not proceed without explicit confirmation.
+
+### Mode Behaviors
+
+**Plan Mode (auto-reviews):**
+1. **Draft** — List files, dependencies, decisions, risks
+2. **Self-Review** — Check against:
+   - Does this touch approver-gate paths? (gates, scoring, migrations)
+   - Are there missing dependencies?
+   - Is the scope creeping beyond the request?
+   - What could break?
+3. **Refine** — Adjust plan based on review findings
+4. **Output** — Present final plan with review notes
+5. **Wait** — "Ready to implement? Confirm or adjust."
+
+DO NOT write code or make changes during planning.
+
+**Implement Mode:**
+- One file at a time, validate before next
+- If blocked twice: Stop, report error, wait for guidance
+- DO NOT work around blockers
+
+**Review Mode:**
+- Summarize changes, list validations run, flag what might break
+- DO NOT make additional changes
+- End with: "Manual checks recommended: [list]"
+
+### Quick Triggers Reference
+
+**Work modes:**
+- `Plan: [task]` — Enters planning mode
+- `Implement: [task]` — Direct implementation (use for simple tasks)
+- `Review: [changes]` — Post-implementation review
+
+**Content auditor agent:**
+- "audit the questions" — Full content audit
+- "validate questions-foundation.json" — Single file audit
+- "check fpa_q015" — Single question audit
+- "calibrate impact scores" — Score distribution check
+
+**Approver gates (Claude MUST stop and wait):**
+- Any mention of `src/gates/` or `src/scoring/`
+- "add migration" or "change database"
+- "delete" + file/content reference
 
 ---
 
@@ -261,6 +339,9 @@ cd cfo-frontend && npm run build
 | Skip reading spec docs | They exist for a reason |
 | Duplicate content across docs | Single source of truth |
 | Put implementation details here | This file is for orientation |
+| Skip Plan mode on 3+ file changes | Leads to scope creep and missed dependencies |
+| Work around blockers | Stop and report after 2 failed attempts |
+| Proceed without approval on gates | Scoring/gates/migrations require explicit "proceed" |
 
 ---
 
@@ -268,6 +349,9 @@ cd cfo-frontend && npm run build
 
 | Document | Purpose | When to read |
 |----------|---------|--------------|
+| `.claude/templates/PLAN.md` | Planning mode | Multi-file changes |
+| `.claude/templates/IMPLEMENT.md` | Worker mode | During implementation |
+| `.claude/templates/REVIEW.md` | Review mode | After implementation |
 | `spec/SPEC.md` | Design contract, invariants | Architecture decisions, scoring logic |
 | `spec/DESIGN_SYSTEM.md` | Visual design | Any UI work |
 | `spec/NAVIGATION_PRINCIPLES.md` | Nav rules | Navigation changes |
