@@ -46,8 +46,7 @@ const OBJECTIVE_ORDER = [
 
 // Workflow steps with navigation paths
 const WORKFLOW_STEPS = [
-  { id: 'setup', label: 'Company Setup', completed: true, path: (runId) => `/run/${runId}/setup/company?review=true` },
-  { id: 'pillar', label: 'Pillar Setup', completed: true, path: (runId) => `/run/${runId}/setup/pillar?review=true` },
+  { id: 'setup', label: 'Setup', completed: true, path: (runId) => `/run/${runId}/setup/company?review=true` },
   { id: 'assessment', label: 'Assessment', current: true, path: null },
   { id: 'calibration', label: 'Calibration', completed: false, path: null },
   { id: 'report', label: 'Report', completed: false, path: null }
