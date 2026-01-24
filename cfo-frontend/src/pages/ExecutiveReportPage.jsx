@@ -22,7 +22,7 @@ const NAVY = '#1e3a5f';
 const GOLD = '#c9a050';
 
 // Reusable page header component for all content pages
-function PageHeader({ companyName, industry, runDate }) {
+function PageHeader({ companyName, runId, pageNumber }) {
   return (
     <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
       <div className="flex items-center gap-4">
@@ -34,36 +34,11 @@ function PageHeader({ companyName, industry, runDate }) {
         <div className="border-l border-slate-300 pl-4">
           <div className="text-xs text-slate-500 uppercase tracking-wide">FP&A Diagnostic</div>
           <h1 className="text-xl font-bold text-slate-800">{companyName}</h1>
-          {industry && <div className="text-sm text-slate-500">{industry}</div>}
+          {runId && <div className="text-xs text-slate-400">Run: {runId}</div>}
         </div>
       </div>
       <div className="text-right">
-        <div className="text-xs text-slate-400">Finalized</div>
-        <div className="text-sm text-slate-600">{runDate}</div>
-      </div>
-    </div>
-  );
-}
-
-function PrintFooter({ pageNumber, runId, printDate }) {
-  return (
-    <div className="print-footer">
-      <div className="print-footer-left">
-        <div className="print-footer-left-row text-[8px] text-slate-500">
-          <span className="text-[9px] font-semibold text-slate-600">{pageNumber}</span>
-          <span>RESTRICTED DISTRIBUTION © 2026 CFO-Lens AI and/or its affiliates. All rights reserved.</span>
-        </div>
-      </div>
-      <div className="print-footer-center text-[10px] text-slate-400">
-        <div>Run ID: {runId || 'Unknown'}</div>
-        <div>Print Date: {printDate}</div>
-      </div>
-      <div className="print-footer-right">
-        <img
-          src="/Logo horizontal.png"
-          alt="CFO Lens AI"
-          className="h-5 object-contain"
-        />
+        <div className="text-2xl font-bold text-slate-300">{pageNumber}</div>
       </div>
     </div>
   );
@@ -608,13 +583,7 @@ export default function ExecutiveReportPage() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   const companyName = report.context?.company_name || report.context?.company?.name || 'Company';
-  const industry = report.context?.industry || report.context?.company?.industry;
   const runDate = new Date(report.finalized_at).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  const printDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -729,14 +698,18 @@ export default function ExecutiveReportPage() {
                   className="h-10 object-contain"
                 />
               </div>
+
+              {/* Copyright */}
+              <div className="text-[10px] text-slate-400 mt-4">
+                © 2026 CFO Lens AI. All rights reserved.
+              </div>
             </div>
           </div>
-          <PrintFooter pageNumber={1} runId={runId} printDate={printDate} />
         </div>
 
         {/* PRINT-ONLY DISCLAIMER PAGE */}
         <div className="executive-page p-6 page-break-before print-only">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={2} />
           <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Confidentiality and Intellectual Property</h2>
           </div>
@@ -768,13 +741,12 @@ export default function ExecutiveReportPage() {
               © 2026 CFO Lens AI. All rights reserved.
             </p>
           </div>
-          <PrintFooter pageNumber={2} runId={runId} printDate={printDate} />
         </div>
 
         {/* PAGE 3: EXECUTIVE SUMMARY */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={3} />
 
           <div className="mb-3">
             <h2 className="text-lg font-bold text-slate-800">Overall Results Summary</h2>
@@ -795,7 +767,7 @@ export default function ExecutiveReportPage() {
             <PriorityObjectivesChart objectives={priorityObjectives} />
           </div>
 
-          <div className="border border-slate-300 p-4">
+          <div className="border border-slate-300 p-4 ai-summary-section">
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
               AI Summary
             </div>
@@ -818,14 +790,12 @@ export default function ExecutiveReportPage() {
               </div>
             )}
           </div>
-
-          <PrintFooter pageNumber={3} runId={runId} printDate={printDate} />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* PAGE 4: OBJECTIVE OVERVIEW */}
         <div className="executive-page p-6 page-break-before">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={4} />
           <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Objective Overview</h2>
           </div>
@@ -883,12 +853,11 @@ export default function ExecutiveReportPage() {
               </tbody>
             </table>
           </div>
-          <PrintFooter pageNumber={4} runId={runId} printDate={printDate} />
         </div>
 
         {/* PAGE 5: MATURITY BENCHMARK */}
         <div className="executive-page p-6 page-break-before">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={5} />
             <div className="mb-4">
               <h2 className="text-lg font-bold text-slate-800">Maturity Benchmark</h2>
             </div>
@@ -909,13 +878,12 @@ export default function ExecutiveReportPage() {
               showPracticeDetails={false}
             />
           )}
-          <PrintFooter pageNumber={5} runId={runId} printDate={printDate} />
         </div>
 
         {/* PAGE 6: ACTION PLAN */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={6} />
           <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Action Plan</h2>
           </div>
@@ -923,14 +891,13 @@ export default function ExecutiveReportPage() {
             commitmentRegister={commitmentRegister}
             actionCounts={actionCounts}
           />
-          <PrintFooter pageNumber={6} runId={runId} printDate={printDate} />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* PAGE 7: PRIORITY MATRIX */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before priority-matrix-page">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={7} />
           <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Priority Matrix</h2>
           </div>
@@ -945,14 +912,13 @@ export default function ExecutiveReportPage() {
               />
             )}
           </div>
-          <PrintFooter pageNumber={7} runId={runId} printDate={printDate} />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* PAGE 8: MATURITY FOOTPRINT */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         <div className="executive-page p-6 page-break-before">
-          <PageHeader companyName={companyName} industry={industry} runDate={runDate} />
+          <PageHeader companyName={companyName} runId={runId} pageNumber={8} />
           <div className="mb-4">
             <h2 className="text-lg font-bold text-slate-800">Maturity Footprint</h2>
           </div>
@@ -960,7 +926,6 @@ export default function ExecutiveReportPage() {
             levels={maturityLevels}
             objectiveScores={objectiveScores}
           />
-          <PrintFooter pageNumber={8} runId={runId} printDate={printDate} />
         </div>
 
         {/* Document Footer */}
@@ -992,10 +957,6 @@ export default function ExecutiveReportPage() {
             display: none;
           }
 
-          .print-footer {
-            display: none;
-          }
-
           .cover-accent {
             display: flex;
             width: 100%;
@@ -1023,7 +984,7 @@ export default function ExecutiveReportPage() {
             display: flex;
             flex-direction: column;
             flex: 1;
-            min-height: calc(8.1in - 0.9in);
+            min-height: calc(8.1in - 0.3in);
             position: relative;
           }
 
@@ -1108,7 +1069,7 @@ export default function ExecutiveReportPage() {
               border: none;
               margin-bottom: 0;
               page-break-inside: avoid;
-              padding-bottom: 0.9in;
+              padding-bottom: 0.3in;
               min-height: 8.1in;
             }
 
@@ -1134,12 +1095,12 @@ export default function ExecutiveReportPage() {
             /* Cover page print overrides */
             .cover-page {
               padding: 0 !important;
-              padding-bottom: 0.9in !important;
+              padding-bottom: 0.3in !important;
             }
 
             .cover-page-inner {
-              height: calc(8.1in - 0.9in);
-              min-height: calc(8.1in - 0.9in);
+              height: calc(8.1in - 0.3in);
+              min-height: calc(8.1in - 0.3in);
             }
 
             .cover-content {
@@ -1152,38 +1113,6 @@ export default function ExecutiveReportPage() {
             .cover-underline {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
-            }
-
-            .print-footer {
-              display: flex;
-              align-items: flex-end;
-              justify-content: space-between;
-              gap: 12px;
-              position: absolute;
-              bottom: -0.5in;
-              left: 0.4in;
-              right: 0.4in;
-            }
-
-            .print-footer-left-row {
-              display: flex;
-              align-items: baseline;
-              gap: 8px;
-            }
-
-            .print-footer-center {
-              text-align: center;
-              flex: 1;
-            }
-
-            .print-footer-right {
-              text-align: right;
-              min-width: 140px;
-            }
-
-            .print-footer-right img {
-              display: block;
-              margin-left: auto;
             }
 
             .document-footer {
@@ -1206,7 +1135,7 @@ export default function ExecutiveReportPage() {
             }
 
             .priority-matrix-page {
-              padding: 0.35in 0.4in 0.9in !important;
+              padding: 0.35in 0.4in 0.3in !important;
             }
 
             .priority-matrix-page .matrix-grid {
@@ -1226,6 +1155,11 @@ export default function ExecutiveReportPage() {
             /* Ensure sections don't split */
             .border {
               break-inside: avoid;
+            }
+
+            /* Allow AI Summary to split across pages if needed */
+            .ai-summary-section {
+              break-inside: auto;
             }
 
             /* Allow long action tables to flow across pages */
