@@ -480,7 +480,7 @@ app.get("/diagnostic-runs/:id", checkAdmin, async (req, res) => {
   // Fetch run details (uses admin client if admin, else user's client with RLS)
   const { data: run, error } = await getClient(req)
     .from("diagnostic_runs")
-    .select("id, status, spec_version, context, setup_completed_at, created_at, finalized_at, company_profile_id")
+    .select("id, status, spec_version, context, setup_completed_at, created_at, finalized_at, company_profile_id, current_step, last_visited_objective_id")
     .eq("id", runId)
     .single();
 
