@@ -3180,10 +3180,15 @@ app.post("/admin/test-run", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: inputError.message });
   }
 
-  // 3. Mark as completed
+  // 3. Mark as completed with proper workflow state
   const { error: completeError } = await req.supabase
     .from("diagnostic_runs")
-    .update({ status: "completed" })
+    .update({
+      status: "completed",
+      current_step: "calibration",
+      setup_completed_at: new Date().toISOString(),
+      last_activity_at: new Date().toISOString()
+    })
     .eq("id", runId);
 
   if (completeError) {
