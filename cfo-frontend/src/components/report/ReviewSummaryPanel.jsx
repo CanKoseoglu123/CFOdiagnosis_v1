@@ -3,7 +3,7 @@
 // Shows completeness check, summary cards, and action register preview
 
 import React from 'react';
-import { CheckCircle, AlertTriangle, Target, Clock, User, FileText, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Target, Clock, User, FileText, AlertCircle, Eye } from 'lucide-react';
 
 const TIMELINE_LABELS = {
   '6m': '6 Months',
@@ -32,6 +32,7 @@ export default function ReviewSummaryPanel({
   timelines,
   owners,
   onComplete,
+  onReviewImpact,
   completing = false
 }) {
   // Filter to selected actions
@@ -93,7 +94,7 @@ export default function ReviewSummaryPanel({
           />
           <SummaryCard
             icon={<AlertCircle className="w-5 h-5 text-red-600" />}
-            label="Critical Gaps Fixed"
+            label="Critical Actions Addressed"
             value={`${stats.criticalGapsFixed}/${stats.totalCriticalGaps}`}
             bgColor="bg-red-50"
           />
@@ -232,7 +233,7 @@ export default function ReviewSummaryPanel({
         )}
       </div>
 
-      {/* Footer with complete button */}
+      {/* Footer with action buttons */}
       <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-600">
@@ -247,23 +248,39 @@ export default function ReviewSummaryPanel({
                 {!checks.hasActions
                   ? 'Select at least one action'
                   : !checks.allTimelines
-                  ? 'Assign timelines to continue'
-                  : 'Assign owners to continue'}
+                  ? 'Some timelines unassigned'
+                  : 'Some owners unassigned'}
               </span>
             )}
           </div>
-          <button
-            onClick={onComplete}
-            disabled={!checks.hasActions || completing}
-            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-sm transition-colors ${
-              checks.hasActions && !completing
-                ? 'bg-slate-800 text-white hover:bg-slate-900'
-                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            {completing ? 'Finalizing...' : 'Complete & Generate Report'}
-          </button>
+          <div className="flex items-center gap-3">
+            {onReviewImpact && (
+              <button
+                onClick={onReviewImpact}
+                disabled={!checks.hasActions || completing}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-sm transition-colors border ${
+                  checks.hasActions && !completing
+                    ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                    : 'border-slate-200 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                <Eye className="w-4 h-4" />
+                Review Impact
+              </button>
+            )}
+            <button
+              onClick={onComplete}
+              disabled={!checks.hasActions || completing}
+              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-sm transition-colors ${
+                checks.hasActions && !completing
+                  ? 'bg-slate-800 text-white hover:bg-slate-900'
+                  : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              {completing ? 'Saving...' : 'Complete Planning'}
+            </button>
+          </div>
         </div>
         {!isComplete && checks.hasActions && (
           <p className="text-xs text-slate-500 mt-2">

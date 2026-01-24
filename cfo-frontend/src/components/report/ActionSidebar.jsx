@@ -1,11 +1,10 @@
 // src/components/report/ActionSidebar.jsx
 // VS-28: Universal sidebar for Action Planning - context, progress, and controls
 // VS-41: Removed Finalize button (moved to left sidebar), removed Back/Proceed, restored progress tracker
-// VS-46: Added Action Planning Wizard trigger
-// VS-48: Updated with Progressive Wizard and Smart Lens options
+// Updated: Consolidated to single Action Planning Wizard entry point
 
 import React from 'react';
-import { Save, Sparkles, Wand2, Filter } from 'lucide-react';
+import { Save, Sparkles } from 'lucide-react';
 
 export default function ActionSidebar({
   companyName,
@@ -22,9 +21,8 @@ export default function ActionSidebar({
   onSave,
   saving = false,
   isFinalized = false,
-  // Wizard triggers
-  onOpenProgressiveWizard,
-  onOpenSmartLensWizard
+  // Wizard trigger
+  onOpenWizard
 }) {
   const progressPercent = totalGaps > 0 ? Math.round((selectedCount / totalGaps) * 100) : 0;
   const timelinePercent = selectedCount > 0 ? Math.round((assignedCount / selectedCount) * 100) : 0;
@@ -122,19 +120,19 @@ export default function ActionSidebar({
 
       {/* Actions */}
       <div className="px-4 py-3 space-y-3">
-        {/* Guided Action Planning (Progressive Wizard) */}
+        {/* Action Planning Wizard */}
         <div className="pb-3 border-b border-slate-200">
           <div className="flex items-start gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-slate-900">Guided Planning</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Step-by-step wizard with assignments</p>
+              <h4 className="text-sm font-semibold text-slate-900">Action Planning Wizard</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Guided selection with timelines & owners</p>
             </div>
           </div>
           <button
-            onClick={onOpenProgressiveWizard}
+            onClick={onOpenWizard}
             disabled={isFinalized}
             className={`w-full px-4 py-2 text-white text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors ${
               isFinalized
@@ -143,27 +141,8 @@ export default function ActionSidebar({
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Start Guided Planning</span>
+            <span>Start Action Planning</span>
           </button>
-        </div>
-
-        {/* Smart Lens (Quick Add) */}
-        <div className="pb-3 border-b border-slate-200">
-          <button
-            onClick={onOpenSmartLensWizard}
-            disabled={isFinalized}
-            className={`w-full px-3 py-2 text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors border ${
-              isFinalized
-                ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-            }`}
-          >
-            <Filter className="w-4 h-4" />
-            <span>Quick Add (Smart Lens)</span>
-          </button>
-          <p className="text-[10px] text-slate-400 mt-1.5 text-center">
-            Filter by pain points, priorities, quick wins
-          </p>
         </div>
 
         {/* Save Button */}

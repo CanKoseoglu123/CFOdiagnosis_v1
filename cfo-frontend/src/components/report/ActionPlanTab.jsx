@@ -4,15 +4,14 @@
 // VS-46: Added Action Planning Wizard integration
 // Includes ActionSidebar inside content container for interactive metrics
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import SimulatorHUD from './SimulatorHUD';
 import CommandCenter from './CommandCenter';
 import ActionSidebar from './ActionSidebar';
-import ActionPlanningWizard from './ActionPlanningWizard';
 import ProgressiveWizard from './ProgressiveWizard';
-import { AlertTriangle, CheckCircle, CheckCircle2, Wand2, FileText, Home, Sparkles } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CheckCircle2, FileText, Home, Sparkles } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -80,13 +79,17 @@ export default function ActionPlanTab({
   // Post-completion modal state
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
-  // VS-46: Wizard state
+  // Wizard state
   const [showWizard, setShowWizard] = useState(false);
   const [wizardSummary, setWizardSummary] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
 
-  // Progressive Wizard state
-  const [showProgressiveWizard, setShowProgressiveWizard] = useState(false);
+  // Benchmark data for objective sorting
+  const [benchmarkData, setBenchmarkData] = useState(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+
+  // Ref for scrolling to simulator
+  const simulatorRef = useRef(null);
 
   // VS-39: Derive finalization status from report (NOT separate state)
   const isFinalized = !!report?.finalized_at;
@@ -97,6 +100,32 @@ export default function ActionPlanTab({
       fetchActionPlan();
     }
   }, [runId, questions.length]);
+
+  // Fetch benchmark data for objective sorting
+  useEffect(() => {
+    async function fetchBenchmarkData() {
+      if (!runId) return;
+      setBenchmarkLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        const res = await fetch(`${API_URL}/diagnostic-runs/${runId}/benchmark`, {
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setBenchmarkData(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch benchmark data:', err);
+      } finally {
+        setBenchmarkLoading(false);
+      }
+    }
+    fetchBenchmarkData();
+  }, [runId]);
 
   // VS-47: Show intro modal on entry (only first time per run)
   useEffect(() => {
@@ -298,56 +327,33 @@ export default function ActionPlanTab({
     navigate('/');
   }
 
-  // VS-46: Handle wizard selection apply
-  const handleWizardApply = useCallback(({ selections, added, removed, total }) => {
-    // Add new selections
-    added.forEach(questionId => {
-      const newData = { timeline: null, assigned_owner: null, status: 'planned' };
-      setActionPlan(prev => ({ ...prev, [questionId]: newData }));
-      saveAction(questionId, newData);
+  // Wizard completion handler
+  const handleWizardComplete = useCallback(async (actionPlanData) => {
+    // Get existing IDs from current state via ref pattern
+    let existingIds = [];
+    setActionPlan(prev => {
+      existingIds = Object.keys(prev);
+      return prev; // Don't change state yet
     });
 
-    // Remove deselected items
-    removed.forEach(questionId => {
-      setActionPlan(prev => {
-        const next = { ...prev };
-        delete next[questionId];
-        return next;
-      });
-      saveAction(questionId, null);
-    });
-
-    // Show summary toast
-    setWizardSummary({ added: added.length, removed: removed.length, total });
-    setShowWizard(false);
-
-    // Clear summary after 5 seconds
-    setTimeout(() => setWizardSummary(null), 5000);
-  }, [saveAction]);
-
-  // Progressive Wizard completion handler
-  const handleProgressiveWizardComplete = useCallback(async (actionPlanData) => {
     // Clear existing action plan
-    const existingIds = Object.keys(actionPlan);
     for (const questionId of existingIds) {
-      setActionPlan(prev => {
-        const next = { ...prev };
-        delete next[questionId];
-        return next;
-      });
       await saveAction(questionId, null);
     }
 
-    // Apply new action plan from wizard
+    // Build new action plan map
+    const newPlan = {};
     for (const item of actionPlanData) {
-      const newData = {
+      newPlan[item.question_id] = {
         timeline: item.timeline,
         assigned_owner: item.assigned_owner,
         status: item.status || 'planned'
       };
-      setActionPlan(prev => ({ ...prev, [item.question_id]: newData }));
-      await saveAction(item.question_id, newData);
+      await saveAction(item.question_id, newPlan[item.question_id]);
     }
+
+    // Update state once with new plan
+    setActionPlan(newPlan);
 
     // Show summary toast
     setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
@@ -355,7 +361,52 @@ export default function ActionPlanTab({
 
     // Show finalization modal
     setShowFinalizeModal(true);
-  }, [actionPlan, saveAction]);
+  }, [saveAction]);
+
+  // Progressive Wizard draft save handler (saves without finalizing)
+  const handleSaveDraft = useCallback(async (actionPlanData) => {
+    // Get existing IDs from current state via ref pattern
+    let existingIds = [];
+    setActionPlan(prev => {
+      existingIds = Object.keys(prev);
+      return prev; // Don't change state yet
+    });
+
+    // Clear existing action plan
+    for (const questionId of existingIds) {
+      await saveAction(questionId, null);
+    }
+
+    // Build new action plan map
+    const newPlan = {};
+    for (const item of actionPlanData) {
+      newPlan[item.question_id] = {
+        timeline: item.timeline,
+        assigned_owner: item.assigned_owner,
+        status: item.status || 'planned'
+      };
+      await saveAction(item.question_id, newPlan[item.question_id]);
+    }
+
+    // Update state once with new plan
+    setActionPlan(newPlan);
+
+    // Show summary toast
+    setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
+    setTimeout(() => setWizardSummary(null), 5000);
+  }, [saveAction]);
+
+  // Scroll to simulator when "Review Impact" is clicked
+  const handleReviewImpact = useCallback(() => {
+    if (simulatorRef.current) {
+      simulatorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  // Build importance map from report calibration
+  const importanceMap = useMemo(() => {
+    return report?.calibration?.importance_map || {};
+  }, [report]);
 
   // Get gaps (questions not answered yes)
   const gaps = useMemo(() => {
@@ -582,17 +633,19 @@ export default function ActionPlanTab({
       {/* ─────────────────────────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 space-y-4">
         {/* Simulator HUD */}
-        <SimulatorHUD
-          executionScore={executionScores.current}
-          projectedScore={executionScores.projected}
-          currentLevel={maturityLevels.current}
-          projectedLevel={maturityLevels.projected}
-          objectives={objectives}
-          projectedByTimeline={projectedByTimeline}
-          actionCounts={actionCounts}
-          gapsTotal={gaps.length}
-          saving={saving}
-        />
+        <div ref={simulatorRef}>
+          <SimulatorHUD
+            executionScore={executionScores.current}
+            projectedScore={executionScores.projected}
+            currentLevel={maturityLevels.current}
+            projectedLevel={maturityLevels.projected}
+            objectives={objectives}
+            projectedByTimeline={projectedByTimeline}
+            actionCounts={actionCounts}
+            gapsTotal={gaps.length}
+            saving={saving}
+          />
+        </div>
 
         {/* View Mode Toggle */}
         <div className="bg-white border border-slate-300 rounded-sm p-3 flex items-center justify-between">
@@ -662,9 +715,8 @@ export default function ActionPlanTab({
           onSave={handleSidebarSave}
           saving={saving}
           isFinalized={isFinalized}
-          // Wizard triggers
-          onOpenProgressiveWizard={() => setShowProgressiveWizard(true)}
-          onOpenSmartLensWizard={() => setShowWizard(true)}
+          // Wizard trigger
+          onOpenWizard={() => setShowWizard(true)}
         />
       </div>
 
@@ -750,95 +802,73 @@ export default function ActionPlanTab({
         </div>
       )}
 
-      {/* VS-47: Action Planning Intro Modal - Updated with Progressive Wizard */}
+      {/* Action Planning Intro Modal */}
       {showIntroModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-sm max-w-lg border border-slate-300 shadow-xl">
+          <div className="bg-white p-6 rounded-sm max-w-md border border-slate-300 shadow-xl">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-slate-800">Action Planning</h3>
               <p className="text-sm text-slate-600 mt-1">
-                Choose how you'd like to build your action plan. This is the last step before generating your Executive Report.
+                Build your action plan with our step-by-step wizard. This is the last step before generating your Executive Report.
               </p>
             </div>
 
-            {/* Guided Action Planning - Recommended */}
+            {/* Action Planning Wizard */}
             <div className="border-2 border-slate-800 rounded-sm p-4 bg-slate-50 mb-3">
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-semibold text-slate-900">Guided Action Planning</h4>
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-slate-800 text-white rounded">Recommended</span>
-                  </div>
+                  <h4 className="text-sm font-semibold text-slate-900">Action Planning Wizard</h4>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Step-by-step wizard: Select objectives → Actions → Timelines → Owners → Review
+                    Select actions → Assign timelines → Assign owners → Review
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => {
                   setShowIntroModal(false);
-                  setShowProgressiveWizard(true);
+                  setShowWizard(true);
                   window.localStorage.setItem(`actionPlanIntroSeen:${runId}`, 'true');
                 }}
                 className="w-full px-4 py-2.5 text-white text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors bg-slate-800 hover:bg-slate-900"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Start Guided Planning</span>
+                <span>Start Action Planning</span>
               </button>
             </div>
 
             {/* Manual Selection */}
-            <div className="border border-slate-200 rounded-sm p-4 bg-white">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                  <Wand2 className="w-5 h-5 text-slate-500" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-700">Manual Selection</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Browse all actions directly. Use Smart Lens filters from the sidebar.
-                  </p>
-                </div>
-              </div>
+            <div className="text-center">
               <button
                 onClick={() => {
                   setShowIntroModal(false);
                   window.localStorage.setItem(`actionPlanIntroSeen:${runId}`, 'true');
                 }}
-                className="w-full px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-sm flex items-center justify-center gap-2 transition-colors hover:bg-slate-50"
+                className="px-4 py-2 text-slate-500 text-sm hover:text-slate-700 transition-colors"
               >
-                <span>Select Actions Manually</span>
+                Skip wizard and select manually
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* VS-46: Action Planning Wizard (Smart Lens) */}
-      <ActionPlanningWizard
+      {/* Action Planning Wizard */}
+      <ProgressiveWizard
         isOpen={showWizard}
         onClose={() => setShowWizard(false)}
-        gaps={gaps}
-        practices={practices}
-        objectives={objectives}
-        report={report}
-        actionPlan={actionPlan}
-        onApplySelections={handleWizardApply}
-      />
-
-      {/* Progressive Wizard (Guided Action Planning) */}
-      <ProgressiveWizard
-        isOpen={showProgressiveWizard}
-        onClose={() => setShowProgressiveWizard(false)}
         gaps={gaps}
         questions={questions}
         objectives={objectives}
         practices={practices}
         report={report}
-        onComplete={handleProgressiveWizardComplete}
+        onComplete={handleWizardComplete}
+        onSaveDraft={handleSaveDraft}
+        onReviewImpact={handleReviewImpact}
+        benchmarkData={benchmarkData}
+        importanceMap={importanceMap}
       />
 
       {/* VS-46: Wizard Summary Toast */}

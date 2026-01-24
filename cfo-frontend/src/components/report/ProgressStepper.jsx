@@ -1,16 +1,16 @@
 // src/components/report/ProgressStepper.jsx
 // Progressive Wizard step indicator - horizontal stepper with clickable back navigation
+// 4 steps: Actions -> Timelines -> Owners -> Review
 // Follows SetupProgress.jsx pattern with enterprise styling
 
 import React from 'react';
 import { Check } from 'lucide-react';
 
 const STEPS = [
-  { key: 1, label: 'Objectives' },
-  { key: 2, label: 'Actions' },
-  { key: 3, label: 'Timelines' },
-  { key: 4, label: 'Owners' },
-  { key: 5, label: 'Review' }
+  { key: 1, label: 'Actions' },
+  { key: 2, label: 'Timelines' },
+  { key: 3, label: 'Owners' },
+  { key: 4, label: 'Review' }
 ];
 
 export default function ProgressStepper({ currentStep, onStepClick, completedSteps = new Set() }) {

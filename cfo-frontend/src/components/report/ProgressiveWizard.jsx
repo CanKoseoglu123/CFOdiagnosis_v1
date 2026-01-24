@@ -1,12 +1,11 @@
 // src/components/report/ProgressiveWizard.jsx
-// Progressive Wizard - 5-step guided action planning flow
-// Orchestrates: Objectives -> Actions -> Timelines -> Owners -> Review
+// Progressive Wizard - 4-step guided action planning flow
+// Orchestrates: Actions (sequential sub-steps) -> Timelines -> Owners -> Review
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { X, ArrowLeft, ArrowRight, AlertTriangle } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 import ProgressStepper from './ProgressStepper';
-import ObjectiveCardGrid from './ObjectiveCardGrid';
-import ActionSelectionPanel from './ActionSelectionPanel';
+import ActionSelectionSteps from './ActionSelectionSteps';
 import TimelineAssignmentPanel from './TimelineAssignmentPanel';
 import OwnerAssignmentPanel from './OwnerAssignmentPanel';
 import ReviewSummaryPanel from './ReviewSummaryPanel';
@@ -19,15 +18,19 @@ export default function ProgressiveWizard({
   objectives,
   practices,
   report,
-  onComplete
+  onComplete,
+  onSaveDraft,
+  onReviewImpact,
+  benchmarkData,
+  importanceMap
 }) {
-  // Note: The API already sets objective_id on questions (derived from practice_id in backend)
-  // So we can use gaps directly with their objective_id property
-  // Current wizard step (1-5)
+  // Current wizard step (1-4)
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Wizard state - internal until completion
-  const [selectedObjectives, setSelectedObjectives] = useState(() => new Set());
+  // Current sub-step within Actions step (1-4: Pain Points, Quick Wins, Fix Basics, Objectives)
+  const [currentSubStep, setCurrentSubStep] = useState(1);
+
+  // Wizard state - single selection state for all steps
   const [selectedActions, setSelectedActions] = useState(() => new Set());
   const [timelines, setTimelines] = useState(() => new Map());
   const [owners, setOwners] = useState(() => new Map());
@@ -35,50 +38,30 @@ export default function ProgressiveWizard({
   // Completing state
   const [completing, setCompleting] = useState(false);
 
-  // Exit confirmation
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
-
   // Check if there are unsaved changes
-  const hasChanges = selectedObjectives.size > 0 || selectedActions.size > 0;
+  const hasChanges = selectedActions.size > 0;
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // STEP 1: OBJECTIVE SELECTION HANDLERS
-  // ─────────────────────────────────────────────────────────────────────────
-
-  const handleToggleObjective = useCallback((objectiveId) => {
-    setSelectedObjectives(prev => {
-      const next = new Set(prev);
-      if (next.has(objectiveId)) {
-        next.delete(objectiveId);
-        // Also remove actions from this objective
-        setSelectedActions(prevActions => {
-          const nextActions = new Set(prevActions);
-          gaps.forEach(g => {
-            if (g.objective_id === objectiveId) {
-              nextActions.delete(g.id);
-            }
-          });
-          return nextActions;
-        });
-      } else {
-        next.add(objectiveId);
+  // Derive selected objectives from selected actions
+  const selectedObjectives = useMemo(() => {
+    const objIds = new Set();
+    selectedActions.forEach(actionId => {
+      const action = gaps.find(g => g.id === actionId);
+      if (action?.objective_id) {
+        objIds.add(action.objective_id);
       }
-      return next;
     });
-  }, [gaps]);
+    return objIds;
+  }, [selectedActions, gaps]);
 
-  const handleSelectAllObjectives = useCallback(() => {
-    const objectivesWithGaps = new Set(gaps.map(g => g.objective_id));
-    setSelectedObjectives(objectivesWithGaps);
+  // Build gaps lookup map
+  const gapsById = useMemo(() => {
+    const map = new Map();
+    gaps.forEach(g => map.set(g.id, g));
+    return map;
   }, [gaps]);
-
-  const handleClearAllObjectives = useCallback(() => {
-    setSelectedObjectives(new Set());
-    setSelectedActions(new Set());
-  }, []);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 2: ACTION SELECTION HANDLERS
+  // ACTION SELECTION HANDLERS
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleToggleAction = useCallback((actionId) => {
@@ -133,7 +116,7 @@ export default function ProgressiveWizard({
   }, [gaps]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 3: TIMELINE ASSIGNMENT HANDLERS
+  // TIMELINE ASSIGNMENT HANDLERS
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleTimelineChange = useCallback((actionId, value) => {
@@ -161,7 +144,7 @@ export default function ProgressiveWizard({
   }, [selectedActions]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 4: OWNER ASSIGNMENT HANDLERS
+  // OWNER ASSIGNMENT HANDLERS
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleOwnerChange = useCallback((actionId, value) => {
@@ -189,13 +172,10 @@ export default function ProgressiveWizard({
   }, [selectedActions]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 5: COMPLETION HANDLER
+  // HELPER: Build action plan data from current selections
   // ─────────────────────────────────────────────────────────────────────────
 
-  const handleComplete = useCallback(async () => {
-    setCompleting(true);
-
-    // Build the action plan data
+  const buildActionPlanData = useCallback(() => {
     const actionPlanData = [];
     selectedActions.forEach(actionId => {
       actionPlanData.push({
@@ -205,10 +185,19 @@ export default function ProgressiveWizard({
         status: 'planned'
       });
     });
+    return actionPlanData;
+  }, [selectedActions, timelines, owners]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // COMPLETION HANDLERS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const handleComplete = useCallback(async () => {
+    setCompleting(true);
+    const actionPlanData = buildActionPlanData();
 
     try {
       await onComplete(actionPlanData);
-      // Close wizard on success
       onClose();
     } catch (err) {
       console.error('Failed to complete wizard:', err);
@@ -216,29 +205,54 @@ export default function ProgressiveWizard({
     } finally {
       setCompleting(false);
     }
-  }, [selectedActions, timelines, owners, onComplete, onClose]);
+  }, [buildActionPlanData, onComplete, onClose]);
+
+  // "Review Impact" - saves draft and scrolls to simulator
+  const handleReviewImpact = useCallback(async () => {
+    setCompleting(true);
+    const actionPlanData = buildActionPlanData();
+
+    try {
+      if (onSaveDraft) {
+        await onSaveDraft(actionPlanData);
+      }
+      if (onReviewImpact) {
+        onReviewImpact();
+      }
+      onClose();
+    } catch (err) {
+      console.error('Failed to save draft:', err);
+      alert('Failed to save draft. Please try again.');
+    } finally {
+      setCompleting(false);
+    }
+  }, [buildActionPlanData, onSaveDraft, onReviewImpact, onClose]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // NAVIGATION
   // ─────────────────────────────────────────────────────────────────────────
 
   const canProceedFromStep = useMemo(() => ({
-    1: selectedObjectives.size > 0,
-    2: selectedActions.size > 0,
-    3: true, // Can skip timeline (soft requirement)
-    4: true, // Can skip owner (soft requirement)
-    5: selectedActions.size > 0
-  }), [selectedObjectives.size, selectedActions.size]);
+    1: selectedActions.size > 0,  // Must select at least 1 action
+    2: true,                       // Timelines optional
+    3: true,                       // Owners optional
+    4: selectedActions.size > 0   // Review requires actions
+  }), [selectedActions.size]);
 
   const handleNext = () => {
-    if (currentStep < 5 && canProceedFromStep[currentStep]) {
+    if (currentStep < 4 && canProceedFromStep[currentStep]) {
       setCurrentStep(s => s + 1);
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(s => s - 1);
+      const newStep = currentStep - 1;
+      setCurrentStep(newStep);
+      // If going back to Actions step, start at sub-step 4 (Objectives)
+      if (newStep === 1) {
+        setCurrentSubStep(4);
+      }
     }
   };
 
@@ -249,12 +263,17 @@ export default function ProgressiveWizard({
     }
   };
 
-  const handleClose = () => {
-    if (hasChanges) {
-      setShowExitConfirm(true);
-    } else {
-      onClose();
+  const handleClose = async () => {
+    // Auto-save draft if there are changes
+    if (hasChanges && onSaveDraft) {
+      const actionPlanData = buildActionPlanData();
+      try {
+        await onSaveDraft(actionPlanData);
+      } catch (err) {
+        console.error('Failed to auto-save draft:', err);
+      }
     }
+    onClose();
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -263,9 +282,6 @@ export default function ProgressiveWizard({
 
   if (!isOpen) return null;
 
-  // Get relevant gaps count for step 2
-  const relevantGapsCount = gaps.filter(g => selectedObjectives.has(g.objective_id)).length;
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-sm w-full max-w-5xl h-[85vh] flex flex-col border border-slate-300">
@@ -273,7 +289,7 @@ export default function ProgressiveWizard({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div>
             <h2 className="text-lg font-semibold text-slate-800">
-              Guided Action Planning
+              Action Planning Wizard
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">
               Build your action plan step by step
@@ -296,32 +312,25 @@ export default function ProgressiveWizard({
         {/* Step Content */}
         <div className="flex-1 overflow-hidden">
           {currentStep === 1 && (
-            <ObjectiveCardGrid
-              objectives={objectives}
+            <ActionSelectionSteps
               gaps={gaps}
-              questions={questions}
               practices={practices}
-              report={report}
-              selectedObjectives={selectedObjectives}
-              onToggleObjective={handleToggleObjective}
-              onSelectAll={handleSelectAllObjectives}
-              onClearAll={handleClearAllObjectives}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <ActionSelectionPanel
-              gaps={gaps}
               objectives={objectives}
-              selectedObjectives={selectedObjectives}
+              report={report}
               selectedActions={selectedActions}
               onToggleAction={handleToggleAction}
               onSelectAllInObjective={handleSelectAllInObjective}
               onClearAllInObjective={handleClearAllInObjective}
+              benchmarkData={benchmarkData}
+              importanceMap={importanceMap}
+              questions={questions}
+              currentSubStep={currentSubStep}
+              onSubStepChange={setCurrentSubStep}
+              onContinueToTimelines={() => setCurrentStep(2)}
             />
           )}
 
-          {currentStep === 3 && (
+          {currentStep === 2 && (
             <TimelineAssignmentPanel
               gaps={gaps}
               selectedActions={selectedActions}
@@ -331,7 +340,7 @@ export default function ProgressiveWizard({
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <OwnerAssignmentPanel
               gaps={gaps}
               selectedActions={selectedActions}
@@ -342,7 +351,7 @@ export default function ProgressiveWizard({
             />
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 4 && (
             <ReviewSummaryPanel
               gaps={gaps}
               objectives={objectives}
@@ -351,33 +360,26 @@ export default function ProgressiveWizard({
               timelines={timelines}
               owners={owners}
               onComplete={handleComplete}
+              onReviewImpact={handleReviewImpact}
               completing={completing}
             />
           )}
         </div>
 
-        {/* Footer Navigation (not shown on step 5 - it has its own) */}
-        {currentStep < 5 && (
+        {/* Footer Navigation (not shown on step 1 - it has its own, or step 4 - it has its own) */}
+        {currentStep > 1 && currentStep < 4 && (
           <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
             <button
               onClick={handleBack}
-              disabled={currentStep === 1}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-sm transition-colors ${
-                currentStep === 1
-                  ? 'text-slate-400 cursor-not-allowed'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-sm transition-colors text-slate-600 hover:bg-slate-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
 
             <div className="text-sm text-slate-500">
-              {currentStep === 1 && selectedObjectives.size > 0 && (
-                <span>{selectedObjectives.size} objective{selectedObjectives.size !== 1 ? 's' : ''} selected</span>
-              )}
-              {currentStep === 2 && selectedActions.size > 0 && (
-                <span>{selectedActions.size} of {relevantGapsCount} action{relevantGapsCount !== 1 ? 's' : ''} selected</span>
+              {selectedActions.size > 0 && (
+                <span>{selectedActions.size} action{selectedActions.size !== 1 ? 's' : ''} selected</span>
               )}
             </div>
 
@@ -396,44 +398,6 @@ export default function ProgressiveWizard({
           </div>
         )}
       </div>
-
-      {/* Exit Confirmation Modal */}
-      {showExitConfirm && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60]">
-          <div className="bg-white p-6 rounded-sm max-w-sm border border-slate-300">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800">
-                  Exit without saving?
-                </h3>
-                <p className="text-sm text-slate-600 mt-1">
-                  You have unsaved changes. Your progress will be lost if you exit now.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowExitConfirm(false)}
-                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-sm hover:bg-slate-50 transition-colors"
-              >
-                Continue Editing
-              </button>
-              <button
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  onClose();
-                }}
-                className="flex-1 px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-sm hover:bg-slate-900 transition-colors"
-              >
-                Exit Anyway
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
