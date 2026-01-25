@@ -135,7 +135,7 @@ export default function PricingPage() {
                   Sign In
                 </Link>
                 <Link
-                  to="/request-access"
+                  to="/login"
                   className="text-sm font-medium px-4 py-2 rounded-sm text-white transition-colors"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
@@ -183,7 +183,7 @@ export default function PricingPage() {
             Unlock Your Full FP&A Diagnostic
           </h1>
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Comprehensive assessment across all 10 objectives.
+            Comprehensive assessment across all 9 objectives.
             Actionable recommendations. Executive-ready PDF reports.
           </p>
         </div>
@@ -209,7 +209,7 @@ export default function PricingPage() {
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">2 objectives (31 questions)</span>
+                <span className="text-slate-700">2 objectives</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
@@ -221,7 +221,7 @@ export default function PricingPage() {
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Full 10-objective assessment</span>
+                <span className="text-slate-400">Full assessment</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
@@ -238,7 +238,7 @@ export default function PricingPage() {
             </ul>
 
             <Link
-              to={isAuthenticated ? '/dashboard' : '/request-access'}
+              to={isAuthenticated ? '/dashboard' : '/login'}
               className="block w-full text-center py-3 px-4 border border-slate-300 rounded-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
               {isAuthenticated ? 'Go to Dashboard' : 'Get Started Free'}
@@ -278,7 +278,7 @@ export default function PricingPage() {
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700 font-medium">All 10 objectives (97 questions)</span>
+                <span className="text-slate-700 font-medium">All 9 objectives</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
@@ -344,7 +344,7 @@ export default function PricingPage() {
               >
                 <Target className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">10 Strategic Objectives</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">9 Strategic Objectives</h3>
               <p className="text-slate-600 text-sm">
                 Comprehensive coverage of FP&A capabilities across foundation, future, and intelligence.
               </p>
@@ -439,7 +439,7 @@ export default function PricingPage() {
             <div className="border-b border-slate-200 pb-6">
               <h3 className="font-semibold text-slate-800 mb-2">Can I try before I buy?</h3>
               <p className="text-slate-600">
-                Yes. The free tier gives you access to 2 objectives (31 questions) so you can experience the diagnostic before upgrading.
+                Yes. The free tier gives you access to 2 objectives so you can experience the diagnostic before upgrading.
               </p>
             </div>
 

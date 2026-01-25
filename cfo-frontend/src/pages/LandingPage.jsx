@@ -8,10 +8,8 @@ import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
 import { supabase } from '../lib/supabase';
 import {
   ArrowRight,
-  Zap,
-  Crosshair,
-  Layers,
-  GitBranch,
+  Play,
+  Check,
 } from 'lucide-react';
 import FeedbackButton from '../components/FeedbackButton';
 
@@ -109,6 +107,12 @@ export default function LandingPage() {
               >
                 About
               </Link>
+              <Link
+                to="/pricing"
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Pricing
+              </Link>
             </div>
           </div>
 
@@ -137,12 +141,6 @@ export default function LandingPage() {
             ) : (
               <>
                 <Link
-                  to="/request-access"
-                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors hidden sm:block"
-                >
-                  Request Access
-                </Link>
-                <Link
                   to="/login"
                   className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                 >
@@ -153,7 +151,7 @@ export default function LandingPage() {
                   className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  Get Started
+                  Get Started Free
                 </Link>
               </>
             )}
@@ -162,292 +160,509 @@ export default function LandingPage() {
       </nav>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* HERO - Centered */}
+      {/* HERO - Above the Fold */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="pt-28 pb-16 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <p
-            className="text-sm font-medium tracking-wide uppercase mb-4"
-            style={{ color: BRAND_COLORS.gold }}
-          >
-            Created for Finance Leaders by Finance Leaders
-          </p>
+      <section className="pt-28 pb-12 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <p
+              className="text-sm font-medium tracking-wide uppercase mb-4"
+              style={{ color: BRAND_COLORS.gold }}
+            >
+              Created for Finance Leaders by Finance Leaders
+            </p>
 
-          <h1
-            className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight"
-            style={{ color: BRAND_COLORS.navy }}
-          >
-            Build the FP&A function your business deserves.
-          </h1>
+            <h1
+              className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight"
+              style={{ color: BRAND_COLORS.navy }}
+            >
+              Build the FP&A function your business deserves.
+            </h1>
 
-          <p className="text-lg text-slate-600 mb-6 leading-relaxed">
-            Variance explanations that take three days. Forecasts nobody trusts.
-            Rolling reforecasts that never roll. The strategic work keeps getting
-            pushed to "next quarter." Every quarter.
-          </p>
+            <p className="text-base text-slate-600 mb-4 leading-relaxed">
+              Variance explanations that take three days. Forecasts nobody trusts.
+              Rolling reforecasts that never roll. The strategic work keeps getting
+              pushed to "next quarter." Every quarter.
+            </p>
 
-          <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-            You already know your FP&A function has gaps. You need a
-            structured way to articulate them clearly, prioritize what to fix,
-            and get it done.
-          </p>
+            <p className="text-base text-slate-600 mb-6 leading-relaxed">
+              You already know your FP&A function has gaps. You need a
+              structured way to articulate them clearly, prioritize what to fix,
+              and get it done.
+            </p>
 
-          <Link
-            to={isAuthenticated ? '/select-pillar' : '/login'}
-            className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: BRAND_COLORS.navy }}
-          >
-            Start the FP&A Diagnostic
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+            <p className="text-lg text-slate-600 mb-8 leading-relaxed font-medium">
+              Spend 30 minutes to diagnose your FP&A maturity and build a prioritized action plan to improve it.
+            </p>
+
+            {/* Dual CTAs */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                to={isAuthenticated ? '/select-pillar' : '/login'}
+                className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
+                style={{ backgroundColor: BRAND_COLORS.navy }}
+              >
+                Get Started Free
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center gap-2 px-6 py-4 text-lg font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                See How It Works
+                <ArrowRight className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Hero Video Placeholder */}
+          <div className="relative max-w-4xl mx-auto">
+            <div
+              className="aspect-video bg-slate-100 border border-slate-200 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors"
+            >
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  <Play className="w-7 h-7 text-white ml-1" />
+                </div>
+                <p className="text-sm text-slate-500">Product overview video</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE OFFERING */}
+      {/* HOW IT WORKS - Product Showcase */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <LogoIcon size={32} />
-              <span
-                className="text-sm font-medium uppercase tracking-wide"
-                style={{ color: BRAND_COLORS.gold }}
-              >
-                What We're Offering
-              </span>
-            </div>
-
+      <section id="how-it-works" className="py-20 px-6 bg-slate-50 border-y border-slate-200">
+        <div className="max-w-6xl mx-auto">
+          {/* Big Bold Title with Subtext */}
+          <div className="mb-16">
             <h2
-              className="text-3xl font-bold mb-4"
+              className="text-4xl sm:text-5xl font-bold mb-4"
               style={{ color: BRAND_COLORS.navy }}
             >
-              A Finance Diagnostic Engine
+              Introducing CFO Lens
             </h2>
-
-            <p className="text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              A platform that brings your FP&A function into focus and gives you the
-              framing and action plan to fix it yourself. No consultants required.
+            <p className="text-lg text-slate-600 max-w-2xl">
+              A platform that brings your FP&A function into focus and gives you the framing and action plan to fix it yourself.
             </p>
           </div>
 
-          {/* Three outcomes */}
-          <div className="grid sm:grid-cols-3 gap-6">
-            <div className="bg-white border border-slate-200 p-6">
-              <div
-                className="text-5xl font-bold mb-4"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                1
+          {/* Step 1 - Text Left, Video Right */}
+          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+            <div className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
+              {/* Header with number circle */}
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                >
+                  1
+                </div>
+                <h3 className="text-lg font-semibold" style={{ color: BRAND_COLORS.navy }}>
+                  Company Context
+                </h3>
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                A clear picture of where your FP&A function stands
-              </h3>
-              <p className="text-sm text-slate-600">
-                60 questions. Maturity scored across the full FP&A landscape.
-                Gaps tagged by root cause: People, Process, Technology, or Data.
+              <p className="text-sm text-slate-500">
+                Understanding the specifics of your company
               </p>
-            </div>
 
-            <div className="bg-white border border-slate-200 p-6">
-              <div
-                className="text-5xl font-bold mb-4"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                2
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                A prioritized list of what to fix first
-              </h3>
-              <p className="text-sm text-slate-600">
-                Initiatives ranked by impact and complexity. Know what matters most
-                and what can wait.
-              </p>
-            </div>
-
-            <div className="bg-white border border-slate-200 p-6">
-              <div
-                className="text-5xl font-bold mb-4"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                3
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">
-                A simulator to test different improvement paths
-              </h3>
-              <p className="text-sm text-slate-600">
-                Toggle initiatives on and off. Commit to a timeline. Watch your
-                projected maturity shift in real time.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE REPORTS - Key Differentiator */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-6 overflow-hidden">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2
-              className="text-3xl font-bold mb-4"
-              style={{ color: BRAND_COLORS.navy }}
-            >
-              Build the roadmap that will make a difference
-            </h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Comprehensive reports and planning tools that help you identify the right actions
-              to improve the maturity of your FP&A function — and track progress over time.
-            </p>
-          </div>
-
-          {/* Stacked Report Cards */}
-          <div className="relative h-80 sm:h-96 mx-auto max-w-4xl">
-            {/* Card 1 - Executive Summary (bottom layer) */}
-            <div
-              className="absolute left-[10%] top-0 w-[55%] aspect-[4/3] rounded-lg shadow-xl overflow-hidden border border-slate-200 z-0"
-              style={{
-                transform: 'rotate(-2deg)',
-                filter: 'blur(1.5px)'
-              }}
-            >
-              <img
-                src="/report-overview.png.png"
-                alt="Executive Summary Report"
-                className="w-full h-full object-cover object-top"
-              />
-              <div className="absolute inset-0 bg-white/10" />
-            </div>
-
-            {/* Card 2 - Maturity Footprint (middle layer) */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 top-6 w-[55%] aspect-[4/3] rounded-lg shadow-xl overflow-hidden border border-slate-200 z-10"
-              style={{
-                filter: 'blur(0.75px)'
-              }}
-            >
-              <img
-                src="/report-footprint.png.png"
-                alt="Maturity Footprint Report"
-                className="w-full h-full object-cover object-top"
-              />
-              <div className="absolute inset-0 bg-white/5" />
-            </div>
-
-            {/* Card 3 - Action Planning Simulator (top layer) */}
-            <div
-              className="absolute right-[10%] top-12 w-[55%] aspect-[4/3] rounded-lg shadow-2xl overflow-hidden border border-slate-200 z-20"
-              style={{
-                transform: 'rotate(2deg)',
-                filter: 'blur(0px)'
-              }}
-            >
-              <img
-                src="/report-simulator.png.png"
-                alt="Action Planning Simulator"
-                className="w-full h-full object-cover object-top"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* WHAT YOU SHOULD KNOW - Honest */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-slate-50 border-y border-slate-200">
-        <div className="max-w-4xl mx-auto">
-          <h2
-            className="text-2xl font-bold mb-8 text-center"
-            style={{ color: BRAND_COLORS.navy }}
-          >
-            What You Should Know
-          </h2>
-
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-start gap-3">
-                <Crosshair className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+              {/* Feature list - pushed to bottom */}
+              <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
-                  <h3 className="font-semibold text-slate-800 mb-2">
-                    Self-assessment requires honesty
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    If your team believes they're more mature than they are, the scores
-                    will reflect that. Works best with input from stakeholders who'll tell the truth.
+                  <p className="text-xs font-medium text-slate-700">Tailored benchmarks</p>
+                  <p className="text-xs text-slate-400">
+                    We compare you against companies your size, in your industry.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Relevant recommendations</p>
+                  <p className="text-xs text-slate-400">
+                    Pain points shape which actions get prioritized.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Personalized reports</p>
+                  <p className="text-xs text-slate-400">
+                    Your company profile flows into the executive summary.
                   </p>
                 </div>
               </div>
             </div>
+            <div
+              className="md:w-2/3 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  <Play className="w-7 h-7 text-white ml-0.5" />
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Context setup walkthrough</p>
+                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
+              </div>
+            </div>
+          </div>
 
-            <div className="bg-white border border-slate-200 p-6">
-              <div className="flex items-start gap-3">
-                <Layers className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+          {/* Step 2 - Video Left, Text Right */}
+          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+            <div
+              className="md:w-2/3 order-2 md:order-1 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  <Play className="w-7 h-7 text-white ml-0.5" />
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Assessment walkthrough</p>
+                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
+              </div>
+            </div>
+            <div className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200">
+              {/* Header with number circle */}
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                >
+                  2
+                </div>
+                <h3 className="text-lg font-semibold" style={{ color: BRAND_COLORS.navy }}>
+                  Diagnostic Assessment
+                </h3>
+              </div>
+              <p className="text-sm text-slate-500">
+                Practitioner-curated questions across FP&A
+              </p>
+
+              {/* Feature list - pushed to bottom */}
+              <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
-                  <h3 className="font-semibold text-slate-800 mb-2">
-                    Diagnosis and planning, not execution
-                  </h3>
-                  <p className="text-sm text-slate-600">
-                    It tells you what to fix and in what order. The transformation work—hiring,
-                    implementing systems, changing processes—is still yours to do.
+                  <p className="text-xs font-medium text-slate-700">No ambiguity</p>
+                  <p className="text-xs text-slate-400">
+                    Binary yes/no answers—no "it depends." You know or you don't.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Comprehensive coverage</p>
+                  <p className="text-xs text-slate-400">
+                    From budgeting to strategic planning. Plus your priorities to focus results.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">~30 minutes</p>
+                  <p className="text-xs text-slate-400">
+                    Fast enough to finish in one sitting.
                   </p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Step 3 - Text Left, Video Right */}
+          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+            <div className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
+              {/* Header with number circle */}
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                >
+                  3
+                </div>
+                <h3 className="text-lg font-semibold" style={{ color: BRAND_COLORS.navy }}>
+                  Results & Benchmarks
+                </h3>
+              </div>
+              <p className="text-sm text-slate-500">
+                Scoring your maturity against peer companies
+              </p>
+
+              {/* Feature list - pushed to bottom */}
+              <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
+                <div>
+                  <p className="text-xs font-medium text-slate-700">Maturity level</p>
+                  <p className="text-xs text-slate-400">
+                    See where you stand: Emerging, Defined, Managed, or Optimized.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Detailed breakdown</p>
+                  <p className="text-xs text-slate-400">
+                    See strengths and gaps across objectives and practices.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Peer comparison</p>
+                  <p className="text-xs text-slate-400">
+                    Understand how you compare to similar companies.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              className="md:w-2/3 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  <Play className="w-7 h-7 text-white ml-0.5" />
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Reports overview</p>
+                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 4 - Video Left, Text Right */}
+          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+            <div
+              className="md:w-2/3 order-2 md:order-1 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  <Play className="w-7 h-7 text-white ml-0.5" />
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Action planning demo</p>
+                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
+              </div>
+            </div>
+            <div className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200">
+              {/* Header with number circle */}
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                >
+                  4
+                </div>
+                <h3 className="text-lg font-semibold" style={{ color: BRAND_COLORS.navy }}>
+                  War Room
+                </h3>
+              </div>
+              <p className="text-sm text-slate-500">
+                The highlight — turn insights into action
+              </p>
+
+              {/* Feature list - pushed to bottom */}
+              <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
+                <div>
+                  <p className="text-xs font-medium text-slate-700">Guided wizards</p>
+                  <p className="text-xs text-slate-400">
+                    Step-by-step guidance to decide what to prioritize and why.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Assign owners</p>
+                  <p className="text-xs text-slate-400">
+                    Attach names and deadlines so initiatives actually get done.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Track progress</p>
+                  <p className="text-xs text-slate-400">
+                    Watch your projected maturity shift as you commit to changes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 5 - Text Left, Video Right */}
+          <div className="flex flex-col md:flex-row border border-slate-200 bg-white">
+            <div className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
+              {/* Header with number circle */}
+              <div className="flex items-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                >
+                  5
+                </div>
+                <h3 className="text-lg font-semibold" style={{ color: BRAND_COLORS.navy }}>
+                  Executive Report
+                </h3>
+              </div>
+              <p className="text-sm text-slate-500">
+                Board-ready PDF you can present Monday
+              </p>
+
+              {/* Feature list - pushed to bottom */}
+              <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
+                <div>
+                  <p className="text-xs font-medium text-slate-700">Executive summary</p>
+                  <p className="text-xs text-slate-400">
+                    One-page overview for leadership. No fluff.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Full diagnostic</p>
+                  <p className="text-xs text-slate-400">
+                    Scores, gaps, and root causes—all documented.
+                  </p>
+                </div>
+                <div className="border-t border-slate-200 pt-3">
+                  <p className="text-xs font-medium text-slate-700">Action roadmap</p>
+                  <p className="text-xs text-slate-400">
+                    Your committed initiatives with timelines and owners.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              className="md:w-2/3 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <div className="text-center">
+                <div
+                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: BRAND_COLORS.navy }}
+                >
+                  <Play className="w-7 h-7 text-white ml-0.5" />
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Executive report preview</p>
+                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* THE PITCH */}
+      {/* WHAT YOU GET - Value Props */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <LogoIcon size={48} className="mx-auto mb-6" />
-
+        <div className="max-w-5xl mx-auto">
           <h2
-            className="text-3xl sm:text-4xl font-bold mb-6"
+            className="text-3xl font-bold mb-12 text-center"
             style={{ color: BRAND_COLORS.navy }}
           >
-            See clearly. Prioritize confidently.
-            <br />
-            <span style={{ color: BRAND_COLORS.gold }}>Act decisively.</span>
+            What You Walk Away With
           </h2>
 
-          <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            A structured diagnostic that shows you exactly where your FP&A function stands,
-            what to fix first, and how to build a plan that leadership will fund.
-          </p>
-
-          {/* Comparison */}
           <div className="grid sm:grid-cols-3 gap-6 mb-12">
-            <div className="p-6">
-              <Zap className="w-8 h-8 mx-auto mb-3" style={{ color: BRAND_COLORS.gold }} />
-              <div className="font-semibold text-slate-800 mb-1">Speed</div>
-              <div className="text-sm text-slate-600">Diagnosis in a single session</div>
+            {/* Card 1 - Maturity Score */}
+            <div
+              className="bg-white border border-slate-200 p-6 border-l-4"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <h3
+                className="font-bold text-lg mb-3"
+                style={{ color: BRAND_COLORS.navy }}
+              >
+                Maturity Score
+              </h3>
+              <p className="text-slate-600">
+                See where you stand across 8 FP&A themes. Gaps tagged by root cause:
+                People, Process, Technology, or Data.
+              </p>
             </div>
-            <div className="p-6">
-              <Crosshair className="w-8 h-8 mx-auto mb-3" style={{ color: BRAND_COLORS.gold }} />
-              <div className="font-semibold text-slate-800 mb-1">Clarity</div>
-              <div className="text-sm text-slate-600">See exactly where you stand</div>
+
+            {/* Card 2 - Prioritized Actions */}
+            <div
+              className="bg-white border border-slate-200 p-6 border-l-4"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <h3
+                className="font-bold text-lg mb-3"
+                style={{ color: BRAND_COLORS.navy }}
+              >
+                Prioritized Actions
+              </h3>
+              <p className="text-slate-600">
+                Know what to fix first and what can wait. Initiatives ranked by
+                impact and complexity.
+              </p>
             </div>
-            <div className="p-6">
-              <GitBranch className="w-8 h-8 mx-auto mb-3" style={{ color: BRAND_COLORS.gold }} />
-              <div className="font-semibold text-slate-800 mb-1">A Plan</div>
-              <div className="text-sm text-slate-600">Prioritized and ready to execute</div>
+
+            {/* Card 3 - Executive Report */}
+            <div
+              className="bg-white border border-slate-200 p-6 border-l-4"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <h3
+                className="font-bold text-lg mb-3"
+                style={{ color: BRAND_COLORS.navy }}
+              >
+                Executive Report
+              </h3>
+              <p className="text-slate-600">
+                A board-ready PDF you can present Monday. Full diagnosis,
+                actions, and projected outcomes.
+              </p>
             </div>
           </div>
 
+          <div className="text-center">
+            <Link
+              to={isAuthenticated ? '/select-pillar' : '/login'}
+              className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: BRAND_COLORS.navy }}
+            >
+              Get Started Free
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* FINAL CTA - Navy Background */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      <section
+        className="py-20 px-6"
+        style={{ backgroundColor: BRAND_COLORS.navy }}
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4 text-white">
+            Ready to see where you stand?
+          </h2>
+
+          <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+            Start your diagnostic today. Free to begin.
+            Premium features available when you're ready.
+          </p>
+
           <Link
             to={isAuthenticated ? '/select-pillar' : '/login'}
-            className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: BRAND_COLORS.navy }}
+            className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90 mb-8"
+            style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
           >
-            Start the FP&A Diagnostic
+            Get Started Free
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
+
+          {/* Trust Badges */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-slate-300">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4" style={{ color: BRAND_COLORS.gold }} />
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4" style={{ color: BRAND_COLORS.gold }} />
+              <span>Results in one session</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4" style={{ color: BRAND_COLORS.gold }} />
+              <span>Export to PDF anytime</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -459,14 +674,67 @@ export default function LandingPage() {
         style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}
       >
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <Logo size="sm" />
-            <p className="text-sm text-slate-500">
-              The diagnosis and action plan phase of a consulting engagement—compressed
-              into hours, at a fraction of the cost.
-            </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            {/* Logo & Tagline */}
+            <div className="sm:col-span-2">
+              <Logo size="sm" />
+              <p className="text-sm text-slate-500 mt-4 max-w-md">
+                The diagnosis and action plan phase of a consulting engagement—compressed
+                into hours, at a fraction of the cost.
+              </p>
+            </div>
+
+            {/* Product Links */}
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-4">Product</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/platform" className="text-sm text-slate-500 hover:text-slate-700">
+                    Platform
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/pricing" className="text-sm text-slate-500 hover:text-slate-700">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/blog" className="text-sm text-slate-500 hover:text-slate-700">
+                    Blog
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company Links */}
+            <div>
+              <h4 className="font-semibold text-slate-800 mb-4">Company</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/about" className="text-sm text-slate-500 hover:text-slate-700">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <a href="mailto:support@cfolens.ai" className="text-sm text-slate-500 hover:text-slate-700">
+                    Contact
+                  </a>
+                </li>
+                <li>
+                  <Link to="/terms" className="text-sm text-slate-500 hover:text-slate-700">
+                    Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy" className="text-sm text-slate-500 hover:text-slate-700">
+                    Privacy
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-slate-200 text-center">
+
+          <div className="pt-6 border-t border-slate-200 text-center">
             <p className="text-xs text-slate-400">
               &copy; {new Date().getFullYear()} CFO Lens AI. All rights reserved.
             </p>
