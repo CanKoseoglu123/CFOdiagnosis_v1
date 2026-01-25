@@ -58,6 +58,12 @@ import { L1_CRITICALS, L2_CRITICALS } from "./gates";
 // Transparency module for admin calculation audit
 import { generateTransparency } from "./transparency";
 
+// Stripe subscription system
+import { features } from "./config/features";
+import billingRoutes from "./stripe/routes";
+import stripeWebhooks from "./stripe/webhooks";
+import stripeAdminRoutes from "./stripe/adminRoutes";
+
 const app = express();
 
 // CORS: Allow production domains, Vercel preview deployments, and local dev
@@ -134,6 +140,12 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false, // Disable for API compatibility
   crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin API access
 }));
+
+// Stripe webhook needs raw body for signature verification
+// Must be registered BEFORE express.json()
+if (features.stripe.enabled || process.env.STRIPE_SECRET_KEY) {
+  app.use('/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
+}
 
 app.use(express.json());
 
@@ -2444,6 +2456,15 @@ app.use("/diagnostic-runs", executiveInterpretationRoutes);
 // ------------------------------------------------------------------
 app.use("/api/company-profiles", companyProfilesRoutes);
 app.use("/api/admin", adminRoutes);
+
+// ------------------------------------------------------------------
+// Stripe Billing Routes (when enabled)
+// ------------------------------------------------------------------
+if (features.stripe.enabled || process.env.STRIPE_SECRET_KEY) {
+  app.use("/api/billing", billingRoutes);
+  app.use("/api/admin/subscriptions", stripeAdminRoutes);
+  console.log("INFO: Stripe billing routes registered");
+}
 
 // ------------------------------------------------------------------
 // Admin Routes - Email whitelist protected (via middleware/adminAuth.ts)
