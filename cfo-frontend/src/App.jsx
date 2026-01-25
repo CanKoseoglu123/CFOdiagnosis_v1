@@ -4,6 +4,7 @@
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { SubscriptionProvider } from './context/SubscriptionContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useVisitorTracking } from './hooks/useVisitorTracking'
 
@@ -32,6 +33,7 @@ const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const PricingPage = lazy(() => import('./pages/PricingPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 // Loading fallback component
@@ -179,11 +181,12 @@ function LoginPage() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <VisitorTracker />
-        <RecoveryRedirect />
-        <Suspense fallback={<PageLoader />}>
-        <Routes>
+      <SubscriptionProvider>
+        <BrowserRouter>
+          <VisitorTracker />
+          <RecoveryRedirect />
+          <Suspense fallback={<PageLoader />}>
+          <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -280,11 +283,14 @@ export default function App() {
               <ScoringMatrixPage />
             </ProtectedRoute>
           } />
+          {/* Pricing page */}
+          <Route path="/pricing" element={<PricingPage />} />
           {/* NAV-001: Catch-all 404 route */}
           <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-        </Suspense>
-      </BrowserRouter>
+          </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </SubscriptionProvider>
     </AuthProvider>
   )
 }
