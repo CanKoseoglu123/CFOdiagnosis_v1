@@ -19,9 +19,7 @@ import {
   AlertCircle,
   RefreshCw,
   Building2,
-  ArrowLeft,
-  FileText,
-  ArrowUpRight
+  ArrowLeft
 } from 'lucide-react';
 import { STEP_NAMES, getCompletedSteps } from '../hooks/useStepTransition';
 
@@ -360,43 +358,6 @@ export default function DashboardPage() {
             <div className="text-center py-12">
               <RefreshCw className="w-8 h-8 text-slate-400 animate-spin mx-auto mb-4" />
               <p className="text-slate-500">Loading your assessments...</p>
-            </div>
-          )}
-
-          {/* Demo Report Card - shown for free users */}
-          {subscriptionRequired && !isPaid && (
-            <div className="mb-8 p-4 border border-dashed border-slate-300 rounded-lg bg-slate-50">
-              <div className="flex items-start gap-4">
-                <div
-                  className="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${BRAND_COLORS.gold}20` }}
-                >
-                  <FileText className="w-5 h-5" style={{ color: BRAND_COLORS.gold }} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900 mb-1">See What a Full Report Looks Like</h3>
-                  <p className="text-sm text-slate-600 mb-3">
-                    Preview a sample executive report to see the insights, benchmarks, and action recommendations you'll receive.
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <Link
-                      to="/demo-report"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded border transition-colors"
-                      style={{ borderColor: BRAND_COLORS.navy, color: BRAND_COLORS.navy }}
-                    >
-                      View Sample Report
-                      <ArrowUpRight className="w-4 h-4" />
-                    </Link>
-                    <Link
-                      to="/pricing"
-                      className="text-sm font-medium hover:underline"
-                      style={{ color: BRAND_COLORS.gold }}
-                    >
-                      Upgrade to Pro
-                    </Link>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 

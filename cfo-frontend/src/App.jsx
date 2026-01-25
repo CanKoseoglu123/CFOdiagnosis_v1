@@ -34,7 +34,6 @@ const AboutPage = lazy(() => import('./pages/AboutPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
-const DemoReportPage = lazy(() => import('./pages/DemoReportPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 // Loading fallback component
@@ -286,8 +285,6 @@ export default function App() {
           } />
           {/* Pricing page */}
           <Route path="/pricing" element={<PricingPage />} />
-          {/* Demo report page */}
-          <Route path="/demo-report" element={<DemoReportPage />} />
           {/* NAV-001: Catch-all 404 route */}
           <Route path="*" element={<NotFoundPage />} />
           </Routes>
