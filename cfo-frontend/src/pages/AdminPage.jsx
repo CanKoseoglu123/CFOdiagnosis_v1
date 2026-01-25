@@ -8,9 +8,11 @@ import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
   AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings,
   FlaskConical, Play, Loader2, Globe, MapPin, Monitor, Smartphone, Tablet,
-  ChevronLeft, ChevronRight, Calculator
+  ChevronLeft, ChevronRight, Calculator, CreditCard
 } from 'lucide-react';
 import TransparencyTab from '../components/admin/TransparencyTab';
+import SubscriptionsTab from '../components/admin/SubscriptionsTab';
+import { isStripeEnabled } from '../config/features';
 
 // Device Badge component for consistent styling
 function DeviceBadge({ type }) {
@@ -492,6 +494,19 @@ export default function AdminPage() {
               <Calculator className="w-4 h-4" />
               Transparency
             </button>
+            {isStripeEnabled() && (
+              <button
+                onClick={() => setActiveTab('subscriptions')}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'subscriptions'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-slate-600 hover:text-slate-800'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                Subscriptions
+              </button>
+            )}
             <button
               onClick={() => navigate('/admin/scoring-matrix')}
               className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-800 transition-colors"
@@ -512,6 +527,7 @@ export default function AdminPage() {
              activeTab === 'feedback' ? 'User Feedback' :
              activeTab === 'visitors' ? 'Visitor Analytics' :
              activeTab === 'transparency' ? 'Calculation Transparency' :
+             activeTab === 'subscriptions' ? 'User Subscriptions' :
              'Test Scenario Runner'}
           </h2>
           <button
@@ -1004,8 +1020,13 @@ export default function AdminPage() {
           <TransparencyTab sessions={sessions} getToken={getToken} />
         )}
 
+        {/* Subscriptions Tab */}
+        {activeTab === 'subscriptions' && (
+          <SubscriptionsTab />
+        )}
+
         {/* Stats Footer */}
-        {!loading && activeTab !== 'transparency' && (
+        {!loading && activeTab !== 'transparency' && activeTab !== 'subscriptions' && (
           <div className="mt-4 text-sm text-slate-500">
             {activeTab === 'sessions' ? (
               <span>
