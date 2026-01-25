@@ -13,6 +13,9 @@ import PriorityMatrix from '../components/report/PriorityMatrix';
 import ObjectivesPracticesOverview from '../components/report/ObjectivesPracticesOverview';
 import BenchmarkTab from '../components/report/BenchmarkTab';
 import { BRAND_COLORS } from '../components/Logo';
+import { useSubscription } from '../context/SubscriptionContext';
+import UpgradeModal from '../components/billing/UpgradeModal';
+import { Lock } from 'lucide-react';
 // Executive commentary uses direct sections from API (no evidence processing needed)
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -38,7 +41,7 @@ function PageHeader({ companyName, runId, pageNumber }) {
         </div>
       </div>
       <div className="text-right">
-        <div className="text-2xl font-bold text-slate-300">{pageNumber}</div>
+        <div className="text-2xl font-bold text-slate-300 print-only">{pageNumber}</div>
       </div>
     </div>
   );
@@ -303,6 +306,13 @@ export default function ExecutiveReportPage() {
   const [aiStatus, setAiStatus] = useState('idle');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Subscription gating for PDF export
+  const { isPaid, subscriptionRequired } = useSubscription();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // PDF export is gated for free users
+  const canExportPdf = isPaid || !subscriptionRequired;
 
   useEffect(() => {
     if (runId) {
@@ -646,13 +656,30 @@ export default function ExecutiveReportPage() {
       <div className="min-h-screen bg-white executive-report-container">
         {/* Print button (screen only) */}
         <div className="print:hidden fixed top-4 right-4 z-50">
-          <button
-            onClick={() => window.print()}
-            className="bg-slate-800 text-white px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
-          >
-            Export PDF
-          </button>
+          {canExportPdf ? (
+            <button
+              onClick={() => window.print()}
+              className="bg-slate-800 text-white px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
+            >
+              Export PDF
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowUpgradeModal(true)}
+              className="bg-slate-400 text-white px-4 py-2 text-sm font-medium hover:bg-slate-500 transition-colors flex items-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              Export PDF
+            </button>
+          )}
         </div>
+
+        {/* Upgrade modal for PDF export */}
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          trigger="pdf"
+        />
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* COVER PAGE - McKinsey/Gartner inspired bottom-heavy layout */}
