@@ -245,7 +245,7 @@ export default function BenchmarkTab({
               );
             })}
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-x-auto print:overflow-visible">
             <div className="relative h-[200px] benchmark-chart">
               {LEVEL_TICKS.map((tick) => {
                 const offset = (tick / 4) * CHART_HEIGHT;
