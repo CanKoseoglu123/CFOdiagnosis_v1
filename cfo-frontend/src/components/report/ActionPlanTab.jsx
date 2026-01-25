@@ -201,43 +201,48 @@ export default function ActionPlanTab({
     }
   }
 
-  // Debounced save function
+  // Direct save function (non-debounced) - for bulk operations like wizard
+  const saveActionDirect = useCallback(async (questionId, data) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (data === null) {
+      // Delete
+      await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan/${questionId}`, {
+        method: 'DELETE',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        }
+      });
+    } else {
+      // Upsert
+      await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          question_id: questionId,
+          ...data
+        })
+      });
+    }
+  }, [runId]);
+
+  // Debounced save function - for individual UI interactions
   const saveAction = useCallback(
     debounce(async (questionId, data) => {
       try {
         setSaving(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-
-        if (data === null) {
-          // Delete
-          await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan/${questionId}`, {
-            method: 'DELETE',
-            headers: {
-              ...(token && { Authorization: `Bearer ${token}` }),
-            }
-          });
-        } else {
-          // Upsert
-          await fetch(`${API_URL}/diagnostic-runs/${runId}/action-plan`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-            body: JSON.stringify({
-              question_id: questionId,
-              ...data
-            })
-          });
-        }
+        await saveActionDirect(questionId, data);
       } catch (err) {
         console.error('Failed to save action:', err);
       } finally {
         setSaving(false);
       }
     }, 500),
-    [runId]
+    [saveActionDirect]
   );
 
   // Handle action toggle (select/deselect)
@@ -327,74 +332,84 @@ export default function ActionPlanTab({
     navigate('/');
   }
 
-  // Wizard completion handler
+  // Wizard completion handler - uses direct save (non-debounced) to ensure DB is updated before finalize
   const handleWizardComplete = useCallback(async (actionPlanData) => {
-    // Get existing IDs from current state via ref pattern
-    let existingIds = [];
-    setActionPlan(prev => {
-      existingIds = Object.keys(prev);
-      return prev; // Don't change state yet
-    });
+    setSaving(true);
+    try {
+      // Get existing IDs from current state via ref pattern
+      let existingIds = [];
+      setActionPlan(prev => {
+        existingIds = Object.keys(prev);
+        return prev; // Don't change state yet
+      });
 
-    // Clear existing action plan
-    for (const questionId of existingIds) {
-      await saveAction(questionId, null);
+      // Clear existing action plan
+      for (const questionId of existingIds) {
+        await saveActionDirect(questionId, null);
+      }
+
+      // Build new action plan map
+      const newPlan = {};
+      for (const item of actionPlanData) {
+        newPlan[item.question_id] = {
+          timeline: item.timeline,
+          assigned_owner: item.assigned_owner,
+          status: item.status || 'planned'
+        };
+        await saveActionDirect(item.question_id, newPlan[item.question_id]);
+      }
+
+      // Update state once with new plan
+      setActionPlan(newPlan);
+
+      // Show summary toast
+      setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
+      setTimeout(() => setWizardSummary(null), 5000);
+
+      // Show finalization modal
+      setShowFinalizeModal(true);
+    } finally {
+      setSaving(false);
     }
+  }, [saveActionDirect]);
 
-    // Build new action plan map
-    const newPlan = {};
-    for (const item of actionPlanData) {
-      newPlan[item.question_id] = {
-        timeline: item.timeline,
-        assigned_owner: item.assigned_owner,
-        status: item.status || 'planned'
-      };
-      await saveAction(item.question_id, newPlan[item.question_id]);
-    }
-
-    // Update state once with new plan
-    setActionPlan(newPlan);
-
-    // Show summary toast
-    setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
-    setTimeout(() => setWizardSummary(null), 5000);
-
-    // Show finalization modal
-    setShowFinalizeModal(true);
-  }, [saveAction]);
-
-  // Progressive Wizard draft save handler (saves without finalizing)
+  // Progressive Wizard draft save handler (saves without finalizing) - uses direct save
   const handleSaveDraft = useCallback(async (actionPlanData) => {
-    // Get existing IDs from current state via ref pattern
-    let existingIds = [];
-    setActionPlan(prev => {
-      existingIds = Object.keys(prev);
-      return prev; // Don't change state yet
-    });
+    setSaving(true);
+    try {
+      // Get existing IDs from current state via ref pattern
+      let existingIds = [];
+      setActionPlan(prev => {
+        existingIds = Object.keys(prev);
+        return prev; // Don't change state yet
+      });
 
-    // Clear existing action plan
-    for (const questionId of existingIds) {
-      await saveAction(questionId, null);
+      // Clear existing action plan
+      for (const questionId of existingIds) {
+        await saveActionDirect(questionId, null);
+      }
+
+      // Build new action plan map
+      const newPlan = {};
+      for (const item of actionPlanData) {
+        newPlan[item.question_id] = {
+          timeline: item.timeline,
+          assigned_owner: item.assigned_owner,
+          status: item.status || 'planned'
+        };
+        await saveActionDirect(item.question_id, newPlan[item.question_id]);
+      }
+
+      // Update state once with new plan
+      setActionPlan(newPlan);
+
+      // Show summary toast
+      setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
+      setTimeout(() => setWizardSummary(null), 5000);
+    } finally {
+      setSaving(false);
     }
-
-    // Build new action plan map
-    const newPlan = {};
-    for (const item of actionPlanData) {
-      newPlan[item.question_id] = {
-        timeline: item.timeline,
-        assigned_owner: item.assigned_owner,
-        status: item.status || 'planned'
-      };
-      await saveAction(item.question_id, newPlan[item.question_id]);
-    }
-
-    // Update state once with new plan
-    setActionPlan(newPlan);
-
-    // Show summary toast
-    setWizardSummary({ added: actionPlanData.length, removed: existingIds.length, total: actionPlanData.length });
-    setTimeout(() => setWizardSummary(null), 5000);
-  }, [saveAction]);
+  }, [saveActionDirect]);
 
   // Scroll to simulator when "Review Impact" is clicked
   const handleReviewImpact = useCallback(() => {
@@ -408,13 +423,18 @@ export default function ActionPlanTab({
     return report?.calibration?.importance_map || {};
   }, [report]);
 
-  // Get gaps (questions not answered yes)
+  // Get gaps (questions not answered yes), enriched with objective_id
   const gaps = useMemo(() => {
     const inputMap = new Map(
       (report?.inputs || []).map(i => [i.question_id, i.value])
     );
-    return questions.filter(q => inputMap.get(q.id) !== true);
-  }, [questions, report]);
+    return questions
+      .filter(q => inputMap.get(q.id) !== true)
+      .map(q => ({
+        ...q,
+        objective_id: getQuestionObjectiveId(q)
+      }));
+  }, [questions, report, getQuestionObjectiveId]);
 
   // Calculate current and projected scores by objective
   const { currentScores, projectedScores } = useMemo(() => {
