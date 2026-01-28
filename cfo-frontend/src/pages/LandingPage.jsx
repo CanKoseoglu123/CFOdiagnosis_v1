@@ -8,10 +8,44 @@ import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
 import { supabase } from '../lib/supabase';
 import {
   ArrowRight,
-  Play,
+  Play, // Still used in hero video placeholder
   Check,
 } from 'lucide-react';
 import FeedbackButton from '../components/FeedbackButton';
+import ImageCarousel from '../components/ImageCarousel';
+
+// Image arrays for each step carousel
+const STEP_IMAGES = {
+  step1: [
+    '/images/landing/step1/a.png',
+    '/images/landing/step1/b.png',
+    '/images/landing/step1/c.png',
+  ],
+  step2: [
+    '/images/landing/step2/a.png',
+    '/images/landing/step2/b.png',
+    '/images/landing/step2/c.png',
+  ],
+  step3: [
+    '/images/landing/step3/a.png',
+    '/images/landing/step3/b.png',
+    '/images/landing/step3/c.png',
+    '/images/landing/step3/d.png',
+  ],
+  step4: [
+    '/images/landing/step4/a.png',
+    '/images/landing/step4/b.png',
+    '/images/landing/step4/c.png',
+    '/images/landing/step4/f.png',
+  ],
+  step5: [
+    '/images/landing/step5/a.png',
+    '/images/landing/step5/b.png',
+    '/images/landing/step5/c.png',
+    '/images/landing/step5/d.png',
+    '/images/landing/step5/g.png',
+  ],
+};
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -65,7 +99,7 @@ export default function LandingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-100">
         <div className="text-slate-400">Loading...</div>
       </div>
     );
@@ -218,7 +252,7 @@ export default function LandingPage() {
           {/* Hero Video Placeholder */}
           <div className="relative max-w-4xl mx-auto">
             <div
-              className="aspect-video bg-slate-100 border border-slate-200 flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors"
+              className="aspect-video bg-slate-100 border border-slate-200 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors"
             >
               <div className="text-center">
                 <div
@@ -254,7 +288,10 @@ export default function LandingPage() {
 
           {/* Step 1 - Text Left, Video Right */}
           <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
-            <div className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
+            <div
+              className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
+              style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
+            >
               {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
@@ -275,59 +312,52 @@ export default function LandingPage() {
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Tailored benchmarks</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     We compare you against companies your size, in your industry.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Relevant recommendations</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Pain points shape which actions get prioritized.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Personalized reports</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Your company profile flows into the executive summary.
                   </p>
                 </div>
               </div>
             </div>
             <div
-              className="md:w-2/3 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              className="md:w-2/3 aspect-video border-l-4 overflow-hidden"
               style={{ borderLeftColor: BRAND_COLORS.gold }}
             >
-              <div className="text-center">
-                <div
-                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  <Play className="w-7 h-7 text-white ml-0.5" />
-                </div>
-                <p className="text-sm text-slate-500 font-medium">Context setup walkthrough</p>
-                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
-              </div>
+              <ImageCarousel
+                images={STEP_IMAGES.step1}
+                interval={3000}
+                className="w-full h-full"
+              />
             </div>
           </div>
 
           {/* Step 2 - Video Left, Text Right */}
           <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
             <div
-              className="md:w-2/3 order-2 md:order-1 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              className="md:w-2/3 order-2 md:order-1 aspect-video border-l-4 overflow-hidden"
               style={{ borderLeftColor: BRAND_COLORS.gold }}
             >
-              <div className="text-center">
-                <div
-                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  <Play className="w-7 h-7 text-white ml-0.5" />
-                </div>
-                <p className="text-sm text-slate-500 font-medium">Assessment walkthrough</p>
-                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
-              </div>
+              <ImageCarousel
+                images={STEP_IMAGES.step2}
+                interval={3000}
+                className="w-full h-full"
+              />
             </div>
-            <div className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200">
+            <div
+              className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200"
+              style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
+            >
               {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
@@ -348,19 +378,19 @@ export default function LandingPage() {
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">No ambiguity</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Binary yes/no answers—no "it depends." You know or you don't.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Comprehensive coverage</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     From budgeting to strategic planning. Plus your priorities to focus results.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">~30 minutes</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Fast enough to finish in one sitting.
                   </p>
                 </div>
@@ -370,7 +400,10 @@ export default function LandingPage() {
 
           {/* Step 3 - Text Left, Video Right */}
           <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
-            <div className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
+            <div
+              className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
+              style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
+            >
               {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
@@ -391,59 +424,52 @@ export default function LandingPage() {
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Maturity level</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     See where you stand: Emerging, Defined, Managed, or Optimized.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Detailed breakdown</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     See strengths and gaps across objectives and practices.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Peer comparison</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Understand how you compare to similar companies.
                   </p>
                 </div>
               </div>
             </div>
             <div
-              className="md:w-2/3 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              className="md:w-2/3 aspect-video border-l-4 overflow-hidden"
               style={{ borderLeftColor: BRAND_COLORS.gold }}
             >
-              <div className="text-center">
-                <div
-                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  <Play className="w-7 h-7 text-white ml-0.5" />
-                </div>
-                <p className="text-sm text-slate-500 font-medium">Reports overview</p>
-                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
-              </div>
+              <ImageCarousel
+                images={STEP_IMAGES.step3}
+                interval={3000}
+                className="w-full h-full"
+              />
             </div>
           </div>
 
           {/* Step 4 - Video Left, Text Right */}
           <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
             <div
-              className="md:w-2/3 order-2 md:order-1 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              className="md:w-2/3 order-2 md:order-1 aspect-video border-l-4 overflow-hidden"
               style={{ borderLeftColor: BRAND_COLORS.gold }}
             >
-              <div className="text-center">
-                <div
-                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  <Play className="w-7 h-7 text-white ml-0.5" />
-                </div>
-                <p className="text-sm text-slate-500 font-medium">Action planning demo</p>
-                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
-              </div>
+              <ImageCarousel
+                images={STEP_IMAGES.step4}
+                interval={3000}
+                className="w-full h-full"
+              />
             </div>
-            <div className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200">
+            <div
+              className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200"
+              style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
+            >
               {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
@@ -464,19 +490,19 @@ export default function LandingPage() {
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Guided wizards</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Step-by-step guidance to decide what to prioritize and why.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Assign owners</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Attach names and deadlines so initiatives actually get done.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Track progress</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Watch your projected maturity shift as you commit to changes.
                   </p>
                 </div>
@@ -486,7 +512,10 @@ export default function LandingPage() {
 
           {/* Step 5 - Text Left, Video Right */}
           <div className="flex flex-col md:flex-row border border-slate-200 bg-white">
-            <div className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
+            <div
+              className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
+              style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
+            >
               {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
@@ -507,38 +536,34 @@ export default function LandingPage() {
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Executive summary</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     One-page overview for leadership. No fluff.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Full diagnostic</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Scores, gaps, and root causes—all documented.
                   </p>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <p className="text-xs font-medium text-slate-700">Action roadmap</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Your committed initiatives with timelines and owners.
                   </p>
                 </div>
               </div>
             </div>
             <div
-              className="md:w-2/3 aspect-video bg-slate-50 border-l-4 flex items-center justify-center cursor-pointer hover:scale-[1.01] transition-all"
+              className="md:w-2/3 aspect-video border-l-4 overflow-hidden"
               style={{ borderLeftColor: BRAND_COLORS.gold }}
             >
-              <div className="text-center">
-                <div
-                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  <Play className="w-7 h-7 text-white ml-0.5" />
-                </div>
-                <p className="text-sm text-slate-500 font-medium">Executive report preview</p>
-                <p className="text-xs text-slate-400 mt-1">Click to watch</p>
-              </div>
+              <ImageCarousel
+                images={STEP_IMAGES.step5}
+                interval={3000}
+                className="w-full h-full bg-slate-100"
+                objectFit="contain"
+              />
             </div>
           </div>
         </div>
@@ -735,7 +760,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-6 border-t border-slate-200 text-center">
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               &copy; {new Date().getFullYear()} CFO Lens AI. All rights reserved.
             </p>
           </div>
