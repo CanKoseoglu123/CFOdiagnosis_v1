@@ -1,7 +1,7 @@
 // src/pages/LandingPage.jsx
 // Landing page - problem-focused, no overselling
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
@@ -54,6 +54,51 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [incompleteRun, setIncompleteRun] = useState(null);
   const [dismissedResume, setDismissedResume] = useState(false);
+
+  // Track which step card is currently focused (for viewport-aware carousel rotation)
+  const [activeStep, setActiveStep] = useState(null);
+  const stepRefs = useRef([]);
+
+  // Intersection Observer for step focus tracking
+  useEffect(() => {
+    const observerOptions = {
+      root: null, // viewport
+      rootMargin: '-20% 0px -20% 0px', // Trigger when card is in middle 60% of viewport
+      threshold: 0.5, // At least 50% visible
+    };
+
+    const handleIntersection = (entries) => {
+      // Find the most visible entry
+      let mostVisible = null;
+      let maxRatio = 0;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+          maxRatio = entry.intersectionRatio;
+          mostVisible = entry.target;
+        }
+      });
+
+      if (mostVisible) {
+        const stepIndex = parseInt(mostVisible.dataset.step, 10);
+        setActiveStep(stepIndex);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+
+    // Observe all step cards
+    stepRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Ref setter for step cards
+  const setStepRef = useCallback((index) => (el) => {
+    stepRefs.current[index] = el;
+  }, []);
 
   // Check for incomplete runs on mount (smart resume)
   React.useEffect(() => {
@@ -181,7 +226,7 @@ export default function LandingPage() {
                   Sign In
                 </Link>
                 <Link
-                  to="/login"
+                  to="/login?mode=signup"
                   className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
@@ -232,7 +277,7 @@ export default function LandingPage() {
             {/* Dual CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to={isAuthenticated ? '/select-pillar' : '/login'}
+                to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
                 className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
                 style={{ backgroundColor: BRAND_COLORS.navy }}
               >
@@ -286,13 +331,16 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Step 1 - Text Left, Video Right */}
-          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+          {/* Step 1 - Text Left, Image Right */}
+          <div
+            ref={setStepRef(1)}
+            data-step="1"
+            className="flex flex-col md:flex-row mb-16 border border-slate-200 bg-white"
+          >
             <div
               className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
               style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
             >
-              {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
@@ -307,8 +355,6 @@ export default function LandingPage() {
               <p className="text-sm text-slate-500">
                 Understanding the specifics of your company
               </p>
-
-              {/* Feature list - pushed to bottom */}
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Tailored benchmarks</p>
@@ -338,27 +384,21 @@ export default function LandingPage() {
                 images={STEP_IMAGES.step1}
                 interval={3000}
                 className="w-full h-full"
+                isActive={activeStep === null || activeStep === 1}
               />
             </div>
           </div>
 
-          {/* Step 2 - Video Left, Text Right */}
-          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+          {/* Step 2 - Text Left, Image Right */}
+          <div
+            ref={setStepRef(2)}
+            data-step="2"
+            className="flex flex-col md:flex-row mb-16 border border-slate-200 bg-white"
+          >
             <div
-              className="md:w-2/3 order-2 md:order-1 aspect-video border-l-4 overflow-hidden"
-              style={{ borderLeftColor: BRAND_COLORS.gold }}
-            >
-              <ImageCarousel
-                images={STEP_IMAGES.step2}
-                interval={3000}
-                className="w-full h-full"
-              />
-            </div>
-            <div
-              className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200"
+              className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
               style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
             >
-              {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
@@ -373,8 +413,6 @@ export default function LandingPage() {
               <p className="text-sm text-slate-500">
                 Practitioner-curated questions across FP&A
               </p>
-
-              {/* Feature list - pushed to bottom */}
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">No ambiguity</p>
@@ -396,15 +434,29 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            <div
+              className="md:w-2/3 aspect-video border-l-4 overflow-hidden"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <ImageCarousel
+                images={STEP_IMAGES.step2}
+                interval={3000}
+                className="w-full h-full"
+                isActive={activeStep === null || activeStep === 2}
+              />
+            </div>
           </div>
 
-          {/* Step 3 - Text Left, Video Right */}
-          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+          {/* Step 3 - Text Left, Image Right */}
+          <div
+            ref={setStepRef(3)}
+            data-step="3"
+            className="flex flex-col md:flex-row mb-16 border border-slate-200 bg-white"
+          >
             <div
               className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
               style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
             >
-              {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
@@ -419,8 +471,6 @@ export default function LandingPage() {
               <p className="text-sm text-slate-500">
                 Scoring your maturity against peer companies
               </p>
-
-              {/* Feature list - pushed to bottom */}
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Maturity level</p>
@@ -450,27 +500,21 @@ export default function LandingPage() {
                 images={STEP_IMAGES.step3}
                 interval={3000}
                 className="w-full h-full"
+                isActive={activeStep === null || activeStep === 3}
               />
             </div>
           </div>
 
-          {/* Step 4 - Video Left, Text Right */}
-          <div className="flex flex-col md:flex-row mb-12 border border-slate-200 bg-white">
+          {/* Step 4 - Text Left, Image Right */}
+          <div
+            ref={setStepRef(4)}
+            data-step="4"
+            className="flex flex-col md:flex-row mb-16 border border-slate-200 bg-white"
+          >
             <div
-              className="md:w-2/3 order-2 md:order-1 aspect-video border-l-4 overflow-hidden"
-              style={{ borderLeftColor: BRAND_COLORS.gold }}
-            >
-              <ImageCarousel
-                images={STEP_IMAGES.step4}
-                interval={3000}
-                className="w-full h-full"
-              />
-            </div>
-            <div
-              className="md:w-1/3 order-1 md:order-2 p-8 flex flex-col border-b md:border-b-0 md:border-l border-slate-200"
+              className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
               style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
             >
-              {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
@@ -485,8 +529,6 @@ export default function LandingPage() {
               <p className="text-sm text-slate-500">
                 The highlight — turn insights into action
               </p>
-
-              {/* Feature list - pushed to bottom */}
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Guided wizards</p>
@@ -508,15 +550,29 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            <div
+              className="md:w-2/3 aspect-video border-l-4 overflow-hidden"
+              style={{ borderLeftColor: BRAND_COLORS.gold }}
+            >
+              <ImageCarousel
+                images={STEP_IMAGES.step4}
+                interval={3000}
+                className="w-full h-full"
+                isActive={activeStep === null || activeStep === 4}
+              />
+            </div>
           </div>
 
-          {/* Step 5 - Text Left, Video Right */}
-          <div className="flex flex-col md:flex-row border border-slate-200 bg-white">
+          {/* Step 5 - Text Left, Image Right */}
+          <div
+            ref={setStepRef(5)}
+            data-step="5"
+            className="flex flex-col md:flex-row border border-slate-200 bg-white"
+          >
             <div
               className="md:w-1/3 p-8 flex flex-col border-b md:border-b-0 md:border-r border-slate-200"
               style={{ backgroundColor: `${BRAND_COLORS.navy}12` }}
             >
-              {/* Header with number circle */}
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
@@ -531,8 +587,6 @@ export default function LandingPage() {
               <p className="text-sm text-slate-500">
                 Board-ready PDF you can present Monday
               </p>
-
-              {/* Feature list - pushed to bottom */}
               <div className="border-t border-slate-200 mt-auto pt-4 space-y-3">
                 <div>
                   <p className="text-xs font-medium text-slate-700">Executive summary</p>
@@ -563,6 +617,7 @@ export default function LandingPage() {
                 interval={3000}
                 className="w-full h-full bg-slate-100"
                 objectFit="contain"
+                isActive={activeStep === null || activeStep === 5}
               />
             </div>
           </div>
@@ -636,7 +691,7 @@ export default function LandingPage() {
 
           <div className="text-center">
             <Link
-              to={isAuthenticated ? '/select-pillar' : '/login'}
+              to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
               className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
@@ -665,7 +720,7 @@ export default function LandingPage() {
           </p>
 
           <Link
-            to={isAuthenticated ? '/select-pillar' : '/login'}
+            to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
             className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90 mb-8"
             style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
           >

@@ -1,9 +1,9 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
-import { lazy, Suspense, useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import { SubscriptionProvider } from './context/SubscriptionContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useVisitorTracking } from './hooks/useVisitorTracking'
@@ -25,14 +25,12 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 const ScoringMatrixPage = lazy(() => import('./pages/admin/ScoringMatrixPage'))
 const AssessObjectivePage = lazy(() => import('./components/assessment/AssessObjectivePage'))
 const ExecutiveReportPage = lazy(() => import('./pages/ExecutiveReportPage'))
-const RequestAccessPage = lazy(() => import('./pages/RequestAccessPage'))
+const AuthPage = lazy(() => import('./pages/AuthPage'))
 const ResourcesPage = lazy(() => import('./pages/ResourcesPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
@@ -75,123 +73,16 @@ function VisitorTracker() {
   return null
 }
 
-// Component to redirect to reset password page when in recovery mode
-function RecoveryRedirect() {
-  const { recoveryMode } = useAuth()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (recoveryMode) {
-      navigate('/reset-password')
-    }
-  }, [recoveryMode, navigate])
-
-  return null
-}
-
-function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const { signIn } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  // Brand colors
-  const NAVY = '#1e3a5f'
-  const GOLD = '#c9a050'
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-    try {
-      await signIn(email, password)
-      // NAV-004: Redirect to the original destination or dashboard
-      const destination = location.state?.from || '/dashboard'
-      navigate(destination, { replace: true })
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div style={{ background: '#FFF', borderRadius: 12, padding: 40, width: '100%', maxWidth: 400, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            {/* Simple logo icon */}
-            <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
-              <path d="M8 8 L42 8 L42 42 L8 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M58 8 L92 8 L92 42 L58 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M8 58 L42 58 L42 92 L8 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M58 58 L92 58 L92 92 L58 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M50 30 L70 50 L50 70 L30 50 Z" fill={GOLD}/>
-            </svg>
-            <span style={{ fontWeight: 700, fontSize: 20, color: NAVY }}>CFO LENS <span style={{ fontWeight: 300, color: '#7b8fa3' }}>AI</span></span>
-          </Link>
-        </div>
-
-        <h1 style={{ fontSize: 24, fontWeight: 600, textAlign: 'center', marginBottom: 24, color: NAVY }}>
-          Sign In
-        </h1>
-
-        {error && <div style={{ background: '#FEE2E2', color: '#991B1B', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 14 }}>{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
-            style={{ width: '100%', padding: 14, border: '1px solid #E5E7EB', borderRadius: 8, marginBottom: 12, fontSize: 15, boxSizing: 'border-box', outline: 'none' }} />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
-            style={{ width: '100%', padding: 14, border: '1px solid #E5E7EB', borderRadius: 8, marginBottom: 20, fontSize: 15, boxSizing: 'border-box', outline: 'none' }} />
-          <button type="submit" disabled={loading}
-            style={{ width: '100%', padding: 14, background: NAVY, color: '#FFF', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Please wait...' : 'Sign In'}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <Link
-            to="/forgot-password"
-            style={{ fontSize: 14, color: '#64748B', textDecoration: 'none' }}
-          >
-            Forgot your password?
-          </Link>
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 12 }}>
-            Invite-only access.
-          </p>
-          <Link
-            to="/request-access"
-            style={{ fontSize: 14, color: NAVY, fontWeight: 500, textDecoration: 'none' }}
-          >
-            Don't have an account? Request Access
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function App() {
   return (
     <AuthProvider>
       <SubscriptionProvider>
         <BrowserRouter>
           <VisitorTracker />
-          <RecoveryRedirect />
           <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/request-access" element={<RequestAccessPage />} />
+          <Route path="/login" element={<AuthPage />} />
           {/* Public pages */}
           <Route path="/platform" element={<PlatformPage />} />
           <Route path="/blog" element={<ResourcesPage />} />
