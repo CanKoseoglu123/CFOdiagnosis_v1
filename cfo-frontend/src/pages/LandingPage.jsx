@@ -8,7 +8,6 @@ import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
 import { supabase } from '../lib/supabase';
 import {
   ArrowRight,
-  Play, // Still used in hero video placeholder
   Check,
 } from 'lucide-react';
 import FeedbackButton from '../components/FeedbackButton';
@@ -56,32 +55,39 @@ export default function LandingPage() {
   const [dismissedResume, setDismissedResume] = useState(false);
 
   // Track which step card is currently focused (for viewport-aware carousel rotation)
-  const [activeStep, setActiveStep] = useState(null);
+  const [activeStep, setActiveStep] = useState(1); // Default to step 1, not null
   const stepRefs = useRef([]);
+  const visibilityRatios = useRef({}); // Track each card's visibility
 
   // Intersection Observer for step focus tracking
   useEffect(() => {
     const observerOptions = {
-      root: null, // viewport
-      rootMargin: '-20% 0px -20% 0px', // Trigger when card is in middle 60% of viewport
-      threshold: 0.5, // At least 50% visible
+      root: null,
+      rootMargin: '0px',
+      threshold: [0, 0.25, 0.5, 0.75, 1], // Multiple thresholds for smoother updates
     };
 
     const handleIntersection = (entries) => {
-      // Find the most visible entry
-      let mostVisible = null;
+      // Update visibility ratios for changed entries
+      entries.forEach((entry) => {
+        const step = parseInt(entry.target.dataset.step, 10);
+        visibilityRatios.current[step] = entry.intersectionRatio;
+      });
+
+      // Find the card with highest visibility among ALL tracked cards
+      let bestStep = 1;
       let maxRatio = 0;
 
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio;
-          mostVisible = entry.target;
+      Object.entries(visibilityRatios.current).forEach(([step, ratio]) => {
+        if (ratio > maxRatio) {
+          maxRatio = ratio;
+          bestStep = parseInt(step, 10);
         }
       });
 
-      if (mostVisible) {
-        const stepIndex = parseInt(mostVisible.dataset.step, 10);
-        setActiveStep(stepIndex);
+      // Only update if something is visible
+      if (maxRatio > 0) {
+        setActiveStep(bestStep);
       }
     };
 
@@ -230,7 +236,7 @@ export default function LandingPage() {
                   className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  Get Started Free
+                  Get Started
                 </Link>
               </>
             )}
@@ -274,41 +280,14 @@ export default function LandingPage() {
               Spend 30 minutes to diagnose your FP&A maturity and build a prioritized action plan to improve it.
             </p>
 
-            {/* Dual CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
-                className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: BRAND_COLORS.navy }}
-              >
-                Get Started Free
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center gap-2 px-6 py-4 text-lg font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                See How It Works
-                <ArrowRight className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Hero Video Placeholder */}
-          <div className="relative max-w-4xl mx-auto">
-            <div
-              className="aspect-video bg-slate-100 border border-slate-200 flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors"
+            <Link
+              to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
+              className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
+              style={{ backgroundColor: BRAND_COLORS.navy }}
             >
-              <div className="text-center">
-                <div
-                  className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  <Play className="w-7 h-7 text-white ml-1" />
-                </div>
-                <p className="text-sm text-slate-500">Product overview video</p>
-              </div>
-            </div>
+              Get Started
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>
@@ -327,7 +306,7 @@ export default function LandingPage() {
               Introducing CFO Lens
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl">
-              A platform that brings your FP&A function into focus and gives you the framing and action plan to fix it yourself.
+              Five steps to bring your FP&A function into focus, identify the gaps, and build an action plan to close them.
             </p>
           </div>
 
@@ -384,7 +363,7 @@ export default function LandingPage() {
                 images={STEP_IMAGES.step1}
                 interval={3000}
                 className="w-full h-full"
-                isActive={activeStep === null || activeStep === 1}
+                isActive={activeStep === 1}
               />
             </div>
           </div>
@@ -442,7 +421,7 @@ export default function LandingPage() {
                 images={STEP_IMAGES.step2}
                 interval={3000}
                 className="w-full h-full"
-                isActive={activeStep === null || activeStep === 2}
+                isActive={activeStep === 2}
               />
             </div>
           </div>
@@ -500,7 +479,7 @@ export default function LandingPage() {
                 images={STEP_IMAGES.step3}
                 interval={3000}
                 className="w-full h-full"
-                isActive={activeStep === null || activeStep === 3}
+                isActive={activeStep === 3}
               />
             </div>
           </div>
@@ -558,7 +537,7 @@ export default function LandingPage() {
                 images={STEP_IMAGES.step4}
                 interval={3000}
                 className="w-full h-full"
-                isActive={activeStep === null || activeStep === 4}
+                isActive={activeStep === 4}
               />
             </div>
           </div>
@@ -617,7 +596,7 @@ export default function LandingPage() {
                 interval={3000}
                 className="w-full h-full bg-slate-100"
                 objectFit="contain"
-                isActive={activeStep === null || activeStep === 5}
+                isActive={activeStep === 5}
               />
             </div>
           </div>
@@ -695,7 +674,7 @@ export default function LandingPage() {
               className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
-              Get Started Free
+              Get Started
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -724,7 +703,7 @@ export default function LandingPage() {
             className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90 mb-8"
             style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
           >
-            Get Started Free
+            Get Started
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
 
