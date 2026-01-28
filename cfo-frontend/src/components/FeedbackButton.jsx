@@ -11,6 +11,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 const GOOGLE_FORM_URL = null; // e.g., 'https://forms.gle/xxx'
 
 export default function FeedbackButton({ runId, currentPage = 'report' }) {
+  // Temporarily disabled - remove this line to re-enable
+  return null;
+
   const [isOpen, setIsOpen] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [feedbackType, setFeedbackType] = useState('general');
