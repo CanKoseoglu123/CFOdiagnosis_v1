@@ -7,6 +7,23 @@ import { useAuth } from '../context/AuthContext'
 import { Mail, User, Building2, Briefcase, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
 import FeedbackButton from '../components/FeedbackButton'
 
+// Map Supabase auth errors to user-friendly messages
+function getFriendlyAuthError(error) {
+  const status = error?.status
+  const msg = (error?.message || '').toLowerCase()
+
+  if (status === 422) {
+    return 'Unable to send magic link. Please check your email and try again.'
+  }
+  if (status === 429 || msg.includes('rate')) {
+    return 'Too many attempts. Please wait a few minutes before trying again.'
+  }
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Connection error. Please check your internet and try again.'
+  }
+  return error?.message || 'An unexpected error occurred. Please try again.'
+}
+
 // VS-Security: Validate redirect path to prevent open redirect attacks
 function validateRedirectPath(path) {
   if (!path || typeof path !== 'string') return '/'
@@ -56,7 +73,7 @@ export default function AuthPage() {
       const { error: authError } = await signInWithMagicLink(email, metadata)
 
       if (authError) {
-        setError(authError.message)
+        setError(getFriendlyAuthError(authError))
       } else {
         setSuccess(true)
       }
