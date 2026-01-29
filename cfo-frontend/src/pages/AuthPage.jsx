@@ -1,10 +1,10 @@
 // src/pages/AuthPage.jsx
-// Magic link authentication - Sign Up (new users) and Sign In (returning users)
+// Email + password authentication - Sign Up (new users) and Sign In (returning users)
 
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Mail, User, Building2, Briefcase, AlertCircle, Loader2, CheckCircle } from 'lucide-react'
+import { Mail, User, Building2, Briefcase, AlertCircle, Loader2, Lock, Eye, EyeOff } from 'lucide-react'
 import FeedbackButton from '../components/FeedbackButton'
 
 // Map Supabase auth errors to user-friendly messages
@@ -12,8 +12,14 @@ function getFriendlyAuthError(error) {
   const status = error?.status
   const msg = (error?.message || '').toLowerCase()
 
-  if (status === 422) {
-    return 'Unable to send magic link. Please check your email and try again.'
+  if (msg.includes('invalid login credentials')) {
+    return 'Incorrect email or password.'
+  }
+  if (msg.includes('user already registered')) {
+    return 'An account with this email already exists. Try signing in.'
+  }
+  if (msg.includes('password') && msg.includes('at least')) {
+    return error.message
   }
   if (status === 429 || msg.includes('rate')) {
     return 'Too many attempts. Please wait a few minutes before trying again.'
@@ -39,14 +45,15 @@ export default function AuthPage() {
 
   const [mode, setMode] = useState(initialMode)
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [fullName, setFullName] = useState('')
   const [company, setCompany] = useState('')
   const [position, setPosition] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
 
-  const { signInWithMagicLink, user } = useAuth()
+  const { signUp, signIn, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -65,18 +72,23 @@ export default function AuthPage() {
     setLoading(true)
 
     try {
-      // Prepare metadata for new users (sign up mode)
-      const metadata = mode === 'signup'
-        ? { full_name: fullName, company, position }
-        : {}
+      let result
 
-      const { error: authError } = await signInWithMagicLink(email, metadata)
-
-      if (authError) {
-        setError(getFriendlyAuthError(authError))
+      if (mode === 'signup') {
+        result = await signUp(email, password, {
+          full_name: fullName,
+          company,
+          position,
+        })
       } else {
-        setSuccess(true)
+        result = await signIn(email, password)
       }
+
+      if (result.error) {
+        setError(getFriendlyAuthError(result.error))
+      }
+      // On success, onAuthStateChange in AuthContext picks up the session
+      // and the useEffect above redirects the user
     } catch (err) {
       console.error('Auth error:', err)
       setError(err.message || 'An error occurred. Please try again.')
@@ -88,70 +100,7 @@ export default function AuthPage() {
   const toggleMode = () => {
     setMode(mode === 'signin' ? 'signup' : 'signin')
     setError(null)
-    setSuccess(false)
-  }
-
-  // Success state - show confirmation message
-  if (success) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#F8FAFC',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-      }}>
-        <div style={{
-          background: '#FFF',
-          borderRadius: 2,
-          border: '1px solid #E5E7EB',
-          padding: 40,
-          width: '100%',
-          maxWidth: 400,
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: 56,
-            height: 56,
-            background: '#DCFCE7',
-            borderRadius: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-          }}>
-            <CheckCircle size={28} color="#16A34A" />
-          </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: '0 0 8px' }}>
-            Check Your Email
-          </h1>
-          <p style={{ color: '#6B7280', fontSize: 14, margin: '0 0 24px', lineHeight: 1.5 }}>
-            We sent a magic link to <strong>{email}</strong>. Click the link in the email to {mode === 'signup' ? 'complete your registration' : 'sign in'}.
-          </p>
-          <p style={{ color: '#9CA3AF', fontSize: 13, margin: 0 }}>
-            Didn't receive the email? Check your spam folder or{' '}
-            <button
-              onClick={() => setSuccess(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#1a365d',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                padding: 0,
-                textDecoration: 'underline',
-              }}
-            >
-              try again
-            </button>
-          </p>
-        </div>
-        <FeedbackButton currentPage="auth" />
-      </div>
-    )
+    setPassword('')
   }
 
   return (
@@ -194,7 +143,7 @@ export default function AuthPage() {
           </h1>
           <p style={{ color: '#6B7280', fontSize: 14, margin: 0 }}>
             {mode === 'signin'
-              ? 'Enter your email to receive a magic link'
+              ? 'Sign in to your account'
               : 'Start your finance maturity journey'}
           </p>
         </div>
@@ -241,6 +190,53 @@ export default function AuthPage() {
                   boxSizing: 'border-box',
                 }}
               />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div style={{ marginBottom: mode === 'signup' ? 16 : 24 }}>
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+              Password
+            </label>
+            <div style={{ position: 'relative' }}>
+              <Lock size={18} color="#9CA3AF" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '12px 42px 12px 42px',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: 2,
+                  fontSize: 15,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {showPassword
+                  ? <EyeOff size={18} color="#9CA3AF" />
+                  : <Eye size={18} color="#9CA3AF" />}
+              </button>
             </div>
           </div>
 
@@ -327,9 +323,6 @@ export default function AuthPage() {
             </>
           )}
 
-          {/* Spacing for Sign In mode */}
-          {mode === 'signin' && <div style={{ marginBottom: 8 }} />}
-
           {/* Submit Button */}
           <button
             type="submit"
@@ -351,7 +344,7 @@ export default function AuthPage() {
             }}
           >
             {loading && <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />}
-            {mode === 'signin' ? 'Send Magic Link' : 'Create Account'}
+            {mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 

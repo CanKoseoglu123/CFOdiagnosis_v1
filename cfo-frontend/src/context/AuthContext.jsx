@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-// Layer 1: Minimal auth with magic link - tracks user session, no profile fetch
+// Layer 1: Email + password auth - tracks user session, no profile fetch
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
@@ -36,18 +36,23 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Magic link authentication
-  // For new users, pass metadata: { full_name, company, position }
-  // For existing users, metadata is ignored by Supabase
-  const signInWithMagicLink = async (email, metadata = {}) => {
-    const { error } = await supabase.auth.signInWithOtp({
+  // Sign up with email + password
+  const signUp = async (email, password, metadata = {}) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/login`,
-        data: metadata,
-      },
+      password,
+      options: { data: metadata },
     })
-    return { error }
+    return { data, error }
+  }
+
+  // Sign in with email + password
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    return { data, error }
   }
 
   const signOut = async () => {
@@ -62,7 +67,8 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user,
       loading,
-      signInWithMagicLink,
+      signUp,
+      signIn,
       signOut,
       isAuthenticated: !!user,
       userMetadata,
