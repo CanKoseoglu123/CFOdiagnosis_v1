@@ -336,6 +336,32 @@ cd cfo-frontend && npm run build
 
 ---
 
+## Infrastructure: Email (Resend)
+
+**Domain:** `cfo-lens.com`
+
+**How it works:** Supabase Auth sends magic-link and transactional emails via Resend SMTP. DNS records are managed in Vercel.
+
+| Component | Detail |
+|-----------|--------|
+| SMTP host | `smtp.resend.com` (port 465) |
+| SMTP username | `resend` |
+| SMTP password | Resend API key (`RESEND_API_KEY`) |
+| Sender address | `noreply@cfo-lens.com` |
+
+**DNS records (Vercel):**
+
+| Type | Name | Purpose |
+|------|------|---------|
+| TXT | `resend._domainkey` | DKIM signing (value from Resend dashboard) |
+| MX | `send` | Bounce/feedback handling (priority 10) |
+| TXT | `send` | SPF (`v=spf1 include:amazonses.com ~all`) |
+| TXT | `_dmarc` | DMARC policy (`v=DMARC1; p=none;`) |
+
+**Env variable:** `RESEND_API_KEY` — set in Railway (backend) and Supabase SMTP config.
+
+---
+
 ## Anti-Patterns (Do NOT)
 
 | Anti-pattern | Why it's wrong |
