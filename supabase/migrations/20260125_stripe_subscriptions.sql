@@ -77,35 +77,43 @@ ALTER TABLE stripe_webhook_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscription_overrides ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own records
+DROP POLICY IF EXISTS "Users can view own stripe_customers" ON stripe_customers;
 CREATE POLICY "Users can view own stripe_customers"
   ON stripe_customers FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON subscriptions;
 CREATE POLICY "Users can view own subscriptions"
   ON subscriptions FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view own invoices" ON stripe_invoices;
 CREATE POLICY "Users can view own invoices"
   ON stripe_invoices FOR SELECT
   USING (auth.uid() = user_id);
 
 -- Service role (backend) can do everything
+DROP POLICY IF EXISTS "Service role full access stripe_customers" ON stripe_customers;
 CREATE POLICY "Service role full access stripe_customers"
   ON stripe_customers FOR ALL
   USING (auth.jwt() ->> 'role' = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access subscriptions" ON subscriptions;
 CREATE POLICY "Service role full access subscriptions"
   ON subscriptions FOR ALL
   USING (auth.jwt() ->> 'role' = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access invoices" ON stripe_invoices;
 CREATE POLICY "Service role full access invoices"
   ON stripe_invoices FOR ALL
   USING (auth.jwt() ->> 'role' = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access webhook_events" ON stripe_webhook_events;
 CREATE POLICY "Service role full access webhook_events"
   ON stripe_webhook_events FOR ALL
   USING (auth.jwt() ->> 'role' = 'service_role');
 
+DROP POLICY IF EXISTS "Service role full access overrides" ON subscription_overrides;
 CREATE POLICY "Service role full access overrides"
   ON subscription_overrides FOR ALL
   USING (auth.jwt() ->> 'role' = 'service_role');

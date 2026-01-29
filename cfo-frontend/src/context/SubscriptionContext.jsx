@@ -7,6 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import { supabase } from '../lib/supabase';
 import { isStripeEnabled, isSubscriptionRequired, FREE_TIER_OBJECTIVES } from '../config/features';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
@@ -46,7 +47,13 @@ export function SubscriptionProvider({ children }) {
     setError(null);
 
     try {
-      const token = (await user.getIdToken?.()) || localStorage.getItem('supabase.auth.token');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setSubscription(null);
+        setIsLoading(false);
+        return;
+      }
+      const token = session.access_token;
 
       const response = await fetch(`${API_URL}/api/billing/subscription`, {
         headers: {

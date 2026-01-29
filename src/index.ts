@@ -51,6 +51,7 @@ import { ClassificationContext } from "./classification/types";
 
 // N/A configuration for context-dependent questions
 import { loadNAConfig, allowsNA } from "./specs/naConfig";
+import { loadQuestions, loadPractices } from "./specs/loader";
 
 // Critical gates for test scenarios
 import { L1_CRITICALS, L2_CRITICALS } from "./gates";
@@ -59,12 +60,29 @@ import { L1_CRITICALS, L2_CRITICALS } from "./gates";
 import { generateTransparency } from "./transparency";
 
 // Stripe subscription system
-import { features } from "./config/features";
+import { features, isFreeTierObjective, isSubscriptionRequired } from "./config/features";
+import { requireSubscription, attachSubscriptionInfo, canAccessObjective } from "./middleware/subscriptionAuth";
 import billingRoutes from "./stripe/routes";
 import stripeWebhooks from "./stripe/webhooks";
 import stripeAdminRoutes from "./stripe/adminRoutes";
 
 const app = express();
+
+// Lazy-loaded question_id → objective_id lookup for subscription gating
+let _questionObjectiveMap: Map<string, string> | null = null;
+function getQuestionObjectiveId(questionId: string): string | undefined {
+  if (!_questionObjectiveMap) {
+    _questionObjectiveMap = new Map();
+    const questions = loadQuestions();
+    const practices = loadPractices();
+    const practiceToObjective = new Map(practices.map(p => [p.id, p.objective_id]));
+    for (const q of questions) {
+      const objId = practiceToObjective.get(q.practice_id) || (q as any).objective_id;
+      if (objId) _questionObjectiveMap.set(q.id, objId);
+    }
+  }
+  return _questionObjectiveMap.get(questionId);
+}
 
 // CORS: Allow production domains, Vercel preview deployments, and local dev
 const allowedOrigins = [
@@ -1059,6 +1077,22 @@ app.post("/diagnostic-inputs", checkAdmin, async (req, res) => {
     }
   }
 
+  // Subscription gating: Block answers to paid objectives for free users
+  if (isSubscriptionRequired()) {
+    const objectiveId = getQuestionObjectiveId(question_id);
+    if (objectiveId && !isFreeTierObjective(objectiveId)) {
+      // Check subscription via middleware helper
+      await attachSubscriptionInfo(req, res as any, () => {});
+      if (!canAccessObjective(req, objectiveId)) {
+        return res.status(403).json({
+          error: 'Subscription required',
+          code: 'SUBSCRIPTION_REQUIRED',
+          upgradeUrl: '/pricing'
+        });
+      }
+    }
+  }
+
   // VS-Security: Check if run is finalized before allowing modifications
   const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
@@ -1383,7 +1417,7 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
 // ------------------------------------------------------------------
 // VS6 — Finance Report
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/report", checkAdmin, async (req, res) => {
+app.get("/diagnostic-runs/:id/report", checkAdmin, requireSubscription, async (req, res) => {
   const runId = req.params.id;
 
   // DEBUG: Log admin access details for troubleshooting cross-user access
@@ -1952,7 +1986,7 @@ app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
 // ------------------------------------------------------------------
 // VS25 — Get interpretation report
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/interpret/report", async (req, res) => {
+app.get("/diagnostic-runs/:id/interpret/report", requireSubscription, async (req, res) => {
   const runId = req.params.id;
 
   const report = await getReport(req.supabase, runId);

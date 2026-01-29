@@ -212,28 +212,24 @@ export default function PricingPage() {
                 <span className="text-slate-700">2 objectives</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Maturity scoring</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">Basic recommendations</span>
+                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-400">Industry & size benchmarks</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Full assessment</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Industry benchmarks</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">PDF export</span>
+                <span className="text-slate-400">PDF executive report</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
                 <span className="text-slate-400">War Room action planning</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-400">AI-powered recommendations</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-400">Unlimited reassessments for one year</span>
               </li>
             </ul>
 
@@ -241,7 +237,7 @@ export default function PricingPage() {
               to={isAuthenticated ? '/dashboard' : '/login'}
               className="block w-full text-center py-3 px-4 border border-slate-300 rounded-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              {isAuthenticated ? 'Go to Dashboard' : 'Get Started Free'}
+              {isAuthenticated ? 'Go to Dashboard' : 'Explore the Diagnostic'}
             </Link>
           </div>
 
@@ -264,7 +260,6 @@ export default function PricingPage() {
                 <span className="text-3xl font-bold" style={{ color: BRAND_COLORS.navy }}>
                   {displayPrice}
                 </span>
-                <span className="text-slate-500">/year</span>
               </div>
               {currency === 'eur' && (
                 <p className="text-sm text-slate-500 mt-1">VAT included where applicable</p>
@@ -278,7 +273,7 @@ export default function PricingPage() {
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700 font-medium">All 9 objectives</span>
+                <span className="text-slate-700">All 9 objectives</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
@@ -298,7 +293,7 @@ export default function PricingPage() {
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">Unlimited re-assessments</span>
+                <span className="text-slate-700">Unlimited reassessments for one year</span>
               </li>
             </ul>
 
@@ -385,7 +380,7 @@ export default function PricingPage() {
               </div>
               <h3 className="font-semibold text-slate-800 mb-2">War Room</h3>
               <p className="text-slate-600 text-sm">
-                Interactive action planning wizard to turn insights into a 90-day roadmap.
+                Interactive action planning wizard to turn insights into an actionable roadmap.
               </p>
             </div>
 
@@ -443,19 +438,13 @@ export default function PricingPage() {
               </p>
             </div>
 
-            <div className="border-b border-slate-200 pb-6">
+            <div className="pb-6">
               <h3 className="font-semibold text-slate-800 mb-2">What happens to my data if I cancel?</h3>
               <p className="text-slate-600">
                 Your diagnostic data is retained. You can still view your results but won't be able to access premium features or start new full assessments.
               </p>
             </div>
 
-            <div className="pb-6">
-              <h3 className="font-semibold text-slate-800 mb-2">Do you offer refunds?</h3>
-              <p className="text-slate-600">
-                If you're not satisfied within the first 14 days, contact us for a full refund. No questions asked.
-              </p>
-            </div>
           </div>
         </div>
       </section>

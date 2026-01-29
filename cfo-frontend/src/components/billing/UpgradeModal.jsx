@@ -60,7 +60,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'objective' })
   const messages = {
     objective: {
       title: 'Upgrade to Access All Objectives',
-      description: 'This objective is part of the full diagnostic. Upgrade to Pro to unlock all 10 objectives.',
+      description: 'This objective is part of the full diagnostic. Upgrade to Pro to unlock all 9 objectives.',
     },
     pdf: {
       title: 'Upgrade to Export PDF',
@@ -121,7 +121,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'objective' })
         <ul className="space-y-2 mb-6">
           <li className="flex items-center gap-2 text-sm text-slate-700">
             <Check className="w-4 h-4" style={{ color: BRAND_COLORS.gold }} />
-            All 10 strategic objectives
+            All 9 strategic objectives
           </li>
           <li className="flex items-center gap-2 text-sm text-slate-700">
             <Check className="w-4 h-4" style={{ color: BRAND_COLORS.gold }} />
@@ -169,7 +169,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'objective' })
 
         {/* Price note */}
         <p className="text-center text-xs text-slate-500 mt-4">
-          $299/year or €299/year
+          €299/year
         </p>
       </div>
     </div>

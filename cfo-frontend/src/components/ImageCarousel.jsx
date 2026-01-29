@@ -7,7 +7,8 @@ export default function ImageCarousel({
   images = [],
   interval = 3000,
   className = '',
-  objectFit = 'cover' // 'cover' crops to fill, 'contain' shows full image
+  objectFit = 'cover', // 'cover' crops to fill, 'contain' shows full image
+  isActive = true // Controls whether carousel rotates (for viewport-aware rotation)
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -38,16 +39,16 @@ export default function ImageCarousel({
     });
   }, [images]);
 
-  // Auto-rotate
+  // Auto-rotate (only when active)
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (images.length <= 1 || !isActive) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
     }, interval);
 
     return () => clearInterval(timer);
-  }, [images.length, interval]);
+  }, [images.length, interval, isActive]);
 
   if (images.length === 0) {
     return <div className={className} />;

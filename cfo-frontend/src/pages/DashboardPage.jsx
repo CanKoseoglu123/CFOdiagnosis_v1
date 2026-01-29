@@ -1,8 +1,8 @@
 // src/pages/DashboardPage.jsx
 // Dashboard page for managing assessment runs
 
-import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
 import { supabase } from '../lib/supabase';
@@ -182,14 +182,17 @@ function RunCard({ run, onDelete, onNavigate }) {
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
-  const { isPaid, subscriptionRequired } = useSubscription();
+  const { isPaid, subscriptionRequired, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const pollAttempts = useRef(0);
 
   // Fetch runs
   const fetchRuns = useCallback(async () => {
@@ -228,6 +231,28 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchRuns();
   }, [fetchRuns]);
+
+  // Handle checkout success: poll for subscription activation
+  useEffect(() => {
+    if (searchParams.get('checkout') !== 'success') return;
+
+    setCheckoutSuccess(true);
+    // Clear query param without navigation
+    searchParams.delete('checkout');
+    setSearchParams(searchParams, { replace: true });
+
+    // Poll for subscription activation (webhook may take a moment)
+    const maxAttempts = 3;
+    const interval = setInterval(async () => {
+      pollAttempts.current += 1;
+      await refreshSubscription();
+      if (pollAttempts.current >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []); // Run once on mount
 
   // Handle navigation to run
   const handleNavigate = (run) => {
@@ -339,6 +364,26 @@ export default function DashboardPage() {
               </Link>
             </div>
           </div>
+
+          {/* Checkout success banner */}
+          {checkoutSuccess && isPaid && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 text-green-700">
+                <CheckCircle className="w-5 h-5" />
+                <span className="font-medium">Subscription activated.</span>
+                <span className="text-green-600">You now have full access to all objectives.</span>
+              </div>
+            </div>
+          )}
+
+          {checkoutSuccess && !isPaid && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 text-blue-700">
+                <RefreshCw className="w-5 h-5 animate-spin" />
+                <span>Activating your subscription... This may take a moment.</span>
+              </div>
+            </div>
+          )}
 
           {/* Error state */}
           {error && (
