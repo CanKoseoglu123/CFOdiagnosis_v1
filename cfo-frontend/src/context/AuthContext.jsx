@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-// Layer 1: Minimal auth - just tracks user session, no profile fetch
+// Layer 1: Minimal auth with magic link - tracks user session, no profile fetch
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
@@ -17,7 +17,6 @@ export const useAuth = () => {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [recoveryMode, setRecoveryMode] = useState(false)
 
   useEffect(() => {
     // Get initial session
@@ -31,31 +30,24 @@ export function AuthProvider({ children }) {
       (event, session) => {
         setUser(session?.user ?? null)
         setLoading(false)
-
-        // Detect password recovery event from email link
-        if (event === 'PASSWORD_RECOVERY') {
-          setRecoveryMode(true)
-        }
       }
     )
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    return data
-  }
-
-  const signUp = async (email, password, fullName) => {
-    const { data, error } = await supabase.auth.signUp({
+  // Magic link authentication
+  // For new users, pass metadata: { full_name, company, position }
+  // For existing users, metadata is ignored by Supabase
+  const signInWithMagicLink = async (email, metadata = {}) => {
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password,
-      options: { data: { full_name: fullName } },
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`,
+        data: metadata,
+      },
     })
-    if (error) throw error
-    return data
+    return { error }
   }
 
   const signOut = async () => {
@@ -63,36 +55,17 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }
 
-  // Request password reset email
-  const resetPassword = async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    if (error) throw error
-  }
-
-  // Update password (after clicking email link)
-  const updatePassword = async (newPassword) => {
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-    if (error) throw error
-    setRecoveryMode(false)
-  }
-
-  // Clear recovery mode
-  const clearRecoveryMode = () => setRecoveryMode(false)
+  // User metadata from auth (full_name, company, position)
+  const userMetadata = user?.user_metadata || {}
 
   return (
     <AuthContext.Provider value={{
       user,
       loading,
-      signIn,
-      signUp,
+      signInWithMagicLink,
       signOut,
       isAuthenticated: !!user,
-      recoveryMode,
-      resetPassword,
-      updatePassword,
-      clearRecoveryMode,
+      userMetadata,
     }}>
       {children}
     </AuthContext.Provider>

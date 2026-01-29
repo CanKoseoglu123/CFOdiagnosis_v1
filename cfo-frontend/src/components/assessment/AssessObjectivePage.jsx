@@ -10,6 +10,8 @@ import EnterpriseCanvas from '../EnterpriseCanvas';
 import ChapterHeader from '../ChapterHeader';
 import AssessmentSidebar from './AssessmentSidebar';
 import QuestionCard from './QuestionCard';
+import UpgradeModal from '../billing/UpgradeModal';
+import { useSubscription } from '../../context/SubscriptionContext';
 import useStepTransition from '../../hooks/useStepTransition';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -111,6 +113,7 @@ export default function AssessObjectivePage() {
   const runId = searchParams.get('runId');
   const editMode = searchParams.get('editMode') === 'true';
   const { updateProgress } = useStepTransition();
+  const { canAccessObjective: canAccessByTier, subscriptionRequired } = useSubscription();
 
   const [spec, setSpec] = useState(null);
   const [runStatus, setRunStatus] = useState(null);
@@ -121,6 +124,7 @@ export default function AssessObjectivePage() {
   const [error, setError] = useState(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [showNaConfirmModal, setShowNaConfirmModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [pendingNaQuestionId, setPendingNaQuestionId] = useState(null);
   const objectiveMeta = OBJECTIVE_META[objectiveId];
 
@@ -315,9 +319,15 @@ export default function AssessObjectivePage() {
     return currentIndex;
   }, [allObjectivesProgress, currentIndex]);
 
+  // Subscription gate: Is this objective behind the paywall?
+  const isSubscriptionGated = useMemo(() => {
+    return subscriptionRequired && !canAccessByTier(objectiveId);
+  }, [subscriptionRequired, canAccessByTier, objectiveId]);
+
   // Gate check: Can user access this objective?
-  // Uses High Water Mark rule - user can access any objective they've reached before
+  // Subscription check takes priority, then HWM rule
   const canAccessObjective = useMemo(() => {
+    if (isSubscriptionGated) return false;
     if (currentIndex === 0) return true; // First objective always accessible
     if (currentIndex <= maxReachedIndex) return true; // Within HWM - allow access
 
@@ -331,11 +341,16 @@ export default function AssessObjectivePage() {
       }
     }
     return true;
-  }, [currentIndex, maxReachedIndex, allObjectivesProgress]);
+  }, [isSubscriptionGated, currentIndex, maxReachedIndex, allObjectivesProgress]);
 
   // Redirect if trying to access locked objective
   useEffect(() => {
     if (!loading && spec && !canAccessObjective) {
+      // If blocked by subscription, show upgrade modal instead of redirecting
+      if (isSubscriptionGated) {
+        setShowUpgradeModal(true);
+        return;
+      }
       // Find first incomplete objective
       for (let i = 0; i < OBJECTIVE_ORDER.length; i++) {
         const objId = OBJECTIVE_ORDER[i];
@@ -346,7 +361,7 @@ export default function AssessObjectivePage() {
         }
       }
     }
-  }, [loading, spec, canAccessObjective, allObjectivesProgress, runId, navigate]);
+  }, [loading, spec, canAccessObjective, isSubscriptionGated, allObjectivesProgress, runId, navigate]);
 
   // Show intro modal once per run on first MCQ page
   useEffect(() => {
@@ -677,6 +692,17 @@ export default function AssessObjectivePage() {
             </div>
           </div>
         )}
+
+        {/* Upgrade Modal (subscription gating) */}
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => {
+            setShowUpgradeModal(false);
+            // Navigate back to dashboard when closing upgrade modal
+            navigate('/dashboard');
+          }}
+          trigger="objective"
+        />
 
         {/* Chapter Header */}
         <ChapterHeader

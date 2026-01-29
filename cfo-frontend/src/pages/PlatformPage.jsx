@@ -49,6 +49,12 @@ export default function PlatformPage() {
               >
                 About
               </Link>
+              <Link
+                to="/pricing"
+                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Pricing
+              </Link>
             </div>
           </div>
 
@@ -76,12 +82,6 @@ export default function PlatformPage() {
             ) : (
               <>
                 <Link
-                  to="/request-access"
-                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors hidden sm:block"
-                >
-                  Request Access
-                </Link>
-                <Link
                   to="/login"
                   className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                 >
@@ -92,7 +92,7 @@ export default function PlatformPage() {
                   className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
-                  Get Started
+                  Get Started Free
                 </Link>
               </>
             )}

@@ -6,7 +6,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft, ChevronRight, LogOut, Lock } from 'lucide-react';
+import { useSubscription } from '../../context/SubscriptionContext';
 
 // Theme configuration with objectives in order
 const THEME_CONFIG = {
@@ -60,6 +61,7 @@ export default function AssessmentSidebar({
   maxReachedIndex = 0  // High Water Mark: furthest objective index ever reached
 }) {
   const navigate = useNavigate();
+  const { canAccessObjective: canAccessByTier, subscriptionRequired } = useSubscription();
 
   // Get current objective index
   const currentIndex = OBJECTIVE_ORDER.indexOf(currentObjective);
@@ -189,22 +191,27 @@ export default function AssessmentSidebar({
                     const isCurrent = objId === currentObjective;
                     const isComplete = isObjectiveComplete(objId);
                     const canClick = canNavigateTo(objId);
+                    const isLocked = subscriptionRequired && !canAccessByTier(objId);
 
                     return (
                       <button
                         key={objId}
                         onClick={() => handleObjectiveClick(objId)}
-                        disabled={!canClick}
+                        disabled={!canClick || isLocked}
                         className={`group w-full flex items-center gap-2 py-1.5 px-2 rounded transition-colors ${
-                          isCurrent
-                            ? 'bg-blue-50 border-l-2 border-blue-500'
-                            : canClick
-                              ? 'hover:bg-slate-100 cursor-pointer'
-                              : 'cursor-default opacity-60'
+                          isLocked
+                            ? 'cursor-default opacity-50'
+                            : isCurrent
+                              ? 'bg-blue-50 border-l-2 border-blue-500'
+                              : canClick
+                                ? 'hover:bg-slate-100 cursor-pointer'
+                                : 'cursor-default opacity-60'
                         }`}
                       >
                         {/* Status icon */}
-                        {isComplete ? (
+                        {isLocked ? (
+                          <Lock className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        ) : isComplete ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                         ) : isCurrent ? (
                           <div className="w-4 h-4 rounded-full border-2 border-blue-500 bg-blue-500 flex-shrink-0" />
@@ -214,6 +221,7 @@ export default function AssessmentSidebar({
 
                         {/* Objective name */}
                         <span className={`flex-1 text-left text-sm truncate ${
+                          isLocked ? 'text-slate-400' :
                           isCurrent ? 'font-medium text-blue-700' :
                           isComplete ? 'text-slate-700' :
                           'text-slate-400'
@@ -221,20 +229,26 @@ export default function AssessmentSidebar({
                           {OBJECTIVE_NAMES[objId]}
                         </span>
 
-                        {/* Progress count - hidden on hover when clickable, replaced by chevron */}
-                        <span className={`text-xs flex-shrink-0 ${
-                          canClick ? 'group-hover:hidden' : ''
-                        } ${
-                          isComplete ? 'text-emerald-600' :
-                          isCurrent ? 'text-blue-600' :
-                          'text-slate-400'
-                        }`}>
-                          {progress.answered}/{progress.total}
-                        </span>
+                        {/* Lock badge or progress count */}
+                        {isLocked ? (
+                          <span className="text-xs text-slate-400 flex-shrink-0">Pro</span>
+                        ) : (
+                          <>
+                            <span className={`text-xs flex-shrink-0 ${
+                              canClick ? 'group-hover:hidden' : ''
+                            } ${
+                              isComplete ? 'text-emerald-600' :
+                              isCurrent ? 'text-blue-600' :
+                              'text-slate-400'
+                            }`}>
+                              {progress.answered}/{progress.total}
+                            </span>
 
-                        {/* Navigation chevron - only visible on hover for clickable objectives */}
-                        {canClick && (
-                          <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 hidden group-hover:block" />
+                            {/* Navigation chevron - only visible on hover for clickable objectives */}
+                            {canClick && (
+                              <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 hidden group-hover:block" />
+                            )}
+                          </>
                         )}
                       </button>
                     );
