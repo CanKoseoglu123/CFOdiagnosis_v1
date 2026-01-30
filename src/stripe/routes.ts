@@ -164,7 +164,7 @@ router.post('/checkout', async (req: Request, res: Response) => {
     }
 
     // Create Checkout Session
-    const successUrl = `${process.env.FRONTEND_URL || 'https://cfodiagnosisv1.vercel.app'}/dashboard?checkout=success`;
+    const successUrl = `${process.env.FRONTEND_URL || 'https://cfodiagnosisv1.vercel.app'}/pricing?checkout=success`;
     const cancelUrl = `${process.env.FRONTEND_URL || 'https://cfodiagnosisv1.vercel.app'}/pricing?checkout=cancelled`;
 
     const session = await stripe.checkout.sessions.create({

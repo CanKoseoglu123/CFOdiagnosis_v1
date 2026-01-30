@@ -4,8 +4,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useSubscription } from '../context/SubscriptionContext'
+import { supabase } from '../lib/supabase'
 import { Mail, User, Building2, Briefcase, AlertCircle, Loader2, Lock, Eye, EyeOff } from 'lucide-react'
 import FeedbackButton from '../components/FeedbackButton'
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app'
 
 // Map Supabase auth errors to user-friendly messages
 function getFriendlyAuthError(error) {
@@ -52,19 +56,65 @@ export default function AuthPage() {
   const [position, setPosition] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   const { signUp, signIn, user } = useAuth()
+  const { isPaid, isLoading: subLoading } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
 
-  const from = validateRedirectPath(location.state?.from?.pathname)
+  // Support both string and object shapes for location.state.from
+  const rawFrom = location.state?.from
+  const fromPath = typeof rawFrom === 'string' ? rawFrom : rawFrom?.pathname
+  const from = validateRedirectPath(fromPath)
 
-  // If user is already logged in, redirect them
+  // Smart post-auth redirect
   useEffect(() => {
-    if (user) {
-      navigate(from, { replace: true })
+    if (!user || subLoading) return
+
+    async function resolveRedirect() {
+      setRedirecting(true)
+
+      // Honor a saved destination that isn't the default dashboard
+      if (from !== '/dashboard') {
+        navigate(from, { replace: true })
+        return
+      }
+
+      // Paid users go straight to dashboard
+      if (isPaid) {
+        navigate('/dashboard', { replace: true })
+        return
+      }
+
+      // Unpaid users: check if they have active runs
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          const res = await fetch(`${API_URL}/diagnostic-runs`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+          if (res.ok) {
+            const runs = await res.json()
+            const hasActiveRun = runs.some(r =>
+              r.status === 'created' || r.status === 'in_progress' || r.status === 'draft'
+            )
+            if (hasActiveRun) {
+              navigate('/dashboard', { replace: true })
+              return
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking runs during redirect:', err)
+      }
+
+      // Unpaid with no active runs → pricing
+      navigate('/pricing', { replace: true })
     }
-  }, [user, navigate, from])
+
+    resolveRedirect()
+  }, [user, subLoading])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -101,6 +151,22 @@ export default function AuthPage() {
     setMode(mode === 'signin' ? 'signup' : 'signin')
     setError(null)
     setPassword('')
+  }
+
+  // Show spinner while resolving post-auth redirect
+  if (redirecting) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#F8FAFC',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Loader2 size={32} color="#1a365d" style={{ animation: 'spin 1s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )
   }
 
   return (

@@ -2,13 +2,14 @@
 // VS-43: Condensed assessment intro page
 // Single-page layout with horizontal sections, marketing-focused messaging
 
-import { useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Target, Bot, ClipboardList, ArrowRight, CheckCircle2, LogOut } from 'lucide-react';
 import ChapterHeader from './components/ChapterHeader';
 import EnterpriseCanvas from './components/EnterpriseCanvas';
 import FeedbackButton from './components/FeedbackButton';
 import { BRAND_COLORS } from './components/Logo';
+import WelcomeModal from './components/billing/WelcomeModal';
 import useStepTransition from './hooks/useStepTransition';
 
 // Journey steps
@@ -77,7 +78,20 @@ const THEMES = [
 export default function IntroPage() {
   const { runId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { updateStep } = useStepTransition();
+
+  // Welcome modal state from ?source=free|paid
+  const source = searchParams.get('source');
+  const [showWelcome, setShowWelcome] = useState(source === 'free' || source === 'paid');
+  const welcomeVariant = source === 'paid' ? 'paid' : 'free';
+
+  function handleDismissWelcome() {
+    setShowWelcome(false);
+    // Clear query param without creating a history entry
+    searchParams.delete('source');
+    setSearchParams(searchParams, { replace: true });
+  }
 
   // Scroll to top on mount
   useEffect(() => {
@@ -249,6 +263,13 @@ export default function IntroPage() {
 
       {/* Feedback Button */}
       <FeedbackButton runId={runId} currentPage="intro" />
+
+      {/* Welcome Modal (shown once after run creation from pricing) */}
+      <WelcomeModal
+        isOpen={showWelcome}
+        onClose={handleDismissWelcome}
+        variant={welcomeVariant}
+      />
     </div>
   );
 }

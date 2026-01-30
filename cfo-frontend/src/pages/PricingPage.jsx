@@ -5,7 +5,7 @@
  * Features geo-based pricing (EUR for EU, USD otherwise).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
@@ -25,15 +25,44 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
 
+// Helper: find or create a diagnostic run, then return its ID
+async function findOrCreateRun() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Not authenticated');
+
+  const headers = { Authorization: `Bearer ${session.access_token}` };
+
+  // Check for existing draft/in-progress run
+  const listRes = await fetch(`${API_URL}/diagnostic-runs`, { headers });
+  if (listRes.ok) {
+    const runs = await listRes.json();
+    const active = runs.find(r =>
+      r.status === 'created' || r.status === 'in_progress' || r.status === 'draft'
+    );
+    if (active) return active.id;
+  }
+
+  // Create new run
+  const createRes = await fetch(`${API_URL}/diagnostic-runs`, {
+    method: 'POST',
+    headers,
+  });
+  if (!createRes.ok) throw new Error('Failed to create diagnostic run');
+  const newRun = await createRes.json();
+  return newRun.id;
+}
+
 export default function PricingPage() {
   const { isAuthenticated, user } = useAuth();
-  const { isPaid, tier, isLoading: subLoading } = useSubscription();
+  const { isPaid, tier, isLoading: subLoading, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [pricing, setPricing] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [freeLoading, setFreeLoading] = useState(false);
   const [error, setError] = useState(null);
+  const pollAttempts = useRef(0);
 
   // Check for checkout result from URL
   const checkoutResult = searchParams.get('checkout');
@@ -62,6 +91,54 @@ export default function PricingPage() {
 
     fetchPricing();
   }, [isAuthenticated]);
+
+  // Handle checkout success: poll subscription, create run, redirect to intro
+  useEffect(() => {
+    if (checkoutResult !== 'success' || !isAuthenticated) return;
+
+    // Clear query param immediately
+    searchParams.delete('checkout');
+    setSearchParams(searchParams, { replace: true });
+
+    const maxAttempts = 3;
+    const interval = setInterval(async () => {
+      pollAttempts.current += 1;
+      await refreshSubscription();
+
+      if (pollAttempts.current >= maxAttempts) {
+        clearInterval(interval);
+        // Redirect regardless — webhook may still be processing
+        try {
+          const runId = await findOrCreateRun();
+          navigate(`/run/${runId}/intro?source=paid`, { replace: true });
+        } catch (err) {
+          console.error('Run creation after checkout failed:', err);
+          navigate('/dashboard', { replace: true });
+        }
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Handle free tier button click
+  async function handleFreeTier() {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/pricing' } });
+      return;
+    }
+
+    setFreeLoading(true);
+    try {
+      const runId = await findOrCreateRun();
+      navigate(`/run/${runId}/intro?source=free`, { replace: true });
+    } catch (err) {
+      console.error('Free run creation failed:', err);
+      navigate('/dashboard', { replace: true });
+    } finally {
+      setFreeLoading(false);
+    }
+  }
 
   // Handle subscribe button click
   async function handleSubscribe() {
@@ -233,12 +310,13 @@ export default function PricingPage() {
               </li>
             </ul>
 
-            <Link
-              to={isAuthenticated ? '/dashboard' : '/login'}
-              className="block w-full text-center py-3 px-4 border border-slate-300 rounded-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            <button
+              onClick={handleFreeTier}
+              disabled={freeLoading}
+              className="block w-full text-center py-3 px-4 border border-slate-300 rounded-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isAuthenticated ? 'Go to Dashboard' : 'Explore the Diagnostic'}
-            </Link>
+              {freeLoading ? 'Starting...' : (isAuthenticated ? 'Start Free Diagnostic' : 'Explore the Diagnostic')}
+            </button>
           </div>
 
           {/* Pro Tier */}
