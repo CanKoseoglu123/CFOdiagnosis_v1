@@ -342,6 +342,46 @@ export default function PillarSetupPage() {
   const [autoSaving, setAutoSaving] = useState(false);
   const isInitialMount = useRef(true);
 
+  // Auto-scroll: refs and field order
+  const fieldRefs = useRef({});
+  const FIELD_ORDER = [
+    'tools', 'team_size', 'forecast_frequency', 'budget_process_base',
+    'pain_points', 'user_role'
+  ];
+
+  const isElementVisible = (el) => {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    const cushion = 200;
+    return rect.top >= cushion && rect.bottom <= (window.innerHeight - cushion);
+  };
+
+  const handleFieldChange = (field, value) => {
+    setPillar(prev => ({ ...prev, [field]: value }));
+
+    // For array fields (tools, pain_points), consider "answered" if length > 0
+    // For string fields, consider "answered" if truthy
+    const isAnswered = (key, state) => {
+      const val = key === field ? value : state[key];
+      return Array.isArray(val) ? val.length > 0 : !!val;
+    };
+
+    const currentIndex = FIELD_ORDER.indexOf(field);
+    if (currentIndex === -1) return;
+
+    const nextUnanswered = FIELD_ORDER.find((key, i) =>
+      i > currentIndex && !isAnswered(key, pillar)
+    );
+    if (!nextUnanswered) return;
+
+    const nextEl = fieldRefs.current[nextUnanswered];
+    if (nextEl && !isElementVisible(nextEl)) {
+      setTimeout(() => {
+        nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
+
   // Auto-save pillar context when fields change
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const autoSave = useCallback(
@@ -609,13 +649,15 @@ export default function PillarSetupPage() {
               <p className="text-sm text-gray-500">Which planning and reporting tools do you use?</p>
             </div>
 
-            <ToolWithEffectivenessSelector
-              selectedTools={pillar.tools}
-              effectiveness={pillar.tool_effectiveness}
-              onToolsChange={(v) => setPillar(prev => ({ ...prev, tools: v }))}
-              onEffectivenessChange={(v) => setPillar(prev => ({ ...prev, tool_effectiveness: v }))}
-              options={PLANNING_TOOLS}
-            />
+            <div ref={el => { fieldRefs.current['tools'] = el; }}>
+              <ToolWithEffectivenessSelector
+                selectedTools={pillar.tools}
+                effectiveness={pillar.tool_effectiveness}
+                onToolsChange={(v) => handleFieldChange('tools', v)}
+                onEffectivenessChange={(v) => setPillar(prev => ({ ...prev, tool_effectiveness: v }))}
+                options={PLANNING_TOOLS}
+              />
+            </div>
 
             <div className="mb-5">
               <label className="block text-xs text-gray-500 mb-1">Other tool...</label>
@@ -637,28 +679,34 @@ export default function PillarSetupPage() {
               <p className="text-sm text-gray-500">Tell us about your FP&A team structure</p>
             </div>
 
-            <ChipSelector
-              label="How large is your FP&A team?"
-              icon={Users}
-              value={pillar.team_size}
-              onChange={(v) => setPillar({ ...pillar, team_size: v })}
-              options={TEAM_SIZES}
-            />
+            <div ref={el => { fieldRefs.current['team_size'] = el; }}>
+              <ChipSelector
+                label="How large is your FP&A team?"
+                icon={Users}
+                value={pillar.team_size}
+                onChange={(v) => handleFieldChange('team_size', v)}
+                options={TEAM_SIZES}
+              />
+            </div>
 
-            <ChipSelector
-              label="How often do you update forecasts?"
-              icon={Calendar}
-              value={pillar.forecast_frequency}
-              onChange={(v) => setPillar({ ...pillar, forecast_frequency: v })}
-              options={FORECAST_FREQUENCIES}
-            />
+            <div ref={el => { fieldRefs.current['forecast_frequency'] = el; }}>
+              <ChipSelector
+                label="How often do you update forecasts?"
+                icon={Calendar}
+                value={pillar.forecast_frequency}
+                onChange={(v) => handleFieldChange('forecast_frequency', v)}
+                options={FORECAST_FREQUENCIES}
+              />
+            </div>
 
-            <BudgetProcessSelector
-              baseValue={pillar.budget_process_base}
-              modifiersValue={pillar.budget_process_modifiers}
-              onBaseChange={(v) => setPillar({ ...pillar, budget_process_base: v })}
-              onModifiersChange={(v) => setPillar({ ...pillar, budget_process_modifiers: v })}
-            />
+            <div ref={el => { fieldRefs.current['budget_process_base'] = el; }}>
+              <BudgetProcessSelector
+                baseValue={pillar.budget_process_base}
+                modifiersValue={pillar.budget_process_modifiers}
+                onBaseChange={(v) => handleFieldChange('budget_process_base', v)}
+                onModifiersChange={(v) => setPillar({ ...pillar, budget_process_modifiers: v })}
+              />
+            </div>
           </div>
 
           {/* Pain Points Section */}
@@ -668,15 +716,17 @@ export default function PillarSetupPage() {
               <p className="text-sm text-gray-500">Which challenges best describe your FP&A today?</p>
             </div>
 
-            <MultiChipSelector
-              label="Current Challenges"
-              icon={AlertCircle}
-              value={pillar.pain_points}
-              onChange={(v) => setPillar({ ...pillar, pain_points: v })}
-              options={PAIN_POINTS}
-              maxSelect={5}
-              hint="(Select up to 5)"
-            />
+            <div ref={el => { fieldRefs.current['pain_points'] = el; }}>
+              <MultiChipSelector
+                label="Current Challenges"
+                icon={AlertCircle}
+                value={pillar.pain_points}
+                onChange={(v) => handleFieldChange('pain_points', v)}
+                options={PAIN_POINTS}
+                maxSelect={5}
+                hint="(Select up to 5)"
+              />
+            </div>
 
             <div className="mb-5">
               <label className="block text-xs text-gray-500 mb-1">Other pain point...</label>
@@ -698,13 +748,15 @@ export default function PillarSetupPage() {
               <p className="text-sm text-gray-500">Help us understand your perspective</p>
             </div>
 
-            <ChipSelector
-              label="What is your role?"
-              icon={User}
-              value={pillar.user_role}
-              onChange={(v) => setPillar({ ...pillar, user_role: v })}
-              options={USER_ROLES}
-            />
+            <div ref={el => { fieldRefs.current['user_role'] = el; }}>
+              <ChipSelector
+                label="What is your role?"
+                icon={User}
+                value={pillar.user_role}
+                onChange={(v) => handleFieldChange('user_role', v)}
+                options={USER_ROLES}
+              />
+            </div>
 
             <div className="mb-5">
               <label className="block text-xs text-gray-500 mb-1">Other role...</label>

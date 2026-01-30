@@ -170,6 +170,42 @@ export default function CompanySetupPage() {
   const [autoSaving, setAutoSaving] = useState(false);
   const isInitialMount = useRef(true);
 
+  // Auto-scroll: refs and field order
+  const fieldRefs = useRef({});
+  const FIELD_ORDER = [
+    'name', 'industry',
+    'employee_count', 'revenue_range', 'finance_ftes', 'legal_entities',
+    'ownership_structure', 'finance_structure',
+    'revenue_trajectory', 'ma_intensity', 'gross_margin_band', 'audit_rigor', 'debt_pressure', 'erp_strategy',
+    'change_appetite'
+  ];
+
+  const isElementVisible = (el) => {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    const cushion = 200;
+    return rect.top >= cushion && rect.bottom <= (window.innerHeight - cushion);
+  };
+
+  const handleFieldChange = (field, value) => {
+    const updated = { ...company, [field]: value };
+    setCompany(updated);
+
+    // Find next unanswered field after the one just answered
+    const currentIndex = FIELD_ORDER.indexOf(field);
+    if (currentIndex === -1) return;
+
+    const nextUnanswered = FIELD_ORDER.find((key, i) => i > currentIndex && !updated[key]);
+    if (!nextUnanswered) return;
+
+    const nextEl = fieldRefs.current[nextUnanswered];
+    if (nextEl && !isElementVisible(nextEl)) {
+      setTimeout(() => {
+        nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
+
   const getAuthHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return {
@@ -453,7 +489,7 @@ export default function CompanySetupPage() {
             </div>
 
             {/* Company Name */}
-            <div className="mb-5">
+            <div ref={el => { fieldRefs.current['name'] = el; }} className="mb-5">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 <span className="flex items-center gap-2">
                   <Building2 size={16} className="text-slate-500" />
@@ -477,15 +513,17 @@ export default function CompanySetupPage() {
               />
             </div>
 
-            <Dropdown
-              label="Industry"
-              icon={Building2}
-              value={company.industry}
-              onChange={(v) => setCompany({ ...company, industry: v })}
-              options={INDUSTRIES}
-              placeholder="Select your industry"
-              required
-            />
+            <div ref={el => { fieldRefs.current['industry'] = el; }}>
+              <Dropdown
+                label="Industry"
+                icon={Building2}
+                value={company.industry}
+                onChange={(v) => handleFieldChange('industry', v)}
+                options={INDUSTRIES}
+                placeholder="Select your industry"
+                required
+              />
+            </div>
           </div>
 
           {/* Organisation Scale Section */}
@@ -495,40 +533,48 @@ export default function CompanySetupPage() {
               <p className="text-sm text-gray-500">Quantitative metrics about your organization</p>
             </div>
 
-            <ChipSelector
-              label="Company Size (Employees)"
-              icon={Users}
-              value={company.employee_count}
-              onChange={(v) => setCompany({ ...company, employee_count: v })}
-              options={EMPLOYEE_COUNTS}
-              required
-            />
+            <div ref={el => { fieldRefs.current['employee_count'] = el; }}>
+              <ChipSelector
+                label="Company Size (Employees)"
+                icon={Users}
+                value={company.employee_count}
+                onChange={(v) => handleFieldChange('employee_count', v)}
+                options={EMPLOYEE_COUNTS}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="Turnover Band"
-              icon={Euro}
-              value={company.revenue_range}
-              onChange={(v) => setCompany({ ...company, revenue_range: v })}
-              options={REVENUE_RANGES}
-              required
-            />
+            <div ref={el => { fieldRefs.current['revenue_range'] = el; }}>
+              <ChipSelector
+                label="Turnover Band"
+                icon={Euro}
+                value={company.revenue_range}
+                onChange={(v) => handleFieldChange('revenue_range', v)}
+                options={REVENUE_RANGES}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="Finance FTEs (Scope Entity)"
-              icon={Users}
-              value={company.finance_ftes}
-              onChange={(v) => setCompany({ ...company, finance_ftes: v })}
-              options={FINANCE_FTE_RANGES}
-            />
+            <div ref={el => { fieldRefs.current['finance_ftes'] = el; }}>
+              <ChipSelector
+                label="Finance FTEs (Scope Entity)"
+                icon={Users}
+                value={company.finance_ftes}
+                onChange={(v) => handleFieldChange('finance_ftes', v)}
+                options={FINANCE_FTE_RANGES}
+              />
+            </div>
 
-            <ChipSelector
-              label="# Legal Entities"
-              icon={Building2}
-              value={company.legal_entities}
-              onChange={(v) => setCompany({ ...company, legal_entities: v })}
-              options={LEGAL_ENTITY_RANGES}
-              required
-            />
+            <div ref={el => { fieldRefs.current['legal_entities'] = el; }}>
+              <ChipSelector
+                label="# Legal Entities"
+                icon={Building2}
+                value={company.legal_entities}
+                onChange={(v) => handleFieldChange('legal_entities', v)}
+                options={LEGAL_ENTITY_RANGES}
+                required
+              />
+            </div>
           </div>
 
           {/* Ownership Structure Section */}
@@ -538,23 +584,27 @@ export default function CompanySetupPage() {
               <p className="text-sm text-gray-500">Type of organizational ownership</p>
             </div>
 
-            <ChipSelector
-              label="Ownership Type"
-              icon={Briefcase}
-              value={company.ownership_structure}
-              onChange={(v) => setCompany({ ...company, ownership_structure: v })}
-              options={OWNERSHIP_STRUCTURES}
-              required
-            />
+            <div ref={el => { fieldRefs.current['ownership_structure'] = el; }}>
+              <ChipSelector
+                label="Ownership Type"
+                icon={Briefcase}
+                value={company.ownership_structure}
+                onChange={(v) => handleFieldChange('ownership_structure', v)}
+                options={OWNERSHIP_STRUCTURES}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="Finance Structure"
-              icon={GitBranch}
-              value={company.finance_structure}
-              onChange={(v) => setCompany({ ...company, finance_structure: v })}
-              options={FINANCE_STRUCTURES.map(f => ({ value: f.value, label: f.label }))}
-              required
-            />
+            <div ref={el => { fieldRefs.current['finance_structure'] = el; }}>
+              <ChipSelector
+                label="Finance Structure"
+                icon={GitBranch}
+                value={company.finance_structure}
+                onChange={(v) => handleFieldChange('finance_structure', v)}
+                options={FINANCE_STRUCTURES.map(f => ({ value: f.value, label: f.label }))}
+                required
+              />
+            </div>
           </div>
 
           {/* VS-27: Business Dynamics Section */}
@@ -564,66 +614,78 @@ export default function CompanySetupPage() {
               <p className="text-sm text-gray-500">Factors that shape your finance organization's priorities</p>
             </div>
 
-            <ChipSelector
-              label="Revenue Trajectory (TTM)"
-              icon={TrendingUp}
-              value={company.revenue_trajectory}
-              onChange={(v) => setCompany({ ...company, revenue_trajectory: v })}
-              options={REVENUE_TRAJECTORY}
-              required
-            />
+            <div ref={el => { fieldRefs.current['revenue_trajectory'] = el; }}>
+              <ChipSelector
+                label="Revenue Trajectory (TTM)"
+                icon={TrendingUp}
+                value={company.revenue_trajectory}
+                onChange={(v) => handleFieldChange('revenue_trajectory', v)}
+                options={REVENUE_TRAJECTORY}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="M&A Activity (Last 24 Months)"
-              icon={GitMerge}
-              value={company.ma_intensity}
-              onChange={(v) => setCompany({ ...company, ma_intensity: v })}
-              options={MA_INTENSITY}
-              required
-            />
+            <div ref={el => { fieldRefs.current['ma_intensity'] = el; }}>
+              <ChipSelector
+                label="M&A Activity (Last 24 Months)"
+                icon={GitMerge}
+                value={company.ma_intensity}
+                onChange={(v) => handleFieldChange('ma_intensity', v)}
+                options={MA_INTENSITY}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="Gross Margin Profile"
-              icon={Percent}
-              value={company.gross_margin_band}
-              onChange={(v) => setCompany({ ...company, gross_margin_band: v })}
-              options={GROSS_MARGIN_BAND}
-              required
-            />
+            <div ref={el => { fieldRefs.current['gross_margin_band'] = el; }}>
+              <ChipSelector
+                label="Gross Margin Profile"
+                icon={Percent}
+                value={company.gross_margin_band}
+                onChange={(v) => handleFieldChange('gross_margin_band', v)}
+                options={GROSS_MARGIN_BAND}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="External Audit Scope"
-              icon={Shield}
-              value={company.audit_rigor}
-              onChange={(v) => setCompany({ ...company, audit_rigor: v })}
-              options={AUDIT_RIGOR}
-              required
-            />
+            <div ref={el => { fieldRefs.current['audit_rigor'] = el; }}>
+              <ChipSelector
+                label="External Audit Scope"
+                icon={Shield}
+                value={company.audit_rigor}
+                onChange={(v) => handleFieldChange('audit_rigor', v)}
+                options={AUDIT_RIGOR}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="Debt & Covenant Pressure"
-              icon={Landmark}
-              value={company.debt_pressure}
-              onChange={(v) => setCompany({ ...company, debt_pressure: v })}
-              options={DEBT_PRESSURE}
-              required
-            />
+            <div ref={el => { fieldRefs.current['debt_pressure'] = el; }}>
+              <ChipSelector
+                label="Debt & Covenant Pressure"
+                icon={Landmark}
+                value={company.debt_pressure}
+                onChange={(v) => handleFieldChange('debt_pressure', v)}
+                options={DEBT_PRESSURE}
+                required
+              />
+            </div>
 
-            <ChipSelector
-              label="ERP Landscape"
-              icon={Database}
-              value={company.erp_strategy}
-              onChange={(v) => setCompany({ ...company, erp_strategy: v })}
-              options={ERP_STRATEGY}
-              required
-            />
+            <div ref={el => { fieldRefs.current['erp_strategy'] = el; }}>
+              <ChipSelector
+                label="ERP Landscape"
+                icon={Database}
+                value={company.erp_strategy}
+                onChange={(v) => handleFieldChange('erp_strategy', v)}
+                options={ERP_STRATEGY}
+                required
+              />
+            </div>
           </div>
 
           {/* Transformation Ambition Section */}
-          <div className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
+          <div ref={el => { fieldRefs.current['change_appetite'] = el; }} className="bg-white border border-gray-300 rounded p-6 mb-6 shadow-sm">
             <ChangeAppetiteSelector
               value={company.change_appetite}
-              onChange={(v) => setCompany({ ...company, change_appetite: v })}
+              onChange={(v) => handleFieldChange('change_appetite', v)}
             />
           </div>
 
