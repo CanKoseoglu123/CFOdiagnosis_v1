@@ -349,13 +349,6 @@ export default function PillarSetupPage() {
     'pain_points', 'user_role'
   ];
 
-  const isElementVisible = (el) => {
-    if (!el) return false;
-    const rect = el.getBoundingClientRect();
-    const cushion = 200;
-    return rect.top >= cushion && rect.bottom <= (window.innerHeight - cushion);
-  };
-
   const handleFieldChange = (field, value) => {
     setPillar(prev => ({ ...prev, [field]: value }));
 
@@ -375,11 +368,21 @@ export default function PillarSetupPage() {
     if (!nextUnanswered) return;
 
     const nextEl = fieldRefs.current[nextUnanswered];
-    if (nextEl && !isElementVisible(nextEl)) {
-      setTimeout(() => {
-        nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
+    if (!nextEl) return;
+
+    // Only nudge when the next field sits below the bottom 40% of the viewport
+    setTimeout(() => {
+      const rect = nextEl.getBoundingClientRect();
+      const viewH = window.innerHeight;
+      const triggerLine = viewH * 0.6;
+
+      if (rect.top > triggerLine) {
+        // Gentle nudge — scroll just enough to place it at ~45% from the top
+        const desired = viewH * 0.45;
+        const nudge = rect.top - desired;
+        window.scrollBy({ top: nudge, behavior: 'smooth' });
+      }
+    }, 300);
   };
 
   // Auto-save pillar context when fields change
