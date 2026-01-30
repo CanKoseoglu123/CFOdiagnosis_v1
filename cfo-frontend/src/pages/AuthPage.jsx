@@ -32,9 +32,9 @@ function getFriendlyAuthError(error) {
 
 // VS-Security: Validate redirect path to prevent open redirect attacks
 function validateRedirectPath(path) {
-  if (!path || typeof path !== 'string') return '/'
+  if (!path || typeof path !== 'string') return '/dashboard'
   if (!path.startsWith('/') || path.startsWith('//') || path.includes('://')) {
-    return '/'
+    return '/dashboard'
   }
   return path
 }

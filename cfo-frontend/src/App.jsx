@@ -21,6 +21,7 @@ const PillarSetupPage = lazy(() => import('./pages/PillarSetupPage'))
 const PersonaConfirmationPage = lazy(() => import('./pages/PersonaConfirmationPage'))
 const IntroPage = lazy(() => import('./IntroPage'))
 const SelectPillarPage = lazy(() => import('./pages/SelectPillarPage'))
+const StartDiagnosticPage = lazy(() => import('./pages/StartDiagnosticPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const ScoringMatrixPage = lazy(() => import('./pages/admin/ScoringMatrixPage'))
 const AssessObjectivePage = lazy(() => import('./components/assessment/AssessObjectivePage'))
@@ -95,6 +96,11 @@ export default function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/start" element={
+            <ProtectedRoute>
+              <StartDiagnosticPage />
             </ProtectedRoute>
           } />
           <Route path="/select-pillar" element={

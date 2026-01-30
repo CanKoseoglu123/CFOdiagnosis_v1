@@ -355,7 +355,7 @@ export default function DashboardPage() {
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               </button>
               <Link
-                to="/select-pillar"
+                to="/start"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded transition-colors"
                 style={{ backgroundColor: BRAND_COLORS.navy }}
               >
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                 Start your first FP&A diagnostic to understand your finance function's maturity level.
               </p>
               <Link
-                to="/select-pillar"
+                to="/start"
                 className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white rounded transition-colors"
                 style={{ backgroundColor: BRAND_COLORS.navy }}
               >

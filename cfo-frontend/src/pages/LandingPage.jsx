@@ -233,6 +233,7 @@ export default function LandingPage() {
                 </Link>
                 <Link
                   to="/login?mode=signup"
+                  state={{ from: { pathname: '/start' } }}
                   className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: BRAND_COLORS.navy }}
                 >
@@ -281,7 +282,8 @@ export default function LandingPage() {
             </p>
 
             <Link
-              to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
+              to={isAuthenticated ? '/start' : '/login?mode=signup'}
+              state={isAuthenticated ? undefined : { from: { pathname: '/start' } }}
               className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
@@ -670,7 +672,8 @@ export default function LandingPage() {
 
           <div className="text-center">
             <Link
-              to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
+              to={isAuthenticated ? '/start' : '/login?mode=signup'}
+              state={isAuthenticated ? undefined : { from: { pathname: '/start' } }}
               className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
@@ -699,7 +702,8 @@ export default function LandingPage() {
           </p>
 
           <Link
-            to={isAuthenticated ? '/select-pillar' : '/login?mode=signup'}
+            to={isAuthenticated ? '/start' : '/login?mode=signup'}
+            state={isAuthenticated ? undefined : { from: { pathname: '/start' } }}
             className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90 mb-8"
             style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
           >
