@@ -53,6 +53,7 @@ Every page MUST declare exactly one max‑width.
 | Assessment        | `max-w-6xl` (1152px) | Split‑view readability       |
 | Reports / Cockpit | `max-w-7xl` (1280px) | High‑density analytics       |
 | Landing (public)  | `max-w-5xl` (1024px) | Marketing content            |
+| Pricing (public)  | `max-w-5xl` (1024px) | Tier comparison, CTAs        |
 
 **Rule:** No page may rely on implicit defaults or `w-full` layouts.
 
@@ -81,7 +82,8 @@ This shell is the **only allowed page wrapper**.
 ### 2.0 Reference Pages
 
 The following pages exemplify correct color usage and should be used as reference:
-- **Landing Page** — Brand colors, marketing sections
+- **Landing Page** — Brand colors, marketing sections, image carousel
+- **Pricing Page** — Tier cards, gold accent for premium CTA
 - **Maturity Footprint Grid** — Evidence state colors, status indicators
 - **Executive Report Page** — Print-optimized, professional navy tones
 
@@ -412,9 +414,49 @@ The above laws apply to **data-dense report views**. The following exceptions ar
 
 ---
 
-## 11. KNOWN ISSUES & MIGRATION TASKS
+## 11. BILLING & PRICING COMPONENTS
 
-### 11.1 Color Inconsistencies to Fix
+### 11.1 Pricing Page
+
+The pricing page (`PricingPage.jsx`) uses the marketing exceptions (shadows and rounded corners permitted). Layout follows the `max-w-5xl` marketing width.
+
+**Patterns:**
+- Tier cards use BRAND_COLORS.navy for headers and BRAND_COLORS.gold for the recommended tier highlight
+- CTA buttons follow the standard primary action color (`--primary`)
+- Feature comparison lists use checkmark icons from `lucide-react`
+
+### 11.2 UpgradeModal
+
+A blocking overlay that prompts free-tier users to upgrade. Uses the modal exception (shadow-xl permitted).
+
+**Patterns:**
+- Modal follows the standard confirmation modal structure (see Principle 6 in NAVIGATION_PRINCIPLES.md)
+- Uses BRAND_COLORS.gold for the upgrade CTA
+- Dismiss action returns to dashboard
+
+### 11.3 SubscriptionBadge
+
+Inline tier indicator shown in navigation/header.
+
+**Patterns:**
+- Uses compact badge styling (`text-xs`, border, rounded-sm)
+- Color maps to tier: free = muted, paid = BRAND_COLORS.gold accent
+
+### 11.4 Image Carousel (Landing Page)
+
+The landing page includes an `ImageCarousel.jsx` component displaying product screenshots.
+
+**Patterns:**
+- Auto-advances with manual dot navigation
+- Images stored in `cfo-frontend/public/images/landing/`
+- No shadows on carousel container (marketing page exception applies to individual slides only)
+- Dot indicators use BRAND_COLORS.navy for active state
+
+---
+
+## 12. KNOWN ISSUES & MIGRATION TASKS
+
+### 12.1 Color Inconsistencies to Fix
 
 | File | Issue | Fix Required |
 |------|-------|--------------|
@@ -422,7 +464,7 @@ The above laws apply to **data-dense report views**. The following exceptions ar
 | `CompanySetupPage.jsx` | Uses Tailwind `blue-600` inconsistently | Standardize to --primary or BRAND_COLORS |
 | `ExecutiveReportPage.jsx` | Defines local `NAVY = '#1e3a5f'` | Import from BRAND_COLORS instead |
 
-### 11.2 Navy Consolidation
+### 12.2 Navy Consolidation
 
 The codebase has 5+ navy shades. Consolidation plan:
 
@@ -431,7 +473,7 @@ The codebase has 5+ navy shades. Consolidation plan:
 3. **Legacy CSS vars**: Keep `--navy: #172B4D` for backwards compatibility
 4. **Deprecate**: Inline hex values like `#1e3a5f`, `#103b6d`
 
-### 11.3 Files Using Correct Patterns ✅
+### 12.3 Files Using Correct Patterns ✅
 
 These files exemplify correct color usage:
 - `LandingPage.jsx` — Uses BRAND_COLORS consistently
@@ -444,7 +486,7 @@ These files exemplify correct color usage:
 
 Both should be migrated to use CSS variables or CHART_COLORS constants.
 
-### 11.4 Migration Priority
+### 12.4 Migration Priority
 
 1. ~~**High**: AuthPage (user-facing, brand inconsistency)~~ ✅ Complete
 2. **Medium**: Setup pages (onboarding flow)
@@ -452,7 +494,7 @@ Both should be migrated to use CSS variables or CHART_COLORS constants.
 
 ---
 
-## 12. APPENDIX: COLOR QUICK REFERENCE
+## 13. APPENDIX: COLOR QUICK REFERENCE
 
 ```
 BRAND IDENTITY

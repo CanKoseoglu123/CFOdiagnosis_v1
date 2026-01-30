@@ -24,14 +24,32 @@ CFOdiagnosis_v1/
 ├── src/                      # Backend (Express + scoring engine)
 │   ├── scoring/              # Pure scoring functions
 │   ├── gates/                # Critical gate definitions (SSOT)
-│   └── interpretation/       # AI layer
-├── content/                  # JSON content catalog (questions, practices, gates)
-│   ├── questions-*.json      # Split by theme
-│   ├── practices.json
-│   ├── gates.json            # Score thresholds, critical gates
-│   └── pillars/fpa/          # Pillar-specific config
+│   ├── interpretation/       # AI layer
+│   ├── maturity/             # Maturity engine (level calculation)
+│   ├── actions/              # Action derivation and prioritization
+│   ├── results/              # Result aggregation
+│   ├── risks/                # Risk engine
+│   ├── reports/              # Report building
+│   ├── specs/                # Spec loader and content schemas
+│   ├── stripe/               # Stripe integration (checkout, webhooks, admin)
+│   ├── config/               # Feature flags and tier definitions
+│   └── middleware/            # Auth and subscription gating middleware
+├── content/                  # JSON content catalog
+│   ├── questions-foundation.json  # 37 Foundation theme questions
+│   ├── questions-future.json      # 27 Future theme questions
+│   ├── questions-intelligence.json # 33 Intelligence theme questions
+│   ├── practices.json             # 26 practice definitions
+│   ├── objectives.json            # 9 objective definitions
+│   ├── themes.json                # 3 theme definitions
+│   ├── gates.json                 # Score thresholds, critical gates
+│   ├── initiatives.json           # 9 initiative groupings
+│   ├── targetMatrix.json          # Persona-specific maturity targets
+│   └── pillars/fpa/               # Pillar-specific config
 ├── cfo-frontend/             # React frontend
 │   ├── src/components/       # UI components
+│   │   └── billing/          # UpgradeModal, SubscriptionBadge
+│   ├── src/pages/            # Page components
+│   ├── src/context/          # React contexts (Auth, Subscription)
 │   └── content/blog/         # MDX blog posts
 ├── spec/                     # Specification documents
 │   ├── SPEC.md               # Design contract
@@ -287,7 +305,7 @@ gold: '#c9a050'    // Accents, CTAs, premium
 **Workflow:**
 1. Read `spec/SPEC.md` — scoring philosophy, invariants
 2. Scoring functions are pure — no side effects
-3. Test with `npm run test:all`
+3. Test with `npm run test`
 
 ---
 
@@ -311,7 +329,9 @@ npm run dev                    # Backend localhost:3000
 cd cfo-frontend && npm run dev # Frontend Vite server
 
 # Testing
-npm run test:all               # All tests
+npm run test                   # All tests (Vitest)
+npm run test:watch             # Watch mode
+npm run test:coverage          # With coverage report
 npm run test:vs24              # Content validation
 
 # Content tools
@@ -340,7 +360,7 @@ cd cfo-frontend && npm run build
 
 **Domain:** `cfo-lens.com`
 
-**How it works:** Supabase Auth sends magic-link and transactional emails via Resend SMTP. DNS records are managed in Vercel.
+**How it works:** Authentication uses email + password (Supabase Auth). Resend SMTP handles transactional emails only (password reset, email confirmation). DNS records are managed in Vercel.
 
 | Component | Detail |
 |-----------|--------|
@@ -359,6 +379,46 @@ cd cfo-frontend && npm run build
 | TXT | `_dmarc` | DMARC policy (`v=DMARC1; p=none;`) |
 
 **Env variable:** `RESEND_API_KEY` — set in Railway (backend) and Supabase SMTP config.
+
+---
+
+## Infrastructure: Stripe & Subscriptions
+
+**Purpose:** Subscription gating controls access to paid diagnostic objectives. Users on the free tier see a subset of objectives; paid users unlock all.
+
+**How it works:** Stripe Checkout creates subscriptions. Webhooks sync subscription status to Supabase. Middleware gates objective access based on tier.
+
+| Component | Path | Purpose |
+|-----------|------|---------|
+| Stripe routes | `src/stripe/routes.ts` | Checkout session creation, portal |
+| Stripe client | `src/stripe/client.ts` | Stripe SDK initialization |
+| Webhooks | `src/stripe/webhooks.ts` | Subscription lifecycle events |
+| Admin routes | `src/stripe/adminRoutes.ts` | Admin subscription management |
+| Feature config | `src/config/features.ts` | Tier definitions, feature flags |
+| Subscription middleware | `src/middleware/subscriptionAuth.ts` | Objective access control |
+| Frontend context | `cfo-frontend/src/context/SubscriptionContext.jsx` | Global subscription state |
+| Pricing page | `cfo-frontend/src/pages/PricingPage.jsx` | Public pricing display |
+| Upgrade modal | `cfo-frontend/src/components/billing/UpgradeModal.jsx` | In-app upgrade prompt |
+| Subscription badge | `cfo-frontend/src/components/billing/SubscriptionBadge.jsx` | Tier indicator |
+
+**Env variables (Railway):**
+
+| Variable | Purpose |
+|----------|---------|
+| `STRIPE_SECRET_KEY` | Stripe API secret key |
+| `STRIPE_WEBHOOK_SECRET` | Webhook signature verification |
+| `STRIPE_ENABLED` | Enable/disable Stripe (`true`/`false`) |
+| `SUBSCRIPTION_REQUIRED` | Enforce subscription gating (`true`/`false`) |
+| `SUBSCRIPTION_BYPASS_EMAILS` | Comma-separated emails that bypass subscription checks |
+| `STRIPE_TEST_USERS` | Comma-separated emails for Stripe test mode |
+
+**Env variables (Vercel/Frontend):**
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_STRIPE_PUBLIC_KEY` | Stripe publishable key |
+
+**Database:** `supabase/migrations/20260125_stripe_subscriptions.sql` creates the `stripe_subscriptions` table with RLS policies.
 
 ---
 

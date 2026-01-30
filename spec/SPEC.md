@@ -140,6 +140,8 @@ Start → Company Setup → Persona Classification → Pillar Context
       → War Room → Finalization → Executive Report
 ```
 
+**Subscription Gating:** When subscription enforcement is enabled, paid objectives display an upgrade modal instead of assessment questions for users on the free tier. Free-tier users can complete a subset of objectives; upgrading unlocks the full assessment. Bypass emails (configured via env) skip gating for testing and admin use.
+
 ### 4.2 Run States
 
 | State | Meaning | Editable |
@@ -291,6 +293,7 @@ interface GatesConfig {
 | `diagnostic_inputs` | Question responses |
 | `company_profiles` | Company context + persona |
 | `action_plans` | War Room commitments |
+| `stripe_subscriptions` | Subscription status and tier (Stripe-synced) |
 
 ### 8.2 Key Fields
 
@@ -369,6 +372,8 @@ These must **always** be true:
 | Finalization | `POST /:id/finalize` |
 | AI | `POST /:id/interpret/start`, `GET /:id/interpret/status` |
 | Profiles | `POST/GET/PUT /api/company-profiles` |
+| Stripe | `POST /api/stripe/checkout`, `POST /api/stripe/webhooks`, `POST /api/stripe/portal` |
+| Subscriptions | `GET /api/stripe/subscription/status` |
 
 **Auth:** Bearer token (Supabase) on all except `/health`, `/api/spec`.
 

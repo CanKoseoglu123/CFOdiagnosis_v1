@@ -143,6 +143,11 @@ When a user has multiple tabs open on the same run:
 | Calibration | `/run/:runId/calibrate` |
 | Report | `/report/:runId` |
 | Executive | `/report/:runId/executive` |
+| Pricing | `/pricing` |
+| Admin | `/admin` |
+| Platform | `/platform` |
+| Resources | `/resources` |
+| About | `/about` |
 
 **Technical Debt: Assessment URL Pattern**
 
@@ -429,6 +434,24 @@ Uses terminology from Principle 5's Terminology Consistency table:
 // DO NOT do this (disabled button for future state):
 // <Button disabled={!isActionPlanComplete}>Generate Executive Report</Button>
 ```
+
+---
+
+### Subscription Gating (UpgradeModal)
+
+When subscription enforcement is enabled, navigating to a gated objective triggers an `UpgradeModal` instead of rendering the assessment page. This is a **blocking overlay**, not a redirect.
+
+**Behavior:**
+- Free-tier users see the UpgradeModal when accessing paid objectives
+- The modal offers upgrade via Stripe Checkout or dismissal (return to dashboard)
+- Bypass emails (configured server-side) skip the modal entirely
+- The modal does not affect sidebar state — gated objectives still appear in the sidebar
+
+**Enforcement Points:**
+| Location | File | Check |
+|----------|------|-------|
+| `AssessObjectivePage` | `src/components/assessment/AssessObjectivePage.jsx` | Checks subscription tier before rendering |
+| `SubscriptionContext` | `cfo-frontend/src/context/SubscriptionContext.jsx` | Provides `canAccessObjective()` check |
 
 ---
 
