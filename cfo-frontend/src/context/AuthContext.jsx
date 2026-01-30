@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   // Sign up with email + password
   const signUp = async (email, password, metadata = {}) => {
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim().toLowerCase(),
       password,
       options: { data: metadata },
     })
@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
   // Sign in with email + password
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     })
     return { data, error }
