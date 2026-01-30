@@ -1,11 +1,11 @@
 // src/pages/AuthPage.jsx
 // Email + password authentication - Sign Up (new users) and Sign In (returning users)
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useSubscription } from '../context/SubscriptionContext'
 import { supabase } from '../lib/supabase'
+import { isStripeEnabled } from '../config/features'
 import { Mail, User, Building2, Briefcase, AlertCircle, Loader2, Lock, Eye, EyeOff } from 'lucide-react'
 import FeedbackButton from '../components/FeedbackButton'
 
@@ -57,9 +57,9 @@ export default function AuthPage() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
+  const redirectStarted = useRef(false)
 
   const { signUp, signIn, user } = useAuth()
-  const { isPaid, isLoading: subLoading } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -68,9 +68,11 @@ export default function AuthPage() {
   const fromPath = typeof rawFrom === 'string' ? rawFrom : rawFrom?.pathname
   const from = validateRedirectPath(fromPath)
 
-  // Smart post-auth redirect
+  // Smart post-auth redirect — self-contained, fetches fresh data directly
+  // to avoid race conditions with stale subscription context
   useEffect(() => {
-    if (!user || subLoading) return
+    if (!user || redirectStarted.current) return
+    redirectStarted.current = true
 
     async function resolveRedirect() {
       setRedirecting(true)
@@ -81,21 +83,40 @@ export default function AuthPage() {
         return
       }
 
-      // Paid users go straight to dashboard
-      if (isPaid) {
+      // If Stripe/subscriptions not enabled, everyone goes to dashboard
+      if (!isStripeEnabled()) {
         navigate('/dashboard', { replace: true })
         return
       }
 
-      // Unpaid users: check if they have active runs
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (session?.access_token) {
-          const res = await fetch(`${API_URL}/diagnostic-runs`, {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          })
-          if (res.ok) {
-            const runs = await res.json()
+        if (!session?.access_token) {
+          navigate('/dashboard', { replace: true })
+          return
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` }
+
+        // Fetch subscription status directly (avoids stale context)
+        try {
+          const subRes = await fetch(`${API_URL}/api/billing/subscription`, { headers })
+          if (subRes.ok) {
+            const sub = await subRes.json()
+            if (sub.isPaid) {
+              navigate('/dashboard', { replace: true })
+              return
+            }
+          }
+        } catch (err) {
+          console.error('Error checking subscription during redirect:', err)
+        }
+
+        // Unpaid: check if they have active runs
+        try {
+          const runsRes = await fetch(`${API_URL}/diagnostic-runs`, { headers })
+          if (runsRes.ok) {
+            const runs = await runsRes.json()
             const hasActiveRun = runs.some(r =>
               r.status === 'created' || r.status === 'in_progress' || r.status === 'draft'
             )
@@ -104,17 +125,20 @@ export default function AuthPage() {
               return
             }
           }
+        } catch (err) {
+          console.error('Error checking runs during redirect:', err)
         }
-      } catch (err) {
-        console.error('Error checking runs during redirect:', err)
-      }
 
-      // Unpaid with no active runs → pricing
-      navigate('/pricing', { replace: true })
+        // Unpaid with no active runs → pricing
+        navigate('/pricing', { replace: true })
+      } catch (err) {
+        console.error('Redirect error:', err)
+        navigate('/dashboard', { replace: true })
+      }
     }
 
     resolveRedirect()
-  }, [user, subLoading])
+  }, [user])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
