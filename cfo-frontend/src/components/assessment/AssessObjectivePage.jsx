@@ -390,7 +390,25 @@ export default function AssessObjectivePage() {
         headers,
         body: JSON.stringify({ run_id: runId, question_id: questionId, value })
       });
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        // Read server response for specific error codes
+        let body = {};
+        try { body = await res.json(); } catch (_) { /* ignore parse errors */ }
+
+        if (res.status === 403 && body.code === 'SUBSCRIPTION_REQUIRED') {
+          // Subscription gating — show upgrade modal, revert answer, no retry
+          setAnswers(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
+          });
+          setShowUpgradeModal(true);
+          setSaving(false);
+          return; // Skip retry logic
+        }
+
+        throw new Error(body.error || 'Failed to save');
+      }
       // Success - clear any previous save error
       if (error === 'Failed to save answer. Please try again.') {
         setError(null);

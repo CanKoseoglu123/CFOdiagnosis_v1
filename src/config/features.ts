@@ -55,3 +55,21 @@ export const FREE_TIER_OBJECTIVES = [
 export function isFreeTierObjective(objectiveId: string): boolean {
   return (FREE_TIER_OBJECTIVES as readonly string[]).includes(objectiveId);
 }
+
+/**
+ * Get list of emails that bypass subscription requirements.
+ * Set via SUBSCRIPTION_BYPASS_EMAILS env var (comma-separated).
+ */
+export function getBypassEmails(): string[] {
+  return (process.env.SUBSCRIPTION_BYPASS_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/**
+ * Check if a user's email is in the subscription bypass list
+ */
+export function isSubscriptionBypassed(email: string): boolean {
+  return getBypassEmails().includes(email.toLowerCase());
+}

@@ -10,7 +10,7 @@
 
 import { Router, Request, Response } from 'express';
 import { stripe, getPriceId, getCurrency, isStripeConfigured } from './client';
-import { features, isStripeEnabledForUser } from '../config/features';
+import { features, isStripeEnabledForUser, isSubscriptionBypassed } from '../config/features';
 
 const router = Router();
 
@@ -31,6 +31,16 @@ router.get('/subscription', async (req: Request, res: Response) => {
   try {
     // Check feature flag for this user
     const userEmail = req.userEmail || '';
+
+    // Check email-based bypass before anything else
+    if (isSubscriptionBypassed(userEmail)) {
+      return res.json({
+        status: 'active',
+        isPaid: true,
+        source: 'bypass'
+      });
+    }
+
     if (!isStripeEnabledForUser(userEmail)) {
       return res.json({
         status: 'not_available',

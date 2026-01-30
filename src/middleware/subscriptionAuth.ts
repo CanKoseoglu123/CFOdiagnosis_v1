@@ -5,7 +5,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { features, isSubscriptionRequired, FREE_TIER_OBJECTIVES } from '../config/features';
+import { features, isSubscriptionRequired, FREE_TIER_OBJECTIVES, isSubscriptionBypassed } from '../config/features';
 
 /**
  * Check if user has active subscription or override
@@ -18,6 +18,11 @@ export async function hasActiveSubscription(req: Request): Promise<boolean> {
 
   if (!req.userId) {
     return false;
+  }
+
+  // Check email-based bypass
+  if (req.userEmail && isSubscriptionBypassed(req.userEmail)) {
+    return true;
   }
 
   try {
@@ -68,6 +73,11 @@ export async function getSubscriptionTier(req: Request): Promise<{
 
   if (!req.userId) {
     return { tier: 'free', accessibleObjectives: [...FREE_TIER_OBJECTIVES] };
+  }
+
+  // Check email-based bypass
+  if (req.userEmail && isSubscriptionBypassed(req.userEmail)) {
+    return { tier: 'override', accessibleObjectives: 'all' };
   }
 
   try {
