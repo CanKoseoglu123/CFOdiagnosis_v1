@@ -365,25 +365,27 @@ export default function PillarSetupPage() {
     const currentIndex = FIELD_ORDER.indexOf(field);
     if (currentIndex === -1) return;
 
+    // Skip multi-select targets too — find the next single-select unanswered field
     const nextUnanswered = FIELD_ORDER.find((key, i) =>
-      i > currentIndex && !isAnswered(key, pillar)
+      i > currentIndex && key !== 'tools' && key !== 'pain_points' && !isAnswered(key, pillar)
     );
     if (!nextUnanswered) return;
 
     const nextEl = fieldRefs.current[nextUnanswered];
     if (!nextEl) return;
 
-    // Only nudge when the next field sits below the bottom 40% of the viewport
+    // Nudge when the next field is below the visible comfort zone
     setTimeout(() => {
       const rect = nextEl.getBoundingClientRect();
       const viewH = window.innerHeight;
-      const triggerLine = viewH * 0.6;
 
-      if (rect.top > triggerLine) {
-        // Gentle nudge — scroll just enough to place it at ~45% from the top
-        const desired = viewH * 0.45;
+      // If any part of the field is cut off or below the bottom third, nudge
+      if (rect.top > viewH * 0.55 || rect.bottom > viewH) {
+        const desired = viewH * 0.35;
         const nudge = rect.top - desired;
-        window.scrollBy({ top: nudge, behavior: 'smooth' });
+        if (nudge > 30) {
+          window.scrollBy({ top: nudge, behavior: 'smooth' });
+        }
       }
     }, 300);
   };
