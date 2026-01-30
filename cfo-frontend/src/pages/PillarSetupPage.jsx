@@ -349,38 +349,31 @@ export default function PillarSetupPage() {
     'pain_points', 'user_role'
   ];
 
+  // Single-select fields that should trigger auto-scroll after selection
+  const SCROLL_FIELDS = ['team_size', 'forecast_frequency', 'budget_process_base', 'user_role'];
+
   const handleFieldChange = (field, value) => {
     setPillar(prev => ({ ...prev, [field]: value }));
 
-    // For array fields (tools, pain_points), consider "answered" if length > 0
-    // For string fields, consider "answered" if truthy
-    const isAnswered = (key, state) => {
-      const val = key === field ? value : state[key];
-      return Array.isArray(val) ? val.length > 0 : !!val;
-    };
-
-    // Multi-select fields: don't auto-scroll away while user is still picking
-    if (field === 'tools' || field === 'pain_points') return;
+    // Only auto-scroll from single-select fields
+    if (!SCROLL_FIELDS.includes(field)) return;
 
     const currentIndex = FIELD_ORDER.indexOf(field);
     if (currentIndex === -1) return;
 
-    // Skip multi-select targets too — find the next single-select unanswered field
-    const nextUnanswered = FIELD_ORDER.find((key, i) =>
-      i > currentIndex && key !== 'tools' && key !== 'pain_points' && !isAnswered(key, pillar)
-    );
-    if (!nextUnanswered) return;
+    // Scroll to the very next field in layout order (whether answered or not)
+    const nextField = FIELD_ORDER[currentIndex + 1];
+    if (!nextField) return;
 
-    const nextEl = fieldRefs.current[nextUnanswered];
+    const nextEl = fieldRefs.current[nextField];
     if (!nextEl) return;
 
-    // Nudge when the next field is below the visible comfort zone
     setTimeout(() => {
       const rect = nextEl.getBoundingClientRect();
       const viewH = window.innerHeight;
 
-      // If any part of the field is cut off or below the bottom third, nudge
-      if (rect.top > viewH * 0.55 || rect.bottom > viewH) {
+      // Nudge if the next field is in the lower half or cut off
+      if (rect.top > viewH * 0.5 || rect.bottom > viewH) {
         const desired = viewH * 0.35;
         const nudge = rect.top - desired;
         if (nudge > 30) {
