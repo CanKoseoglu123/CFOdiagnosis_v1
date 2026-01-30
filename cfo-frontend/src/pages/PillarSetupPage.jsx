@@ -359,6 +359,9 @@ export default function PillarSetupPage() {
       return Array.isArray(val) ? val.length > 0 : !!val;
     };
 
+    // Multi-select fields: don't auto-scroll away while user is still picking
+    if (field === 'tools' || field === 'pain_points') return;
+
     const currentIndex = FIELD_ORDER.indexOf(field);
     if (currentIndex === -1) return;
 
