@@ -4,6 +4,7 @@
 
 .app-shell {
   display: flex;
+  flex-direction: column;  /* Mobile: stack header → main → nav vertically */
   min-height: 100vh;
   background-color: #F4F5F7; /* slate-100 - Gartner Enterprise */
 }

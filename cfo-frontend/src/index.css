@@ -180,6 +180,12 @@ body {
    so the sidebar is hidden before the component CSS loads.
    Detailed styling remains in AppShell.css.
    ============================================ */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .app-sidebar {
   display: none;
 }
