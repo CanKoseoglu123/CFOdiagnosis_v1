@@ -43,6 +43,7 @@ import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/
 import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
 import { requireAdmin, checkAdmin } from "./middleware/adminAuth";
+import { requireAuth } from "./middleware/auth";
 
 // Classification engine for test run setup
 import { classifyCompany } from "./classification/engine";
@@ -369,11 +370,7 @@ app.get("/supabase-health", async (_req, res) => {
 // VS1 — Create diagnostic run
 // Now uses req.supabase (authenticated if token provided)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-
+app.post("/diagnostic-runs", requireAuth, async (req, res) => {
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
     .insert({
@@ -1279,10 +1276,7 @@ app.post("/diagnostic-runs/:id/score", checkAdmin, async (req, res) => {
 // Navigation: Rescore run (after editing answers)
 // Forces overwrite and clears scores_stale flag
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/rescore", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.post("/diagnostic-runs/:id/rescore", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   const { data: run, error: runError } = await req.supabase
@@ -1364,10 +1358,7 @@ app.post("/diagnostic-runs/:id/rescore", async (req, res) => {
 // ------------------------------------------------------------------
 // VS5 — Results
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/results", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.get("/diagnostic-runs/:id/results", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   const { data: run, error: runError } = await req.supabase
@@ -1544,10 +1535,7 @@ app.get("/diagnostic-runs/:id/report", checkAdmin, requireSubscription, async (r
 // ------------------------------------------------------------------
 // VS25 — Start interpretation (returns 202, async processing)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.post("/diagnostic-runs/:id/interpret/start", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   // Verify run exists and is completed
@@ -1764,10 +1752,7 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
 // ------------------------------------------------------------------
 // VS25 — Get interpretation status
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/interpret/status", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.get("/diagnostic-runs/:id/interpret/status", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   const session = await getSessionByRunId(req.supabase, runId);
@@ -1814,10 +1799,7 @@ app.get("/diagnostic-runs/:id/interpret/status", async (req, res) => {
 // ------------------------------------------------------------------
 // VS25 — Submit interpretation answers
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.post("/diagnostic-runs/:id/interpret/answer", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { answers } = req.body;
 
@@ -1992,10 +1974,7 @@ app.get("/diagnostic-runs/:id/interpret/report", requireSubscription, async (req
 // ------------------------------------------------------------------
 // VS25 — Submit interpretation feedback
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.post("/diagnostic-runs/:id/interpret/feedback", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { rating, feedback } = req.body;
 
@@ -2060,10 +2039,7 @@ app.get("/diagnostic-runs/:id/action-plan", checkAdmin, async (req, res) => {
 // ------------------------------------------------------------------
 // VS28 — Upsert action plan item (auto-save on toggle)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.post("/diagnostic-runs/:id/action-plan", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { question_id, status, timeline, assigned_owner } = req.body;
 
@@ -2129,10 +2105,7 @@ app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
 // ------------------------------------------------------------------
 // VS28 — Delete action plan item
 // ------------------------------------------------------------------
-app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.delete("/diagnostic-runs/:id/action-plan/:questionId", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const questionId = req.params.questionId;
 
@@ -2172,10 +2145,7 @@ app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
 // ------------------------------------------------------------------
 // VS-39 — Finalize action plan (locks selections, enables Executive Report)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+app.post("/diagnostic-runs/:id/finalize", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   // Verify run exists and get current state
@@ -2285,13 +2255,9 @@ const VALID_STEPS = [
 
 type WorkflowStep = typeof VALID_STEPS[number];
 
-app.patch("/diagnostic-runs/:id/step", checkAdmin, async (req, res) => {
+app.patch("/diagnostic-runs/:id/step", checkAdmin, requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { step, last_visited_objective_id, assessment_progress_pct } = req.body;
-
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
 
   // Validate step
   if (!step || !VALID_STEPS.includes(step)) {
@@ -2368,12 +2334,8 @@ app.patch("/diagnostic-runs/:id/step", checkAdmin, async (req, res) => {
 // ------------------------------------------------------------------
 // User Delete: Delete own diagnostic run (non-finalized only)
 // ------------------------------------------------------------------
-app.delete("/diagnostic-runs/:id", async (req, res) => {
+app.delete("/diagnostic-runs/:id", requireAuth, async (req, res) => {
   const runId = req.params.id;
-
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
 
   // Verify run exists and check ownership + finalization status
   const { data: run, error: runError } = await req.supabase

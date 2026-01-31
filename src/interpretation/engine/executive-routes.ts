@@ -29,15 +29,19 @@ router.post('/:id/interpret-executive', async (req: Request, res) => {
   const { id: runId } = req.params;
 
   try {
-    // Check run exists and is finalized
+    // Check run exists, is owned by the caller, and is finalized
     const { data: run, error: runError } = await getServiceClient()
       .from('diagnostic_runs')
-      .select('id, finalized_at, action_plan_snapshot')
+      .select('id, owner_id, finalized_at, action_plan_snapshot')
       .eq('id', runId)
       .maybeSingle();
 
     if (runError || !run) {
       return res.status(404).json({ error: 'Run not found' });
+    }
+
+    if (run.owner_id !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
 
     if (!run.finalized_at) {
@@ -163,14 +167,22 @@ router.get('/:id/interpret-executive/status', async (req: Request, res) => {
   const { id: runId } = req.params;
 
   try {
-    // Check run is finalized
+    // Check run exists and is owned by the caller
     const { data: run } = await getServiceClient()
       .from('diagnostic_runs')
-      .select('finalized_at')
+      .select('owner_id, finalized_at')
       .eq('id', runId)
       .maybeSingle();
 
-    if (!run?.finalized_at) {
+    if (!run) {
+      return res.status(404).json({ error: 'Run not found' });
+    }
+
+    if (run.owner_id !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    if (!run.finalized_at) {
       return res.json({
         status: 'not_finalized',
         sections: null,

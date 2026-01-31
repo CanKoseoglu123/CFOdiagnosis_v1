@@ -23,6 +23,20 @@ router.post('/:id/interpret-v32', async (req: Request, res) => {
   const { id: runId } = req.params;
 
   try {
+    // Verify run ownership
+    const { data: ownerCheck } = await getServiceClient()
+      .from('diagnostic_runs')
+      .select('owner_id')
+      .eq('id', runId)
+      .maybeSingle();
+
+    if (!ownerCheck) {
+      return res.status(404).json({ error: 'Run not found' });
+    }
+    if (ownerCheck.owner_id !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     // Check for existing in-progress generation (use service client for reports table)
     const { data: existing } = await getServiceClient()
       .from('interpretation_reports')
@@ -161,6 +175,20 @@ router.get('/:id/interpret-v32/status', async (req: Request, res) => {
   const { id: runId } = req.params;
 
   try {
+    // Verify run ownership
+    const { data: ownerCheck } = await getServiceClient()
+      .from('diagnostic_runs')
+      .select('owner_id')
+      .eq('id', runId)
+      .maybeSingle();
+
+    if (!ownerCheck) {
+      return res.status(404).json({ error: 'Run not found' });
+    }
+    if (ownerCheck.owner_id !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     // Use service client for reports (no RLS on this table)
     const { data: report } = await getServiceClient()
       .from('interpretation_reports')

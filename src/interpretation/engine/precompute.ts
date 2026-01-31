@@ -13,6 +13,8 @@ import { normalizeContext } from '../../utils/contextAdapter';  // VS26
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { getServiceClient } from '../../lib/supabase';
+import { Classification } from '../../utils/targetCalculation';
+import { CompanyContext } from '../../specs/schemas';
 
 export async function precompute(runId: string): Promise<InterpretationInput> {
   // Fetch run separately (avoids join issues)
@@ -70,8 +72,8 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
   } : null;
 
   // VS-27f: Fetch company profile classification for targets (optional)
-  let classification: any = null;
-  let companyContext: any = null;
+  let classification: Classification | null = null;
+  let companyContext: CompanyContext | null = null;
   if (run.company_profile_id) {
     const { data: profile } = await getServiceClient()
       .from('company_profiles')
@@ -298,7 +300,8 @@ function loadTargetMatrix(): any {
     try {
       const raw = readFileSync(join(__dirname, '../../../content/targetMatrix.json'), 'utf-8');
       _targetMatrix = JSON.parse(raw);
-    } catch {
+    } catch (err) {
+      console.error('[precompute] Failed to load targetMatrix.json:', err);
       _targetMatrix = {};
     }
   }
