@@ -3,7 +3,7 @@
 // Orchestrates: Actions (sequential sub-steps) -> Timelines -> Owners -> Review
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { X, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import ProgressStepper from './ProgressStepper';
 import ActionSelectionSteps from './ActionSelectionSteps';
 import TimelineAssignmentPanel from './TimelineAssignmentPanel';
@@ -56,6 +56,20 @@ export default function ProgressiveWizard({
         window.scrollTo(0, scrollY);
       };
     }
+  }, [isOpen]);
+
+  // Detect landscape on mobile/tablet (< lg breakpoint)
+  const [isLandscape, setIsLandscape] = useState(false);
+  useEffect(() => {
+    if (!isOpen) return;
+    const check = () => {
+      const isMobile = window.innerWidth < 1024;
+      const landscape = window.innerWidth > window.innerHeight;
+      setIsLandscape(isMobile && landscape);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, [isOpen]);
 
   // Check if there are unsaved changes
@@ -304,6 +318,22 @@ export default function ProgressiveWizard({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 lg:p-4 touch-none">
+      {/* Landscape rotation prompt — covers the wizard on mobile landscape */}
+      {isLandscape && (
+        <div className="absolute inset-0 z-10 bg-slate-900 flex flex-col items-center justify-center text-center px-8">
+          <RotateCcw className="w-12 h-12 text-slate-400 mb-4 animate-pulse" />
+          <h3 className="text-lg font-semibold text-white mb-2">Rotate to Portrait</h3>
+          <p className="text-sm text-slate-400 mb-6">
+            The Action Wizard works best in portrait mode. Please rotate your device.
+          </p>
+          <button
+            onClick={handleClose}
+            className="px-4 py-2 text-sm font-medium text-slate-300 border border-slate-600 rounded-sm hover:bg-slate-800 transition-colors"
+          >
+            Close Wizard
+          </button>
+        </div>
+      )}
       <div className="bg-white rounded-none lg:rounded-sm w-full max-w-5xl h-full lg:h-[85vh] flex flex-col border-0 lg:border border-slate-300 touch-auto overscroll-contain">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 lg:px-6 lg:py-4 border-b border-slate-200">
