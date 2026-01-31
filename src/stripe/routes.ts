@@ -171,6 +171,7 @@ router.post('/checkout', async (req: Request, res: Response) => {
       customer: customerId,
       customer_update: {
         name: 'auto',
+        address: 'auto',
       },
       mode: 'subscription',
       payment_method_types: ['card'],
