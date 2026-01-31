@@ -67,17 +67,17 @@ export default function ReviewSummaryPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-200 bg-slate-50">
-        <h3 className="text-sm sm:text-base font-semibold text-slate-800">
+      <div className="px-3 py-2 lg:px-6 lg:py-4 border-b border-slate-200 bg-slate-50">
+        <h3 className="text-sm lg:text-base font-semibold text-slate-800">
           Review & Finalize
         </h3>
-        <p className="text-sm text-slate-600 mt-1 hidden sm:block">
+        <p className="text-sm text-slate-600 mt-1 hidden lg:block">
           Review your action plan before generating the Executive Report.
         </p>
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto p-2 lg:p-4 space-y-3 lg:space-y-4">
         {/* Summary Cards */}
         <div className="grid grid-cols-3 gap-3">
           <SummaryCard
@@ -234,9 +234,9 @@ export default function ReviewSummaryPanel({
       </div>
 
       {/* Footer with action buttons */}
-      <div className="px-3 py-2.5 sm:px-6 sm:py-4 border-t border-slate-200 bg-slate-50">
+      <div className="px-3 py-2.5 lg:px-6 lg:py-4 border-t border-slate-200 bg-slate-50">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-xs sm:text-sm text-slate-600 hidden sm:block">
+          <div className="text-xs lg:text-sm text-slate-600 hidden lg:block">
             {isComplete ? (
               <span className="flex items-center gap-2 text-emerald-600">
                 <CheckCircle className="w-4 h-4" />
@@ -253,26 +253,26 @@ export default function ReviewSummaryPanel({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 lg:gap-3 w-full lg:w-auto">
             {onReviewImpact && (
               <button
                 onClick={onReviewImpact}
                 disabled={!checks.hasActions || completing}
-                className={`flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium rounded-sm transition-colors border flex-1 sm:flex-initial ${
+                className={`flex items-center justify-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 text-sm font-medium rounded-sm transition-colors border flex-1 lg:flex-initial ${
                   checks.hasActions && !completing
                     ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
                     : 'border-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
                 <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">Review Impact</span>
-                <span className="sm:hidden">Review</span>
+                <span className="hidden lg:inline">Review Impact</span>
+                <span className="lg:hidden">Review</span>
               </button>
             )}
             <button
               onClick={onComplete}
               disabled={!checks.hasActions || completing}
-              className={`flex items-center justify-center gap-2 px-3 py-2 sm:px-5 sm:py-2.5 text-sm font-medium rounded-sm transition-colors flex-1 sm:flex-initial ${
+              className={`flex items-center justify-center gap-2 px-3 py-2 lg:px-5 lg:py-2.5 text-sm font-medium rounded-sm transition-colors flex-1 lg:flex-initial ${
                 checks.hasActions && !completing
                   ? 'bg-slate-800 text-white hover:bg-slate-900'
                   : 'bg-slate-300 text-slate-500 cursor-not-allowed'
@@ -284,7 +284,7 @@ export default function ReviewSummaryPanel({
           </div>
         </div>
         {!isComplete && checks.hasActions && (
-          <p className="text-xs text-slate-500 mt-2 hidden sm:block">
+          <p className="text-xs text-slate-500 mt-2 hidden lg:block">
             You can proceed with incomplete assignments, but we recommend filling in all timelines and owners for a complete action plan.
           </p>
         )}

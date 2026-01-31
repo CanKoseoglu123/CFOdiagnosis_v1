@@ -90,10 +90,10 @@ export default function ActionSelectionSteps({
   return (
     <div className="flex flex-col h-full">
       {/* Sub-step Header - Compact numbered cards */}
-      <div className="px-3 py-2 sm:px-6 sm:py-3 border-b border-slate-200 bg-white flex-shrink-0">
+      <div className="px-3 py-2 lg:px-6 lg:py-3 border-b border-slate-200 bg-white flex-shrink-0">
         <div className="flex items-center justify-between">
           {/* Numbered step cards */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 lg:gap-2">
             {SUB_STEPS.map((step) => {
               const isActive = step.step === subStep;
               const isCompleted = step.step < subStep;
@@ -102,7 +102,7 @@ export default function ActionSelectionSteps({
                   key={step.id}
                   onClick={() => onSubStepChange(step.step)}
                   title={step.label}
-                  className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-semibold rounded-sm border transition-colors ${
+                  className={`w-7 h-7 lg:w-8 lg:h-8 flex items-center justify-center text-xs lg:text-sm font-semibold rounded-sm border transition-colors ${
                     isActive
                       ? 'bg-slate-700 border-slate-700 text-white'
                       : isCompleted
@@ -117,12 +117,12 @@ export default function ActionSelectionSteps({
           </div>
 
           {/* Current step label */}
-          <span className="text-xs sm:text-sm font-medium text-slate-600">
+          <span className="text-xs lg:text-sm font-medium text-slate-600">
             {currentConfig.label}
           </span>
 
           {/* Count badge */}
-          <div className="text-xs text-slate-500 hidden sm:block">
+          <div className="text-xs text-slate-500 hidden lg:block">
             <span className="font-semibold text-slate-700">{stepCounts[currentConfig.id]}</span> action{stepCounts[currentConfig.id] !== 1 ? 's' : ''} in this view
           </div>
         </div>
@@ -145,27 +145,27 @@ export default function ActionSelectionSteps({
       </div>
 
       {/* Sub-step Navigation Footer */}
-      <div className="px-3 py-2 sm:px-6 sm:py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
+      <div className="px-3 py-2 lg:px-6 lg:py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
         <button
           onClick={handleBack}
           disabled={isFirstSubStep}
-          className={`flex items-center gap-2 px-2 py-1.5 sm:px-3 text-sm font-medium rounded-sm transition-colors ${
+          className={`flex items-center gap-2 px-2 py-1.5 lg:px-3 text-sm font-medium rounded-sm transition-colors ${
             isFirstSubStep
               ? 'text-slate-300 cursor-not-allowed'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Back</span>
+          <span className="hidden lg:inline">Back</span>
         </button>
 
-        <div className="text-xs sm:text-sm text-slate-600">
+        <div className="text-xs lg:text-sm text-slate-600">
           <span className="font-semibold">{selectedActions.size}</span> selected
         </div>
 
         <button
           onClick={handleContinue}
-          className="flex items-center gap-2 px-2 py-1.5 sm:px-3 text-sm font-medium rounded-sm transition-colors bg-slate-700 text-white hover:bg-slate-800"
+          className="flex items-center gap-2 px-2 py-1.5 lg:px-3 text-sm font-medium rounded-sm transition-colors bg-slate-700 text-white hover:bg-slate-800"
         >
           {isLastSubStep ? 'Timelines' : 'Next'}
           <ArrowRight className="w-4 h-4" />

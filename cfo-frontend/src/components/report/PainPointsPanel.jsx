@@ -85,17 +85,17 @@ export default function PainPointsPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
-        <h3 className="text-sm sm:text-base font-semibold text-slate-800">
+      <div className="px-3 py-2 lg:px-6 lg:py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+        <h3 className="text-sm lg:text-base font-semibold text-slate-800">
           Address Your Pain Points
         </h3>
-        <p className="text-sm text-slate-600 mt-1 hidden sm:block">
+        <p className="text-sm text-slate-600 mt-1 hidden lg:block">
           Actions related to the pain points you identified during setup.
         </p>
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4">
+      <div className="flex-1 overflow-y-auto p-2 lg:p-4">
         <div className="space-y-4">
           {groupedData.map(group => (
             <GroupedSection
@@ -110,7 +110,7 @@ export default function PainPointsPanel({
       </div>
 
       {/* Footer - hidden on mobile, info shown in sub-step footer */}
-      <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex-shrink-0 hidden sm:block">
+      <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex-shrink-0 hidden lg:block">
         <span className="text-sm text-slate-600">
           Selected: <strong>{selectedCount}</strong> of {totalActions} action{totalActions !== 1 ? 's' : ''}
         </span>
