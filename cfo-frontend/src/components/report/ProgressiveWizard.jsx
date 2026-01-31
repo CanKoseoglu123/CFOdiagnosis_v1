@@ -306,28 +306,31 @@ export default function ProgressiveWizard({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 sm:p-4 touch-none">
       <div className="bg-white rounded-none sm:rounded-sm w-full max-w-5xl h-full sm:h-[85vh] flex flex-col border-0 sm:border border-slate-300 touch-auto overscroll-contain">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200">
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold text-slate-800">
-              Action Planning Wizard
+        <div className="flex items-center justify-between px-4 py-2.5 sm:px-6 sm:py-4 border-b border-slate-200">
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-lg font-semibold text-slate-800">
+              <span className="sm:hidden">Step {currentStep}/4 · {['Actions', 'Timelines', 'Owners', 'Review'][currentStep - 1]}</span>
+              <span className="hidden sm:inline">Action Planning Wizard</span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">
+            <p className="text-sm text-slate-500 mt-0.5 hidden sm:block">
               Build your action plan step by step
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-slate-100 rounded-sm transition-colors"
+            className="p-2 hover:bg-slate-100 rounded-sm transition-colors flex-shrink-0"
           >
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
-        {/* Progress Stepper */}
-        <ProgressStepper
-          currentStep={currentStep}
-          onStepClick={handleStepClick}
-        />
+        {/* Progress Stepper - hidden on mobile, step shown in header instead */}
+        <div className="hidden sm:block">
+          <ProgressStepper
+            currentStep={currentStep}
+            onStepClick={handleStepClick}
+          />
+        </div>
 
         {/* Step Content */}
         <div className="flex-1 min-h-0 overflow-hidden">

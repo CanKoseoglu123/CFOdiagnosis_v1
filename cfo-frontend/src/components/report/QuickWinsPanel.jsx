@@ -54,17 +54,17 @@ export default function QuickWinsPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
-        <h3 className="text-base font-semibold text-slate-800">
+      <div className="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+        <h3 className="text-sm sm:text-base font-semibold text-slate-800">
           Quick Wins
         </h3>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="text-sm text-slate-600 mt-1 hidden sm:block">
           Low complexity, high impact actions you can start immediately.
         </p>
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4">
         <div className="space-y-2">
           {quickWins.map(question => (
             <ActionCard
@@ -77,8 +77,8 @@ export default function QuickWinsPanel({
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex-shrink-0">
+      {/* Footer - hidden on mobile, info shown in sub-step footer */}
+      <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex-shrink-0 hidden sm:block">
         <span className="text-sm text-slate-600">
           Selected: <strong>{selectedCount}</strong> of {quickWins.length} quick win{quickWins.length !== 1 ? 's' : ''}
         </span>

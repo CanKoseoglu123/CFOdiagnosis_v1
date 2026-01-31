@@ -67,17 +67,17 @@ export default function ReviewSummaryPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
-        <h3 className="text-base font-semibold text-slate-800">
+      <div className="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-200 bg-slate-50">
+        <h3 className="text-sm sm:text-base font-semibold text-slate-800">
           Review & Finalize
         </h3>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="text-sm text-slate-600 mt-1 hidden sm:block">
           Review your action plan before generating the Executive Report.
         </p>
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
         {/* Summary Cards */}
         <div className="grid grid-cols-3 gap-3">
           <SummaryCard
@@ -234,9 +234,9 @@ export default function ReviewSummaryPanel({
       </div>
 
       {/* Footer with action buttons */}
-      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-600">
+      <div className="px-3 py-2.5 sm:px-6 sm:py-4 border-t border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-xs sm:text-sm text-slate-600 hidden sm:block">
             {isComplete ? (
               <span className="flex items-center gap-2 text-emerald-600">
                 <CheckCircle className="w-4 h-4" />
@@ -253,37 +253,38 @@ export default function ReviewSummaryPanel({
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             {onReviewImpact && (
               <button
                 onClick={onReviewImpact}
                 disabled={!checks.hasActions || completing}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-sm transition-colors border ${
+                className={`flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium rounded-sm transition-colors border flex-1 sm:flex-initial ${
                   checks.hasActions && !completing
                     ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
                     : 'border-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
                 <Eye className="w-4 h-4" />
-                Review Impact
+                <span className="hidden sm:inline">Review Impact</span>
+                <span className="sm:hidden">Review</span>
               </button>
             )}
             <button
               onClick={onComplete}
               disabled={!checks.hasActions || completing}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-sm transition-colors ${
+              className={`flex items-center justify-center gap-2 px-3 py-2 sm:px-5 sm:py-2.5 text-sm font-medium rounded-sm transition-colors flex-1 sm:flex-initial ${
                 checks.hasActions && !completing
                   ? 'bg-slate-800 text-white hover:bg-slate-900'
                   : 'bg-slate-300 text-slate-500 cursor-not-allowed'
               }`}
             >
               <FileText className="w-4 h-4" />
-              {completing ? 'Saving...' : 'Complete Planning'}
+              {completing ? 'Saving...' : 'Complete'}
             </button>
           </div>
         </div>
         {!isComplete && checks.hasActions && (
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-slate-500 mt-2 hidden sm:block">
             You can proceed with incomplete assignments, but we recommend filling in all timelines and owners for a complete action plan.
           </p>
         )}

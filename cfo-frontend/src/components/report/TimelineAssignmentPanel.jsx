@@ -36,13 +36,13 @@ export default function TimelineAssignmentPanel({
   return (
     <div className="flex flex-col h-full">
       {/* Header with bulk assign */}
-      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
-        <div className="flex items-center justify-between mb-3">
+      <div className="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
           <div>
-            <h3 className="text-base font-semibold text-slate-800">
+            <h3 className="text-sm sm:text-base font-semibold text-slate-800">
               Assign Timelines
             </h3>
-            <p className="text-sm text-slate-600 mt-1">
+            <p className="text-sm text-slate-600 mt-1 hidden sm:block">
               Set when you plan to complete each action. Use bulk assign for quick setup.
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function TimelineAssignmentPanel({
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4">
         {totalCount === 0 ? (
           <div className="text-center py-12 text-slate-500">
             <p className="text-sm">No actions selected</p>
@@ -131,8 +131,8 @@ export default function TimelineAssignmentPanel({
         )}
       </div>
 
-      {/* Footer with progress */}
-      <div className="px-6 py-3 border-t border-slate-200 bg-slate-50">
+      {/* Footer with progress - hidden on mobile */}
+      <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 hidden sm:block">
         <div className="flex items-center justify-between">
           <span className="text-sm text-slate-600">
             Assigned: <strong className={assignedCount === totalCount ? 'text-emerald-600' : ''}>{assignedCount}</strong>/{totalCount} action{totalCount !== 1 ? 's' : ''}
