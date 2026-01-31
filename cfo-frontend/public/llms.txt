@@ -1,0 +1,70 @@
+# CFO Lens AI
+
+> AI-powered FP&A maturity diagnostic platform that compresses a 6-figure consulting engagement into hours. Helps CFOs assess their Financial Planning & Analysis function, identify gaps, and build actionable transformation roadmaps.
+
+## What is CFO Lens AI?
+
+CFO Lens AI is a SaaS platform that helps CFOs and finance leaders assess the maturity of their Financial Planning & Analysis (FP&A) function. It delivers a structured, 97-question diagnostic across 9 strategic objectives grouped into 3 themes, provides maturity scoring with industry benchmarks, and generates prioritized action plans with executive-ready PDF reports.
+
+The platform uses a deterministic scoring engine: Impact-squared divided by Complexity, multiplied by calibration and context factors. AI explains results but never changes scores. Critical gate failures cap maturity levels regardless of raw score, ensuring honest assessments.
+
+## Who is it for?
+
+- CFOs evaluating their FP&A capabilities against industry peers
+- VP Finance and FP&A Directors running maturity assessments
+- Finance transformation leaders benchmarking and tracking progress
+- Consultants assessing client FP&A maturity
+
+## How it works
+
+1. Company profiling — industry, size, complexity factors
+2. Persona classification — identifies CFO archetype for context-aware benchmarks
+3. 97-question diagnostic — binary yes/no questions across 9 objectives
+4. Calibration — adjusts targets based on industry, company size, and transformation ambition
+5. Maturity results — scores, gap analysis, and benchmark comparison
+6. War Room — interactive action planning that converts insights into prioritized roadmaps
+7. Executive PDF report — board-ready document with scores, gaps, and recommendations
+
+## Maturity levels
+
+- Level 1 — Emerging (below 40%): Ad hoc processes, limited visibility
+- Level 2 — Defined (40% or above): Structured processes in place, requires passing Level 1 critical gates
+- Level 3 — Managed (65% or above): Optimized and consistent, requires passing Level 1 and Level 2 critical gates
+- Level 4 — Optimized (85% or above): Predictive and strategic, requires passing all critical gates
+
+## Three diagnostic themes
+
+- **The Foundation** — Control and Trust: Budgeting discipline, financial controls, performance monitoring
+- **The Future** — Speed and Agility: Forecasting agility, driver-based planning, scenario modeling
+- **The Intelligence** — Value and Influence: Strategic influence, decision support, operational excellence
+
+## Nine strategic objectives
+
+1. Budget Discipline — Establish a baseline of financial accountability
+2. Financial Controls — Ensure analytical integrity through model governance and assumption management
+3. Performance Monitoring — Create feedback loops to track actuals against the plan
+4. Forecasting Agility — Update the financial outlook frequently and efficiently
+5. Driver-Based Planning — Link financial outcomes to operational inputs
+6. Scenario Modeling — Enable confident decision-making when conditions deviate from plan
+7. Strategic Influence — Proactively shape commercial decisions through financial insight
+8. Decision Support — Deliver accessible, actionable financial insights to decision-makers
+9. Operational Excellence — Run the finance function with maximum efficiency
+
+## Pages
+
+- [Home](https://cfodiagnosisv1.vercel.app/): Landing page with platform overview
+- [Platform](https://cfodiagnosisv1.vercel.app/platform): Feature details and methodology
+- [About](https://cfodiagnosisv1.vercel.app/about): Team and mission
+- [Pricing](https://cfodiagnosisv1.vercel.app/pricing): Free tier (2 objectives) and Pro tier (all 9 objectives)
+- [Blog](https://cfodiagnosisv1.vercel.app/blog): Insights for finance leaders
+
+## Blog posts
+
+- [Your Rolling Forecast Doesn't Roll](https://cfodiagnosisv1.vercel.app/blog/your-rolling-forecast-doesnt-roll): Most finance teams say they do rolling forecasts but their horizon shrinks as the year progresses.
+- [You Don't Have a Budget. You Have a Wishlist.](https://cfodiagnosisv1.vercel.app/blog/you-dont-have-a-budget): When budget owners overspend and blame Finance, that is not a budget — it is a wishlist with a spreadsheet attached.
+- [The Variance Explanation That Explains Nothing](https://cfodiagnosisv1.vercel.app/blog/variance-explanation-explains-nothing): Monthly variance commentary says "timing" but nobody knows what is happening in the business.
+- [Finance Stopped Saying No](https://cfodiagnosisv1.vercel.app/blog/finance-stopped-saying-no): Having a seat at the table means nothing if Finance never kills a deal.
+
+## Optional
+
+- [Full LLM context](https://cfodiagnosisv1.vercel.app/llms-full.txt): Extended version with all 26 practices, detailed methodology, and FAQ

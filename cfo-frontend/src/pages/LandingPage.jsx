@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import FeedbackButton from '../components/FeedbackButton';
 import ImageCarousel from '../components/ImageCarousel';
+import PageSEO from '../components/PageSEO';
 
 // Image arrays for each step carousel
 const STEP_IMAGES = {
@@ -164,6 +165,28 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <PageSEO
+        title="FP&A Maturity Diagnostic"
+        description="Assess your FP&A function's maturity in hours, not months. 97-question diagnostic with industry benchmarks, gap analysis, and actionable transformation roadmaps."
+        path="/"
+        schemas={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'CFO Lens AI',
+            url: 'https://cfodiagnosisv1.vercel.app',
+            logo: 'https://cfodiagnosisv1.vercel.app/Logo horizontal.png',
+            description: 'AI-powered FP&A maturity assessment platform that compresses a 6-figure consulting engagement into hours.',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'CFO Lens AI',
+            url: 'https://cfodiagnosisv1.vercel.app',
+            description: 'AI-powered FP&A maturity assessment platform for CFOs and finance leaders.',
+          },
+        ]}
+      />
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* NAVIGATION */}
       {/* ─────────────────────────────────────────────────────────────────── */}

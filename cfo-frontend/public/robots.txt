@@ -7,6 +7,10 @@ Allow: /
 # Sitemap location
 Sitemap: https://cfodiagnosisv1.vercel.app/sitemap.xml
 
+# LLM content files
+# https://cfodiagnosisv1.vercel.app/llms.txt
+# https://cfodiagnosisv1.vercel.app/llms-full.txt
+
 # Disallow admin and authenticated-only pages
 Disallow: /admin
 Disallow: /run/

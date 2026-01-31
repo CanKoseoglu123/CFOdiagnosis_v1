@@ -23,6 +23,47 @@ import {
   Shield,
   Clock,
 } from 'lucide-react';
+import PageSEO from '../components/PageSEO';
+
+const FAQ_ITEMS = [
+  {
+    question: 'What is an FP&A maturity assessment?',
+    answer: 'An FP&A maturity assessment evaluates how advanced your Financial Planning and Analysis function is across key capabilities like budgeting, forecasting, scenario modeling, and strategic influence. It identifies gaps between your current state and best practice, providing a clear roadmap for improvement.',
+  },
+  {
+    question: 'How long does the diagnostic take?',
+    answer: 'Most CFOs complete the full 97-question diagnostic in 60 to 90 minutes. The questions are binary (yes/no) and organized by objective, so progress is steady and transparent.',
+  },
+  {
+    question: 'How is this different from hiring a consultant?',
+    answer: 'A traditional FP&A maturity assessment by a consulting firm costs six figures and takes months. CFO Lens delivers comparable diagnostic depth in hours at a fraction of the cost, using a deterministic scoring engine calibrated to your industry, size, and persona.',
+  },
+  {
+    question: 'What payment methods do you accept?',
+    answer: 'We accept all major credit cards via Stripe. EU customers can pay in EUR, others pay in USD.',
+  },
+  {
+    question: 'Can I try before I buy?',
+    answer: 'Yes. The free tier gives you access to 2 objectives so you can experience the diagnostic before upgrading.',
+  },
+  {
+    question: 'What happens to my data if I cancel?',
+    answer: 'Your diagnostic data is retained. You can still view your results but won\'t be able to access premium features or start new full assessments.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map(item => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer,
+    },
+  })),
+};
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
 
@@ -183,11 +224,17 @@ export default function PricingPage() {
   }
 
   // Get display price
-  const displayPrice = pricing?.annual?.formatted || '$299';
+  const displayPrice = pricing?.annual?.formatted || '$349';
   const currency = pricing?.currency || 'usd';
 
   return (
     <div className="min-h-screen bg-white">
+      <PageSEO
+        title="Pricing"
+        description="Free FP&A diagnostic with 2 objectives. Pro tier unlocks all 9 objectives, industry benchmarks, War Room action planning, and executive PDF reports."
+        path="/pricing"
+        schemas={[faqSchema]}
+      />
       {/* Navigation */}
       <PublicNav authTo="/dashboard" />
 
@@ -469,27 +516,12 @@ export default function PricingPage() {
           </h2>
 
           <div className="space-y-6">
-            <div className="border-b border-slate-200 pb-6">
-              <h3 className="font-semibold text-slate-800 mb-2">What payment methods do you accept?</h3>
-              <p className="text-slate-600">
-                We accept all major credit cards via Stripe. EU customers can pay in EUR, others pay in USD.
-              </p>
-            </div>
-
-            <div className="border-b border-slate-200 pb-6">
-              <h3 className="font-semibold text-slate-800 mb-2">Can I try before I buy?</h3>
-              <p className="text-slate-600">
-                Yes. The free tier gives you access to 2 objectives so you can experience the diagnostic before upgrading.
-              </p>
-            </div>
-
-            <div className="pb-6">
-              <h3 className="font-semibold text-slate-800 mb-2">What happens to my data if I cancel?</h3>
-              <p className="text-slate-600">
-                Your diagnostic data is retained. You can still view your results but won't be able to access premium features or start new full assessments.
-              </p>
-            </div>
-
+            {FAQ_ITEMS.map((item, i) => (
+              <div key={i} className={i < FAQ_ITEMS.length - 1 ? 'border-b border-slate-200 pb-6' : 'pb-6'}>
+                <h3 className="font-semibold text-slate-800 mb-2">{item.question}</h3>
+                <p className="text-slate-600">{item.answer}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
