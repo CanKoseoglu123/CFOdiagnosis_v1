@@ -58,18 +58,45 @@ export default function ProgressiveWizard({
     }
   }, [isOpen]);
 
-  // Detect landscape on mobile/tablet (< lg breakpoint)
+  // Lock to portrait on mobile/tablet; fallback overlay if lock unsupported (iOS)
   const [isLandscape, setIsLandscape] = useState(false);
+  const [orientationLocked, setOrientationLocked] = useState(false);
   useEffect(() => {
     if (!isOpen) return;
+    const isMobile = window.innerWidth < 1024 || window.innerHeight < 1024;
+    if (!isMobile) return;
+
+    // Try automatic orientation lock (works on Android Chrome)
+    let locked = false;
+    const tryLock = async () => {
+      try {
+        await screen.orientation.lock('portrait');
+        locked = true;
+        setOrientationLocked(true);
+      } catch {
+        // Lock not supported (iOS Safari) — use fallback overlay
+        setOrientationLocked(false);
+      }
+    };
+    tryLock();
+
+    // Fallback: detect landscape for overlay prompt
     const check = () => {
-      const isMobile = window.innerWidth < 1024;
+      if (locked) return;
       const landscape = window.innerWidth > window.innerHeight;
-      setIsLandscape(isMobile && landscape);
+      setIsLandscape(landscape);
     };
     check();
     window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+
+    return () => {
+      window.removeEventListener('resize', check);
+      setIsLandscape(false);
+      if (locked) {
+        try { screen.orientation.unlock(); } catch {}
+        setOrientationLocked(false);
+      }
+    };
   }, [isOpen]);
 
   // Check if there are unsaved changes
@@ -318,8 +345,8 @@ export default function ProgressiveWizard({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 lg:p-4 touch-none">
-      {/* Landscape rotation prompt — covers the wizard on mobile landscape */}
-      {isLandscape && (
+      {/* Landscape rotation prompt — fallback when orientation lock not supported (iOS) */}
+      {isLandscape && !orientationLocked && (
         <div className="absolute inset-0 z-10 bg-slate-900 flex flex-col items-center justify-center text-center px-8">
           <RotateCcw className="w-12 h-12 text-slate-400 mb-4 animate-pulse" />
           <h3 className="text-lg font-semibold text-white mb-2">Rotate to Portrait</h3>
