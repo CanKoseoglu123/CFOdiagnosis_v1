@@ -9,7 +9,7 @@ import matter from 'gray-matter';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BASE_URL = 'https://cfodiagnosisv1.vercel.app';
+const BASE_URL = 'https://cfo-lens.com';
 
 function generateLlmsFull() {
   const projectRoot = path.join(__dirname, '..');

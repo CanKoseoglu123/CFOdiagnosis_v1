@@ -9,7 +9,7 @@ import matter from 'gray-matter';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BASE_URL = 'https://cfodiagnosisv1.vercel.app';
+const BASE_URL = 'https://cfo-lens.com';
 
 // Static pages with their priorities
 const staticPages = [
@@ -19,8 +19,6 @@ const staticPages = [
   { path: '/about', priority: 0.6, changefreq: 'monthly' },
   { path: '/pricing', priority: 0.7, changefreq: 'monthly' },
   { path: '/roadmap', priority: 0.7, changefreq: 'monthly' },
-  { path: '/login', priority: 0.3, changefreq: 'monthly' },
-  { path: '/request-access', priority: 0.5, changefreq: 'monthly' },
 ];
 
 function generateSitemap() {

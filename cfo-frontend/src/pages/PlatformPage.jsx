@@ -35,8 +35,9 @@ export default function PlatformPage() {
   return (
     <div className="min-h-screen bg-white">
       <PageSEO
-        title="Platform"
-        description="One diagnostic methodology for every corner of finance. Context-aware benchmarks, root-cause analysis, and a simulation engine across FP&A, Accounting, Treasury, and beyond."
+        title="FP&A Diagnostic Platform"
+        description="FP&A diagnostic platform with deterministic scoring, context-aware benchmarks, root-cause gap analysis, War Room action planning, and executive PDF reports."
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Platform', path: '/platform' }]}
         path="/platform"
         schemas={[softwareAppSchema]}
       />
@@ -61,10 +62,14 @@ export default function PlatformPage() {
               className="text-4xl sm:text-5xl font-bold mb-6"
               style={{ color: BRAND_COLORS.navy }}
             >
-              One methodology.
-              <br />
-              Every corner of finance.
+              FP&A Diagnostic Platform
             </h1>
+            <p
+              className="text-xl font-medium mb-2"
+              style={{ color: BRAND_COLORS.gold }}
+            >
+              One methodology. Every corner of finance.
+            </p>
             <p className="text-xl text-slate-600 leading-relaxed">
               The same diagnostic rigor consultants use—applied systematically 
               across FP&A, Accounting, Treasury, and beyond. Context-aware benchmarks, 

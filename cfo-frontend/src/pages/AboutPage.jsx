@@ -19,9 +19,10 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       <PageSEO
-        title="About"
+        title="About — Built by Finance Practitioners"
         description="Built by finance practitioners who lived the gap between where FP&A teams are and where they need to be. CFO Lens compresses months of consulting into hours."
         path="/about"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }]}
       />
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* NAVIGATION */}

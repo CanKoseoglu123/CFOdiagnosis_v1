@@ -1,15 +1,15 @@
 # robots.txt for CFO Lens AI
-# https://cfodiagnosisv1.vercel.app
+# https://cfo-lens.com
 
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://cfodiagnosisv1.vercel.app/sitemap.xml
+Sitemap: https://cfo-lens.com/sitemap.xml
 
 # LLM content files
-# https://cfodiagnosisv1.vercel.app/llms.txt
-# https://cfodiagnosisv1.vercel.app/llms-full.txt
+# https://cfo-lens.com/llms.txt
+# https://cfo-lens.com/llms-full.txt
 
 # Disallow admin and authenticated-only pages
 Disallow: /admin

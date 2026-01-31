@@ -6,22 +6,24 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import matter from 'gray-matter';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distDir = path.join(__dirname, '../dist');
 
-const BASE_URL = 'https://cfodiagnosisv1.vercel.app';
+const BASE_URL = 'https://cfo-lens.com';
 const SITE_NAME = 'CFO Lens AI';
-const DEFAULT_IMAGE = `${BASE_URL}/Logo horizontal.png`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-default.png`;
 const LOGO_URL = `${BASE_URL}/Logo horizontal.png`;
 
 // Route-specific meta for each public page
 const routes = [
   {
     path: '/',
-    title: 'FP&A Maturity Diagnostic | CFO Lens AI',
-    description: 'Assess your FP&A function\'s maturity in hours, not months. 97-question diagnostic with industry benchmarks, gap analysis, and actionable transformation roadmaps.',
+    title: 'FP&A Maturity Assessment Tool for CFOs | CFO Lens AI',
+    description: 'Free FP&A maturity assessment for CFOs. 97-question diagnostic with industry benchmarks, gap analysis, and prioritized action plans. Results in one session.',
+    breadcrumbs: [{ name: 'Home', path: '/' }],
     schemas: [
       {
         '@context': 'https://schema.org',
@@ -42,8 +44,9 @@ const routes = [
   },
   {
     path: '/platform',
-    title: 'Platform | CFO Lens AI',
-    description: 'One diagnostic methodology for every corner of finance. Context-aware benchmarks, root-cause analysis, and a simulation engine across FP&A, Accounting, Treasury, and beyond.',
+    title: 'FP&A Diagnostic Platform | CFO Lens AI',
+    description: 'FP&A diagnostic platform with deterministic scoring, context-aware benchmarks, root-cause gap analysis, War Room action planning, and executive PDF reports.',
+    breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'Platform', path: '/platform' }],
     schemas: [
       {
         '@context': 'https://schema.org',
@@ -63,14 +66,16 @@ const routes = [
   },
   {
     path: '/about',
-    title: 'About | CFO Lens AI',
+    title: 'About \u2014 Built by Finance Practitioners | CFO Lens AI',
     description: 'Built by finance practitioners who lived the gap between where FP&A teams are and where they need to be. CFO Lens compresses months of consulting into hours.',
+    breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }],
     schemas: [],
   },
   {
     path: '/pricing',
-    title: 'Pricing | CFO Lens AI',
+    title: 'Pricing \u2014 FP&A Assessment Plans | CFO Lens AI',
     description: 'Free FP&A diagnostic with 2 objectives. Pro tier unlocks all 9 objectives, industry benchmarks, War Room action planning, and executive PDF reports.',
+    breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'Pricing', path: '/pricing' }],
     schemas: [
       {
         '@context': 'https://schema.org',
@@ -112,26 +117,44 @@ const routes = [
   },
   {
     path: '/roadmap',
-    title: 'Roadmap | CFO Lens AI',
+    title: 'Product Roadmap \u2014 Finance Diagnostic Modules | CFO Lens AI',
     description: "Diagnostic intelligence for the entire finance function. See what's live, what's coming next, and join the waitlist.",
+    breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'Roadmap', path: '/roadmap' }],
     schemas: [],
   },
   {
     path: '/blog',
-    title: 'Blog | CFO Lens AI',
+    title: 'FP&A Insights & Best Practices | CFO Lens AI',
     description: 'Insights and best practices for finance leaders. Explore articles on FP&A, forecasting, budgeting, and finance transformation.',
+    breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }],
     schemas: [],
   },
 ];
 
+function buildBreadcrumbSchema(breadcrumbs) {
+  if (!breadcrumbs || breadcrumbs.length === 0) return '';
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: crumb.name,
+      item: `${BASE_URL}${crumb.path}`,
+    })),
+  };
+  return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+}
+
 function injectMeta(html, route) {
   const url = `${BASE_URL}${route.path === '/' ? '' : route.path}`;
 
-  // Build meta tags
   // Build JSON-LD scripts
   const jsonLdScripts = route.schemas.map(schema =>
     `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
   ).join('\n    ');
+
+  const breadcrumbScript = buildBreadcrumbSchema(route.breadcrumbs);
 
   // Remove fallback JSON-LD from template and replace title/description
   let result = html
@@ -146,21 +169,42 @@ function injectMeta(html, route) {
   const injection = `
     <!-- Prerendered meta for ${route.path} -->
     <link rel="canonical" href="${url}" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="${route.ogType || 'website'}" />
     <meta property="og:title" content="${route.title}" />
     <meta property="og:description" content="${route.description}" />
     <meta property="og:url" content="${url}" />
-    <meta property="og:image" content="${DEFAULT_IMAGE}" />
+    <meta property="og:image" content="${route.ogImage || DEFAULT_IMAGE}" />
     <meta property="og:site_name" content="${SITE_NAME}" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@CFO_Diagnostics" />
     <meta name="twitter:title" content="${route.title}" />
     <meta name="twitter:description" content="${route.description}" />
-    <meta name="twitter:image" content="${DEFAULT_IMAGE}" />
+    <meta name="twitter:image" content="${route.ogImage || DEFAULT_IMAGE}" />
     ${jsonLdScripts}
+    ${breadcrumbScript}
   `;
 
   result = result.replace('</head>', `${injection}</head>`);
   return result;
+}
+
+function getBlogPosts() {
+  const blogDir = path.join(__dirname, '../content/blog');
+  const posts = [];
+
+  if (!fs.existsSync(blogDir)) return posts;
+
+  const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.mdx'));
+
+  for (const file of files) {
+    const content = fs.readFileSync(path.join(blogDir, file), 'utf-8');
+    const { data } = matter(content);
+    if (data.slug) {
+      posts.push(data);
+    }
+  }
+
+  return posts;
 }
 
 function prerender() {
@@ -173,6 +217,7 @@ function prerender() {
 
   const template = fs.readFileSync(templatePath, 'utf-8');
 
+  // Prerender static routes
   for (const route of routes) {
     const injected = injectMeta(template, route);
 
@@ -181,14 +226,64 @@ function prerender() {
       fs.writeFileSync(templatePath, injected);
     } else {
       // Create subdirectory with index.html
-      // Strip leading slash to prevent path.join from treating it as absolute
       const routeDir = path.join(distDir, route.path.replace(/^\//, ''));
       fs.mkdirSync(routeDir, { recursive: true });
       fs.writeFileSync(path.join(routeDir, 'index.html'), injected);
     }
   }
 
-  console.log(`\u2713 Prerendered meta tags for ${routes.length} routes`);
+  // Prerender blog posts
+  const blogPosts = getBlogPosts();
+  let blogCount = 0;
+
+  for (const post of blogPosts) {
+    const blogRoute = {
+      path: `/blog/${post.slug}`,
+      title: `${post.title} | ${SITE_NAME}`,
+      description: post.excerpt || '',
+      ogType: 'article',
+      ogImage: post.image ? `${BASE_URL}${post.image}` : DEFAULT_IMAGE,
+      breadcrumbs: [
+        { name: 'Home', path: '/' },
+        { name: 'Blog', path: '/blog' },
+        { name: post.title, path: `/blog/${post.slug}` },
+      ],
+      schemas: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: post.title,
+          description: post.excerpt || '',
+          image: post.image ? `${BASE_URL}${post.image}` : DEFAULT_IMAGE,
+          datePublished: post.date,
+          author: {
+            '@type': 'Organization',
+            name: post.author || SITE_NAME,
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: SITE_NAME,
+            logo: {
+              '@type': 'ImageObject',
+              url: LOGO_URL,
+            },
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${BASE_URL}/blog/${post.slug}`,
+          },
+        },
+      ],
+    };
+
+    const injected = injectMeta(template, blogRoute);
+    const blogDir = path.join(distDir, 'blog', post.slug);
+    fs.mkdirSync(blogDir, { recursive: true });
+    fs.writeFileSync(path.join(blogDir, 'index.html'), injected);
+    blogCount++;
+  }
+
+  console.log(`\u2713 Prerendered meta tags for ${routes.length} routes + ${blogCount} blog posts`);
 }
 
 prerender();

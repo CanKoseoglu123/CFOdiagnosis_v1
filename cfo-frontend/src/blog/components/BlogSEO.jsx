@@ -2,37 +2,37 @@
 // SEO component for blog posts - meta tags, Open Graph, JSON-LD
 
 import { Helmet } from 'react-helmet-async';
+import { BASE_URL, SITE_NAME } from '../../lib/constants';
 
-const BASE_URL = 'https://cfodiagnosisv1.vercel.app';
-const SITE_NAME = 'CFO Lens AI';
 const DEFAULT_IMAGE = '/og-default.png';
 
 export default function BlogSEO({ post, isListPage = false }) {
-  // List page (resources index)
+  // List page (blog index)
   if (isListPage) {
     return (
       <Helmet>
-        <title>Resources | {SITE_NAME}</title>
+        <title>FP&A Insights & Best Practices | {SITE_NAME}</title>
         <meta
           name="description"
           content="Insights and best practices for finance leaders. Explore articles on FP&A, forecasting, budgeting, and finance transformation."
         />
-        <link rel="canonical" href={`${BASE_URL}/resources`} />
+        <link rel="canonical" href={`${BASE_URL}/blog`} />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:title" content={`Resources | ${SITE_NAME}`} />
+        <meta property="og:title" content={`FP&A Insights & Best Practices | ${SITE_NAME}`} />
         <meta
           property="og:description"
           content="Insights and best practices for finance leaders."
         />
-        <meta property="og:url" content={`${BASE_URL}/resources`} />
+        <meta property="og:url" content={`${BASE_URL}/blog`} />
         <meta property="og:site_name" content={SITE_NAME} />
         <meta property="og:image" content={`${BASE_URL}${DEFAULT_IMAGE}`} />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`Resources | ${SITE_NAME}`} />
+        <meta name="twitter:site" content="@CFO_Diagnostics" />
+        <meta name="twitter:title" content={`FP&A Insights & Best Practices | ${SITE_NAME}`} />
         <meta
           name="twitter:description"
           content="Insights and best practices for finance leaders."
@@ -44,7 +44,7 @@ export default function BlogSEO({ post, isListPage = false }) {
 
   // Individual post page
   const { title, excerpt, image, date, author, slug, tags } = post;
-  const url = `${BASE_URL}/resources/${slug}`;
+  const url = `${BASE_URL}/blog/${slug}`;
   const imageUrl = image ? `${BASE_URL}${image}` : `${BASE_URL}${DEFAULT_IMAGE}`;
 
   // JSON-LD structured data for blog post
@@ -94,6 +94,7 @@ export default function BlogSEO({ post, isListPage = false }) {
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@CFO_Diagnostics" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={excerpt} />
       <meta name="twitter:image" content={imageUrl} />
