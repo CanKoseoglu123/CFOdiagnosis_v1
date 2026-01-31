@@ -1,0 +1,190 @@
+# CFO Lens AI — Full Reference
+
+> AI-powered FP&A maturity diagnostic platform that compresses a 6-figure consulting engagement into hours. This is the extended reference for LLMs and AI assistants.
+
+CFO Lens AI is a SaaS platform that helps CFOs and finance leaders assess the maturity of their Financial Planning & Analysis (FP&A) function. It delivers a structured, 97-question diagnostic across 9 strategic objectives grouped into 3 themes, provides maturity scoring with industry benchmarks, and generates prioritized action plans with executive-ready PDF reports.
+
+## Scoring methodology
+
+The scoring engine is fully deterministic. The formula is:
+
+Score = (Impact squared / Complexity) multiplied by CriticalBoost multiplied by CombinedMultiplier
+
+- AI explains results but never changes scores
+- Missing answers receive a score of zero
+- Critical gate failures cap maturity level regardless of raw score
+- P1 blockers prevent "Green" status on any objective
+
+### Maturity levels
+
+| Level | Name | Threshold | Gate requirement |
+|-------|------|-----------|------------------|
+| 1 | Emerging | Below 40% | None |
+| 2 | Defined | 40% or above | Pass Level 1 critical gates |
+| 3 | Managed | 65% or above | Pass Level 1 and Level 2 critical gates |
+| 4 | Optimized | 85% or above | Pass all critical gates |
+
+### Calibration multipliers
+
+| Calibration level | Multiplier |
+|-------------------|------------|
+| 5 Critical | 1.50x |
+| 4 High | 1.25x |
+| 3 Medium | 1.00x |
+| 2 Low | 0.75x |
+| 1 Minimal | 0.50x |
+
+Context modifier (pain points): 1.0x base, multiplied by 1.5 per match, capped at 2.0x.
+Combined multiplier cap: minimum of 2.0 and (ImportanceFactor multiplied by ContextModifier).
+
+## Diagnostic structure
+
+### The Foundation
+
+Control & Trust: Establishing the accuracy, governance, and discipline required to trust the numbers.
+
+
+#### Budget Discipline
+
+Establish a baseline of financial accountability.
+
+Practices:
+  - Annual Budget Cycle (Process)
+  - Budget Ownership (People, Process)
+  - Policy & Governance (Process)
+
+
+#### Financial Controls
+
+Ensure analytical integrity through model governance and assumption management.
+
+Practices:
+  - Chart of Accounts (Data, Process)
+  - Approval Workflows (Process, Technology)
+  - Month-End Rigor (Process)
+
+
+#### Performance Monitoring
+
+Create feedback loops to track actuals against the plan.
+
+Practices:
+  - Management Reporting (Process, Data)
+  - Budget vs Actuals (Process, Data)
+  - Variance Investigation (Process, People)
+
+
+### The Future
+
+Speed & Agility: Moving beyond static backward-looking reporting to dynamic forward-looking guidance.
+
+
+#### Forecasting Agility
+
+Update the financial outlook frequently and efficiently.
+
+Practices:
+  - Rolling Forecast Cadence (Process)
+  - Cash Flow Visibility (Data, Process)
+  - Collaborative Systems (Technology, People)
+
+
+#### Driver-Based Planning
+
+Link financial outcomes to operational inputs.
+
+Practices:
+  - Operational Drivers (Data, People)
+  - Dynamic Targets (Process, Data)
+
+
+#### Scenario Modeling
+
+Enable confident decision-making when conditions deviate from plan.
+
+Practices:
+  - Rapid 'What-If' Capability (Technology, Process)
+  - Multi-Scenario Management (Process, Technology)
+  - Stress Testing (Process, Risk)
+
+
+### The Intelligence
+
+Value & Influence: Driving strategic decisions through predictive insights and business partnership.
+
+
+#### Strategic Influence
+
+Proactively shape commercial decisions through financial insight.
+
+Practices:
+  - Commercial Partnership (People, Culture)
+  - Strategic Alignment (Process, People)
+  - Board-Level Impact (People, Communication)
+  - Investment Rigor (Process, Governance)
+
+
+#### Decision Support
+
+Deliver accessible, actionable financial insights to decision-makers.
+
+Practices:
+  - Data Visualization (Technology, Communication)
+  - Self-Service Analytics (Technology, Culture)
+  - Predictive Analytics (Technology, Data)
+
+
+#### Operational Excellence
+
+Run the finance function with maximum efficiency.
+
+Practices:
+  - Process Automation (Technology, Process)
+  - Service Level Agreements (Process, Governance)
+
+
+## User journey
+
+1. **Company profiling** — Industry, size, complexity factors establish the benchmark context
+2. **Persona classification** — Identifies CFO archetype (e.g., Steward, Strategist, Catalyst, Operator) for context-aware target setting
+3. **97-question diagnostic** — Binary yes/no questions across 9 objectives, organized by theme
+4. **Calibration** — Adjusts maturity targets based on industry, company size, and transformation ambition
+5. **Maturity results** — Scores per objective, gap analysis, critical gate status, benchmark comparison
+6. **War Room** — Interactive action planning that converts diagnostic insights into a prioritized transformation roadmap
+7. **Executive PDF report** — Board-ready document with scores, gaps, recommendations, and initiative groupings
+
+## Frequently asked questions
+
+**What is an FP&A maturity assessment?**
+An FP&A maturity assessment evaluates how advanced your Financial Planning and Analysis function is across key capabilities like budgeting, forecasting, scenario modeling, and strategic influence. It identifies gaps between current state and best practice, providing a roadmap for improvement.
+
+**How long does the diagnostic take?**
+Most CFOs complete the full 97-question diagnostic in 60 to 90 minutes. The questions are binary (yes/no) and organized by objective, so progress is steady and transparent.
+
+**How is this different from hiring a consultant?**
+A traditional FP&A maturity assessment by a consulting firm costs six figures and takes months. CFO Lens delivers comparable diagnostic depth in hours at a fraction of the cost, using a deterministic scoring engine calibrated to your industry, size, and persona.
+
+**What payment methods do you accept?**
+All major credit cards via Stripe. EU customers can pay in EUR, others pay in USD.
+
+**Can I try before I buy?**
+Yes. The free tier gives you access to 2 objectives so you can experience the diagnostic before upgrading.
+
+**What happens to my data if I cancel?**
+Your diagnostic data is retained. You can still view your results but will not be able to access premium features or start new full assessments.
+
+## Blog posts
+
+- [The Variance Explanation That Explains Nothing](https://cfodiagnosisv1.vercel.app/blog/variance-explanation-explains-nothing): Your team sends variance reports every month. The commentary says 'timing.' You nod and move on. But here's the question: do you actually know what's happening in your business?
+- [Finance Stopped Saying No](https://cfodiagnosisv1.vercel.app/blog/finance-stopped-saying-no): You have a seat at the table. You're consulted on major decisions. But when was the last time Finance actually killed a deal? If you can't remember, you're not a strategic partner. You're a rubber stamp.
+- [You Don't Have a Budget. You Have a Wishlist.](https://cfodiagnosisv1.vercel.app/blog/you-dont-have-a-budget): Every company has a budget document. But when budget owners overspend, they say 'Finance gave me that number.' That's not a budget—that's a wishlist with a spreadsheet attached.
+- [Your Rolling Forecast Doesn't Roll](https://cfodiagnosisv1.vercel.app/blog/your-rolling-forecast-doesnt-roll): Most finance teams say they do rolling forecasts. But when the board asks what next year looks like, they can't answer. That's not rolling—that's a forecast that shrinks as the year goes on.
+
+## Pages
+
+- [Home](https://cfodiagnosisv1.vercel.app/): Landing page with platform overview
+- [Platform](https://cfodiagnosisv1.vercel.app/platform): Feature details and methodology
+- [About](https://cfodiagnosisv1.vercel.app/about): Team and mission
+- [Pricing](https://cfodiagnosisv1.vercel.app/pricing): Free tier (2 objectives) and Pro tier (all 9 objectives)
+- [Blog](https://cfodiagnosisv1.vercel.app/blog): Insights for finance leaders
+- [LLM summary](https://cfodiagnosisv1.vercel.app/llms.txt): Concise version of this document

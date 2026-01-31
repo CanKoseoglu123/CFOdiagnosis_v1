@@ -11,12 +11,18 @@ import {
   Zap,
   Target,
 } from 'lucide-react';
+import PageSEO from '../components/PageSEO';
 
 export default function AboutPage() {
   const { isAuthenticated, user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-white">
+      <PageSEO
+        title="About"
+        description="Built by finance practitioners who lived the gap between where FP&A teams are and where they need to be. CFO Lens compresses months of consulting into hours."
+        path="/about"
+      />
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* NAVIGATION */}
       {/* ─────────────────────────────────────────────────────────────────── */}

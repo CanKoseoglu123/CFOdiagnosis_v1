@@ -12,12 +12,34 @@ import {
   Swords,
   ChevronRight,
 } from 'lucide-react';
+import PageSEO from '../components/PageSEO';
+
+const softwareAppSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'CFO Lens AI',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  description: 'AI-powered FP&A maturity diagnostic platform with 97-question assessment, industry benchmarks, and executive reporting.',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+    description: 'Free tier with 2 objectives. Pro tier unlocks all 9 objectives.',
+  },
+};
 
 export default function PlatformPage() {
   const { isAuthenticated, user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-white">
+      <PageSEO
+        title="Platform"
+        description="One diagnostic methodology for every corner of finance. Context-aware benchmarks, root-cause analysis, and a simulation engine across FP&A, Accounting, Treasury, and beyond."
+        path="/platform"
+        schemas={[softwareAppSchema]}
+      />
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* NAVIGATION */}
       {/* ─────────────────────────────────────────────────────────────────── */}
