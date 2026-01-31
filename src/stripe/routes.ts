@@ -169,10 +169,6 @@ router.post('/checkout', async (req: Request, res: Response) => {
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_update: {
-        name: 'auto',
-        address: 'auto',
-      },
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
@@ -202,9 +198,10 @@ router.post('/checkout', async (req: Request, res: Response) => {
       url: session.url,
       sessionId: session.id
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error creating checkout session:', err);
-    return res.status(500).json({ error: 'Failed to create checkout session' });
+    const detail = err?.message || err?.raw?.message || 'Unknown error';
+    return res.status(500).json({ error: `Failed to create checkout session: ${detail}` });
   }
 });
 
