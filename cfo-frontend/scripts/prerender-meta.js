@@ -175,7 +175,8 @@ function prerender() {
       fs.writeFileSync(templatePath, injected);
     } else {
       // Create subdirectory with index.html
-      const routeDir = path.join(distDir, route.path);
+      // Strip leading slash to prevent path.join from treating it as absolute
+      const routeDir = path.join(distDir, route.path.replace(/^\//, ''));
       fs.mkdirSync(routeDir, { recursive: true });
       fs.writeFileSync(path.join(routeDir, 'index.html'), injected);
     }
