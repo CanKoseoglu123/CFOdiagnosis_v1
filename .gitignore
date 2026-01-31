@@ -34,3 +34,5 @@ npm-debug.log*
 coverage/
 tmpclaude-*-cwd
 cfo-frontend/tmpclaude-*-cwd
+.vercel
+.env*.local

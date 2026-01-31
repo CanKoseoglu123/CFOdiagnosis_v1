@@ -269,8 +269,8 @@ router.get('/prices', async (req: Request, res: Response) => {
       currency,
       countryCode,
       annual: {
-        amount: currency === 'eur' ? 299 : 299,
-        formatted: currency === 'eur' ? '€299' : '$299',
+        amount: currency === 'eur' ? 299 : 349,
+        formatted: currency === 'eur' ? '€299' : '$349',
         interval: 'year',
         priceId: getPriceId(countryCode)
       }
