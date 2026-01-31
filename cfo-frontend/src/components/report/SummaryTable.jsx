@@ -93,9 +93,9 @@ function StatusBadge({ score }) {
 
 export default function SummaryTable({ objectives }) {
   return (
-    <div className="bg-white rounded border border-slate-300">
+    <div className="bg-white rounded border border-slate-300 overflow-x-auto">
       {/* Table with headers */}
-      <table className="w-full text-sm">
+      <table className="w-full text-sm min-w-[540px]">
         <thead>
           <tr className="bg-slate-100 border-b border-slate-300">
             <th className="text-left px-4 py-2 font-semibold text-slate-700">Objective</th>

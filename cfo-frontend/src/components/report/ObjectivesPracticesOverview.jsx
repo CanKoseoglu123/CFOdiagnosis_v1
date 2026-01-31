@@ -214,7 +214,7 @@ export default function ObjectivesPracticesOverview({ levels, objectiveScores = 
       </div>
 
       {/* Grid container */}
-      <div className="p-2">
+      <div className="p-2 overflow-x-auto">
         <div className="flex gap-1.5">
           {/* Objective columns */}
           {OBJECTIVES.map(objective => (

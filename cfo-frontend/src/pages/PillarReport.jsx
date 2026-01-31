@@ -508,7 +508,7 @@ export default function PillarReport() {
           {/* ─────────────────────────────────────────────────────────────── */}
           {/* KPI TILES (relocated from header) */}
           {/* ─────────────────────────────────────────────────────────────── */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* Execution Score */}
             <div className="text-center p-2 bg-white rounded border border-slate-200">
               <div className="text-2xl font-bold text-slate-800">
@@ -553,11 +553,11 @@ export default function PillarReport() {
           {/* ─────────────────────────────────────────────────────────────── */}
           {/* NAVIGATION TABS (secondary navigation, in body) */}
           {/* ─────────────────────────────────────────────────────────────── */}
-          <div className="flex gap-6 border-b border-slate-200">
+          <div className="flex gap-6 border-b border-slate-200 overflow-x-auto" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
             <button
               onClick={() => isFinalized && setActiveTab('executive')}
               disabled={!isFinalized}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
                 activeTab === 'executive'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : !isFinalized
@@ -571,7 +571,7 @@ export default function PillarReport() {
             </button>
             <button
               onClick={() => setActiveTab('overview')}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
                 activeTab === 'overview'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-slate-500 hover:text-slate-700'
@@ -581,7 +581,7 @@ export default function PillarReport() {
             </button>
             <button
               onClick={() => setActiveTab('benchmark')}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
                 activeTab === 'benchmark'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-slate-500 hover:text-slate-700'
@@ -591,7 +591,7 @@ export default function PillarReport() {
             </button>
             <button
               onClick={() => setActiveTab('footprint')}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
                 activeTab === 'footprint'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-slate-500 hover:text-slate-700'
@@ -601,7 +601,7 @@ export default function PillarReport() {
             </button>
             <button
               onClick={() => setActiveTab('actions')}
-              className={`pb-3 pt-1 text-sm font-semibold transition-colors ${
+              className={`pb-3 pt-1 text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
                 activeTab === 'actions'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-slate-500 hover:text-slate-700'

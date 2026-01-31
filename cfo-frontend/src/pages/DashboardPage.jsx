@@ -305,16 +305,16 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-slate-50">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <Link to="/" className="shrink-0">
               <Logo size="sm" />
             </Link>
-            <div className="h-6 w-px bg-slate-200" />
-            <h1 className="text-lg font-semibold text-slate-900">My Assessments</h1>
+            <div className="hidden sm:block h-6 w-px bg-slate-200" />
+            <h1 className="text-base sm:text-lg font-semibold text-slate-900 truncate">My Assessments</h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <SubscriptionBadge />
             <span className="text-sm text-slate-500 hidden sm:block">{user?.email}</span>
             <button
@@ -328,7 +328,7 @@ export default function DashboardPage() {
       </nav>
 
       {/* Main content */}
-      <main className="pt-24 pb-12 px-6">
+      <main className="pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           {/* Header with actions */}
           <div className="flex items-center justify-between mb-8">

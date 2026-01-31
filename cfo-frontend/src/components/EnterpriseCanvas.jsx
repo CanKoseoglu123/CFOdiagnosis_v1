@@ -24,7 +24,7 @@ export default function EnterpriseCanvas({
   const widthClass = mode === 'report' ? 'max-w-7xl' : 'max-w-6xl';
 
   return (
-    <div className={`mx-auto px-6 ${widthClass} ${className}`.trim()}>
+    <div className={`mx-auto px-4 sm:px-6 ${widthClass} ${className}`.trim()}>
       {children}
     </div>
   );

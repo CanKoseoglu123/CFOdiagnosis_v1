@@ -119,15 +119,15 @@ export default function IntroPage() {
 
         {/* ROW 1: Journey Timeline */}
         <section className="mb-6">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {JOURNEY_STEPS.map((step, idx) => (
               <div
                 key={step.step}
                 className="relative bg-white border border-slate-300 rounded-sm p-4"
               >
-                {/* Connector arrow (except last) */}
+                {/* Connector arrow (except last, hidden on mobile 2-col) */}
                 {idx < JOURNEY_STEPS.length - 1 && (
-                  <div className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 text-slate-300">
+                  <div className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 text-slate-300 hidden sm:block">
                     <ArrowRight className="w-4 h-4" />
                   </div>
                 )}
@@ -147,7 +147,7 @@ export default function IntroPage() {
 
         {/* ROW 2: Value Propositions */}
         <section className="mb-6">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {VALUE_PROPS.map((prop) => {
               const Icon = prop.icon;
               return (
@@ -170,7 +170,7 @@ export default function IntroPage() {
 
         {/* ROW 3: What We Measure + Golden Rule (2-column) */}
         <section className="mb-6">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
             {/* Left: What We Measure */}
             <div className="bg-white border border-slate-300 rounded-sm p-4">
@@ -241,17 +241,17 @@ export default function IntroPage() {
 
         {/* ROW 4: CTA */}
         <section className="pt-2 border-t border-slate-300 mt-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <button
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-slate-500 px-4 py-2.5 text-sm font-medium hover:text-slate-600 hover:bg-slate-200 transition-colors rounded-sm border border-slate-200"
+              className="flex items-center justify-center gap-2 text-slate-500 px-4 py-2.5 text-sm font-medium hover:text-slate-600 hover:bg-slate-200 transition-colors rounded-sm border border-slate-200"
             >
               <LogOut className="w-4 h-4" />
               Save & Exit
             </button>
             <button
               onClick={handleBeginAssessment}
-              className="flex items-center gap-2 bg-[#1a365d] text-white px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition-colors rounded-sm"
+              className="flex items-center justify-center gap-2 bg-[#1a365d] text-white px-6 py-2.5 text-sm font-semibold hover:opacity-90 transition-colors rounded-sm"
             >
               Begin Assessment
               <ArrowRight className="w-4 h-4" />

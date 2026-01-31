@@ -90,7 +90,7 @@ export default function PriorityMatrix({
       </div>
 
       {/* Matrix Grid */}
-      <div className="p-3">
+      <div className="p-3 overflow-x-auto">
         <MatrixGrid columns={columns} gridData={gridData} />
       </div>
 

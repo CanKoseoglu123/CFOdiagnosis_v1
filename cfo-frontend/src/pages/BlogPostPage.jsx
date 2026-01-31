@@ -5,6 +5,7 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Logo, BRAND_COLORS } from '../components/Logo';
+import PublicNav from '../components/PublicNav';
 import BlogSEO from '../blog/components/BlogSEO';
 import { MDXComponents } from '../blog/components/MDXComponents';
 import { getPostBySlug, getLatestPosts } from '../blog';
@@ -52,89 +53,7 @@ export default function BlogPostPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* NAVIGATION */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Left side: Logo + Nav Links */}
-          <div className="flex items-center">
-            <Link to="/">
-              <Logo size="sm" />
-            </Link>
-
-            {/* Divider */}
-            <div className="hidden sm:block h-6 w-px bg-slate-200 mx-6" />
-
-            {/* Nav Links */}
-            <div className="hidden sm:flex items-center gap-1">
-              <Link
-                to="/platform"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Platform
-              </Link>
-              <Link
-                to="/blog"
-                className="px-3 py-2 text-sm font-medium transition-colors"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                Blog
-              </Link>
-              <Link
-                to="/about"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                About
-              </Link>
-              <Link
-                to="/pricing"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Pricing
-              </Link>
-            </div>
-          </div>
-
-          {/* Right side: Auth */}
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <div className="hidden sm:flex flex-col items-end mr-2">
-                  <span className="text-sm font-medium text-slate-700">Welcome back</span>
-                  <span className="text-xs text-slate-500">{user?.email}</span>
-                </div>
-                <Link
-                  to="/"
-                  className="px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={signOut}
-                  className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/login"
-                  className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Get Started Free
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <PublicNav ctaLabel="Get Started Free" />
 
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* HERO SECTION - Gradient with decorative elements */}
