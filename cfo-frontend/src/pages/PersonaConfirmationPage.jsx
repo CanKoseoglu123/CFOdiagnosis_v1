@@ -281,15 +281,25 @@ export default function PersonaConfirmationPage() {
     );
   }
 
+  const mobileHeader = (
+    <div className="flex items-center gap-3 text-white text-sm min-w-0">
+      <span className="font-medium truncate">Setup · Persona</span>
+      <span className="text-xs text-slate-400 shrink-0">2/3</span>
+    </div>
+  );
+
   return (
-    <AppShell sidebarContent={
-      <WorkflowSidebar
-        currentStep="setup"
-        completedSteps={[]}
-        runId={runId}
-        isFinalized={false}
-      />
-    }>
+    <AppShell
+      sidebarContent={
+        <WorkflowSidebar
+          currentStep="setup"
+          completedSteps={[]}
+          runId={runId}
+          isFinalized={false}
+        />
+      }
+      mobileHeaderContent={mobileHeader}
+    >
       <div className="min-h-screen bg-gray-50">
         <SetupHelpModal
           title="Your Finance Persona"

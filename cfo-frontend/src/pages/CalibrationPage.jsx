@@ -574,7 +574,15 @@ export default function CalibrationPage() {
         <CalibrationIntroModal onClose={() => setShowIntroModal(false)} />
       )}
 
-      <AppShell sidebarContent={sidebar}>
+      <AppShell
+        sidebarContent={sidebar}
+        mobileHeaderContent={
+          <div className="flex items-center gap-3 text-white text-sm min-w-0">
+            <span className="font-medium truncate">Calibration</span>
+            <span className="text-xs text-slate-400 shrink-0">{selectedCount}/{totalObjectives} rated</span>
+          </div>
+        }
+      >
         <EnterpriseCanvas mode="assessment" className="py-8">
           <h1 className="text-2xl font-bold text-navy mb-2">
             Calibrate Priorities

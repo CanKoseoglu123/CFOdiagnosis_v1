@@ -13,6 +13,7 @@ import './AppShell.css';
 export default function AppShell({
   sidebarContent,    // Page-specific sidebar content
   mobileBottomNav,   // Optional mobile bottom navigation
+  mobileHeaderContent, // Optional — replaces "CFO Diagnostic" text on mobile
   children
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -75,7 +76,9 @@ export default function AppShell({
 
       {/* Mobile Header - hidden on desktop */}
       <header className="app-mobile-header">
-        <div className="mobile-logo">CFO Diagnostic</div>
+        <div className="mobile-header-content">
+          {mobileHeaderContent || <span className="mobile-logo">CFO Diagnostic</span>}
+        </div>
         <button
           className="mobile-menu-button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

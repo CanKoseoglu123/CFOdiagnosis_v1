@@ -461,7 +461,16 @@ export default function PillarReport() {
     : null;
 
   return (
-    <AppShell sidebarContent={sidebarContent}>
+    <AppShell
+      sidebarContent={sidebarContent}
+      mobileHeaderContent={
+        <div className="flex items-center gap-3 text-white text-sm min-w-0">
+          <span className="font-medium truncate">
+            Report · {{ overview: 'Overview', benchmark: 'Benchmark', footprint: 'Maturity', actions: 'Actions', executive: 'Executive' }[activeTab] || 'Overview'}
+          </span>
+        </div>
+      }
+    >
       <div className="min-h-screen bg-slate-100">
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* CHAPTER HEADER */}

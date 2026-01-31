@@ -648,8 +648,25 @@ export default function AssessObjectivePage() {
     </>
   );
 
+  // Mobile header: objective name + overall progress
+  const pct = overallProgress.total > 0
+    ? Math.round((overallProgress.answered / overallProgress.total) * 100)
+    : 0;
+
+  const mobileHeader = (
+    <div className="flex items-center gap-3 text-white text-sm min-w-0">
+      <span className="font-medium truncate">{objectiveMeta?.title || objectiveId}</span>
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="w-16 h-1.5 bg-white/20 rounded-full overflow-hidden">
+          <div className="h-full bg-white/80 rounded-full" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="text-xs text-slate-400">{overallProgress.answered}/{overallProgress.total}</span>
+      </div>
+    </div>
+  );
+
   return (
-    <AppShell sidebarContent={sidebarContent} mobileBottomNav={mobileBottomNav}>
+    <AppShell sidebarContent={sidebarContent} mobileBottomNav={mobileBottomNav} mobileHeaderContent={mobileHeader}>
       <div className="min-h-screen bg-slate-50">
         {/* Intro Modal */}
         {showIntroModal && (

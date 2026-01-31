@@ -450,16 +450,26 @@ export default function CompanySetupPage() {
     );
   }
 
+  const mobileHeader = (
+    <div className="flex items-center gap-3 text-white text-sm min-w-0">
+      <span className="font-medium truncate">Setup · Company</span>
+      <span className="text-xs text-slate-400 shrink-0">1/3</span>
+    </div>
+  );
+
   return (
-    <AppShell sidebarContent={
-      <WorkflowSidebar
-        currentStep="setup"
-        completedSteps={[]}
-        runId={runId}
-        isFinalized={false}
-        reachableSteps={isReviewMode ? ['assess'] : []}
-      />
-    }>
+    <AppShell
+      sidebarContent={
+        <WorkflowSidebar
+          currentStep="setup"
+          completedSteps={[]}
+          runId={runId}
+          isFinalized={false}
+          reachableSteps={isReviewMode ? ['assess'] : []}
+        />
+      }
+      mobileHeaderContent={mobileHeader}
+    >
       <SetupHelpModal
         title="Understanding Your Organization"
         mainText="We're building a profile of your organization to calibrate your diagnostic. Tell us about your company's size, structure, and current business dynamics."

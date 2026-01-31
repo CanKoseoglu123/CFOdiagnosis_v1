@@ -609,16 +609,26 @@ export default function PillarSetupPage() {
     );
   }
 
+  const mobileHeader = (
+    <div className="flex items-center gap-3 text-white text-sm min-w-0">
+      <span className="font-medium truncate">Setup · FP&A Context</span>
+      <span className="text-xs text-slate-400 shrink-0">3/3</span>
+    </div>
+  );
+
   return (
-    <AppShell sidebarContent={
-      <WorkflowSidebar
-        currentStep="setup"
-        completedSteps={[]}
-        runId={runId}
-        isFinalized={false}
-        reachableSteps={isReviewMode ? ['assess'] : []}
-      />
-    }>
+    <AppShell
+      sidebarContent={
+        <WorkflowSidebar
+          currentStep="setup"
+          completedSteps={[]}
+          runId={runId}
+          isFinalized={false}
+          reachableSteps={isReviewMode ? ['assess'] : []}
+        />
+      }
+      mobileHeaderContent={mobileHeader}
+    >
       <SetupHelpModal
         title="Your FP&A Environment"
         mainText="Tell us about your FP&A function—the tools you use, your team structure, and the challenges you face today. Be honest about your current state. This isn't a test. Select pain points that genuinely resonate, not aspirational ones."
