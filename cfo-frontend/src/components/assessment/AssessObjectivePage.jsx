@@ -101,9 +101,8 @@ function isElementVisible(el) {
   if (!el) return false;
   const rect = el.getBoundingClientRect();
   const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  // Element is "visible" only if it's well within the viewport
-  // Use 200px cushion to trigger scroll more readily
-  return rect.top < windowHeight - 200 && rect.bottom > 200;
+  // Element is "visible" if it's reasonably within the viewport
+  return rect.top < windowHeight - 100 && rect.bottom > 100;
 }
 
 export default function AssessObjectivePage() {
@@ -468,13 +467,20 @@ export default function AssessObjectivePage() {
       );
 
       if (nextUnanswered && questionRefs.current[nextUnanswered.id]) {
-        // Small delay for visual feedback before scrolling
+        // Gentle nudge scroll — only scroll when card is in lower 40% of viewport
         setTimeout(() => {
-          questionRefs.current[nextUnanswered.id].scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 150);
+          const el = questionRefs.current[nextUnanswered.id];
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          const viewH = window.innerHeight;
+          const triggerLine = viewH * 0.6;
+          if (rect.top > triggerLine) {
+            // Place card ~30% from top, leaving room for sticky header
+            const desired = viewH * 0.3;
+            const nudge = rect.top - desired;
+            window.scrollBy({ top: nudge, behavior: 'smooth' });
+          }
+        }, 200);
       }
     }
   }
