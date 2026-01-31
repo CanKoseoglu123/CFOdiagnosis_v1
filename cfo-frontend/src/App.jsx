@@ -1,8 +1,8 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
-import { lazy, Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { SubscriptionProvider } from './context/SubscriptionContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -75,27 +75,12 @@ function VisitorTracker() {
   return null
 }
 
-// Scroll to top on forward navigation (PUSH/REPLACE), preserve scroll on back/forward (POP)
-function ScrollToTop() {
-  const { pathname } = useLocation()
-  const navType = useNavigationType()
-
-  useEffect(() => {
-    if (navType !== 'POP') {
-      window.scrollTo(0, 0)
-    }
-  }, [pathname, navType])
-
-  return null
-}
-
 export default function App() {
   return (
     <AuthProvider>
       <SubscriptionProvider>
         <BrowserRouter>
           <VisitorTracker />
-          <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<LandingPage />} />

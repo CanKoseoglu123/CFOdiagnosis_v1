@@ -10,16 +10,9 @@ CREATE TABLE IF NOT EXISTS roadmap_waitlist (
 -- Enable RLS
 ALTER TABLE roadmap_waitlist ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous inserts (public waitlist form)
-CREATE POLICY "Anyone can join waitlist"
-  ON roadmap_waitlist
-  FOR INSERT
-  TO anon, authenticated
-  WITH CHECK (true);
-
+-- No INSERT policy — all writes go through the SECURITY DEFINER function below.
 -- SELECT restricted to service_role only (admin via dashboard or backend with service key).
 -- No RLS policy needed for service_role as it bypasses RLS by default.
--- No UPDATE policy — upsert handled via SECURITY DEFINER function below.
 
 -- Secure upsert function: inserts or updates interested_modules on email conflict.
 -- SECURITY DEFINER runs with the function owner's privileges, bypassing RLS.
@@ -33,6 +26,15 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  -- Validate email: non-empty, basic format, RFC 5321 max length
+  IF p_email IS NULL OR length(trim(p_email)) = 0 THEN
+    RAISE EXCEPTION 'Invalid email';
+  END IF;
+
+  IF length(p_email) > 320 OR p_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' THEN
+    RAISE EXCEPTION 'Invalid email';
+  END IF;
+
   INSERT INTO roadmap_waitlist (email, interested_modules)
   VALUES (p_email, p_modules)
   ON CONFLICT (email)

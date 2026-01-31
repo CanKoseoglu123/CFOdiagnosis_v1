@@ -272,7 +272,7 @@ export default function RoadmapPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Honeypot - hidden from real users */}
-                <div className="absolute" style={{ left: '-9999px', opacity: 0 }} aria-hidden="true">
+                <div style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }} aria-hidden="true">
                   <label htmlFor="website">Website</label>
                   <input
                     type="text"

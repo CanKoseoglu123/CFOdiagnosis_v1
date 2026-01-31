@@ -111,6 +111,12 @@ const routes = [
     ],
   },
   {
+    path: '/roadmap',
+    title: 'Roadmap | CFO Lens AI',
+    description: "Diagnostic intelligence for the entire finance function. See what's live, what's coming next, and join the waitlist.",
+    schemas: [],
+  },
+  {
     path: '/blog',
     title: 'Blog | CFO Lens AI',
     description: 'Insights and best practices for finance leaders. Explore articles on FP&A, forecasting, budgeting, and finance transformation.',
