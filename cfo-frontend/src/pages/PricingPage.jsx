@@ -300,11 +300,15 @@ export default function PricingPage() {
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">2 objectives</span>
+                <span className="text-slate-700">2 objectives (assessment only)</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Industry & size benchmarks</span>
+                <span className="text-slate-400">Diagnostic report & maturity scoring</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
+                <span className="text-slate-400">Benchmarks tailored to your company profile</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
@@ -369,7 +373,11 @@ export default function PricingPage() {
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">Industry & size benchmarks</span>
+                <span className="text-slate-700">Diagnostic report & maturity scoring</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
+                <span className="text-slate-700">Benchmarks tailored to your company profile</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
@@ -444,9 +452,9 @@ export default function PricingPage() {
               >
                 <BarChart3 className="w-6 h-6" style={{ color: BRAND_COLORS.navy }} />
               </div>
-              <h3 className="font-semibold text-slate-800 mb-2">Industry Benchmarks</h3>
+              <h3 className="font-semibold text-slate-800 mb-2">Company-Tailored Benchmarks</h3>
               <p className="text-slate-600 text-sm">
-                See how your FP&A function compares to peers in your industry and company size.
+                See how your FP&A function compares to targets calibrated for your industry, size, and persona.
               </p>
             </div>
 
