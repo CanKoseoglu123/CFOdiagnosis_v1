@@ -6,46 +6,21 @@
  */
 
 import { Router, Request } from 'express';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { orchestrate } from './orchestrator';
 import { computeInputHash } from './precompute';
+import { getServiceClient } from '../../lib/supabase';
 
 const router = Router();
-
-// Lazy-initialized service client (avoids crash at module load if env vars missing)
-let _serviceClient: SupabaseClient | null = null;
-
-function getServiceClient(): SupabaseClient {
-  if (!_serviceClient) {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY for interpretation service');
-    }
-
-    // Warn if service role key is not configured (interpretation will fail with RLS)
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.warn('WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Interpretation writes may fail due to RLS.');
-    }
-
-    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-  }
-  return _serviceClient;
-}
 
 /**
  * POST /diagnostic-runs/:id/interpret
  * Start or regenerate interpretation
  */
 router.post('/:id/interpret-v32', async (req: Request, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
   const { id: runId } = req.params;
-  const userClient = req.supabase; // Authenticated client from middleware
 
   try {
     // Check for existing in-progress generation (use service client for reports table)
@@ -180,6 +155,9 @@ async function generateAsync(runId: string, reportId: string) {
  * Get interpretation status and report
  */
 router.get('/:id/interpret-v32/status', async (req: Request, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
   const { id: runId } = req.params;
 
   try {

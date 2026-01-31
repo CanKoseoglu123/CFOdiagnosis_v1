@@ -51,6 +51,19 @@ export const InterpretationInputSchema = z.object({
   })),
 
   evidence_ids: z.array(z.string()).min(1),
+
+  // VS-38: Enriched context for deeper AI analysis
+  pain_points: z.array(z.string()).optional(),
+  weak_practices: z.array(z.object({
+    objective_name: z.string(),
+    practice_name: z.string(),
+    evidence_state: z.enum(['proven', 'partial', 'not_proven']),
+  })).optional(),
+  persona_targets: z.array(z.object({
+    objective_name: z.string(),
+    current_score: z.number(),
+    target_level: z.number(),
+  })).optional(),
 });
 
 export type InterpretationInput = z.infer<typeof InterpretationInputSchema>;

@@ -491,11 +491,15 @@ export function buildSpecFromContent(): Spec {
 }
 
 /**
- * Build spec with themes for API responses
+ * Build spec with themes for API responses (cached after first call)
  */
+let _specWithThemes: ReturnType<typeof buildSpecFromContent> & { themes: typeof THEMES } | null = null;
 export function buildSpecWithThemes() {
-  return {
-    ...buildSpecFromContent(),
-    themes: THEMES
-  };
+  if (!_specWithThemes) {
+    _specWithThemes = {
+      ...buildSpecFromContent(),
+      themes: THEMES
+    };
+  }
+  return _specWithThemes;
 }

@@ -8,19 +8,21 @@
 import { Request, Response, Router } from 'express';
 import Stripe from 'stripe';
 import { stripe } from './client';
-import { createClient } from '@supabase/supabase-js';
+import { getServiceClient } from '../lib/supabase';
 
 const router = Router();
 
 // Service role client for webhook updates (bypasses RLS)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Returns null if env vars not configured (Stripe disabled)
+function getAdmin() {
+  try {
+    return getServiceClient();
+  } catch {
+    return null;
+  }
+}
 
-const supabaseAdmin = supabaseUrl && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
-  : null;
+const supabaseAdmin = getAdmin();
 
 /**
  * Check if event has already been processed (idempotency)
