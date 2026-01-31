@@ -67,6 +67,18 @@ const faqSchema = {
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
 
+// Shared feature list for Free/Pro tier cards.
+// `free`: label shown in free tier (null = use `pro` label), `included`: whether free tier has it.
+const TIER_FEATURES = [
+  { free: '2 objectives (assessment only)', pro: 'All 9 objectives', included: true },
+  { pro: 'Diagnostic report & maturity scoring', included: false },
+  { pro: 'Benchmarks tailored to your company profile', included: false },
+  { pro: 'PDF executive report', included: false },
+  { pro: 'War Room action planning', included: false },
+  { pro: 'AI-powered recommendations', included: false },
+  { pro: 'Unlimited reassessments for one year', included: false },
+];
+
 // Helper: find or create a diagnostic run, then return its ID
 async function findOrCreateRun() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -298,34 +310,16 @@ export default function PricingPage() {
             </p>
 
             <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-700">2 objectives (assessment only)</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Diagnostic report & maturity scoring</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Benchmarks tailored to your company profile</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">PDF executive report</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">War Room action planning</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">AI-powered recommendations</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">Unlimited reassessments for one year</span>
-              </li>
+              {TIER_FEATURES.map((f, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  {f.included
+                    ? <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    : <X className="w-5 h-5 text-slate-300 mt-0.5 flex-shrink-0" />}
+                  <span className={f.included ? 'text-slate-700' : 'text-slate-400'}>
+                    {f.free || f.pro}
+                  </span>
+                </li>
+              ))}
             </ul>
 
             <button
@@ -367,34 +361,12 @@ export default function PricingPage() {
             </p>
 
             <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">All 9 objectives</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">Diagnostic report & maturity scoring</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">Benchmarks tailored to your company profile</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">PDF executive report</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">War Room action planning</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">AI-powered recommendations</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                <span className="text-slate-700">Unlimited reassessments for one year</span>
-              </li>
+              {TIER_FEATURES.map((f, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <Check className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
+                  <span className="text-slate-700">{f.pro}</span>
+                </li>
+              ))}
             </ul>
 
             {error && (
