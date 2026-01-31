@@ -106,7 +106,7 @@ function ChangeAppetiteSelector({ value, onChange }) {
           <span className="text-red-500">*</span>
         </span>
       </label>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {CHANGE_APPETITES.map((option) => (
           <button
             key={option.value}
@@ -702,11 +702,12 @@ export default function CompanySetupPage() {
             />
           </div>
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-8">
             <button
               onClick={() => navigate(`/run/${runId}/intro`)}
               className="py-3 px-6 rounded font-semibold border border-gray-300
-                text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2"
+                text-gray-600 hover:bg-gray-50 flex items-center justify-center gap-2
+                order-2 sm:order-1"
             >
               <ArrowLeft size={18} />
               Back to Overview
@@ -715,7 +716,8 @@ export default function CompanySetupPage() {
             <button
               onClick={() => navigate('/')}
               className="py-3 px-6 rounded font-semibold border border-gray-200
-                text-gray-500 hover:bg-gray-50 hover:text-gray-600 flex items-center justify-center gap-2"
+                text-gray-500 hover:bg-gray-50 hover:text-gray-600 flex items-center justify-center gap-2
+                order-3 sm:order-2"
             >
               <LogOut size={18} />
               Save & Exit
@@ -725,6 +727,7 @@ export default function CompanySetupPage() {
               onClick={handleContinue}
               disabled={!isValid() || saving}
               className={`py-3 px-6 rounded font-semibold flex items-center justify-center gap-2
+                order-1 sm:order-3
                 ${isValid() && !saving
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
