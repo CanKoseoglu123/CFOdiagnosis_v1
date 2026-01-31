@@ -375,9 +375,16 @@ export default function ProgressiveWizard({
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-slate-100 rounded-sm transition-colors flex-shrink-0"
+            className="p-2 hover:bg-slate-100 rounded-sm transition-colors flex-shrink-0 hidden lg:block"
           >
             <X className="w-5 h-5 text-slate-500" />
+          </button>
+          <button
+            onClick={handleClose}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-sm transition-colors flex-shrink-0 lg:hidden"
+          >
+            <X className="w-4 h-4" />
+            Exit
           </button>
         </div>
 
