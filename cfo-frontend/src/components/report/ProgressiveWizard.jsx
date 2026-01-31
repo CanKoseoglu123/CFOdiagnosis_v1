@@ -2,7 +2,7 @@
 // Progressive Wizard - 4-step guided action planning flow
 // Orchestrates: Actions (sequential sub-steps) -> Timelines -> Owners -> Review
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 import ProgressStepper from './ProgressStepper';
 import ActionSelectionSteps from './ActionSelectionSteps';
@@ -37,6 +37,26 @@ export default function ProgressiveWizard({
 
   // Completing state
   const [completing, setCompleting] = useState(false);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   // Check if there are unsaved changes
   const hasChanges = selectedActions.size > 0;
@@ -283,8 +303,8 @@ export default function ProgressiveWizard({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-sm w-full max-w-5xl h-[85vh] flex flex-col border border-slate-300">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 touch-none">
+      <div className="bg-white rounded-sm w-full max-w-5xl h-[85vh] flex flex-col border border-slate-300 touch-auto overscroll-contain">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div>
@@ -310,7 +330,7 @@ export default function ProgressiveWizard({
         />
 
         {/* Step Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden">
           {currentStep === 1 && (
             <ActionSelectionSteps
               gaps={gaps}
