@@ -213,23 +213,23 @@ export default function PersonaConfirmationPage() {
 
     return (
       <div
-        className={`border-2 rounded-lg p-6 transition-all ${
+        className={`border-2 rounded-lg p-4 sm:p-6 transition-all ${
           isPrimary
             ? 'border-blue-500 bg-blue-50'
             : 'border-gray-200 bg-white hover:border-gray-300'
         }`}
         style={isPrimary ? { borderColor: persona.color } : {}}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: `${persona.color}15` }}
           >
-            <Icon size={24} style={{ color: persona.color }} />
+            <Icon size={22} style={{ color: persona.color }} />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-semibold text-gray-900">{persona.name}</h3>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">{persona.name}</h3>
               {isPrimary && (
                 <span
                   className="text-xs font-medium px-2 py-0.5 rounded"
@@ -308,7 +308,7 @@ export default function PersonaConfirmationPage() {
           whyText="Your persona determines the maturity targets we'll measure you against. A high-growth company is benchmarked differently than a governance-focused enterprise. Getting this right ensures your recommendations are relevant, not generic."
         />
         {/* Main Content */}
-        <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Page Title */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -396,7 +396,7 @@ export default function PersonaConfirmationPage() {
 
           {/* Classification Breakdown */}
           {showDetails && (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-4">Classification Breakdown</h3>
               <div className="space-y-2">
                 {sortedPersonas.map(([personaId, score]) => {
@@ -406,8 +406,8 @@ export default function PersonaConfirmationPage() {
                   const percentage = topScore > 0 ? Math.round((score / topScore) * 100) : 0;
 
                   return (
-                    <div key={personaId} className="flex items-center gap-3">
-                      <div className="w-32 text-sm text-gray-600 truncate">
+                    <div key={personaId} className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-24 sm:w-32 text-xs sm:text-sm text-gray-600 truncate">
                         {persona.name}
                       </div>
                       <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -419,7 +419,7 @@ export default function PersonaConfirmationPage() {
                           }}
                         />
                       </div>
-                      <div className="w-16 text-right text-sm text-gray-500">
+                      <div className="w-12 sm:w-16 text-right text-xs sm:text-sm text-gray-500">
                         {score} pts
                       </div>
                     </div>
@@ -435,10 +435,10 @@ export default function PersonaConfirmationPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-4 mt-8">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 mt-8">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
             >
               <ArrowLeft size={18} />
               Edit Company Info
