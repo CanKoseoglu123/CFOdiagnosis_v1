@@ -713,6 +713,19 @@ export default function ActionPlanTab({
         />
       </div>
 
+      {/* Mobile-only wizard trigger (sidebar hidden below lg) */}
+      {!isFinalized && (
+        <div className="fixed bottom-6 right-6 lg:hidden z-40">
+          <button
+            onClick={() => setShowWizard(true)}
+            className="flex items-center gap-2 px-4 py-3 bg-slate-800 text-white text-sm font-medium rounded-sm border border-slate-700 shadow-lg hover:bg-slate-900 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Action Wizard</span>
+          </button>
+        </div>
+      )}
+
       {/* ─────────────────────────────────────────────────────────────────────── */}
       {/* SIDEBAR - Actions & Finalization */}
       {/* ─────────────────────────────────────────────────────────────────────── */}
