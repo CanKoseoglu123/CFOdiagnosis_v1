@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import AppShell from '../components/AppShell';
 import EnterpriseCanvas from '../components/EnterpriseCanvas';
 import ChapterHeader from '../components/ChapterHeader';
+import MobileDesktopHint from '../components/report/MobileDesktopHint';
 import WorkflowSidebar from '../components/WorkflowSidebar';
 import ExecutiveSummary from '../components/report/ExecutiveSummary';
 import SummaryTable from '../components/report/SummaryTable';
@@ -472,6 +473,7 @@ export default function PillarReport() {
       }
     >
       <div className="min-h-screen bg-slate-100">
+        <MobileDesktopHint />
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* CHAPTER HEADER */}
         {/* ─────────────────────────────────────────────────────────────────── */}
