@@ -169,7 +169,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = 'objective' })
 
         {/* Price note */}
         <p className="text-center text-xs text-slate-500 mt-4">
-          €299/year
+          From €299/year
         </p>
       </div>
     </div>
