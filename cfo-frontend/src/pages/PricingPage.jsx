@@ -230,9 +230,10 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
       <PageSEO
-        title="Pricing"
+        title="Pricing — FP&A Assessment Plans"
         description="Free FP&A diagnostic with 2 objectives. Pro tier unlocks all 9 objectives, industry benchmarks, War Room action planning, and executive PDF reports."
         path="/pricing"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Pricing', path: '/pricing' }]}
         schemas={[faqSchema]}
       />
       {/* Navigation */}

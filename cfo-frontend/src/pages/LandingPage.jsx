@@ -166,23 +166,24 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <PageSEO
-        title="FP&A Maturity Diagnostic"
-        description="Assess your FP&A function's maturity in hours, not months. 97-question diagnostic with industry benchmarks, gap analysis, and actionable transformation roadmaps."
+        title="FP&A Maturity Assessment Tool for CFOs"
+        description="Free FP&A maturity assessment for CFOs. 97-question diagnostic with industry benchmarks, gap analysis, and prioritized action plans. Results in one session."
         path="/"
+        breadcrumbs={[{ name: 'Home', path: '/' }]}
         schemas={[
           {
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'CFO Lens AI',
-            url: 'https://cfodiagnosisv1.vercel.app',
-            logo: 'https://cfodiagnosisv1.vercel.app/Logo horizontal.png',
+            url: 'https://cfo-lens.com',
+            logo: 'https://cfo-lens.com/Logo horizontal.png',
             description: 'AI-powered FP&A maturity assessment platform that compresses a 6-figure consulting engagement into hours.',
           },
           {
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             name: 'CFO Lens AI',
-            url: 'https://cfodiagnosisv1.vercel.app',
+            url: 'https://cfo-lens.com',
             description: 'AI-powered FP&A maturity assessment platform for CFOs and finance leaders.',
           },
         ]}
@@ -215,7 +216,7 @@ export default function LandingPage() {
               className="text-4xl sm:text-5xl font-bold tracking-tight mb-6 leading-tight"
               style={{ color: BRAND_COLORS.navy }}
             >
-              Build the FP&A function your business deserves.
+              FP&A Maturity Assessment — Build the Finance Function Your Business Deserves
             </h1>
 
             <p className="text-base text-slate-600 mb-4 leading-relaxed">

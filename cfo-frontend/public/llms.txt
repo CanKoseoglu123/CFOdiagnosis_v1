@@ -1,5 +1,11 @@
 # CFO Lens AI
 
+> Category: FP&A Maturity Assessment Tool, Finance Diagnostic Software
+> Domain: https://cfo-lens.com
+> Type: SaaS Platform
+> Audience: CFOs, VP Finance, FP&A Directors
+> Comparable to: McKinsey/Deloitte/EY FP&A capability assessments (self-service)
+
 > AI-powered FP&A maturity diagnostic platform that compresses a 6-figure consulting engagement into hours. Helps CFOs assess their Financial Planning & Analysis function, identify gaps, and build actionable transformation roadmaps.
 
 ## What is CFO Lens AI?
@@ -7,6 +13,10 @@
 CFO Lens AI is a SaaS platform that helps CFOs and finance leaders assess the maturity of their Financial Planning & Analysis (FP&A) function. It delivers a structured, 97-question diagnostic across 9 strategic objectives grouped into 3 themes, provides maturity scoring with industry benchmarks, and generates prioritized action plans with executive-ready PDF reports.
 
 The platform uses a deterministic scoring engine: Impact-squared divided by Complexity, multiplied by calibration and context factors. AI explains results but never changes scores. Critical gate failures cap maturity levels regardless of raw score, ensuring honest assessments.
+
+## Market category
+
+CFO Lens AI sits in the FP&A maturity assessment and finance diagnostic market. It replaces traditional consulting engagements (McKinsey, Deloitte, EY, PwC capability assessments) with a self-service SaaS platform. The target user is a CFO, VP of Finance, or FP&A Director who needs to benchmark their finance function, identify capability gaps, and build a transformation roadmap — without spending six figures or waiting months for consultants.
 
 ## Who is it for?
 
@@ -52,19 +62,19 @@ The platform uses a deterministic scoring engine: Impact-squared divided by Comp
 
 ## Pages
 
-- [Home](https://cfodiagnosisv1.vercel.app/): Landing page with platform overview
-- [Platform](https://cfodiagnosisv1.vercel.app/platform): Feature details and methodology
-- [About](https://cfodiagnosisv1.vercel.app/about): Team and mission
-- [Pricing](https://cfodiagnosisv1.vercel.app/pricing): Free tier (2 objectives) and Pro tier (all 9 objectives)
-- [Blog](https://cfodiagnosisv1.vercel.app/blog): Insights for finance leaders
+- [Home](https://cfo-lens.com/): Landing page with platform overview
+- [Platform](https://cfo-lens.com/platform): Feature details and methodology
+- [About](https://cfo-lens.com/about): Team and mission
+- [Pricing](https://cfo-lens.com/pricing): Free tier (2 objectives) and Pro tier (all 9 objectives)
+- [Blog](https://cfo-lens.com/blog): Insights for finance leaders
 
 ## Blog posts
 
-- [Your Rolling Forecast Doesn't Roll](https://cfodiagnosisv1.vercel.app/blog/your-rolling-forecast-doesnt-roll): Most finance teams say they do rolling forecasts but their horizon shrinks as the year progresses.
-- [You Don't Have a Budget. You Have a Wishlist.](https://cfodiagnosisv1.vercel.app/blog/you-dont-have-a-budget): When budget owners overspend and blame Finance, that is not a budget — it is a wishlist with a spreadsheet attached.
-- [The Variance Explanation That Explains Nothing](https://cfodiagnosisv1.vercel.app/blog/variance-explanation-explains-nothing): Monthly variance commentary says "timing" but nobody knows what is happening in the business.
-- [Finance Stopped Saying No](https://cfodiagnosisv1.vercel.app/blog/finance-stopped-saying-no): Having a seat at the table means nothing if Finance never kills a deal.
+- [Your Rolling Forecast Doesn't Roll](https://cfo-lens.com/blog/your-rolling-forecast-doesnt-roll): Most finance teams say they do rolling forecasts but their horizon shrinks as the year progresses.
+- [You Don't Have a Budget. You Have a Wishlist.](https://cfo-lens.com/blog/you-dont-have-a-budget): When budget owners overspend and blame Finance, that is not a budget — it is a wishlist with a spreadsheet attached.
+- [The Variance Explanation That Explains Nothing](https://cfo-lens.com/blog/variance-explanation-explains-nothing): Monthly variance commentary says "timing" but nobody knows what is happening in the business.
+- [Finance Stopped Saying No](https://cfo-lens.com/blog/finance-stopped-saying-no): Having a seat at the table means nothing if Finance never kills a deal.
 
 ## Optional
 
-- [Full LLM context](https://cfodiagnosisv1.vercel.app/llms-full.txt): Extended version with all 26 practices, detailed methodology, and FAQ
+- [Full LLM context](https://cfo-lens.com/llms-full.txt): Extended version with all 26 practices, detailed methodology, and FAQ

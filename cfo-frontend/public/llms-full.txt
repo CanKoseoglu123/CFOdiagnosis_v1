@@ -175,16 +175,16 @@ Your diagnostic data is retained. You can still view your results but will not b
 
 ## Blog posts
 
-- [The Variance Explanation That Explains Nothing](https://cfodiagnosisv1.vercel.app/blog/variance-explanation-explains-nothing): Your team sends variance reports every month. The commentary says 'timing.' You nod and move on. But here's the question: do you actually know what's happening in your business?
-- [Finance Stopped Saying No](https://cfodiagnosisv1.vercel.app/blog/finance-stopped-saying-no): You have a seat at the table. You're consulted on major decisions. But when was the last time Finance actually killed a deal? If you can't remember, you're not a strategic partner. You're a rubber stamp.
-- [You Don't Have a Budget. You Have a Wishlist.](https://cfodiagnosisv1.vercel.app/blog/you-dont-have-a-budget): Every company has a budget document. But when budget owners overspend, they say 'Finance gave me that number.' That's not a budget—that's a wishlist with a spreadsheet attached.
-- [Your Rolling Forecast Doesn't Roll](https://cfodiagnosisv1.vercel.app/blog/your-rolling-forecast-doesnt-roll): Most finance teams say they do rolling forecasts. But when the board asks what next year looks like, they can't answer. That's not rolling—that's a forecast that shrinks as the year goes on.
+- [The Variance Explanation That Explains Nothing](https://cfo-lens.com/blog/variance-explanation-explains-nothing): Your team sends variance reports every month. The commentary says 'timing.' You nod and move on. But here's the question: do you actually know what's happening in your business?
+- [Finance Stopped Saying No](https://cfo-lens.com/blog/finance-stopped-saying-no): You have a seat at the table. You're consulted on major decisions. But when was the last time Finance actually killed a deal? If you can't remember, you're not a strategic partner. You're a rubber stamp.
+- [You Don't Have a Budget. You Have a Wishlist.](https://cfo-lens.com/blog/you-dont-have-a-budget): Every company has a budget document. But when budget owners overspend, they say 'Finance gave me that number.' That's not a budget—that's a wishlist with a spreadsheet attached.
+- [Your Rolling Forecast Doesn't Roll](https://cfo-lens.com/blog/your-rolling-forecast-doesnt-roll): Most finance teams say they do rolling forecasts. But when the board asks what next year looks like, they can't answer. That's not rolling—that's a forecast that shrinks as the year goes on.
 
 ## Pages
 
-- [Home](https://cfodiagnosisv1.vercel.app/): Landing page with platform overview
-- [Platform](https://cfodiagnosisv1.vercel.app/platform): Feature details and methodology
-- [About](https://cfodiagnosisv1.vercel.app/about): Team and mission
-- [Pricing](https://cfodiagnosisv1.vercel.app/pricing): Free tier (2 objectives) and Pro tier (all 9 objectives)
-- [Blog](https://cfodiagnosisv1.vercel.app/blog): Insights for finance leaders
-- [LLM summary](https://cfodiagnosisv1.vercel.app/llms.txt): Concise version of this document
+- [Home](https://cfo-lens.com/): Landing page with platform overview
+- [Platform](https://cfo-lens.com/platform): Feature details and methodology
+- [About](https://cfo-lens.com/about): Team and mission
+- [Pricing](https://cfo-lens.com/pricing): Free tier (2 objectives) and Pro tier (all 9 objectives)
+- [Blog](https://cfo-lens.com/blog): Insights for finance leaders
+- [LLM summary](https://cfo-lens.com/llms.txt): Concise version of this document

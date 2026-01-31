@@ -12,7 +12,18 @@ import { Logo, BRAND_COLORS } from '../components/Logo';
 import PublicNav from '../components/PublicNav';
 import PageSEO from '../components/PageSEO';
 import { supabase } from '../lib/supabase';
-import { ArrowRight, Check, Clock } from 'lucide-react';
+import {
+  ArrowRight,
+  Check,
+  BookOpen,
+  Landmark,
+  Calculator,
+  Users,
+  Shield,
+  Database,
+  Brain,
+  TrendingUp,
+} from 'lucide-react';
 
 const FPA_DIAGNOSTIC_FEATURES = [
   'Structured assessment against benchmarks for companies like yours',
@@ -28,6 +39,9 @@ const MODULES = [
     subtitle: 'R2R \u00B7 AP \u00B7 AR',
     description:
       'Month-end takes too long. Cash collection is reactive. Vendor payments are manual and error-prone. Three assessments, one integrated view.',
+    phase: 1,
+    status: 'next',
+    icon: BookOpen,
   },
   {
     id: 'treasury_cash',
@@ -35,6 +49,9 @@ const MODULES = [
     subtitle: null,
     description:
       "Cash visibility is a spreadsheet exercise. Working capital is \"managed\" reactively. Banking relationships haven't been reviewed in years.",
+    phase: 1,
+    status: 'planned',
+    icon: Landmark,
   },
   {
     id: 'tax',
@@ -42,6 +59,9 @@ const MODULES = [
     subtitle: null,
     description:
       "Compliance is a scramble. Planning is ad hoc. Transfer pricing documentation wouldn't survive scrutiny.",
+    phase: 2,
+    status: 'planned',
+    icon: Calculator,
   },
   {
     id: 'finance_team',
@@ -49,6 +69,9 @@ const MODULES = [
     subtitle: null,
     description:
       "The org chart evolved by accident. Talent gaps are obvious but undefined. Development plans don't exist.",
+    phase: 2,
+    status: 'planned',
+    icon: Users,
   },
   {
     id: 'risk_compliance',
@@ -56,6 +79,9 @@ const MODULES = [
     subtitle: null,
     description:
       "Internal controls aren't documented \u2014 or aren't followed. Audit prep is a scramble every year. Nobody owns enterprise risk, so nobody manages it.",
+    phase: 2,
+    status: 'planned',
+    icon: Shield,
   },
   {
     id: 'data_systems',
@@ -63,6 +89,9 @@ const MODULES = [
     subtitle: null,
     description:
       'No single source of truth. Finance and ops don\'t reconcile. Every report starts with "let me pull the data" \u2014 and takes hours.',
+    phase: 3,
+    status: 'planned',
+    icon: Database,
   },
   {
     id: 'ai_readiness',
@@ -70,6 +99,9 @@ const MODULES = [
     subtitle: null,
     description:
       "Everyone's talking about AI in finance. You don't know where to start, what's realistic, or whether it's worth it yet.",
+    phase: 3,
+    status: 'planned',
+    icon: Brain,
   },
   {
     id: 'value_creation',
@@ -77,13 +109,50 @@ const MODULES = [
     subtitle: null,
     description:
       "Finance reports the past. The business makes decisions without you. You're a scorekeeper, not a strategic partner.",
+    phase: 3,
+    status: 'planned',
+    icon: TrendingUp,
   },
 ];
 
-const WAITLIST_MODULES = [
-  { id: 'fpa', label: 'FP&A' },
-  ...MODULES.map((m) => ({ id: m.id, label: m.name })),
+const PHASES = [
+  { number: 1, name: 'Foundation', label: 'Core finance operations' },
+  { number: 2, name: 'Optimization', label: 'Process & governance' },
+  { number: 3, name: 'Transformation', label: 'Strategic & forward-looking' },
 ];
+
+const WAITLIST_MODULES = [
+  { id: 'fpa', label: 'FP&A', phase: null },
+  ...MODULES.map((m) => ({ id: m.id, label: m.name, phase: m.phase })),
+];
+
+function StatusBadge({ status }) {
+  if (status === 'live') {
+    return (
+      <span
+        className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+        style={{ backgroundColor: BRAND_COLORS.gold, color: '#fff' }}
+      >
+        Live
+      </span>
+    );
+  }
+  if (status === 'next') {
+    return (
+      <span
+        className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white"
+        style={{ backgroundColor: BRAND_COLORS.navy }}
+      >
+        Next
+      </span>
+    );
+  }
+  return (
+    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 border border-slate-300">
+      Planned
+    </span>
+  );
+}
 
 export default function RoadmapPage() {
   const { isAuthenticated } = useAuth();
@@ -128,9 +197,10 @@ export default function RoadmapPage() {
   return (
     <>
       <PageSEO
-        title="Roadmap | CFO Lens AI"
+        title="Product Roadmap — Finance Diagnostic Modules"
         description="Diagnostic intelligence for the entire finance function. See what's live, what's coming next, and join the waitlist."
         path="/roadmap"
+        breadcrumbs={[{ name: 'Home', path: '/' }, { name: 'Roadmap', path: '/roadmap' }]}
       />
       <PublicNav />
 
@@ -138,127 +208,223 @@ export default function RoadmapPage() {
         {/* ─── Hero ─── */}
         <section className="py-20 px-6" style={{ backgroundColor: `${BRAND_COLORS.navy}08` }}>
           <div className="max-w-4xl mx-auto text-center">
+            <p
+              className="text-xs font-bold uppercase tracking-[0.2em] mb-4"
+              style={{ color: BRAND_COLORS.gold }}
+            >
+              Product Roadmap
+            </p>
             <h1
               className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6"
               style={{ color: BRAND_COLORS.navy }}
             >
-              Diagnostic Intelligence for the Entire Finance Function
+              One Platform. Every Finance Function. Diagnosed.
             </h1>
-            <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-12">
               What top-tier consulting firms deliver in six-figure engagements, we're making
               accessible to finance leaders everywhere&nbsp;&mdash; starting with FP&A, expanding
               across every area the CFO owns.
             </p>
-          </div>
-        </section>
 
-        {/* ─── FP&A Live Card ─── */}
-        <section className="py-16 px-6">
-          <div className="max-w-4xl mx-auto">
-            <div
-              className="border border-slate-200 p-8 sm:p-10"
-              style={{ borderLeftWidth: 4, borderLeftColor: BRAND_COLORS.gold }}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <span
-                  className="px-3 py-1 text-xs font-semibold text-white rounded-sm"
-                  style={{ backgroundColor: BRAND_COLORS.gold }}
-                >
-                  Available Now
-                </span>
-                <h2 className="text-2xl font-bold" style={{ color: BRAND_COLORS.navy }}>
-                  FP&A Diagnostic
-                </h2>
-              </div>
-
-              <p className="text-slate-600 mb-6 leading-relaxed">
-                You feel it in the variance explanations that take three days. The forecasts nobody
-                trusts. The rolling reforecasts that never roll.
-              </p>
-
-              <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wide mb-3">
-                What you get
-              </h3>
-              <ul className="space-y-2 mb-6">
-                {FPA_DIAGNOSTIC_FEATURES.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                    <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <p className="text-sm font-medium text-slate-500 mb-6">
-                Hours, not months. Hundreds, not six figures.
-              </p>
-
-              <Link
-                to={isAuthenticated ? '/dashboard' : '/login?mode=signup'}
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: BRAND_COLORS.navy }}
-              >
-                Start Your Diagnostic
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── Coming Next ─── */}
-        <section className="py-16 px-6" style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}>
-          <div className="max-w-4xl mx-auto">
-            <h2
-              className="text-2xl sm:text-3xl font-bold mb-6"
-              style={{ color: BRAND_COLORS.navy }}
-            >
-              Coming Next
-            </h2>
-            <div className="text-slate-600 leading-relaxed space-y-4 mb-12">
-              <p>
-                The CFO's responsibilities extend far beyond FP&A. Each area faces the same
-                challenge: you sense there's room to improve but lack the time, frameworks, and
-                benchmarks to assess it systematically.
-              </p>
-              <p>
-                We're building diagnostic modules for all of them. Same methodology. Same rigor.
-                Same path from diagnosis to action.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {MODULES.map((mod) => (
-                <div
-                  key={mod.id}
-                  className="border border-slate-200 bg-white p-6"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <Clock className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    <div>
-                      <h3 className="text-base font-semibold text-slate-800">{mod.name}</h3>
-                      {mod.subtitle && (
-                        <span className="text-xs text-slate-400">{mod.subtitle}</span>
-                      )}
-                    </div>
+            {/* Phase progress indicator */}
+            <div className="flex items-center justify-center gap-0 max-w-md mx-auto">
+              {PHASES.map((phase, i) => (
+                <div key={phase.number} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="w-3.5 h-3.5 rounded-full border-2"
+                      style={
+                        i === 0
+                          ? { backgroundColor: BRAND_COLORS.gold, borderColor: BRAND_COLORS.gold }
+                          : i === 1
+                            ? { backgroundColor: 'transparent', borderColor: BRAND_COLORS.navy }
+                            : { backgroundColor: 'transparent', borderColor: '#94a3b8' }
+                      }
+                    />
+                    <span
+                      className="text-[11px] font-semibold mt-2"
+                      style={{ color: i === 0 ? BRAND_COLORS.gold : i === 1 ? BRAND_COLORS.navy : '#94a3b8' }}
+                    >
+                      {phase.name}
+                    </span>
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed">{mod.description}</p>
+                  {i < PHASES.length - 1 && (
+                    <div
+                      className="h-px w-16 sm:w-24 mx-2 mb-5"
+                      style={{ backgroundColor: i === 0 ? BRAND_COLORS.navy : '#cbd5e1' }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
           </div>
         </section>
 
+        {/* ─── FP&A Live — Full-width navy band ─── */}
+        <section className="py-16 px-6" style={{ backgroundColor: BRAND_COLORS.navy }}>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white rounded-sm"
+                style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+              >
+                <span
+                  className="pulse-dot inline-block w-2 h-2 rounded-full"
+                  style={{ backgroundColor: BRAND_COLORS.gold }}
+                />
+                Live Now
+              </span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+              FP&A Diagnostic
+            </h2>
+
+            <p className="text-slate-300 mb-6 leading-relaxed max-w-2xl">
+              You feel it in the variance explanations that take three days. The forecasts nobody
+              trusts. The rolling reforecasts that never roll.
+            </p>
+
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">
+              What you get
+            </h3>
+            <ul className="space-y-2 mb-6">
+              {FPA_DIAGNOSTIC_FEATURES.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-slate-300">
+                  <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-sm font-medium text-slate-400 mb-6">
+              Hours, not months. Hundreds, not six figures.
+            </p>
+
+            <Link
+              to={isAuthenticated ? '/dashboard' : '/login?mode=signup'}
+              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold transition-all hover:opacity-90"
+              style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
+            >
+              Start Your Diagnostic
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </section>
+
+        {/* ─── Timeline Phases ─── */}
+        <section className="py-16 px-6" style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}>
+          <div className="max-w-5xl mx-auto">
+            <h2
+              className="text-2xl sm:text-3xl font-bold mb-4"
+              style={{ color: BRAND_COLORS.navy }}
+            >
+              What's Coming
+            </h2>
+            <p className="text-slate-600 leading-relaxed max-w-2xl mb-12">
+              Same methodology. Same rigor. Same path from diagnosis to action&nbsp;&mdash; across
+              every area the CFO owns.
+            </p>
+
+            <div className="space-y-14">
+              {PHASES.map((phase) => {
+                const phaseModules = MODULES.filter((m) => m.phase === phase.number);
+                if (phaseModules.length === 0) return null;
+
+                return (
+                  <div key={phase.number}>
+                    {/* Phase header */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                        style={{ backgroundColor: BRAND_COLORS.gold, color: '#fff' }}
+                      >
+                        {phase.number}
+                      </div>
+                      <div>
+                        <h3
+                          className="text-lg font-bold"
+                          style={{ color: BRAND_COLORS.navy }}
+                        >
+                          {phase.name}
+                        </h3>
+                        <p className="text-sm text-slate-500">{phase.label}</p>
+                      </div>
+                    </div>
+
+                    {/* Module cards */}
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {phaseModules.map((mod) => {
+                        const Icon = mod.icon;
+                        return (
+                          <div
+                            key={mod.id}
+                            className="border border-slate-200 bg-white p-5"
+                          >
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div className="flex items-center gap-2.5">
+                                <Icon
+                                  className="w-4 h-4 flex-shrink-0"
+                                  style={{ color: BRAND_COLORS.navy }}
+                                />
+                                <div>
+                                  <h4 className="text-sm font-semibold text-slate-800">
+                                    {mod.name}
+                                  </h4>
+                                  {mod.subtitle && (
+                                    <span className="text-[11px] text-slate-400">{mod.subtitle}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <StatusBadge status={mod.status} />
+                            </div>
+                            <p className="text-sm text-slate-500 leading-relaxed">
+                              {mod.description}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Social Proof Band ─── */}
+        <section className="py-12 px-6" style={{ backgroundColor: `${BRAND_COLORS.navy}0A` }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <p
+              className="text-lg sm:text-xl font-semibold mb-2"
+              style={{ color: BRAND_COLORS.navy }}
+            >
+              Join finance leaders shaping the future of CFO diagnostics
+            </p>
+            <p className="text-sm text-slate-500">
+              Early supporters get priority access and founding member pricing.
+            </p>
+          </div>
+        </section>
+
         {/* ─── Waitlist Form ─── */}
         <section className="py-16 px-6">
           <div className="max-w-2xl mx-auto">
+            <p
+              className="text-xs font-bold uppercase tracking-[0.2em] mb-3"
+              style={{ color: BRAND_COLORS.gold }}
+            >
+              Get Early Access
+            </p>
             <h2
               className="text-2xl sm:text-3xl font-bold mb-3"
               style={{ color: BRAND_COLORS.navy }}
             >
-              Which gaps keep you up at night?
+              Which modules matter most to you?
             </h2>
             <p className="text-slate-600 mb-8">
-              Tell us which modules matter most. Early supporters get priority access&nbsp;&mdash;
-              and shape what we build.
+              Select the areas you care about. You'll get priority access and founding member
+              pricing when they launch.
             </p>
 
             {submitState === 'success' ? (
@@ -320,7 +486,14 @@ export default function RoadmapPage() {
                           onChange={() => toggleModule(mod.id)}
                           className="accent-slate-700"
                         />
-                        <span className="text-slate-700">{mod.label}</span>
+                        <span className="text-slate-700">
+                          {mod.label}
+                          {mod.phase && (
+                            <span className="text-slate-400 text-xs ml-1">
+                              &middot; Phase {mod.phase}
+                            </span>
+                          )}
+                        </span>
                       </label>
                     ))}
                   </div>
