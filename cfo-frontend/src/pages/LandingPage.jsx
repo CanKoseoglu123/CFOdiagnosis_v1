@@ -4,7 +4,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { Logo, LogoIcon, BRAND_COLORS } from '../components/Logo';
+import PublicNav from '../components/PublicNav';
 import { supabase } from '../lib/supabase';
 import {
   ArrowRight,
@@ -50,7 +52,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function LandingPage() {
   const { isAuthenticated, user, signOut, loading } = useAuth();
+  const { isPaid } = useSubscription();
   const navigate = useNavigate();
+
+  // Authenticated non-paying users go to pricing; paid users go to /start
+  const ctaDest = isAuthenticated ? (isPaid ? '/start' : '/pricing') : '/login?mode=signup';
   const [incompleteRun, setIncompleteRun] = useState(null);
   const [dismissedResume, setDismissedResume] = useState(false);
 
@@ -161,89 +167,13 @@ export default function LandingPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* NAVIGATION */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Left side: Logo + Nav Links */}
-          <div className="flex items-center">
-            <Link to="/">
-              <Logo size="sm" />
-            </Link>
-
-            {/* Divider */}
-            <div className="hidden sm:block h-6 w-px bg-slate-200 mx-6" />
-
-            {/* Nav Links */}
-            <div className="hidden sm:flex items-center gap-1">
-              <Link
-                to="/platform"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Platform
-              </Link>
-              <Link
-                to="/blog"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Blog
-              </Link>
-              <Link
-                to="/about"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                About
-              </Link>
-              <Link
-                to="/pricing"
-                className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Pricing
-              </Link>
-            </div>
-          </div>
-
-          {/* Right side: Auth */}
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <div className="hidden sm:flex flex-col items-end mr-2">
-                  <span className="text-sm font-medium text-slate-700">Welcome back</span>
-                  <span className="text-xs text-slate-500">{user?.email}</span>
-                </div>
-                <Link
-                  to="/dashboard"
-                  className="px-4 py-2 text-sm font-medium text-white transition-colors"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  My Reports
-                </Link>
-                <button
-                  onClick={signOut}
-                  className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/login?mode=signup"
-                  state={{ from: { pathname: '/start' } }}
-                  className="px-5 py-2.5 text-sm font-medium text-white transition-all hover:opacity-90"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <PublicNav
+        ctaLabel="Get Started"
+        ctaTo={ctaDest}
+        ctaState={isAuthenticated ? undefined : { from: { pathname: '/pricing' } }}
+        authLabel="My Reports"
+        authTo="/dashboard"
+      />
 
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* HERO - Above the Fold */}
@@ -282,8 +212,8 @@ export default function LandingPage() {
             </p>
 
             <Link
-              to={isAuthenticated ? '/start' : '/login?mode=signup'}
-              state={isAuthenticated ? undefined : { from: { pathname: '/start' } }}
+              to={ctaDest}
+              state={isAuthenticated ? undefined : { from: { pathname: '/pricing' } }}
               className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
@@ -672,8 +602,8 @@ export default function LandingPage() {
 
           <div className="text-center">
             <Link
-              to={isAuthenticated ? '/start' : '/login?mode=signup'}
-              state={isAuthenticated ? undefined : { from: { pathname: '/start' } }}
+              to={ctaDest}
+              state={isAuthenticated ? undefined : { from: { pathname: '/pricing' } }}
               className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white transition-all hover:opacity-90"
               style={{ backgroundColor: BRAND_COLORS.navy }}
             >
@@ -702,8 +632,8 @@ export default function LandingPage() {
           </p>
 
           <Link
-            to={isAuthenticated ? '/start' : '/login?mode=signup'}
-            state={isAuthenticated ? undefined : { from: { pathname: '/start' } }}
+            to={ctaDest}
+            state={isAuthenticated ? undefined : { from: { pathname: '/pricing' } }}
             className="group inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold transition-all hover:opacity-90 mb-8"
             style={{ backgroundColor: BRAND_COLORS.gold, color: BRAND_COLORS.navy }}
           >

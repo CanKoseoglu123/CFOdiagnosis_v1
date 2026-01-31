@@ -10,6 +10,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
 import { Logo, BRAND_COLORS } from '../components/Logo';
+import PublicNav from '../components/PublicNav';
 import { supabase } from '../lib/supabase';
 import {
   Check,
@@ -188,45 +189,11 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <Logo size="sm" />
-          </Link>
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <Link
-                to="/dashboard"
-                className="text-sm font-medium px-4 py-2 rounded-sm transition-colors"
-                style={{ color: BRAND_COLORS.navy }}
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-sm font-medium px-4 py-2 rounded-sm transition-colors"
-                  style={{ color: BRAND_COLORS.navy }}
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/login"
-                  className="text-sm font-medium px-4 py-2 rounded-sm text-white transition-colors"
-                  style={{ backgroundColor: BRAND_COLORS.navy }}
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <PublicNav authTo="/dashboard" />
 
       {/* Success/Cancel Messages */}
       {checkoutResult === 'success' && (
-        <div className="bg-green-50 border-b border-green-200 px-6 py-4">
+        <div className="bg-green-50 border-b border-green-200 px-6 py-4 mt-16">
           <div className="max-w-6xl mx-auto flex items-center gap-3">
             <Check className="w-5 h-5 text-green-600" />
             <span className="text-green-800 font-medium">
@@ -240,7 +207,7 @@ export default function PricingPage() {
       )}
 
       {checkoutResult === 'cancelled' && (
-        <div className="bg-amber-50 border-b border-amber-200 px-6 py-4">
+        <div className="bg-amber-50 border-b border-amber-200 px-6 py-4 mt-16">
           <div className="max-w-6xl mx-auto flex items-center gap-3">
             <X className="w-5 h-5 text-amber-600" />
             <span className="text-amber-800 font-medium">
@@ -251,7 +218,7 @@ export default function PricingPage() {
       )}
 
       {/* Hero */}
-      <section className="py-16 px-6">
+      <section className="pt-32 pb-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1
             className="text-4xl font-bold mb-4"
@@ -392,7 +359,7 @@ export default function PricingPage() {
                 className="block w-full text-center py-3 px-4 rounded-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: BRAND_COLORS.navy }}
               >
-                {loading ? 'Redirecting to checkout...' : 'Subscribe Now'}
+                {loading ? 'Redirecting to checkout...' : 'Get Pro Access'}
               </button>
             )}
           </div>
