@@ -12,9 +12,11 @@ const __dirname = path.dirname(__filename);
 const BASE_URL = 'https://cfodiagnosisv1.vercel.app';
 
 function generateLlmsFull() {
-  const contentDir = path.join(__dirname, '../../content');
-  const blogDir = path.join(__dirname, '../content/blog');
-  const publicDir = path.join(__dirname, '../public');
+  const projectRoot = path.join(__dirname, '..');
+  const repoRoot = path.join(__dirname, '../..');
+  const contentDir = path.join(repoRoot, 'content');
+  const blogDir = path.join(projectRoot, 'content/blog');
+  const publicDir = path.join(projectRoot, 'public');
 
   // Read content JSON
   const objectives = JSON.parse(fs.readFileSync(path.join(contentDir, 'objectives.json'), 'utf-8'));
@@ -172,7 +174,7 @@ ${blogSection}`);
 - [Blog](${BASE_URL}/blog): Insights for finance leaders
 - [LLM summary](${BASE_URL}/llms.txt): Concise version of this document`);
 
-  const output = sections.join('\n\n');
+  const output = sections.join('\n\n') + '\n';
 
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });

@@ -122,36 +122,21 @@ function injectMeta(html, route) {
   const url = `${BASE_URL}${route.path === '/' ? '' : route.path}`;
 
   // Build meta tags
-  const metaTags = [
-    `<title>${route.title}</title>`,
-    `<meta name="description" content="${route.description}" />`,
-    `<link rel="canonical" href="${url}" />`,
-    `<meta property="og:type" content="website" />`,
-    `<meta property="og:title" content="${route.title}" />`,
-    `<meta property="og:description" content="${route.description}" />`,
-    `<meta property="og:url" content="${url}" />`,
-    `<meta property="og:image" content="${DEFAULT_IMAGE}" />`,
-    `<meta property="og:site_name" content="${SITE_NAME}" />`,
-    `<meta name="twitter:card" content="summary_large_image" />`,
-    `<meta name="twitter:title" content="${route.title}" />`,
-    `<meta name="twitter:description" content="${route.description}" />`,
-    `<meta name="twitter:image" content="${DEFAULT_IMAGE}" />`,
-  ].join('\n    ');
-
   // Build JSON-LD scripts
   const jsonLdScripts = route.schemas.map(schema =>
     `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
   ).join('\n    ');
 
-  // Replace existing title and description with route-specific ones
+  // Remove fallback JSON-LD from template and replace title/description
   let result = html
+    .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\s*/, '')
     .replace(/<title>.*?<\/title>/, `<title>${route.title}</title>`)
     .replace(
       /<meta name="description" content=".*?" \/>/,
       `<meta name="description" content="${route.description}" />`
     );
 
-  // Inject OG, Twitter, canonical, and JSON-LD before </head>
+  // Inject OG, Twitter, canonical, and new JSON-LD before </head>
   const injection = `
     <!-- Prerendered meta for ${route.path} -->
     <link rel="canonical" href="${url}" />
