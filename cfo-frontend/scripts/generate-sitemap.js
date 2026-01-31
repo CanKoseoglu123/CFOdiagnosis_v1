@@ -18,6 +18,7 @@ const staticPages = [
   { path: '/platform', priority: 0.8, changefreq: 'monthly' },
   { path: '/about', priority: 0.6, changefreq: 'monthly' },
   { path: '/pricing', priority: 0.7, changefreq: 'monthly' },
+  { path: '/roadmap', priority: 0.7, changefreq: 'monthly' },
   { path: '/login', priority: 0.3, changefreq: 'monthly' },
   { path: '/request-access', priority: 0.5, changefreq: 'monthly' },
 ];

@@ -14,6 +14,13 @@ import PageSEO from '../components/PageSEO';
 import { supabase } from '../lib/supabase';
 import { ArrowRight, Check, Clock } from 'lucide-react';
 
+const FPA_DIAGNOSTIC_FEATURES = [
+  'Structured assessment against benchmarks for companies like yours',
+  'Prioritized action plan scored by impact and complexity',
+  'Simulation tool to model your path forward',
+  'Executive report you can hand to leadership',
+];
+
 const MODULES = [
   {
     id: 'accounting_close',
@@ -104,19 +111,15 @@ export default function RoadmapPage() {
     setErrorMsg('');
 
     try {
-      const { error } = await supabase
-        .from('roadmap_waitlist')
-        .upsert(
-          {
-            email: email.trim().toLowerCase(),
-            interested_modules: selectedModules,
-          },
-          { onConflict: 'email' }
-        );
+      const { error } = await supabase.rpc('upsert_roadmap_waitlist', {
+        p_email: email.trim().toLowerCase(),
+        p_modules: selectedModules,
+      });
 
       if (error) throw error;
       setSubmitState('success');
     } catch (err) {
+      console.error('Waitlist submission error:', err);
       setSubmitState('error');
       setErrorMsg('Something went wrong. Please try again.');
     }
@@ -177,12 +180,7 @@ export default function RoadmapPage() {
                 What you get
               </h3>
               <ul className="space-y-2 mb-6">
-                {[
-                  'Structured assessment against benchmarks for companies like yours',
-                  'Prioritized action plan scored by impact and complexity',
-                  'Simulation tool to model your path forward',
-                  'Executive report you can hand to leadership',
-                ].map((item) => (
+                {FPA_DIAGNOSTIC_FEATURES.map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
                     <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: BRAND_COLORS.gold }} />
                     {item}
