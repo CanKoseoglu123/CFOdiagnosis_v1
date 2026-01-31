@@ -164,8 +164,8 @@ router.post('/checkout', async (req: Request, res: Response) => {
     }
 
     // Create Checkout Session
-    const successUrl = `${process.env.FRONTEND_URL || 'https://cfodiagnosisv1.vercel.app'}/pricing?checkout=success`;
-    const cancelUrl = `${process.env.FRONTEND_URL || 'https://cfodiagnosisv1.vercel.app'}/pricing?checkout=cancelled`;
+    const successUrl = `${process.env.FRONTEND_URL || 'https://cfo-lens.com'}/pricing?checkout=success`;
+    const cancelUrl = `${process.env.FRONTEND_URL || 'https://cfo-lens.com'}/pricing?checkout=cancelled`;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -231,7 +231,7 @@ router.post('/portal', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'No billing account found' });
     }
 
-    const returnUrl = `${process.env.FRONTEND_URL || 'https://cfodiagnosisv1.vercel.app'}/dashboard`;
+    const returnUrl = `${process.env.FRONTEND_URL || 'https://cfo-lens.com'}/dashboard`;
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerRecord.stripe_customer_id,
