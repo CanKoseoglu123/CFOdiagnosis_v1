@@ -11,6 +11,7 @@ import { Menu, X } from 'lucide-react';
 
 const NAV_LINKS = [
   { to: '/platform', label: 'Platform' },
+  { to: '/roadmap', label: 'Roadmap' },
   { to: '/blog', label: 'Blog' },
   { to: '/about', label: 'About' },
   { to: '/pricing', label: 'Pricing' },

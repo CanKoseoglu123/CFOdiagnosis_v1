@@ -1,8 +1,8 @@
 // src/App.jsx
 // Layer 2: Protected routes added - /assess and /report require login
 
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { SubscriptionProvider } from './context/SubscriptionContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -33,6 +33,7 @@ const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
+const RoadmapPage = lazy(() => import('./pages/RoadmapPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 // Loading fallback component
@@ -74,12 +75,27 @@ function VisitorTracker() {
   return null
 }
 
+// Scroll to top on forward navigation (PUSH/REPLACE), preserve scroll on back/forward (POP)
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  const navType = useNavigationType()
+
+  useEffect(() => {
+    if (navType !== 'POP') {
+      window.scrollTo(0, 0)
+    }
+  }, [pathname, navType])
+
+  return null
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <SubscriptionProvider>
         <BrowserRouter>
           <VisitorTracker />
+          <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -182,6 +198,7 @@ export default function App() {
           } />
           {/* Pricing page */}
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
           {/* NAV-001: Catch-all 404 route */}
           <Route path="*" element={<NotFoundPage />} />
           </Routes>

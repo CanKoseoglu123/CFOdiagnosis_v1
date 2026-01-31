@@ -710,6 +710,11 @@ export default function LandingPage() {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/roadmap" className="text-sm text-slate-500 hover:text-slate-700">
+                    Roadmap
+                  </Link>
+                </li>
+                <li>
                   <Link to="/pricing" className="text-sm text-slate-500 hover:text-slate-700">
                     Pricing
                   </Link>
