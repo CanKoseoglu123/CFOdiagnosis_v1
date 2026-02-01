@@ -7,30 +7,13 @@ import { supabase } from '../lib/supabase';
 import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
   AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings,
-  FlaskConical, Play, Loader2, Globe, MapPin, Monitor, Smartphone, Tablet,
-  ChevronLeft, ChevronRight, Calculator, CreditCard
+  FlaskConical, Play, Loader2, BarChart3,
+  Calculator, CreditCard
 } from 'lucide-react';
 import TransparencyTab from '../components/admin/TransparencyTab';
 import SubscriptionsTab from '../components/admin/SubscriptionsTab';
+import AnalyticsTab from '../components/admin/analytics/AnalyticsTab';
 import { isStripeEnabled } from '../config/features';
-
-// Device Badge component for consistent styling
-function DeviceBadge({ type }) {
-  const deviceType = type || 'desktop';
-  const config = {
-    mobile: { Icon: Smartphone, className: 'bg-purple-100 text-purple-700' },
-    tablet: { Icon: Tablet, className: 'bg-amber-100 text-amber-700' },
-    desktop: { Icon: Monitor, className: 'bg-slate-100 text-slate-600' },
-    unknown: { Icon: Monitor, className: 'bg-slate-100 text-slate-600' },
-  }[deviceType] || { Icon: Monitor, className: 'bg-slate-100 text-slate-600' };
-
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${config.className}`}>
-      <config.Icon className="w-3 h-3" />
-      {deviceType}
-    </span>
-  );
-}
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -49,50 +32,12 @@ export default function AdminPage() {
   const [testResult, setTestResult] = useState(null);
   const [creatingQuickSetup, setCreatingQuickSetup] = useState(false);
 
-  // Visitors state
-  const [visitors, setVisitors] = useState([]);
-  const [visitorStats, setVisitorStats] = useState(null);
-  const [visitorTotal, setVisitorTotal] = useState(0);
-  const [visitorPage, setVisitorPage] = useState(0);
-  const VISITORS_PER_PAGE = 50;
-
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
   }
 
-  // Fetch visitor list (paginated)
-  async function fetchVisitorList(token) {
-    const offset = visitorPage * VISITORS_PER_PAGE;
-    const res = await fetch(`${API_URL}/admin/visitors?limit=${VISITORS_PER_PAGE}&offset=${offset}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (res.status === 403) {
-      throw new Error('Admin access denied. Your email is not whitelisted.');
-    }
-    if (!res.ok) throw new Error('Failed to fetch visitors');
-
-    const data = await res.json();
-    setVisitors(data.visitors || []);
-    setVisitorTotal(data.total || 0);
-  }
-
-  // Fetch visitor stats (only on tab change, not pagination)
-  async function fetchVisitorStats(token) {
-    const res = await fetch(`${API_URL}/admin/visitors/stats`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (res.status === 403) {
-      throw new Error('Admin access denied. Your email is not whitelisted.');
-    }
-    if (!res.ok) throw new Error('Failed to fetch visitor stats');
-
-    setVisitorStats(await res.json());
-  }
-
-  // Fetch data on tab change (stats + list for visitors)
+  // Fetch data on tab change
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -145,12 +90,6 @@ export default function AdminPage() {
 
           if (!res.ok) throw new Error('Failed to fetch test scenarios');
           setTestScenarios(await res.json());
-        } else if (activeTab === 'visitors') {
-          // Fetch both stats and list on tab change
-          await Promise.all([
-            fetchVisitorStats(token),
-            fetchVisitorList(token)
-          ]);
         } else if (activeTab === 'transparency') {
           // Fetch sessions if not already loaded (needed for run selector)
           if (sessions.length === 0) {
@@ -178,27 +117,6 @@ export default function AdminPage() {
     fetchData();
   }, [activeTab]);
 
-  // Fetch visitor list only on pagination change (not stats)
-  useEffect(() => {
-    if (activeTab !== 'visitors' || visitorPage === 0) return;
-
-    async function fetchList() {
-      setLoading(true);
-      try {
-        const token = await getToken();
-        if (token) {
-          await fetchVisitorList(token);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchList();
-  }, [visitorPage]);
-
   // Refresh function for manual refresh button
   async function fetchData() {
     const token = await getToken();
@@ -211,12 +129,7 @@ export default function AdminPage() {
     setError(null);
 
     try {
-      if (activeTab === 'visitors') {
-        await Promise.all([
-          fetchVisitorStats(token),
-          fetchVisitorList(token)
-        ]);
-      } else if (activeTab === 'sessions') {
+      if (activeTab === 'sessions') {
         const res = await fetch(`${API_URL}/admin/sessions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -470,18 +383,15 @@ export default function AdminPage() {
               Test Runner
             </button>
             <button
-              onClick={() => setActiveTab('visitors')}
+              onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'visitors'
+                activeTab === 'analytics'
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-slate-600 hover:text-slate-800'
               }`}
             >
-              <Globe className="w-4 h-4" />
-              Visitors
-              <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">
-                {visitorTotal}
-              </span>
+              <BarChart3 className="w-4 h-4" />
+              Analytics
             </button>
             <button
               onClick={() => setActiveTab('transparency')}
@@ -525,7 +435,7 @@ export default function AdminPage() {
           <h2 className="text-lg font-semibold text-slate-800">
             {activeTab === 'sessions' ? 'All Diagnostic Sessions' :
              activeTab === 'feedback' ? 'User Feedback' :
-             activeTab === 'visitors' ? 'Visitor Analytics' :
+             activeTab === 'analytics' ? 'Analytics Dashboard' :
              activeTab === 'transparency' ? 'Calculation Transparency' :
              activeTab === 'subscriptions' ? 'User Subscriptions' :
              'Test Scenario Runner'}
@@ -835,184 +745,9 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Visitors Tab */}
-        {!loading && activeTab === 'visitors' && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            {visitorStats && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white border border-slate-200 rounded p-4">
-                  <div className="text-sm text-slate-500 mb-1">Total Visits</div>
-                  <div className="text-2xl font-bold text-slate-800">{visitorStats.total.toLocaleString()}</div>
-                </div>
-                <div className="bg-white border border-slate-200 rounded p-4">
-                  <div className="text-sm text-slate-500 mb-1">Today</div>
-                  <div className="text-2xl font-bold text-emerald-600">{visitorStats.today.toLocaleString()}</div>
-                </div>
-                <div className="bg-white border border-slate-200 rounded p-4">
-                  <div className="text-sm text-slate-500 mb-1">Last 7 Days</div>
-                  <div className="text-2xl font-bold text-blue-600">{visitorStats.last_7_days.toLocaleString()}</div>
-                </div>
-                <div className="bg-white border border-slate-200 rounded p-4">
-                  <div className="text-sm text-slate-500 mb-1">Devices</div>
-                  <div className="flex items-center gap-3 mt-1">
-                    <div className="flex items-center gap-1 text-sm">
-                      <Monitor className="w-4 h-4 text-slate-400" />
-                      <span>{visitorStats.devices?.desktop || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Smartphone className="w-4 h-4 text-slate-400" />
-                      <span>{visitorStats.devices?.mobile || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Tablet className="w-4 h-4 text-slate-400" />
-                      <span>{visitorStats.devices?.tablet || 0}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Top Countries & Pages */}
-            {visitorStats && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Top Countries */}
-                <div className="bg-white border border-slate-200 rounded p-4">
-                  <h3 className="font-medium text-slate-800 mb-3 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Top Countries
-                  </h3>
-                  {visitorStats.top_countries?.length > 0 ? (
-                    <div className="space-y-2">
-                      {visitorStats.top_countries.slice(0, 5).map((item) => (
-                        <div key={item.country} className="flex items-center justify-between text-sm">
-                          <span className="text-slate-600">{item.country}</span>
-                          <span className="font-medium text-slate-800">{item.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-500">No location data yet</p>
-                  )}
-                </div>
-
-                {/* Top Pages */}
-                <div className="bg-white border border-slate-200 rounded p-4">
-                  <h3 className="font-medium text-slate-800 mb-3 flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />
-                    Top Pages
-                  </h3>
-                  {visitorStats.top_pages?.length > 0 ? (
-                    <div className="space-y-2">
-                      {visitorStats.top_pages.slice(0, 5).map((item) => (
-                        <div key={item.page} className="flex items-center justify-between text-sm">
-                          <span className="text-slate-600 truncate max-w-[200px]" title={item.page}>
-                            {item.page}
-                          </span>
-                          <span className="font-medium text-slate-800">{item.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-500">No page data yet</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Visitors Table */}
-            <div className="bg-white border border-slate-200 rounded overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="text-left px-4 py-3 font-medium text-slate-600">Page</th>
-                      <th className="text-left px-4 py-3 font-medium text-slate-600">Location</th>
-                      <th className="text-left px-4 py-3 font-medium text-slate-600">Device</th>
-                      <th className="text-left px-4 py-3 font-medium text-slate-600">Browser</th>
-                      <th className="text-left px-4 py-3 font-medium text-slate-600">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {visitors.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                          No visitors tracked yet
-                        </td>
-                      </tr>
-                    ) : (
-                      visitors.map((visitor) => (
-                        <tr key={visitor.id} className="hover:bg-slate-50">
-                          <td className="px-4 py-3">
-                            <div className="text-slate-800 max-w-[200px] truncate" title={visitor.page_path}>
-                              {visitor.page_path}
-                            </div>
-                            {visitor.referrer && (
-                              <div className="text-xs text-slate-400 truncate max-w-[200px]" title={visitor.referrer}>
-                                from: {visitor.referrer}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            {visitor.city || visitor.country ? (
-                              <div className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3 text-slate-400" />
-                                <span className="text-slate-600">
-                                  {[visitor.city, visitor.region, visitor.country].filter(Boolean).join(', ')}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400">-</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <DeviceBadge type={visitor.device_type} />
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">
-                            <div>{visitor.browser || '-'}</div>
-                            <div className="text-xs text-slate-400">{visitor.os || '-'}</div>
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">
-                            {formatDate(visitor.created_at)}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Pagination controls */}
-            {visitorTotal > 0 && (
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-slate-500">
-                  Showing {visitorPage * VISITORS_PER_PAGE + 1} - {Math.min((visitorPage + 1) * VISITORS_PER_PAGE, visitorTotal)} of {visitorTotal} visits
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setVisitorPage(p => Math.max(0, p - 1))}
-                    disabled={visitorPage === 0}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
-                  </button>
-                  <span className="text-sm text-slate-600">
-                    Page {visitorPage + 1} of {Math.ceil(visitorTotal / VISITORS_PER_PAGE)}
-                  </span>
-                  <button
-                    onClick={() => setVisitorPage(p => p + 1)}
-                    disabled={(visitorPage + 1) * VISITORS_PER_PAGE >= visitorTotal}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <AnalyticsTab getToken={getToken} />
         )}
 
         {/* Transparency Tab */}
@@ -1026,7 +761,7 @@ export default function AdminPage() {
         )}
 
         {/* Stats Footer */}
-        {!loading && activeTab !== 'transparency' && activeTab !== 'subscriptions' && (
+        {!loading && activeTab !== 'transparency' && activeTab !== 'subscriptions' && activeTab !== 'analytics' && (
           <div className="mt-4 text-sm text-slate-500">
             {activeTab === 'sessions' ? (
               <span>
@@ -1039,12 +774,6 @@ export default function AdminPage() {
                 {feedback.filter(f => f.type === 'bug').length} bugs,
                 {' '}{feedback.filter(f => f.type === 'suggestion').length} suggestions,
                 {' '}{feedback.filter(f => f.type === 'confusion').length} confusion reports
-              </span>
-            ) : activeTab === 'visitors' ? (
-              <span>
-                {visitorStats?.today || 0} today,
-                {' '}{visitorStats?.last_7_days || 0} last 7 days,
-                {' '}{visitorTotal} total
               </span>
             ) : (
               <span>{testScenarios.length} test scenarios available</span>

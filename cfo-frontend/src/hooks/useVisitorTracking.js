@@ -39,6 +39,20 @@ function getReferrerType(referrer) {
   }
 }
 
+// Extract UTM parameters from URL search string
+function getUtmParams() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      utm_source: params.get('utm_source') || null,
+      utm_medium: params.get('utm_medium') || null,
+      utm_campaign: params.get('utm_campaign') || null,
+    };
+  } catch {
+    return { utm_source: null, utm_medium: null, utm_campaign: null };
+  }
+}
+
 // Track a page visit
 async function trackVisit(pagePath, queryString, referrer, referrerType) {
   // Skip tracking if API_URL is not configured
@@ -48,6 +62,7 @@ async function trackVisit(pagePath, queryString, referrer, referrerType) {
   }
 
   try {
+    const utm = getUtmParams();
     await fetch(`${API_URL}/track`, {
       method: 'POST',
       headers: {
@@ -59,6 +74,7 @@ async function trackVisit(pagePath, queryString, referrer, referrerType) {
         referrer: referrer || null,
         referrer_type: referrerType,
         session_id: getSessionId(),
+        ...utm,
       }),
     });
   } catch (err) {

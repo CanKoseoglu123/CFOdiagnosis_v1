@@ -65,6 +65,7 @@ import { requireSubscription, attachSubscriptionInfo, canAccessObjective } from 
 import billingRoutes from "./stripe/routes";
 import stripeWebhooks from "./stripe/webhooks";
 import stripeAdminRoutes from "./stripe/adminRoutes";
+import adminAnalyticsRoutes from "./routes/adminAnalytics";
 
 const app = express();
 
@@ -2459,6 +2460,7 @@ app.use("/diagnostic-runs", executiveInterpretationRoutes);
 // ------------------------------------------------------------------
 app.use("/api/company-profiles", companyProfilesRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 // ------------------------------------------------------------------
 // Stripe Billing Routes (when enabled)
@@ -3518,7 +3520,7 @@ async function lookupGeolocation(
 
 // POST /track - Log a page visit (public endpoint, no auth required)
 app.post("/track", async (req, res) => {
-  const { page_path, query_string, referrer, referrer_type, session_id } = req.body;
+  const { page_path, query_string, referrer, referrer_type, session_id, utm_source, utm_medium, utm_campaign } = req.body;
 
   // Basic validation
   if (!page_path || typeof page_path !== "string") {
@@ -3573,6 +3575,10 @@ app.post("/track", async (req, res) => {
       browser: browser.slice(0, 100),
       os: os.slice(0, 100),
       ip_address: ip,
+      // UTM tracking
+      utm_source: typeof utm_source === "string" ? utm_source.slice(0, 200) : null,
+      utm_medium: typeof utm_medium === "string" ? utm_medium.slice(0, 200) : null,
+      utm_campaign: typeof utm_campaign === "string" ? utm_campaign.slice(0, 200) : null,
       // Geolocation fields will be updated async
       country: null,
       country_code: null,
