@@ -80,7 +80,7 @@ export default function OverviewPanel({ data }) {
                 contentStyle={{ border: '1px solid #e2e8f0', borderRadius: '2px', fontSize: '12px' }}
                 labelFormatter={d => new Date(d).toLocaleDateString()}
               />
-              <Area type="monotone" dataKey="unique_sessions" stroke="#1a365d" fill="#1a365d" fillOpacity={0.1} strokeWidth={2} />
+              <Area type="monotone" dataKey="unique_visitors" stroke="#1a365d" fill="#1a365d" fillOpacity={0.1} strokeWidth={2} />
               <Area type="monotone" dataKey="count" stroke="#c9a050" fill="#c9a050" fillOpacity={0.05} strokeWidth={1.5} strokeDasharray="4 2" />
             </AreaChart>
           </ResponsiveContainer>
