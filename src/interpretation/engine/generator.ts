@@ -8,10 +8,12 @@
 import { InterpretationInput, OverviewSection, Tonality, deriveTonality } from './types';
 import { PillarPack } from '../pillars/registry';
 import { callOpenAI, openai } from './openai-client';
+import { sanitizeForPrompt } from './sanitize';
 
 export async function generateInterpretation(
   input: InterpretationInput,
-  pack: PillarPack
+  pack: PillarPack,
+  retryContext?: string
 ): Promise<{ sections: OverviewSection[]; tokens: number }> {
 
   const tonality = deriveTonality(
@@ -19,13 +21,13 @@ export async function generateInterpretation(
     input.critical_failures.length > 0
   );
 
-  const prompt = buildPrompt(input, pack, tonality);
+  const prompt = buildPrompt(input, pack, tonality, retryContext);
 
   const response = await callOpenAI(async () => {
     return openai.chat.completions.create({
       model: 'gpt-4o',
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.4,
+      max_tokens: 2500,
       messages: [
         { role: 'system', content: buildSystemPrompt(pack, tonality) },
         { role: 'user', content: prompt },
@@ -70,11 +72,37 @@ LANGUAGE RULES:
 
 ${toneGuidance[tonality]}
 
-Address the organization as "you" or by company name. Write like a consulting partner.`;
+Address the organization as "you" or by company name. Write like a consulting partner.
+
+GOLDEN EXAMPLES:
+
+Example 1 (celebrate/refine tone — high scorer):
+{"id": "executive_snapshot", "content": "Your FP&A function operates at Level 3 (Managed) [[level_3]] with an execution score of 78% [[score_overall]]. Budget discipline and financial controls are well-established, placing you ahead of most mid-market peers. The path to Level 4 is clear: close the remaining gaps in scenario modeling and driver-based planning to unlock predictive capability."}
+
+Example 2 (urgent/remediate tone — critical failures):
+{"id": "constraints", "content": "Maturity is capped at Level 1 [[cap_active]] due to critical failures in Financial Controls [[critical_fpa_q003]] and Budget Discipline [[critical_fpa_q008]]. Without formal variance analysis and budget sign-off processes, forecasting accuracy and leadership confidence remain at risk. These gate blockers must be resolved before any advancement is possible [[gate_L1_blocked]]."}`;
+
 }
 
-function buildPrompt(input: InterpretationInput, pack: PillarPack, tonality: Tonality): string {
-  return `Generate a ${pack.pillar_name} interpretation for ${input.company_name}.
+function buildPrompt(input: InterpretationInput, pack: PillarPack, tonality: Tonality, retryContext?: string): string {
+  // VS-38: Build enriched data blocks
+  const painPointsBlock = input.pain_points && input.pain_points.length > 0
+    ? `\nCOMPANY CONTEXT (pain points reported by user):\n${input.pain_points.map(p => `- ${p}`).join('\n')}`
+    : '';
+
+  const weakPracticesBlock = input.weak_practices && input.weak_practices.length > 0
+    ? `\nWEAK PRACTICES (not yet proven in low-scoring objectives):\n${input.weak_practices.map(wp => `- ${wp.practice_name} (${wp.objective_name}): ${wp.evidence_state}`).join('\n')}`
+    : '';
+
+  const personaTargetsBlock = input.persona_targets && input.persona_targets.length > 0
+    ? `\nBENCHMARK GAPS (current score vs. target for this company type):\n${input.persona_targets.map(pt => `- ${pt.objective_name}: ${pt.current_score}% (target: Level ${pt.target_level})`).join('\n')}`
+    : '';
+
+  const retryBlock = retryContext
+    ? `\nIMPORTANT - PREVIOUS ATTEMPT FAILED VALIDATION:\n${retryContext}\nPlease fix these issues in your response.\n`
+    : '';
+
+  return `Generate a ${pack.pillar_name} interpretation for ${sanitizeForPrompt(input.company_name)}.
 
 TONALITY: ${tonality.toUpperCase()}
 
@@ -102,13 +130,14 @@ PRIORITY MISALIGNMENTS (high importance but low score):
 ${input.priority_misalignments.length > 0
       ? input.priority_misalignments.map(m => `- ${m.objective_name}: importance ${m.importance}/5, score ${m.score}%`).join('\n')
       : '- None'}
+${painPointsBlock}${weakPracticesBlock}${personaTargetsBlock}
 
 AVAILABLE EVIDENCE IDs:
 ${input.evidence_ids.join(', ')}
 
 GENERATE these 5 sections:
 ${pack.sections.map(s => `- ${s.id}: "${s.title}" (${s.guidance}) [max ${s.max_words} words]`).join('\n')}
-
+${retryBlock}
 Return ONLY valid JSON:
 [
   {"id": "executive_snapshot", "title": "Executive Snapshot", "content": "...[[evidence]]..."},

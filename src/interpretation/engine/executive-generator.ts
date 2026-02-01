@@ -11,6 +11,8 @@ import {
   buildExecutiveSystemPrompt,
 } from './executive-prompt';
 import { callOpenAI, openai } from './openai-client';
+import { runExecutiveHeuristics } from './executive-heuristics';
+import { generateExecutiveFallback } from './executive-fallback';
 
 export interface ExecutiveSection {
   id: string;
@@ -24,7 +26,7 @@ export interface ExecutiveGeneratorResult {
 }
 
 /**
- * Generate executive commentary using OpenAI
+ * Generate executive commentary using OpenAI with heuristic validation and fallback
  */
 export async function generateExecutiveCommentary(
   input: ExecutiveCommentaryInput
@@ -32,37 +34,54 @@ export async function generateExecutiveCommentary(
   const systemPrompt = buildExecutiveSystemPrompt();
   const userPrompt = buildExecutiveCommentaryPrompt(input);
 
-  const response = await callOpenAI(async () => {
-    return openai.chat.completions.create({
-      model: 'gpt-4o',
-      temperature: 0.7,
-      max_tokens: 1500,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
+  try {
+    const response = await callOpenAI(async () => {
+      return openai.chat.completions.create({
+        model: 'gpt-4o',
+        temperature: 0.7,
+        max_tokens: 1500,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      });
     });
-  });
 
-  const content = response.choices[0]?.message?.content;
-  if (!content) {
-    throw new Error('Empty response from OpenAI');
-  }
-
-  const sections = parseResponse(content);
-
-  // Validate we got all 3 sections
-  const expectedIds = ['current_state', 'actions_committed', 'projected_state'];
-  for (const id of expectedIds) {
-    if (!sections.find(s => s.id === id)) {
-      throw new Error(`Missing required section: ${id}`);
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('Empty response from OpenAI');
     }
-  }
 
-  return {
-    sections,
-    tokens: response.usage?.total_tokens || 0,
-  };
+    const sections = parseResponse(content);
+
+    // Run heuristic validation
+    const heuristics = runExecutiveHeuristics(sections, input);
+
+    if (heuristics.passed) {
+      return {
+        sections,
+        tokens: response.usage?.total_tokens || 0,
+      };
+    }
+
+    // Log heuristic failures
+    console.log('[EXECUTIVE-AI] Heuristics failed, using fallback:',
+      heuristics.violations.filter(v => v.severity === 'error'));
+
+    // Fallback to template-based output
+    return {
+      sections: generateExecutiveFallback(input),
+      tokens: response.usage?.total_tokens || 0,
+    };
+  } catch (error: any) {
+    console.error('[EXECUTIVE-AI] Generation failed, using fallback:', error.message);
+
+    // Full fallback on generation failure
+    return {
+      sections: generateExecutiveFallback(input),
+      tokens: 0,
+    };
+  }
 }
 
 /**

@@ -10,7 +10,7 @@
 
 import { Router, Request, Response } from 'express';
 import { requireAdmin } from '../middleware/adminAuth';
-import { createClient } from '@supabase/supabase-js';
+import { getServiceClient } from '../lib/supabase';
 
 const router = Router();
 
@@ -18,14 +18,16 @@ const router = Router();
 router.use(requireAdmin);
 
 // Service role client for admin operations
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Returns null if env vars not configured
+function getAdmin() {
+  try {
+    return getServiceClient();
+  } catch {
+    return null;
+  }
+}
 
-const supabaseAdmin = supabaseUrl && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
-  : null;
+const supabaseAdmin = getAdmin();
 
 // ============================================
 // GET /api/admin/subscriptions

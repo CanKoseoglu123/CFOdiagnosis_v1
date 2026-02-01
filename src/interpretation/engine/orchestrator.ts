@@ -4,7 +4,6 @@
  * Flow: Precompute → Generate → Heuristics → (Retry) → Fallback
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { InterpretationInput, OverviewSection, HeuristicResult } from './types';
 import { PillarPack } from '../pillars/registry';
 import { precompute, computeInputHash } from './precompute';
@@ -12,18 +11,9 @@ import { generateInterpretation } from './generator';
 import { runHeuristics } from './heuristics';
 import { generateFallback } from './fallback';
 import { getPillarPack } from '../pillars/registry';
+import { getServiceClient } from '../../lib/supabase';
 
 const MAX_ATTEMPTS = 2;
-
-// Supabase service client for background operations (bypasses RLS with service role)
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
 
 export interface OrchestrationResult {
   sections: OverviewSection[];
@@ -46,13 +36,13 @@ export async function orchestrate(runId: string): Promise<OrchestrationResult> {
     pack = getPillarPack(input.pillar_id);
 
     // Compute hash for regeneration control - fetch separately to avoid join issues
-    const { data: run } = await supabase
+    const { data: run } = await getServiceClient()
       .from('diagnostic_runs')
       .select('calibration')
       .eq('id', runId)
       .maybeSingle();
 
-    const { data: inputs } = await supabase
+    const { data: inputs } = await getServiceClient()
       .from('diagnostic_inputs')
       .select('question_id, value')
       .eq('run_id', runId);
@@ -85,7 +75,24 @@ export async function orchestrate(runId: string): Promise<OrchestrationResult> {
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      const { sections, tokens } = await generateInterpretation(input, pack);
+      // VS-38: On retry, build feedback from previous attempt's violations
+      let retryContext: string | undefined;
+      if (attempt > 1 && lastHeuristics && !lastHeuristics.passed) {
+        const errorMessages = lastHeuristics.violations
+          .filter(v => v.severity === 'error')
+          .map(v => `- [${v.rule}] ${v.section_id ? `Section "${v.section_id}": ` : ''}${v.message}`);
+        const warningMessages = lastHeuristics.violations
+          .filter(v => v.severity === 'warning')
+          .slice(0, 3)
+          .map(v => `- [${v.rule}] ${v.section_id ? `Section "${v.section_id}": ` : ''}${v.message}`);
+
+        const messages = [...errorMessages, ...warningMessages];
+        if (messages.length > 0) {
+          retryContext = `The following validation issues were found:\n${messages.join('\n')}`;
+        }
+      }
+
+      const { sections, tokens } = await generateInterpretation(input, pack, retryContext);
       totalTokens += tokens;
 
       lastSections = sections;

@@ -63,6 +63,8 @@ export interface ExecutiveCommentaryInput {
   };
 }
 
+import { sanitizeForPrompt } from './sanitize';
+
 export function buildExecutiveCommentaryPrompt(input: ExecutiveCommentaryInput): string {
   const levelImprovement = input.projected_level - input.current_level;
   const scoreImprovement = input.projected_score - input.current_score;
@@ -98,8 +100,8 @@ export function buildExecutiveCommentaryPrompt(input: ExecutiveCommentaryInput):
 CONTEXT
 ═══════════════════════════════════════════════════════════════════
 
-Company: ${input.company_name}
-${input.industry ? `Industry: ${input.industry}` : ''}
+Company: ${sanitizeForPrompt(input.company_name)}
+${input.industry ? `Industry: ${sanitizeForPrompt(input.industry)}` : ''}
 
 CURRENT STATE:
 - Execution Score: ${input.current_score}%
@@ -144,7 +146,7 @@ TONE: Optimistic, confident, execution-focused. This is a finalized plan — val
 - Be forward-looking: "will achieve" not "could achieve"
 
 LANGUAGE RULES:
-- Address as "you" or "${input.company_name}"
+- Address as "you" or "${sanitizeForPrompt(input.company_name)}"
 - Use active voice
 - Be specific — reference actual objectives, actions, and numbers
 - Scores ≥65%: "solid", "robust", "established", "mature"

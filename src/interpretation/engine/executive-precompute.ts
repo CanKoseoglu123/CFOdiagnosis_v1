@@ -8,7 +8,6 @@
  * - Top impactful actions
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { SpecRegistry, DEFAULT_SPEC_VERSION } from '../../specs/registry';
 import { normalizeContext } from '../../utils/contextAdapter';
 import { PAIN_POINT_PRACTICE_MAP, calculateScore } from '../../actions/prioritizeActions';
@@ -16,13 +15,7 @@ import { PAIN_POINTS_LABELS, PainPoints } from '../../specs/schemas';
 import { CalibrationData, PillarContext } from '../../actions/types';
 import { ExecutiveCommentaryInput } from './executive-prompt';
 import { Spec, SpecQuestion, SpecPractice, SpecObjective } from '../../specs/types';
-
-// Supabase service client
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+import { getServiceClient } from '../../lib/supabase';
 
 // Level names
 const LEVEL_NAMES: Record<number, string> = {
@@ -56,7 +49,7 @@ export async function precomputeExecutiveData(runId: string): Promise<ExecutiveC
   const spec = SpecRegistry.get(DEFAULT_SPEC_VERSION);
 
   // Fetch run data
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await getServiceClient()
     .from('diagnostic_runs')
     .select('*')
     .eq('id', runId)
@@ -67,7 +60,7 @@ export async function precomputeExecutiveData(runId: string): Promise<ExecutiveC
   }
 
   // Fetch diagnostic inputs
-  const { data: inputs } = await supabase
+  const { data: inputs } = await getServiceClient()
     .from('diagnostic_inputs')
     .select('question_id, value')
     .eq('run_id', runId);
@@ -252,9 +245,9 @@ function calculateProjections(
  * Convert score to maturity level
  */
 function scoreToLevel(score: number): number {
-  if (score >= 95) return 4;
-  if (score >= 80) return 3;
-  if (score >= 50) return 2;
+  if (score >= 85) return 4;
+  if (score >= 65) return 3;
+  if (score >= 40) return 2;
   return 1;
 }
 

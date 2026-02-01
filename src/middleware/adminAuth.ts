@@ -55,7 +55,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
  * Attaches req.isAdmin = true/false
  */
 export async function checkAdmin(req: Request, _res: Response, next: NextFunction) {
-  (req as any).isAdmin = false;
+  req.isAdmin = false;
 
   if (!req.userId) {
     return next();
@@ -65,19 +65,10 @@ export async function checkAdmin(req: Request, _res: Response, next: NextFunctio
     const { data: { user } } = await req.supabase.auth.getUser();
     if (user?.email) {
       const adminEmails = getAdminEmails();
-      const isAdmin = adminEmails.includes(user.email.toLowerCase());
-      (req as any).isAdmin = isAdmin;
-
-      // DEBUG: Log admin check results
-      console.log('[DEBUG checkAdmin]', {
-        userEmail: user.email,
-        isAdmin,
-        adminEmailsCount: adminEmails.length
-      });
+      req.isAdmin = adminEmails.includes(user.email.toLowerCase());
     }
-  } catch (err) {
-    // Log admin check failures
-    console.log('[DEBUG checkAdmin] Error:', err);
+  } catch {
+    // Non-blocking: admin check failure doesn't prevent request
   }
 
   next();

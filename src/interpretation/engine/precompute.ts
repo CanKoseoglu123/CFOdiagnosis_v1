@@ -2,7 +2,6 @@
  * VS-32: Precompute - Builds interpretation input from diagnostic run
  */
 
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { InterpretationInput, InterpretationInputSchema } from './types';
 import { buildReport, DiagnosticInput } from '../../reports/builder';
@@ -11,24 +10,15 @@ import { SpecRegistry } from '../../specs/registry';
 import { toAggregateSpec } from '../../specs/toAggregateSpec';
 import { Spec } from '../../specs/types';
 import { normalizeContext } from '../../utils/contextAdapter';  // VS26
-
-// Supabase service client for background operations (bypasses RLS with service role)
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { getServiceClient } from '../../lib/supabase';
+import { Classification } from '../../utils/targetCalculation';
+import { CompanyContext } from '../../specs/schemas';
 
 export async function precompute(runId: string): Promise<InterpretationInput> {
-  console.log('[precompute] Starting for run:', runId);
-  console.log('[precompute] Service role key set:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'YES' : 'NO (using anon key fallback)');
-  console.log('[precompute] Key length:', supabaseServiceKey?.length || 0);
-
   // Fetch run separately (avoids join issues)
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await getServiceClient()
     .from('diagnostic_runs')
     .select('*')
     .eq('id', runId)
@@ -40,14 +30,11 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
   }
 
   if (!run) {
-    console.error('[precompute] Run not found for ID:', runId);
     throw new Error(`Run not found: ${runId}`);
   }
 
-  console.log('[precompute] Found run, status:', run.status);
-
   // Fetch inputs separately
-  const { data: diagnosticInputs, error: inputsError } = await supabase
+  const { data: diagnosticInputs, error: inputsError } = await getServiceClient()
     .from('diagnostic_inputs')
     .select('question_id, value')
     .eq('run_id', runId);
@@ -59,7 +46,6 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
 
   // Attach inputs to run object for compatibility
   run.diagnostic_inputs = diagnosticInputs || [];
-  console.log('[precompute] Found', run.diagnostic_inputs.length, 'inputs');
 
   const pillarId = run.pillar_id || 'fpa';
   const spec = SpecRegistry.getDefault();
@@ -86,10 +72,10 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
   } : null;
 
   // VS-27f: Fetch company profile classification for targets (optional)
-  let classification: any = null;
-  let companyContext: any = null;
+  let classification: Classification | null = null;
+  let companyContext: CompanyContext | null = null;
   if (run.company_profile_id) {
-    const { data: profile } = await supabase
+    const { data: profile } = await getServiceClient()
       .from('company_profiles')
       .select('context, classification')
       .eq('id', run.company_profile_id)
@@ -164,6 +150,15 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
   const company_name = context.company?.name || context.company_name || 'The organization';
   const industry = context.company?.industry || context.industry || 'Not specified';
 
+  // VS-38: Extract pain points from pillar context
+  const pain_points = pillarContext?.pain_points || [];
+
+  // VS-38: Extract weak practices from maturity footprint
+  const weak_practices = extractWeakPractices(report, objectives);
+
+  // VS-38: Load persona targets from targetMatrix.json
+  const persona_targets = extractPersonaTargets(classification, objectives);
+
   const input: InterpretationInput = {
     pillar_id: pillarId,
     run_id: runId,
@@ -181,6 +176,11 @@ export async function precompute(runId: string): Promise<InterpretationInput> {
     failed_gates,
     priority_misalignments,
     evidence_ids,
+
+    // VS-38: Enriched context
+    pain_points: pain_points.length > 0 ? pain_points : undefined,
+    weak_practices: weak_practices.length > 0 ? weak_practices : undefined,
+    persona_targets: persona_targets.length > 0 ? persona_targets : undefined,
   };
 
   // Validate - fail fast if bad data
@@ -225,6 +225,107 @@ function buildEvidenceList(report: any, objectives: any[]): string[] {
   }
 
   return [...new Set(evidence)]; // Remove duplicates
+}
+
+/**
+ * VS-38: Extract weak practices from maturity footprint
+ * Practices with evidence_state !== 'proven' in objectives scoring <60%
+ * Limited to 3 per objective, 9 total
+ */
+function extractWeakPractices(
+  report: any,
+  objectives: Array<{ id: string; name: string; score: number }>
+): Array<{ objective_name: string; practice_name: string; evidence_state: 'proven' | 'partial' | 'not_proven' }> {
+  const footprint = report.maturity_footprint;
+  if (!footprint?.levels) return [];
+
+  // Build a flat list of all practices with their evidence state
+  const allPractices: Array<{ practice: any; level: number }> = [];
+  for (const level of footprint.levels) {
+    for (const practice of level.practices || []) {
+      allPractices.push({ practice, level: level.level });
+    }
+  }
+
+  // Get objectives scoring <60%
+  const weakObjectiveIds = new Set(
+    objectives.filter(o => o.score < 60).map(o => o.id)
+  );
+
+  if (weakObjectiveIds.size === 0) return [];
+
+  // We need to map practices back to objectives — practices have objective_id on the spec level
+  // The footprint practices don't carry objective_id, so we need the spec
+  const spec = SpecRegistry.getDefault();
+  const practiceSpecs = (spec.practices || []) as Array<{ id: string; objective_id: string }>;
+  const practiceToObjective = new Map(practiceSpecs.map(p => [p.id, p.objective_id]));
+
+  // Build objective name map
+  const objectiveNameMap = new Map(objectives.map(o => [o.id, o.name]));
+
+  const result: Array<{ objective_name: string; practice_name: string; evidence_state: 'proven' | 'partial' | 'not_proven' }> = [];
+  const perObjectiveCount = new Map<string, number>();
+
+  for (const { practice } of allPractices) {
+    if (practice.evidence_state === 'proven') continue;
+    if (practice.is_not_assessed) continue;
+
+    const objectiveId = practiceToObjective.get(practice.id);
+    if (!objectiveId || !weakObjectiveIds.has(objectiveId)) continue;
+
+    const count = perObjectiveCount.get(objectiveId) || 0;
+    if (count >= 3) continue;
+
+    const objectiveName = objectiveNameMap.get(objectiveId) || objectiveId;
+    result.push({
+      objective_name: objectiveName,
+      practice_name: practice.title,
+      evidence_state: practice.evidence_state,
+    });
+
+    perObjectiveCount.set(objectiveId, count + 1);
+    if (result.length >= 9) break;
+  }
+
+  return result;
+}
+
+/**
+ * VS-38: Load persona targets from targetMatrix.json
+ * Compares current objective scores to persona-specific target levels
+ */
+let _targetMatrix: any = null;
+function loadTargetMatrix(): any {
+  if (!_targetMatrix) {
+    try {
+      const raw = readFileSync(join(__dirname, '../../../content/targetMatrix.json'), 'utf-8');
+      _targetMatrix = JSON.parse(raw);
+    } catch (err) {
+      console.error('[precompute] Failed to load targetMatrix.json:', err);
+      _targetMatrix = {};
+    }
+  }
+  return _targetMatrix;
+}
+
+function extractPersonaTargets(
+  classification: any,
+  objectives: Array<{ id: string; name: string; score: number }>
+): Array<{ objective_name: string; current_score: number; target_level: number }> {
+  const persona = classification?.persona;
+  if (!persona) return [];
+
+  const matrix = loadTargetMatrix();
+  const targets = matrix?.objectiveTargets?.[persona];
+  if (!targets) return [];
+
+  return objectives
+    .filter(o => targets[o.id] !== undefined)
+    .map(o => ({
+      objective_name: o.name,
+      current_score: o.score,
+      target_level: targets[o.id],
+    }));
 }
 
 /**

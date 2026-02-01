@@ -9,30 +9,11 @@
  */
 
 import { Router, Request } from 'express';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { precomputeExecutiveData } from './executive-precompute';
 import { generateExecutiveCommentary } from './executive-generator';
+import { getServiceClient } from '../../lib/supabase';
 
 const router = Router();
-
-// Lazy-initialized service client (avoids crash at module load if env vars missing)
-let _serviceClient: SupabaseClient | null = null;
-
-function getServiceClient(): SupabaseClient {
-  if (!_serviceClient) {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY for executive interpretation service');
-    }
-
-    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-  }
-  return _serviceClient;
-}
 
 // Schema version for executive commentary (distinct from overview interpretation)
 const EXECUTIVE_SCHEMA_VERSION = 2;
@@ -42,18 +23,25 @@ const EXECUTIVE_SCHEMA_VERSION = 2;
  * Start executive commentary generation
  */
 router.post('/:id/interpret-executive', async (req: Request, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
   const { id: runId } = req.params;
 
   try {
-    // Check run exists and is finalized
+    // Check run exists, is owned by the caller, and is finalized
     const { data: run, error: runError } = await getServiceClient()
       .from('diagnostic_runs')
-      .select('id, finalized_at, action_plan_snapshot')
+      .select('id, owner_id, finalized_at, action_plan_snapshot')
       .eq('id', runId)
       .maybeSingle();
 
     if (runError || !run) {
       return res.status(404).json({ error: 'Run not found' });
+    }
+
+    if (run.owner_id !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
 
     if (!run.finalized_at) {
@@ -173,17 +161,28 @@ async function generateAsync(runId: string, reportId: string): Promise<void> {
  * Get executive commentary status and sections
  */
 router.get('/:id/interpret-executive/status', async (req: Request, res) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
   const { id: runId } = req.params;
 
   try {
-    // Check run is finalized
+    // Check run exists and is owned by the caller
     const { data: run } = await getServiceClient()
       .from('diagnostic_runs')
-      .select('finalized_at')
+      .select('owner_id, finalized_at')
       .eq('id', runId)
       .maybeSingle();
 
-    if (!run?.finalized_at) {
+    if (!run) {
+      return res.status(404).json({ error: 'Run not found' });
+    }
+
+    if (run.owner_id !== req.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    if (!run.finalized_at) {
       return res.json({
         status: 'not_finalized',
         sections: null,

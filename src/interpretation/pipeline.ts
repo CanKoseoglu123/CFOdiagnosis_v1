@@ -5,7 +5,7 @@
  * Handles session state, quality gates, and user question flow.
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import {
   InterpretationSession,
   DiagnosticData,

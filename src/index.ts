@@ -1,4 +1,3 @@
-// Build trigger: 2026-01-17
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
@@ -44,6 +43,7 @@ import { generateBenchmarkCommentary, BenchmarkObjectiveGap } from "./benchmark/
 import companyProfilesRoutes from "./routes/companyProfiles";
 import adminRoutes from "./routes/admin";
 import { requireAdmin, checkAdmin } from "./middleware/adminAuth";
+import { requireAuth } from "./middleware/auth";
 
 // Classification engine for test run setup
 import { classifyCompany } from "./classification/engine";
@@ -65,6 +65,7 @@ import { requireSubscription, attachSubscriptionInfo, canAccessObjective } from 
 import billingRoutes from "./stripe/routes";
 import stripeWebhooks from "./stripe/webhooks";
 import stripeAdminRoutes from "./stripe/adminRoutes";
+import adminAnalyticsRoutes from "./routes/adminAnalytics";
 
 const app = express();
 
@@ -209,7 +210,7 @@ if (!supabaseAdmin) {
  * Admins get the service role client (bypasses RLS), regular users get their authenticated client.
  */
 function getClient(req: Request): SupabaseClient {
-  if ((req as any).isAdmin && supabaseAdmin) {
+  if (req.isAdmin && supabaseAdmin) {
     return supabaseAdmin;
   }
   return req.supabase;
@@ -223,6 +224,9 @@ declare global {
     interface Request {
       userId?: string;
       userEmail?: string;
+      isAdmin?: boolean;
+      subscriptionTier?: string;
+      accessibleObjectives?: string[] | 'all';
       supabase: SupabaseClient;  // Each request gets its own client
     }
   }
@@ -293,19 +297,7 @@ app.get("/health", (_req, res) => {
 });
 
 // Admin-only debug endpoint (protected - does not expose secrets)
-// Note: This endpoint is defined before requireAdmin middleware is available,
-// so we define a minimal inline check. Full admin routes use requireAdmin below.
-app.get("/admin/key-check", async (req, res) => {
-  // Inline admin check (requireAdmin not yet defined at this point in file)
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
-  const { data: { user } } = await req.supabase.auth.getUser();
-  const adminEmails = (process.env.ADMIN_EMAILS || "admin@cfo-lens.com").split(',').map(e => e.trim().toLowerCase());
-  if (!user?.email || !adminEmails.includes(user.email.toLowerCase())) {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-
+app.get("/admin/key-check", requireAdmin, async (req, res) => {
   // Only expose non-sensitive configuration status (no key contents or previews)
   const isJWT = supabaseServiceRoleKey?.startsWith("eyJ") || false;
 
@@ -379,13 +371,13 @@ app.get("/supabase-health", async (_req, res) => {
 // VS1 — Create diagnostic run
 // Now uses req.supabase (authenticated if token provided)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs", async (req, res) => {
+app.post("/diagnostic-runs", requireAuth, async (req, res) => {
   const { data, error } = await req.supabase
     .from("diagnostic_runs")
     .insert({
       status: "created",
       spec_version: DEFAULT_SPEC_VERSION,
-      owner_id: req.userId || null,
+      owner_id: req.userId,
       user_email: req.userEmail || null,
       current_step: "intro",
       last_activity_at: new Date().toISOString(),
@@ -1285,7 +1277,7 @@ app.post("/diagnostic-runs/:id/score", checkAdmin, async (req, res) => {
 // Navigation: Rescore run (after editing answers)
 // Forces overwrite and clears scores_stale flag
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/rescore", async (req, res) => {
+app.post("/diagnostic-runs/:id/rescore", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   const { data: run, error: runError } = await req.supabase
@@ -1367,7 +1359,7 @@ app.post("/diagnostic-runs/:id/rescore", async (req, res) => {
 // ------------------------------------------------------------------
 // VS5 — Results
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/results", async (req, res) => {
+app.get("/diagnostic-runs/:id/results", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   const { data: run, error: runError } = await req.supabase
@@ -1420,16 +1412,6 @@ app.get("/diagnostic-runs/:id/results", async (req, res) => {
 app.get("/diagnostic-runs/:id/report", checkAdmin, requireSubscription, async (req, res) => {
   const runId = req.params.id;
 
-  // DEBUG: Log admin access details for troubleshooting cross-user access
-  console.log('[DEBUG /report]', {
-    runId,
-    userId: req.userId,
-    userEmail: req.userEmail,
-    isAdmin: (req as any).isAdmin,
-    hasServiceRoleKey: !!supabaseAdmin,
-    clientUsed: (req as any).isAdmin && supabaseAdmin ? 'supabaseAdmin' : 'req.supabase'
-  });
-
   const { data: run, error: runError } = await getClient(req)
     .from("diagnostic_runs")
     .select("id, status, spec_version, context, calibration, finalized_at, action_plan_snapshot, company_profile_id, scores_stale")
@@ -1437,13 +1419,6 @@ app.get("/diagnostic-runs/:id/report", checkAdmin, requireSubscription, async (r
     .single();
 
   if (runError || !run) {
-    // DEBUG: Log the actual error for troubleshooting RLS issues
-    console.log('[DEBUG /report] Run fetch failed:', {
-      runId,
-      error: runError?.message || 'No run data returned',
-      code: runError?.code,
-      hint: runError?.hint
-    });
     return res.status(404).json({ error: "Run not found" });
   }
 
@@ -1561,7 +1536,7 @@ app.get("/diagnostic-runs/:id/report", checkAdmin, requireSubscription, async (r
 // ------------------------------------------------------------------
 // VS25 — Start interpretation (returns 202, async processing)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
+app.post("/diagnostic-runs/:id/interpret/start", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   // Verify run exists and is completed
@@ -1778,7 +1753,7 @@ app.post("/diagnostic-runs/:id/interpret/start", async (req, res) => {
 // ------------------------------------------------------------------
 // VS25 — Get interpretation status
 // ------------------------------------------------------------------
-app.get("/diagnostic-runs/:id/interpret/status", async (req, res) => {
+app.get("/diagnostic-runs/:id/interpret/status", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   const session = await getSessionByRunId(req.supabase, runId);
@@ -1825,7 +1800,7 @@ app.get("/diagnostic-runs/:id/interpret/status", async (req, res) => {
 // ------------------------------------------------------------------
 // VS25 — Submit interpretation answers
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/interpret/answer", async (req, res) => {
+app.post("/diagnostic-runs/:id/interpret/answer", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { answers } = req.body;
 
@@ -2000,13 +1975,16 @@ app.get("/diagnostic-runs/:id/interpret/report", requireSubscription, async (req
 // ------------------------------------------------------------------
 // VS25 — Submit interpretation feedback
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
+app.post("/diagnostic-runs/:id/interpret/feedback", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { rating, feedback } = req.body;
 
   if (typeof rating !== "number" || rating < 1 || rating > 5) {
     return res.status(400).json({ error: "rating must be a number between 1 and 5" });
   }
+
+  // Cap feedback length
+  const sanitizedFeedback = typeof feedback === 'string' ? feedback.slice(0, 5000) : null;
 
   const session = await getSessionByRunId(req.supabase, runId);
   if (!session) {
@@ -2017,7 +1995,7 @@ app.post("/diagnostic-runs/:id/interpret/feedback", async (req, res) => {
     .from("interpretation_sessions")
     .update({
       user_rating: rating,
-      user_feedback: feedback || null,
+      user_feedback: sanitizedFeedback,
     })
     .eq("id", session.id);
 
@@ -2062,7 +2040,7 @@ app.get("/diagnostic-runs/:id/action-plan", checkAdmin, async (req, res) => {
 // ------------------------------------------------------------------
 // VS28 — Upsert action plan item (auto-save on toggle)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
+app.post("/diagnostic-runs/:id/action-plan", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { question_id, status, timeline, assigned_owner } = req.body;
 
@@ -2128,7 +2106,7 @@ app.post("/diagnostic-runs/:id/action-plan", async (req, res) => {
 // ------------------------------------------------------------------
 // VS28 — Delete action plan item
 // ------------------------------------------------------------------
-app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
+app.delete("/diagnostic-runs/:id/action-plan/:questionId", requireAuth, async (req, res) => {
   const runId = req.params.id;
   const questionId = req.params.questionId;
 
@@ -2168,7 +2146,7 @@ app.delete("/diagnostic-runs/:id/action-plan/:questionId", async (req, res) => {
 // ------------------------------------------------------------------
 // VS-39 — Finalize action plan (locks selections, enables Executive Report)
 // ------------------------------------------------------------------
-app.post("/diagnostic-runs/:id/finalize", async (req, res) => {
+app.post("/diagnostic-runs/:id/finalize", requireAuth, async (req, res) => {
   const runId = req.params.id;
 
   // Verify run exists and get current state
@@ -2278,13 +2256,9 @@ const VALID_STEPS = [
 
 type WorkflowStep = typeof VALID_STEPS[number];
 
-app.patch("/diagnostic-runs/:id/step", checkAdmin, async (req, res) => {
+app.patch("/diagnostic-runs/:id/step", checkAdmin, requireAuth, async (req, res) => {
   const runId = req.params.id;
   const { step, last_visited_objective_id, assessment_progress_pct } = req.body;
-
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
 
   // Validate step
   if (!step || !VALID_STEPS.includes(step)) {
@@ -2361,12 +2335,8 @@ app.patch("/diagnostic-runs/:id/step", checkAdmin, async (req, res) => {
 // ------------------------------------------------------------------
 // User Delete: Delete own diagnostic run (non-finalized only)
 // ------------------------------------------------------------------
-app.delete("/diagnostic-runs/:id", async (req, res) => {
+app.delete("/diagnostic-runs/:id", requireAuth, async (req, res) => {
   const runId = req.params.id;
-
-  if (!req.userId) {
-    return res.status(401).json({ error: "Authentication required" });
-  }
 
   // Verify run exists and check ownership + finalization status
   const { data: run, error: runError } = await req.supabase
@@ -2490,6 +2460,7 @@ app.use("/diagnostic-runs", executiveInterpretationRoutes);
 // ------------------------------------------------------------------
 app.use("/api/company-profiles", companyProfilesRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 // ------------------------------------------------------------------
 // Stripe Billing Routes (when enabled)
@@ -2543,7 +2514,6 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
       resume_path: computeResumePath(session),
     }));
 
-    res.setHeader("X-Admin-Debug", "adminClient=missing,fallback=owner_only");
     return res.json(enrichedData);
   }
 
@@ -2630,8 +2600,6 @@ app.get("/admin/sessions", requireAdmin, async (req, res) => {
     };
   });
 
-  // Include debug info in response header
-  res.setHeader("X-Admin-Debug", `users=${totalUsersLoaded},mapped=${userMap.size},err=${userFetchError || 'none'}`);
   res.json(enrichedData);
 });
 
@@ -3552,7 +3520,7 @@ async function lookupGeolocation(
 
 // POST /track - Log a page visit (public endpoint, no auth required)
 app.post("/track", async (req, res) => {
-  const { page_path, query_string, referrer, referrer_type, session_id } = req.body;
+  const { page_path, query_string, referrer, referrer_type, session_id, utm_source, utm_medium, utm_campaign } = req.body;
 
   // Basic validation
   if (!page_path || typeof page_path !== "string") {
@@ -3607,6 +3575,10 @@ app.post("/track", async (req, res) => {
       browser: browser.slice(0, 100),
       os: os.slice(0, 100),
       ip_address: ip,
+      // UTM tracking
+      utm_source: typeof utm_source === "string" ? utm_source.slice(0, 200) : null,
+      utm_medium: typeof utm_medium === "string" ? utm_medium.slice(0, 200) : null,
+      utm_campaign: typeof utm_campaign === "string" ? utm_campaign.slice(0, 200) : null,
       // Geolocation fields will be updated async
       country: null,
       country_code: null,

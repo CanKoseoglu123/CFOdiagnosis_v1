@@ -136,8 +136,8 @@ export async function requireSubscription(req: Request, res: Response, next: Nex
  */
 export async function attachSubscriptionInfo(req: Request, _res: Response, next: NextFunction) {
   const tierInfo = await getSubscriptionTier(req);
-  (req as any).subscriptionTier = tierInfo.tier;
-  (req as any).accessibleObjectives = tierInfo.accessibleObjectives;
+  req.subscriptionTier = tierInfo.tier;
+  req.accessibleObjectives = tierInfo.accessibleObjectives;
   next();
 }
 
@@ -145,11 +145,11 @@ export async function attachSubscriptionInfo(req: Request, _res: Response, next:
  * Check if an objective is accessible to the user
  */
 export function canAccessObjective(req: Request, objectiveId: string): boolean {
-  const accessible = (req as any).accessibleObjectives;
+  const accessible = req.accessibleObjectives;
 
   if (accessible === 'all') {
     return true;
   }
 
-  return accessible.includes(objectiveId);
+  return Array.isArray(accessible) ? accessible.includes(objectiveId) : false;
 }

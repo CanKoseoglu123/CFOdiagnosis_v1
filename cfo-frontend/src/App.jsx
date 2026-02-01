@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider } from './context/AuthContext'
 import { SubscriptionProvider } from './context/SubscriptionContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 import { useVisitorTracking } from './hooks/useVisitorTracking'
 
 // Eager load landing page (initial entry point)
@@ -81,6 +82,7 @@ export default function App() {
       <SubscriptionProvider>
         <BrowserRouter>
           <VisitorTracker />
+          <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -188,6 +190,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>
+          </ErrorBoundary>
         </BrowserRouter>
       </SubscriptionProvider>
     </AuthProvider>
