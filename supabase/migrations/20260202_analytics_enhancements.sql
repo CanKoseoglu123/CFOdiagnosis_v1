@@ -406,60 +406,27 @@ BEGIN
 
   SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json) INTO result
   FROM (
-    -- Signups
-    SELECT
-      'signup' AS event_type,
-      COALESCE(email, 'Unknown user') AS detail,
-      created_at
-    FROM auth.users
-    ORDER BY created_at DESC
-    LIMIT limit_count
-
-    UNION ALL
-
-    -- Runs created
-    SELECT
-      'run_created' AS event_type,
-      COALESCE(user_email, 'Unknown') AS detail,
-      created_at
-    FROM diagnostic_runs
-    ORDER BY created_at DESC
-    LIMIT limit_count
-
-    UNION ALL
-
-    -- Runs finalized
-    SELECT
-      'run_finalized' AS event_type,
-      COALESCE(user_email, 'Unknown') AS detail,
-      finalized_at AS created_at
-    FROM diagnostic_runs
-    WHERE finalized_at IS NOT NULL
-    ORDER BY finalized_at DESC
-    LIMIT limit_count
-
-    UNION ALL
-
-    -- Feedback
-    SELECT
-      'feedback' AS event_type,
-      COALESCE(type || ': ' || LEFT(message, 80), 'Feedback') AS detail,
-      created_at
-    FROM feedback
-    ORDER BY created_at DESC
-    LIMIT limit_count
-
-    UNION ALL
-
-    -- Recent visits
-    SELECT
-      'visit' AS event_type,
-      COALESCE(country, 'Unknown') || ' - ' || page_path AS detail,
-      created_at
-    FROM visitors
-    ORDER BY created_at DESC
-    LIMIT limit_count
-
+    SELECT event_type, detail, created_at FROM (
+      -- Signups
+      (SELECT 'signup' AS event_type, COALESCE(email, 'Unknown user') AS detail, created_at
+       FROM auth.users ORDER BY created_at DESC LIMIT limit_count)
+      UNION ALL
+      -- Runs created
+      (SELECT 'run_created' AS event_type, COALESCE(user_email, 'Unknown') AS detail, created_at
+       FROM diagnostic_runs ORDER BY created_at DESC LIMIT limit_count)
+      UNION ALL
+      -- Runs finalized
+      (SELECT 'run_finalized' AS event_type, COALESCE(user_email, 'Unknown') AS detail, finalized_at AS created_at
+       FROM diagnostic_runs WHERE finalized_at IS NOT NULL ORDER BY finalized_at DESC LIMIT limit_count)
+      UNION ALL
+      -- Feedback
+      (SELECT 'feedback' AS event_type, COALESCE(type || ': ' || LEFT(message, 80), 'Feedback') AS detail, created_at
+       FROM feedback ORDER BY created_at DESC LIMIT limit_count)
+      UNION ALL
+      -- Recent visits
+      (SELECT 'visit' AS event_type, COALESCE(country, 'Unknown') || ' - ' || page_path AS detail, created_at
+       FROM visitors ORDER BY created_at DESC LIMIT limit_count)
+    ) combined
     ORDER BY created_at DESC
     LIMIT limit_count
   ) t;
