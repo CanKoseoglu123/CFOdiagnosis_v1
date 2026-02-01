@@ -29,11 +29,14 @@ DECLARE
   today_start TIMESTAMPTZ := date_trunc('day', NOW());
 BEGIN
   SELECT json_build_object(
-    'total_visitors', (SELECT COUNT(*) FROM visitors),
+    'total_visitors', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL),
+    'total_page_views', (SELECT COUNT(*) FROM visitors),
     'unique_sessions', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL AND created_at >= period_start),
-    'today', (SELECT COUNT(*) FROM visitors WHERE created_at >= today_start),
-    'period', (SELECT COUNT(*) FROM visitors WHERE created_at >= period_start),
-    'previous_period', (SELECT COUNT(*) FROM visitors WHERE created_at >= prev_period_start AND created_at < period_start),
+    'today', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL AND created_at >= today_start),
+    'today_page_views', (SELECT COUNT(*) FROM visitors WHERE created_at >= today_start),
+    'period', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL AND created_at >= period_start),
+    'period_page_views', (SELECT COUNT(*) FROM visitors WHERE created_at >= period_start),
+    'previous_period', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL AND created_at >= prev_period_start AND created_at < period_start),
     'visitors_by_day', (
       SELECT COALESCE(json_agg(row_to_json(t) ORDER BY t.date), '[]'::json)
       FROM (
@@ -48,9 +51,9 @@ BEGIN
       ) t
     ),
     'devices', json_build_object(
-      'desktop', (SELECT COUNT(*) FROM visitors WHERE device_type = 'desktop' AND created_at >= period_start),
-      'mobile', (SELECT COUNT(*) FROM visitors WHERE device_type = 'mobile' AND created_at >= period_start),
-      'tablet', (SELECT COUNT(*) FROM visitors WHERE device_type = 'tablet' AND created_at >= period_start)
+      'desktop', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE device_type = 'desktop' AND session_id IS NOT NULL AND created_at >= period_start),
+      'mobile', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE device_type = 'mobile' AND session_id IS NOT NULL AND created_at >= period_start),
+      'tablet', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE device_type = 'tablet' AND session_id IS NOT NULL AND created_at >= period_start)
     ),
     'referrers', (
       SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)

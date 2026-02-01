@@ -50,15 +50,16 @@ export default function OverviewPanel({ data }) {
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard label="Total Visitors" value={data.total_visitors || 0} icon={Users} />
-        <StatCard label="Unique Sessions" value={data.unique_sessions || 0} icon={Eye} color="blue" />
-        <StatCard label="Today" value={data.today || 0} color="emerald" />
+        <StatCard label="Visitors (all time)" value={data.total_visitors || 0} icon={Users} />
         <StatCard
-          label="Period Total"
+          label="Visitors (period)"
           value={data.period || 0}
           trend={periodChange}
           trendLabel="vs prev period"
+          color="blue"
         />
+        <StatCard label="Today" value={data.today || 0} color="emerald" />
+        <StatCard label="Page Views" value={data.total_page_views || 0} icon={Eye} />
       </div>
 
       {/* Visitor Trend */}
@@ -79,13 +80,13 @@ export default function OverviewPanel({ data }) {
                 contentStyle={{ border: '1px solid #e2e8f0', borderRadius: '2px', fontSize: '12px' }}
                 labelFormatter={d => new Date(d).toLocaleDateString()}
               />
-              <Area type="monotone" dataKey="count" stroke="#1a365d" fill="#1a365d" fillOpacity={0.1} strokeWidth={2} />
-              <Area type="monotone" dataKey="unique_sessions" stroke="#c9a050" fill="#c9a050" fillOpacity={0.05} strokeWidth={1.5} strokeDasharray="4 2" />
+              <Area type="monotone" dataKey="unique_sessions" stroke="#1a365d" fill="#1a365d" fillOpacity={0.1} strokeWidth={2} />
+              <Area type="monotone" dataKey="count" stroke="#c9a050" fill="#c9a050" fillOpacity={0.05} strokeWidth={1.5} strokeDasharray="4 2" />
             </AreaChart>
           </ResponsiveContainer>
           <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#1a365d] inline-block" /> Visits</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#c9a050] inline-block border-dashed" /> Unique Sessions</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#1a365d] inline-block" /> Unique Visitors</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#c9a050] inline-block border-dashed" /> Page Views</span>
           </div>
         </div>
       )}

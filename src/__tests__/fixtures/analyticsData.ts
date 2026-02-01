@@ -1,10 +1,13 @@
 // Mock RPC responses matching SQL function return shapes
 
 export const MOCK_OVERVIEW = {
-  total_visitors: 1523,
-  unique_sessions: 892,
-  today: 23,
+  total_visitors: 467,
+  total_page_views: 1523,
+  unique_sessions: 347,
+  today: 12,
+  today_page_views: 23,
   period: 347,
+  period_page_views: 1523,
   previous_period: 310,
   visitors_by_day: [
     { date: '2026-01-25', count: 45, unique_sessions: 32 },
@@ -93,9 +96,12 @@ export const MOCK_ACTIVITY = [
 // Empty versions for edge case testing
 export const MOCK_OVERVIEW_EMPTY = {
   total_visitors: 0,
+  total_page_views: 0,
   unique_sessions: 0,
   today: 0,
+  today_page_views: 0,
   period: 0,
+  period_page_views: 0,
   previous_period: 0,
   visitors_by_day: [],
   devices: { desktop: 0, mobile: 0, tablet: 0 },
