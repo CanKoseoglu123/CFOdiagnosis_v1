@@ -16,6 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_visitors_utm_source ON visitors(utm_source) WHERE
 -- ============================================
 -- ANALYTICS SQL FUNCTIONS
 -- All SECURITY DEFINER, service_role only
+-- All visitor queries filter is_bot = false
 -- ============================================
 
 -- 1. Overview Analytics
@@ -29,14 +30,14 @@ DECLARE
   today_start TIMESTAMPTZ := date_trunc('day', NOW());
 BEGIN
   SELECT json_build_object(
-    'total_visitors', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL),
-    'total_page_views', (SELECT COUNT(*) FROM visitors),
-    'unique_sessions', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL AND created_at >= period_start),
-    'today', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND created_at >= today_start),
-    'today_page_views', (SELECT COUNT(*) FROM visitors WHERE created_at >= today_start),
-    'period', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND created_at >= period_start),
-    'period_page_views', (SELECT COUNT(*) FROM visitors WHERE created_at >= period_start),
-    'previous_period', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND created_at >= prev_period_start AND created_at < period_start),
+    'total_visitors', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND is_bot = false),
+    'total_page_views', (SELECT COUNT(*) FROM visitors WHERE is_bot = false),
+    'unique_sessions', (SELECT COUNT(DISTINCT session_id) FROM visitors WHERE session_id IS NOT NULL AND created_at >= period_start AND is_bot = false),
+    'today', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND created_at >= today_start AND is_bot = false),
+    'today_page_views', (SELECT COUNT(*) FROM visitors WHERE created_at >= today_start AND is_bot = false),
+    'period', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND created_at >= period_start AND is_bot = false),
+    'period_page_views', (SELECT COUNT(*) FROM visitors WHERE created_at >= period_start AND is_bot = false),
+    'previous_period', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE ip_address IS NOT NULL AND created_at >= prev_period_start AND created_at < period_start AND is_bot = false),
     'visitors_by_day', (
       SELECT COALESCE(json_agg(row_to_json(t) ORDER BY t.date), '[]'::json)
       FROM (
@@ -45,15 +46,15 @@ BEGIN
           COUNT(*)::integer AS count,
           COUNT(DISTINCT ip_address)::integer AS unique_visitors
         FROM visitors
-        WHERE created_at >= period_start
+        WHERE created_at >= period_start AND is_bot = false
         GROUP BY date_trunc('day', created_at)::date
         ORDER BY date_trunc('day', created_at)::date
       ) t
     ),
     'devices', json_build_object(
-      'desktop', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE device_type = 'desktop' AND ip_address IS NOT NULL AND created_at >= period_start),
-      'mobile', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE device_type = 'mobile' AND ip_address IS NOT NULL AND created_at >= period_start),
-      'tablet', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE device_type = 'tablet' AND ip_address IS NOT NULL AND created_at >= period_start)
+      'desktop', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE device_type = 'desktop' AND ip_address IS NOT NULL AND created_at >= period_start AND is_bot = false),
+      'mobile', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE device_type = 'mobile' AND ip_address IS NOT NULL AND created_at >= period_start AND is_bot = false),
+      'tablet', (SELECT COUNT(DISTINCT ip_address) FROM visitors WHERE device_type = 'tablet' AND ip_address IS NOT NULL AND created_at >= period_start AND is_bot = false)
     ),
     'referrers', (
       SELECT COALESCE(json_agg(row_to_json(t)), '[]'::json)
@@ -70,6 +71,7 @@ BEGIN
         WHERE created_at >= period_start
           AND referrer_type = 'external'
           AND ip_address IS NOT NULL
+          AND is_bot = false
         GROUP BY domain
         ORDER BY count DESC
         LIMIT 10
@@ -81,9 +83,10 @@ BEGIN
         FROM visitors
         WHERE created_at >= period_start
           AND ip_address IS NOT NULL
+          AND is_bot = false
           AND ip_address NOT IN (
             SELECT DISTINCT ip_address FROM visitors
-            WHERE created_at < period_start AND ip_address IS NOT NULL
+            WHERE created_at < period_start AND ip_address IS NOT NULL AND is_bot = false
           )
       ),
       'returning', (
@@ -91,9 +94,10 @@ BEGIN
         FROM visitors
         WHERE created_at >= period_start
           AND ip_address IS NOT NULL
+          AND is_bot = false
           AND ip_address IN (
             SELECT DISTINCT ip_address FROM visitors
-            WHERE created_at < period_start AND ip_address IS NOT NULL
+            WHERE created_at < period_start AND ip_address IS NOT NULL AND is_bot = false
           )
       )
     )
@@ -284,7 +288,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER
    SET search_path = public;
 
 -- 4. Geography Analytics
--- Returns country/city breakdowns
+-- Returns country/city breakdowns (excludes bots)
 CREATE OR REPLACE FUNCTION get_geo_analytics(days_back INTEGER DEFAULT 90)
 RETURNS JSON AS $$
 DECLARE
@@ -303,6 +307,7 @@ BEGIN
         FROM visitors
         WHERE created_at >= period_start
           AND country IS NOT NULL
+          AND is_bot = false
         GROUP BY country, country_code
         ORDER BY count DESC
         LIMIT 20
@@ -319,6 +324,7 @@ BEGIN
         FROM visitors
         WHERE created_at >= period_start
           AND city IS NOT NULL
+          AND is_bot = false
         GROUP BY city, region, country
         ORDER BY count DESC
         LIMIT 20
@@ -398,7 +404,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER
    SET search_path = public;
 
 -- 6. Recent Activity Feed
--- UNION of recent events from multiple tables
+-- UNION of recent events from multiple tables (excludes bot visits)
 CREATE OR REPLACE FUNCTION get_recent_activity(limit_count INTEGER DEFAULT 20)
 RETURNS JSON AS $$
 DECLARE
@@ -427,9 +433,9 @@ BEGIN
       (SELECT 'feedback' AS event_type, COALESCE(type || ': ' || LEFT(message, 80), 'Feedback') AS detail, created_at
        FROM feedback ORDER BY created_at DESC LIMIT limit_count)
       UNION ALL
-      -- Recent visits
+      -- Recent visits (exclude bots)
       (SELECT 'visit' AS event_type, COALESCE(country, 'Unknown') || ' - ' || page_path AS detail, created_at
-       FROM visitors ORDER BY created_at DESC LIMIT limit_count)
+       FROM visitors WHERE is_bot = false ORDER BY created_at DESC LIMIT limit_count)
     ) combined
     ORDER BY created_at DESC
     LIMIT limit_count

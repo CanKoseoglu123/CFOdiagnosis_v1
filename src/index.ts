@@ -3474,6 +3474,32 @@ setInterval(() => {
   }
 }, 60000);
 
+// Bot detection helpers
+const BOT_UA_PATTERNS = /bot|crawler|spider|headless|curl|wget|python-requests|python-urllib|scrapy|httpclient|phantom|selenium|puppeteer|lighthouse|pagespeed|pingdom|uptimerobot|monitoring|slurp|semrush|ahrefs|mj12bot|dotbot|petalbot|yandexbot|bingbot|duckduckbot|facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|discordbot|applebot|bytespider|gptbot|claudebot|chatgpt|googleother/i;
+
+// Known cloud/datacenter IP prefixes (AWS us-west-1, GCP, Azure, Google crawlers)
+const CLOUD_IP_PREFIXES = [
+  '13.52.', '13.56.', '13.57.', '18.144.',
+  '50.18.', '52.53.',
+  '54.67.', '54.151.', '54.153.', '54.176.', '54.177.', '54.183.',
+  '54.193.', '54.215.', '54.219.', '3.101.',
+  '34.', '35.', '66.249.',
+  '40.', '52.',
+  '104.131.', '138.197.',
+  '95.216.', '135.181.',
+];
+
+function detectBot(userAgent: string | undefined, ip: string | null): boolean {
+  if (!userAgent) return true;
+  if (BOT_UA_PATTERNS.test(userAgent)) return true;
+  if (ip) {
+    for (const prefix of CLOUD_IP_PREFIXES) {
+      if (ip.startsWith(prefix)) return true;
+    }
+  }
+  return false;
+}
+
 // Validation helpers
 const PAGE_PATH_REGEX = /^\/[a-zA-Z0-9/_-]*$/;
 const SESSION_ID_REGEX = /^session_[0-9]+_[a-z0-9]+$/;
@@ -3553,6 +3579,7 @@ app.post("/track", async (req, res) => {
 
   const userAgent = req.headers["user-agent"] as string | undefined;
   const { device_type, browser, os } = parseUserAgent(userAgent);
+  const is_bot = detectBot(userAgent, ip);
 
   // Must use admin client for RLS-protected table
   if (!supabaseAdmin) {
@@ -3575,6 +3602,7 @@ app.post("/track", async (req, res) => {
       browser: browser.slice(0, 100),
       os: os.slice(0, 100),
       ip_address: ip,
+      is_bot,
       // UTM tracking
       utm_source: typeof utm_source === "string" ? utm_source.slice(0, 200) : null,
       utm_medium: typeof utm_medium === "string" ? utm_medium.slice(0, 200) : null,
