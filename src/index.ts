@@ -66,6 +66,7 @@ import billingRoutes from "./stripe/routes";
 import stripeWebhooks from "./stripe/webhooks";
 import stripeAdminRoutes from "./stripe/adminRoutes";
 import adminAnalyticsRoutes from "./routes/adminAnalytics";
+import contactRoutes from "./routes/contact";
 
 const app = express();
 
@@ -2461,6 +2462,7 @@ app.use("/diagnostic-runs", executiveInterpretationRoutes);
 app.use("/api/company-profiles", companyProfilesRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
+app.use("/api/contact", contactRoutes);
 
 // ------------------------------------------------------------------
 // Stripe Billing Routes (when enabled)

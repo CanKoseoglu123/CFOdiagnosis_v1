@@ -8,11 +8,12 @@ import {
   Users, MessageSquare, Trash2, ExternalLink, RefreshCw,
   AlertTriangle, CheckCircle, Clock, Lock, Shield, Settings,
   FlaskConical, Play, Loader2, BarChart3,
-  Calculator, CreditCard
+  Calculator, CreditCard, Mail
 } from 'lucide-react';
 import TransparencyTab from '../components/admin/TransparencyTab';
 import SubscriptionsTab from '../components/admin/SubscriptionsTab';
 import AnalyticsTab from '../components/admin/analytics/AnalyticsTab';
+import MessagesTab from '../components/admin/MessagesTab';
 import { isStripeEnabled } from '../config/features';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -32,10 +33,36 @@ export default function AdminPage() {
   const [testResult, setTestResult] = useState(null);
   const [creatingQuickSetup, setCreatingQuickSetup] = useState(false);
 
+  // Messages state
+  const [newMessageCount, setNewMessageCount] = useState(0);
+
   async function getToken() {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
   }
+
+  // Fetch new message count on mount
+  useEffect(() => {
+    async function fetchMessageCount() {
+      try {
+        const token = await getToken();
+        if (!token) return;
+
+        const res = await fetch(`${API_URL}/api/contact/admin/messages/count`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setNewMessageCount(data.count || 0);
+        }
+      } catch (err) {
+        console.error('Failed to fetch message count:', err);
+      }
+    }
+
+    fetchMessageCount();
+  }, []);
 
   // Fetch data on tab change
   useEffect(() => {
@@ -418,6 +445,22 @@ export default function AdminPage() {
               </button>
             )}
             <button
+              onClick={() => setActiveTab('messages')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'messages'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              Messages
+              {newMessageCount > 0 && (
+                <span className="px-1.5 py-0.5 bg-blue-600 text-white text-xs font-bold rounded-full">
+                  {newMessageCount}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => navigate('/admin/scoring-matrix')}
               className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-800 transition-colors"
             >
@@ -438,6 +481,7 @@ export default function AdminPage() {
              activeTab === 'analytics' ? 'Analytics Dashboard' :
              activeTab === 'transparency' ? 'Calculation Transparency' :
              activeTab === 'subscriptions' ? 'User Subscriptions' :
+             activeTab === 'messages' ? 'Contact Messages' :
              'Test Scenario Runner'}
           </h2>
           <button
@@ -760,8 +804,13 @@ export default function AdminPage() {
           <SubscriptionsTab />
         )}
 
+        {/* Messages Tab */}
+        {activeTab === 'messages' && (
+          <MessagesTab getToken={getToken} />
+        )}
+
         {/* Stats Footer */}
-        {!loading && activeTab !== 'transparency' && activeTab !== 'subscriptions' && activeTab !== 'analytics' && (
+        {!loading && activeTab !== 'transparency' && activeTab !== 'subscriptions' && activeTab !== 'analytics' && activeTab !== 'messages' && (
           <div className="mt-4 text-sm text-slate-500">
             {activeTab === 'sessions' ? (
               <span>

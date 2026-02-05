@@ -15,6 +15,7 @@ import {
 import FeedbackButton from '../components/FeedbackButton';
 import ImageCarousel from '../components/ImageCarousel';
 import PageSEO from '../components/PageSEO';
+import ContactModal from '../components/ContactModal';
 
 // Image arrays for each step carousel
 const STEP_IMAGES = {
@@ -60,6 +61,7 @@ export default function LandingPage() {
   const ctaDest = isAuthenticated ? (isPaid ? '/start' : '/pricing') : '/login?mode=signup';
   const [incompleteRun, setIncompleteRun] = useState(null);
   const [dismissedResume, setDismissedResume] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   // Track which step card is currently focused (for viewport-aware carousel rotation)
   const [activeStep, setActiveStep] = useState(1); // Default to step 1, not null
@@ -738,9 +740,12 @@ export default function LandingPage() {
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:support@cfolens.ai" className="text-sm text-slate-500 hover:text-slate-700">
+                  <button
+                    onClick={() => setIsContactOpen(true)}
+                    className="text-sm text-slate-500 hover:text-slate-700"
+                  >
                     Contact
-                  </a>
+                  </button>
                 </li>
                 <li>
                   <Link to="/terms" className="text-sm text-slate-500 hover:text-slate-700">
@@ -799,6 +804,9 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Contact Modal */}
+      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
     </div>
   );
 }
