@@ -61,13 +61,21 @@ function CategoryBadge({ category }) {
   );
 }
 
-export default function MessagesTab({ getToken }) {
+export default function MessagesTab({ getToken, onCountChange }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionLoading, setActionLoading] = useState(null);
   const [expandedMessage, setExpandedMessage] = useState(null);
+
+  // Update parent's count when messages change
+  function updateParentCount(msgs) {
+    if (onCountChange) {
+      const newCount = msgs.filter(m => m.status === 'new').length;
+      onCountChange(newCount);
+    }
+  }
 
   // Fetch messages
   async function fetchMessages() {
@@ -97,7 +105,9 @@ export default function MessagesTab({ getToken }) {
       }
 
       if (!res.ok) throw new Error('Failed to fetch messages');
-      setMessages(await res.json());
+      const data = await res.json();
+      setMessages(data);
+      updateParentCount(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -126,10 +136,12 @@ export default function MessagesTab({ getToken }) {
 
       if (!res.ok) throw new Error('Failed to update status');
 
-      // Update local state
-      setMessages(prev =>
-        prev.map(m => m.id === id ? { ...m, status: newStatus } : m)
-      );
+      // Update local state and parent count
+      setMessages(prev => {
+        const updated = prev.map(m => m.id === id ? { ...m, status: newStatus } : m);
+        updateParentCount(updated);
+        return updated;
+      });
     } catch (err) {
       alert('Update failed: ' + err.message);
     } finally {
@@ -152,8 +164,12 @@ export default function MessagesTab({ getToken }) {
 
       if (!res.ok) throw new Error('Failed to delete message');
 
-      // Remove from local state
-      setMessages(prev => prev.filter(m => m.id !== id));
+      // Remove from local state and update parent count
+      setMessages(prev => {
+        const updated = prev.filter(m => m.id !== id);
+        updateParentCount(updated);
+        return updated;
+      });
     } catch (err) {
       alert('Delete failed: ' + err.message);
     } finally {

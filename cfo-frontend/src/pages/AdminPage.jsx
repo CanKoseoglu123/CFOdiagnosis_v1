@@ -484,14 +484,17 @@ export default function AdminPage() {
              activeTab === 'messages' ? 'Contact Messages' :
              'Test Scenario Runner'}
           </h2>
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          {/* Only show global refresh for tabs that don't have their own */}
+          {!['messages', 'analytics', 'transparency', 'subscriptions'].includes(activeTab) && (
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 hover:text-slate-800 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          )}
         </div>
 
         {/* Error State */}
@@ -806,7 +809,7 @@ export default function AdminPage() {
 
         {/* Messages Tab */}
         {activeTab === 'messages' && (
-          <MessagesTab getToken={getToken} />
+          <MessagesTab getToken={getToken} onCountChange={setNewMessageCount} />
         )}
 
         {/* Stats Footer */}
