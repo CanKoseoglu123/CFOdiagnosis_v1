@@ -8,6 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo, BRAND_COLORS } from './Logo';
 import { Menu, X } from 'lucide-react';
+import ContactModal from './ContactModal';
 
 const NAV_LINKS = [
   { to: '/platform', label: 'Platform' },
@@ -35,6 +36,7 @@ export default function PublicNav({
   const { isAuthenticated, user, signOut } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -92,6 +94,12 @@ export default function PublicNav({
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
+              <button
+                onClick={() => setIsContactOpen(true)}
+                className="hidden sm:block px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                Contact
+              </button>
               <div className="hidden sm:flex flex-col items-end mr-2">
                 <span className="text-sm font-medium text-slate-700">Welcome back</span>
                 <span className="text-xs text-slate-500">{user?.email}</span>
@@ -112,6 +120,12 @@ export default function PublicNav({
             </>
           ) : (
             <>
+              <button
+                onClick={() => setIsContactOpen(true)}
+                className="hidden sm:block px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Contact
+              </button>
               <Link
                 to="/login"
                 className="hidden sm:block px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
@@ -195,6 +209,15 @@ export default function PublicNav({
                     {authLabel}
                   </Link>
                   <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setIsContactOpen(true);
+                    }}
+                    className="block w-full text-center px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
+                  >
+                    Contact
+                  </button>
+                  <button
                     onClick={signOut}
                     className="block w-full text-center px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
                   >
@@ -203,6 +226,15 @@ export default function PublicNav({
                 </>
               ) : (
                 <>
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setIsContactOpen(true);
+                    }}
+                    className="block w-full text-center px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
+                  >
+                    Contact
+                  </button>
                   <Link
                     to="/login"
                     className="block w-full text-center px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
@@ -231,6 +263,9 @@ export default function PublicNav({
           to { transform: translateX(0); }
         }
       `}</style>
+
+      {/* Contact Modal */}
+      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
     </nav>
   );
 }
