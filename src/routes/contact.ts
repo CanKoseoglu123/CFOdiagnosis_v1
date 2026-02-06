@@ -117,10 +117,14 @@ router.post('/', async (req: Request, res: Response) => {
 // GET /api/contact/admin/messages
 // List all contact messages with optional status filter
 router.get('/admin/messages', requireAdmin, async (req: Request, res: Response) => {
+  if (!supabaseAdmin) {
+    return res.status(500).json({ error: 'Service unavailable' });
+  }
+
   const { status } = req.query;
 
   try {
-    let query = req.supabase
+    let query = supabaseAdmin
       .from('contact_messages')
       .select('*')
       .order('created_at', { ascending: false });
@@ -146,8 +150,12 @@ router.get('/admin/messages', requireAdmin, async (req: Request, res: Response) 
 // GET /api/contact/admin/messages/count
 // Get count of new messages (for badge)
 router.get('/admin/messages/count', requireAdmin, async (req: Request, res: Response) => {
+  if (!supabaseAdmin) {
+    return res.status(500).json({ error: 'Service unavailable' });
+  }
+
   try {
-    const { count, error } = await req.supabase
+    const { count, error } = await supabaseAdmin
       .from('contact_messages')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'new');
@@ -167,6 +175,10 @@ router.get('/admin/messages/count', requireAdmin, async (req: Request, res: Resp
 // PATCH /api/contact/admin/messages/:id
 // Update message status
 router.patch('/admin/messages/:id', requireAdmin, async (req: Request, res: Response) => {
+  if (!supabaseAdmin) {
+    return res.status(500).json({ error: 'Service unavailable' });
+  }
+
   const { id } = req.params;
   const { status } = req.body;
 
@@ -175,7 +187,7 @@ router.patch('/admin/messages/:id', requireAdmin, async (req: Request, res: Resp
   }
 
   try {
-    const { error } = await req.supabase
+    const { error } = await supabaseAdmin
       .from('contact_messages')
       .update({ status })
       .eq('id', id);
@@ -195,10 +207,14 @@ router.patch('/admin/messages/:id', requireAdmin, async (req: Request, res: Resp
 // DELETE /api/contact/admin/messages/:id
 // Delete a message
 router.delete('/admin/messages/:id', requireAdmin, async (req: Request, res: Response) => {
+  if (!supabaseAdmin) {
+    return res.status(500).json({ error: 'Service unavailable' });
+  }
+
   const { id } = req.params;
 
   try {
-    const { error } = await req.supabase
+    const { error } = await supabaseAdmin
       .from('contact_messages')
       .delete()
       .eq('id', id);

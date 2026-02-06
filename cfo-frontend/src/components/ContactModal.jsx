@@ -84,10 +84,10 @@ export default function ContactModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+      {/* Backdrop - only close on click if not showing success */}
       <div
         className="absolute inset-0 bg-black/50"
-        onClick={handleClose}
+        onClick={success ? undefined : handleClose}
       />
 
       {/* Modal */}
@@ -100,12 +100,14 @@ export default function ContactModal({ isOpen, onClose }) {
           >
             Get in Touch
           </h2>
-          <button
-            onClick={handleClose}
-            className="text-slate-400 hover:text-slate-600 p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!success && (
+            <button
+              onClick={handleClose}
+              className="text-slate-400 hover:text-slate-600 p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -126,7 +128,7 @@ export default function ContactModal({ isOpen, onClose }) {
                 Message Sent
               </h3>
               <p className="text-slate-600 mb-6">
-                Thank you for reaching out. We'll get back to you within 24 hours.
+                Thank you for reaching out. We'll get back to you as soon as possible.
               </p>
               <button
                 onClick={handleClose}
