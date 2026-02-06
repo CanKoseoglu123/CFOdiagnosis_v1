@@ -3,9 +3,20 @@
 // Admin endpoints for message management
 
 import { Router, Request, Response } from 'express';
+import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '../middleware/adminAuth';
 
 const router = Router();
+
+// Service role client for public insert (bypasses RLS)
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+const supabaseAdmin = supabaseServiceRoleKey
+  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+  : null;
 
 // ============================================
 // POST /api/contact
@@ -56,11 +67,17 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   try {
+    // Require service role client for insert
+    if (!supabaseAdmin) {
+      console.error('[Contact] Service role client not configured');
+      return res.status(500).json({ error: 'Service unavailable' });
+    }
+
     // Get user agent for spam analysis
     const userAgent = req.headers['user-agent'] || null;
 
-    // Insert message into database
-    const { error: insertError } = await req.supabase
+    // Insert message into database (using service role to bypass RLS)
+    const { error: insertError } = await supabaseAdmin
       .from('contact_messages')
       .insert({
         name: name.trim(),
