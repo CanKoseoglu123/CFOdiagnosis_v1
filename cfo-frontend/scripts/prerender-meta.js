@@ -72,6 +72,13 @@ const routes = [
     schemas: [],
   },
   {
+    path: '/login',
+    title: 'Sign In | CFO Lens AI',
+    description: 'Sign in to access your FP&A maturity diagnostic, dashboard, and executive reports.',
+    breadcrumbs: [{ name: 'Home', path: '/' }, { name: 'Sign In', path: '/login' }],
+    schemas: [],
+  },
+  {
     path: '/pricing',
     title: 'Pricing \u2014 FP&A Assessment Plans | CFO Lens AI',
     description: 'Free FP&A diagnostic with 2 objectives. Pro tier unlocks all 9 objectives, industry benchmarks, War Room action planning, and executive PDF reports.',
@@ -131,6 +138,203 @@ const routes = [
   },
 ];
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sharedNav() {
+  return `
+  <nav>
+    <a href="/">Home</a>
+    <a href="/platform">Platform</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/blog">Blog</a>
+    <a href="/about">About</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/login">Sign In</a>
+  </nav>`;
+}
+
+function sharedFooter() {
+  return `
+  <footer>
+    <p>JavaScript is required for the full interactive diagnostic. This page provides a readable summary for non-JS clients.</p>
+    <p>LLM files: <a href="/llms.txt">llms.txt</a> \u00b7 <a href="/llms-full.txt">llms-full.txt</a></p>
+  </footer>`;
+}
+
+function renderHomeFallback() {
+  return `
+<main>
+  ${sharedNav()}
+  <h1>FP&amp;A Maturity Assessment for CFOs</h1>
+  <p>CFO Lens AI is a deterministic FP&amp;A maturity diagnostic that compresses a 6-figure consulting engagement into hours. It evaluates 97 binary questions across 9 objectives and benchmarks results by industry and company profile.</p>
+  <section>
+    <h2>What You Get</h2>
+    <ul>
+      <li>Objective-level maturity scores with critical gate analysis</li>
+      <li>Benchmark comparisons and gap analysis</li>
+      <li>Prioritized action plan (War Room)</li>
+      <li>Executive-ready PDF report</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Start</h2>
+    <p>Begin with a free tier (2 objectives) or upgrade to unlock all 9 objectives.</p>
+    <p><a href="/pricing">See pricing</a> or <a href="/login">sign in</a>.</p>
+  </section>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderPlatformFallback() {
+  return `
+<main>
+  ${sharedNav()}
+  <h1>Platform Overview</h1>
+  <p>CFO Lens AI provides a structured diagnostic with deterministic scoring, calibration multipliers, and critical gates to ensure maturity levels reflect real capability.</p>
+  <section>
+    <h2>Core Capabilities</h2>
+    <ul>
+      <li>97-question FP&amp;A diagnostic across 9 objectives and 3 themes</li>
+      <li>Industry benchmark calibration and persona-aware targets</li>
+      <li>Root-cause gap analysis and action prioritization</li>
+      <li>Executive PDF reporting</li>
+    </ul>
+  </section>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderAboutFallback() {
+  return `
+<main>
+  ${sharedNav()}
+  <h1>About CFO Lens</h1>
+  <p>CFO Lens AI is built by finance practitioners who have led FP&amp;A transformations and wanted a faster, more affordable diagnostic than traditional consulting.</p>
+  <section>
+    <h2>Mission</h2>
+    <p>Help finance leaders identify maturity gaps quickly and move to action with a clear, prioritized roadmap.</p>
+  </section>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderPricingFallback() {
+  return `
+<main>
+  ${sharedNav()}
+  <h1>Pricing</h1>
+  <p>Choose a free tier to assess 2 objectives or upgrade to access the full diagnostic.</p>
+  <section>
+    <h2>Free</h2>
+    <ul>
+      <li>2 objectives unlocked</li>
+      <li>Basic maturity scores</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Pro</h2>
+    <ul>
+      <li>All 9 objectives</li>
+      <li>Full benchmarks and gap analysis</li>
+      <li>War Room action plan</li>
+      <li>Executive PDF report</li>
+    </ul>
+  </section>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderRoadmapFallback() {
+  return `
+<main>
+  ${sharedNav()}
+  <h1>Product Roadmap</h1>
+  <p>Diagnostic intelligence for the entire finance function. See what's live, what's coming next, and join the waitlist.</p>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderBlogIndexFallback(posts) {
+  const items = posts.map(post => `
+    <li>
+      <a href="/blog/${escapeHtml(post.slug)}">${escapeHtml(post.title)}</a>
+      ${post.excerpt ? `<p>${escapeHtml(post.excerpt)}</p>` : ''}
+    </li>
+  `).join('');
+
+  return `
+<main>
+  ${sharedNav()}
+  <h1>FP&amp;A Insights &amp; Best Practices</h1>
+  <p>Articles on FP&amp;A maturity, forecasting, budgeting, and finance transformation.</p>
+  <ul>
+    ${items || '<li>No posts available.</li>'}
+  </ul>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderBlogPostFallback(post) {
+  return `
+<main>
+  ${sharedNav()}
+  <article>
+    <h1>${escapeHtml(post.title)}</h1>
+    ${post.date ? `<p>Published: ${escapeHtml(post.date)}</p>` : ''}
+    ${post.excerpt ? `<p>${escapeHtml(post.excerpt)}</p>` : ''}
+    <p><a href="/blog">Back to blog</a></p>
+  </article>
+  ${sharedFooter()}
+</main>`;
+}
+
+function renderLoginFallback() {
+  return `
+<main>
+  ${sharedNav()}
+  <h1>Sign In</h1>
+  <p>Sign in to access your diagnostics, dashboard, and reports.</p>
+  <section>
+    <h2>What You'll Access</h2>
+    <ul>
+      <li>Saved assessments and benchmarking</li>
+      <li>War Room action plan</li>
+      <li>Executive PDF reports</li>
+    </ul>
+  </section>
+  <p>If you do not have an account, start with the free tier on the <a href="/pricing">pricing</a> page.</p>
+  ${sharedFooter()}
+</main>`;
+}
+
+function getFallbackForRoute(route, blogPosts = []) {
+  switch (route.path) {
+    case '/':
+      return renderHomeFallback();
+    case '/platform':
+      return renderPlatformFallback();
+    case '/about':
+      return renderAboutFallback();
+    case '/pricing':
+      return renderPricingFallback();
+    case '/roadmap':
+      return renderRoadmapFallback();
+    case '/blog':
+      return renderBlogIndexFallback(blogPosts);
+    case '/login':
+      return renderLoginFallback();
+    default:
+      return '';
+  }
+}
+
 function buildBreadcrumbSchema(breadcrumbs) {
   if (!breadcrumbs || breadcrumbs.length === 0) return '';
   const schema = {
@@ -188,6 +392,11 @@ function injectMeta(html, route) {
   return result;
 }
 
+function injectFallback(html, fallbackHtml) {
+  if (!fallbackHtml) return html;
+  return html.replace('<div id="root"></div>', `<div id="root">${fallbackHtml}</div>`);
+}
+
 function getBlogPosts() {
   const blogDir = path.join(__dirname, '../content/blog');
   const posts = [];
@@ -216,10 +425,13 @@ function prerender() {
   }
 
   const template = fs.readFileSync(templatePath, 'utf-8');
+  const blogPosts = getBlogPosts();
 
   // Prerender static routes
   for (const route of routes) {
-    const injected = injectMeta(template, route);
+    const injectedMeta = injectMeta(template, route);
+    const fallback = getFallbackForRoute(route, blogPosts);
+    const injected = injectFallback(injectedMeta, fallback);
 
     if (route.path === '/') {
       // Overwrite the root index.html
@@ -233,7 +445,6 @@ function prerender() {
   }
 
   // Prerender blog posts
-  const blogPosts = getBlogPosts();
   let blogCount = 0;
 
   for (const post of blogPosts) {
@@ -276,7 +487,9 @@ function prerender() {
       ],
     };
 
-    const injected = injectMeta(template, blogRoute);
+    const injectedMeta = injectMeta(template, blogRoute);
+    const fallback = renderBlogPostFallback(post);
+    const injected = injectFallback(injectedMeta, fallback);
     const blogDir = path.join(distDir, 'blog', post.slug);
     fs.mkdirSync(blogDir, { recursive: true });
     fs.writeFileSync(path.join(blogDir, 'index.html'), injected);
