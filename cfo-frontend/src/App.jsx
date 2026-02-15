@@ -8,6 +8,7 @@ import { SubscriptionProvider } from './context/SubscriptionContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useVisitorTracking } from './hooks/useVisitorTracking'
+import { Analytics } from '@vercel/analytics/react'
 
 // Eager load landing page (initial entry point)
 import LandingPage from './pages/LandingPage'
@@ -192,6 +193,7 @@ export default function App() {
           </Suspense>
           </ErrorBoundary>
         </BrowserRouter>
+        <Analytics />
       </SubscriptionProvider>
     </AuthProvider>
   )
