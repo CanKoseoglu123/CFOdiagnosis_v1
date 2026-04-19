@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 export default function NotFoundPage() {
   const { isAuthenticated } = useAuth()
 
-  const NAVY = '#1e3a5f'
+  const NAVY = '#1a365d'
   const GOLD = '#c9a050'
 
   return (
