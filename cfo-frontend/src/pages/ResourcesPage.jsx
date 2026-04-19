@@ -4,12 +4,13 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Logo, BRAND_COLORS } from '../components/Logo';
+import { BRAND_COLORS } from '../components/Logo';
 import PublicNav from '../components/PublicNav';
+import Footer from '../components/Footer';
 import BlogCard from '../blog/components/BlogCard';
 import BlogSEO from '../blog/components/BlogSEO';
 import { getAllPosts } from '../blog';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 export default function ResourcesPage() {
   const { isAuthenticated, user, signOut } = useAuth();
@@ -55,38 +56,19 @@ export default function ResourcesPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       <section className="py-8 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row gap-6 sm:items-end justify-between">
-            {/* Search */}
-            <div className="flex-1 max-w-md">
-              <label className="block text-sm font-semibold text-slate-800 mb-2">
-                Search
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-4 pr-10 py-3 border border-slate-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              </div>
-            </div>
-
-            {/* Filter (placeholder - disabled) */}
-            <div className="w-full sm:w-64">
-              <label className="block text-sm font-semibold text-slate-800 mb-2">
-                Filter by topic
-              </label>
-              <div className="relative">
-                <select
-                  disabled
-                  className="w-full appearance-none pl-4 pr-10 py-3 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-400 cursor-not-allowed"
-                >
-                  <option>Coming soon</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 pointer-events-none" />
-              </div>
+          <div className="max-w-md">
+            <label className="block text-sm font-semibold text-slate-800 mb-2">
+              Search
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="What are you looking for?"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-4 pr-10 py-3 border border-slate-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             </div>
           </div>
         </div>
@@ -126,28 +108,7 @@ export default function ResourcesPage() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* FOOTER */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <footer
-        className="py-12 px-6 border-t border-slate-200"
-        style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <Logo size="sm" />
-            <p className="text-sm text-slate-500">
-              The diagnosis and action plan phase of a consulting engagement—compressed
-              into hours, at a fraction of the cost.
-            </p>
-          </div>
-          <div className="mt-8 pt-6 border-t border-slate-200 text-center">
-            <p className="text-xs text-slate-400">
-              &copy; {new Date().getFullYear()} CFO Lens AI. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="minimal" />
     </div>
   );
 }

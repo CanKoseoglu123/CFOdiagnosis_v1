@@ -777,7 +777,7 @@ export default function LandingPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {incompleteRun && !dismissedResume && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-xl w-full px-4">
-          <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-4 flex items-center justify-between gap-4">
+          <div className="bg-white border border-slate-300 p-4 flex items-center justify-between gap-4">
             <div className="flex-1">
               <p className="text-sm font-medium text-slate-900">
                 Continue your assessment?

@@ -1,101 +1,52 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { BRAND_COLORS } from '../components/Logo'
 
 export default function NotFoundPage() {
   const { isAuthenticated } = useAuth()
 
-  const NAVY = '#1a365d'
-  const GOLD = '#c9a050'
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#F8FAFC',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'Inter, system-ui, sans-serif'
-    }}>
-      <div style={{
-        textAlign: 'center',
-        padding: 40,
-        maxWidth: 480
-      }}>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
+      <div className="text-center p-10 max-w-md">
         {/* Logo */}
-        <div style={{ marginBottom: 32 }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <div className="mb-8">
+          <Link to="/" className="inline-flex items-center gap-2.5 no-underline">
             <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
-              <path d="M8 8 L42 8 L42 42 L8 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M58 8 L92 8 L92 42 L58 42 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M8 58 L42 58 L42 92 L8 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M58 58 L92 58 L92 92 L58 92 Z" fill="none" stroke={NAVY} strokeWidth="6"/>
-              <path d="M50 30 L70 50 L50 70 L30 50 Z" fill={GOLD}/>
+              <path d="M8 8 L42 8 L42 42 L8 42 Z" fill="none" stroke={BRAND_COLORS.navy} strokeWidth="6"/>
+              <path d="M58 8 L92 8 L92 42 L58 42 Z" fill="none" stroke={BRAND_COLORS.navy} strokeWidth="6"/>
+              <path d="M8 58 L42 58 L42 92 L8 92 Z" fill="none" stroke={BRAND_COLORS.navy} strokeWidth="6"/>
+              <path d="M58 58 L92 58 L92 92 L58 92 Z" fill="none" stroke={BRAND_COLORS.navy} strokeWidth="6"/>
+              <path d="M50 30 L70 50 L50 70 L30 50 Z" fill={BRAND_COLORS.gold}/>
             </svg>
-            <span style={{ fontWeight: 700, fontSize: 20, color: NAVY }}>
-              CFO LENS <span style={{ fontWeight: 300, color: '#7b8fa3' }}>AI</span>
+            <span className="font-bold text-xl" style={{ color: BRAND_COLORS.navy }}>
+              CFO LENS <span className="font-light text-slate-400">AI</span>
             </span>
           </Link>
         </div>
 
-        {/* 404 Message */}
-        <h1 style={{
-          fontSize: 72,
-          fontWeight: 700,
-          color: NAVY,
-          margin: '0 0 8px 0',
-          lineHeight: 1
-        }}>
+        <h1 className="text-7xl font-bold m-0 mb-2 leading-none" style={{ color: BRAND_COLORS.navy }}>
           404
         </h1>
-        <h2 style={{
-          fontSize: 24,
-          fontWeight: 600,
-          color: NAVY,
-          margin: '0 0 16px 0'
-        }}>
+        <h2 className="text-2xl font-semibold m-0 mb-4" style={{ color: BRAND_COLORS.navy }}>
           Page Not Found
         </h2>
-        <p style={{
-          fontSize: 15,
-          color: '#64748B',
-          margin: '0 0 32px 0',
-          lineHeight: 1.6
-        }}>
+        <p className="text-sm text-slate-500 m-0 mb-8 leading-relaxed">
           The page you're looking for doesn't exist or has been moved.
         </p>
 
-        {/* Navigation Options */}
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="flex gap-3 justify-center flex-wrap">
           <Link
             to="/"
-            style={{
-              padding: '12px 24px',
-              background: NAVY,
-              color: '#FFF',
-              border: 'none',
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: 'none',
-              display: 'inline-block'
-            }}
+            className="px-6 py-3 text-sm font-semibold text-white no-underline inline-block"
+            style={{ backgroundColor: BRAND_COLORS.navy }}
           >
             Go to Home
           </Link>
           {isAuthenticated && (
             <Link
               to="/dashboard"
-              style={{
-                padding: '12px 24px',
-                background: '#FFF',
-                color: NAVY,
-                border: `1px solid ${NAVY}`,
-                borderRadius: 6,
-                fontSize: 14,
-                fontWeight: 600,
-                textDecoration: 'none',
-                display: 'inline-block'
-              }}
+              className="px-6 py-3 text-sm font-semibold no-underline inline-block border"
+              style={{ color: BRAND_COLORS.navy, borderColor: BRAND_COLORS.navy }}
             >
               Go to Dashboard
             </Link>

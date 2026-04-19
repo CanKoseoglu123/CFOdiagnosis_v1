@@ -20,7 +20,7 @@ export default function BlogCard({ post }) {
   return (
     <Link
       to={`/blog/${slug}`}
-      className="group flex flex-col bg-white p-6 border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all h-full"
+      className="group flex flex-col bg-white p-6 border border-slate-200 hover:border-slate-400 transition-all h-full"
     >
       {/* Title */}
       <h3

@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import PageSEO from '../components/PageSEO';
+import Footer from '../components/Footer';
 
 const softwareAppSchema = {
   '@context': 'https://schema.org',
@@ -412,27 +413,7 @@ export default function PlatformPage() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* FOOTER */}
-      {/* ─────────────────────────────────────────────────────────────────── */}
-      <footer
-        className="py-12 px-6 border-t border-slate-200"
-        style={{ backgroundColor: `${BRAND_COLORS.navy}05` }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <Logo size="sm" />
-            <p className="text-sm text-slate-500">
-              Diagnostic intelligence for finance leaders everywhere.
-            </p>
-          </div>
-          <div className="mt-8 pt-6 border-t border-slate-200 text-center">
-            <p className="text-xs text-slate-400">
-              &copy; {new Date().getFullYear()} CFO Lens AI. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="minimal" />
     </div>
   );
 }

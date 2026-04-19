@@ -5,7 +5,7 @@
  * Includes honeypot spam protection.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Send, CheckCircle } from 'lucide-react';
 import { BRAND_COLORS } from './Logo';
 
@@ -30,6 +30,55 @@ export default function ContactModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  const modalRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  // Focus trap and Escape key handling
+  useEffect(() => {
+    if (!isOpen) return;
+    previousFocusRef.current = document.activeElement;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        handleClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !modalRef.current) return;
+
+      const focusable = modalRef.current.querySelectorAll(
+        'button, [href], input:not([type="hidden"]):not([tabindex="-1"]), select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    // Focus the first input after mount
+    const timer = setTimeout(() => {
+      const firstInput = modalRef.current?.querySelector('input:not([tabindex="-1"])');
+      if (firstInput) firstInput.focus();
+    }, 50);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
+      // Restore focus when modal closes
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -91,10 +140,17 @@ export default function ContactModal({ isOpen, onClose }) {
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-sm max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-200">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
+        className="relative bg-white rounded-sm max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto border border-slate-200"
+      >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <h2
+            id="contact-modal-title"
             className="text-lg font-bold"
             style={{ color: BRAND_COLORS.navy }}
           >
@@ -103,6 +159,7 @@ export default function ContactModal({ isOpen, onClose }) {
           {!success && (
             <button
               onClick={handleClose}
+              aria-label="Close contact form"
               className="text-slate-400 hover:text-slate-600 p-1"
             >
               <X className="w-5 h-5" />
