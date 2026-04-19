@@ -10,7 +10,7 @@ import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
 import { isStripeEnabled, isSubscriptionRequired, FREE_TIER_OBJECTIVES } from '../config/features';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
+import { API_URL } from '../lib/constants';
 
 const SubscriptionContext = createContext(null);
 

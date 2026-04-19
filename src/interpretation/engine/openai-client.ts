@@ -16,8 +16,8 @@ function getOpenAI(): OpenAI {
 
 // Export a proxy that lazily initializes on first access
 export const openai = new Proxy({} as OpenAI, {
-  get(_, prop) {
-    return (getOpenAI() as any)[prop];
+  get(_, prop: string | symbol) {
+    return (getOpenAI() as unknown as Record<string | symbol, unknown>)[prop];
   }
 });
 

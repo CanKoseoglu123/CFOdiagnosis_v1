@@ -9,7 +9,7 @@ import { isStripeEnabled } from '../config/features'
 import { Mail, User, Building2, Briefcase, AlertCircle, Loader2, Lock, Eye, EyeOff } from 'lucide-react'
 import FeedbackButton from '../components/FeedbackButton'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app'
+import { API_URL } from '../lib/constants'
 
 // Map Supabase auth errors to user-friendly messages
 function getFriendlyAuthError(error) {

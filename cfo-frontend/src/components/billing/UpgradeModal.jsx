@@ -11,7 +11,7 @@ import { X, Check, Lock, ArrowRight } from 'lucide-react';
 import { BRAND_COLORS } from '../Logo';
 import { supabase } from '../../lib/supabase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
+import { API_URL } from '../../lib/constants';
 
 export default function UpgradeModal({ isOpen, onClose, trigger = 'objective' }) {
   const navigate = useNavigate();

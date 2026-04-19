@@ -3,17 +3,15 @@
 
 import { Request, Response, NextFunction } from 'express';
 
-// Admin emails - can be extended via ADMIN_EMAILS env var
+// Admin emails - configured via ADMIN_EMAILS env var
 // Format: comma-separated list of emails
-const DEFAULT_ADMIN_EMAILS = ['can@cfolens.com', 'can@cfo-lens.com', 'admin@cfo-lens.com'];
-
 function getAdminEmails(): string[] {
   const envEmails = process.env.ADMIN_EMAILS;
-  if (envEmails) {
-    const parsed = envEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-    return [...DEFAULT_ADMIN_EMAILS, ...parsed];
+  if (!envEmails) {
+    console.warn('[adminAuth] ADMIN_EMAILS env var not set - no admin access will be granted');
+    return [];
   }
-  return DEFAULT_ADMIN_EMAILS;
+  return envEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 }
 
 /**

@@ -79,7 +79,7 @@ function getQuestionObjectiveId(questionId: string): string | undefined {
     const practices = loadPractices();
     const practiceToObjective = new Map(practices.map(p => [p.id, p.objective_id]));
     for (const q of questions) {
-      const objId = practiceToObjective.get(q.practice_id) || (q as any).objective_id;
+      const objId = practiceToObjective.get(q.practice_id);
       if (objId) _questionObjectiveMap.set(q.id, objId);
     }
   }
@@ -91,10 +91,10 @@ const allowedOrigins = [
   "https://cfo-lens.com",
   "https://www.cfo-lens.com",
   "https://cfodiagnosisv1.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "http://localhost:5173", // dev
-  "http://localhost:5174", // dev alternate port
+  // Local dev origins (only effective when running locally)
+  ...(process.env.NODE_ENV === "production"
+    ? []
+    : ["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"]),
 ];
 
 // Pattern for Vercel preview deployments (git branch previews)
@@ -180,6 +180,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY");
 }
 
+// Validate optional-but-important env vars at startup (warn, don't crash)
+const envWarnings: string[] = [];
+if (!process.env.OPENAI_API_KEY) envWarnings.push("OPENAI_API_KEY not set - AI interpretation features will fail");
+if (process.env.STRIPE_ENABLED === "true") {
+  if (!process.env.STRIPE_SECRET_KEY) envWarnings.push("STRIPE_ENABLED=true but STRIPE_SECRET_KEY not set");
+  if (!process.env.STRIPE_WEBHOOK_SECRET) envWarnings.push("STRIPE_ENABLED=true but STRIPE_WEBHOOK_SECRET not set");
+}
+if (!supabaseServiceRoleKey) envWarnings.push("SUPABASE_SERVICE_ROLE_KEY not set - admin features will not work");
+for (const w of envWarnings) {
+  console.warn(`[Startup] ${w}`);
+}
+
 // Global anon client - ONLY for unauthenticated routes (health checks)
 const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -221,6 +233,7 @@ function getClient(req: Request): SupabaseClient {
 // Layer 3: Auth middleware - creates authenticated client
 // ------------------------------------------------------------------
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       userId?: string;
@@ -429,9 +442,10 @@ function computeResumePath(run: any): string {
       return `/run/${runId}/setup/persona`;
     case 'pillar_setup':
       return `/run/${runId}/setup/pillar`;
-    case 'assessment':
+    case 'assessment': {
       const objectiveId = run.last_visited_objective_id || 'obj_budget_discipline';
       return `/assess/objective/${objectiveId}?runId=${runId}`;
+    }
     case 'calibration':
       return `/run/${runId}/calibrate`;
     case 'report':
@@ -3736,6 +3750,29 @@ app.get("/admin/runs/:id/transparency", requireAdmin, async (req, res) => {
       error: err instanceof Error ? err.message : "Failed to generate transparency report"
     });
   }
+});
+
+// ------------------------------------------------------------------
+// Global error handler (must be after all routes)
+// ------------------------------------------------------------------
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("[Global Error Handler]", err.message);
+  if (!res.headersSent) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ------------------------------------------------------------------
+// Process-level crash handlers
+// ------------------------------------------------------------------
+process.on("unhandledRejection", (reason) => {
+  console.error("[Unhandled Rejection]", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[Uncaught Exception]", err);
+  // Give time for logging, then exit (let process manager restart)
+  setTimeout(() => process.exit(1), 1000);
 });
 
 // ------------------------------------------------------------------

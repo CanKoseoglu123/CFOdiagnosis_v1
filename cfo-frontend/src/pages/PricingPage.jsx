@@ -65,7 +65,7 @@ const faqSchema = {
   })),
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
+import { API_URL } from '../lib/constants';
 
 // Shared feature list for Free/Pro tier cards.
 // `free`: label shown in free tier (null = use `pro` label), `included`: whether free tier has it.

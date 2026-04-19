@@ -5,7 +5,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { features, isSubscriptionRequired, FREE_TIER_OBJECTIVES, isSubscriptionBypassed } from '../config/features';
+import { isSubscriptionRequired, FREE_TIER_OBJECTIVES, isSubscriptionBypassed } from '../config/features';
 
 /**
  * Check if user has active subscription or override
@@ -54,7 +54,8 @@ export async function hasActiveSubscription(req: Request): Promise<boolean> {
     return false;
   } catch (err) {
     console.error('Error checking subscription:', err);
-    return false;
+    // Propagate DB errors instead of silently degrading to free tier
+    throw err;
   }
 }
 
@@ -108,7 +109,8 @@ export async function getSubscriptionTier(req: Request): Promise<{
     return { tier: 'free', accessibleObjectives: [...FREE_TIER_OBJECTIVES] };
   } catch (err) {
     console.error('Error getting subscription tier:', err);
-    return { tier: 'free', accessibleObjectives: [...FREE_TIER_OBJECTIVES] };
+    // Propagate DB errors instead of silently degrading to free tier
+    throw err;
   }
 }
 
@@ -117,28 +119,44 @@ export async function getSubscriptionTier(req: Request): Promise<{
  * Returns 403 if user doesn't have paid access
  */
 export async function requireSubscription(req: Request, res: Response, next: NextFunction) {
-  const hasAccess = await hasActiveSubscription(req);
+  try {
+    const hasAccess = await hasActiveSubscription(req);
 
-  if (!hasAccess) {
-    return res.status(403).json({
-      error: 'Subscription required',
-      code: 'SUBSCRIPTION_REQUIRED',
-      upgradeUrl: '/pricing'
+    if (!hasAccess) {
+      return res.status(403).json({
+        error: 'Subscription required',
+        code: 'SUBSCRIPTION_REQUIRED',
+        upgradeUrl: '/pricing'
+      });
+    }
+
+    next();
+  } catch (err) {
+    console.error('Subscription check failed:', err);
+    return res.status(503).json({
+      error: 'Unable to verify subscription status. Please try again.',
+      code: 'SERVICE_UNAVAILABLE'
     });
   }
-
-  next();
 }
 
 /**
  * Middleware that attaches subscription info to request
  * Does not block, just enriches request
  */
-export async function attachSubscriptionInfo(req: Request, _res: Response, next: NextFunction) {
-  const tierInfo = await getSubscriptionTier(req);
-  req.subscriptionTier = tierInfo.tier;
-  req.accessibleObjectives = tierInfo.accessibleObjectives;
-  next();
+export async function attachSubscriptionInfo(req: Request, res: Response, next: NextFunction) {
+  try {
+    const tierInfo = await getSubscriptionTier(req);
+    req.subscriptionTier = tierInfo.tier;
+    req.accessibleObjectives = tierInfo.accessibleObjectives;
+    next();
+  } catch (err) {
+    console.error('Failed to attach subscription info:', err);
+    return res.status(503).json({
+      error: 'Unable to verify subscription status. Please try again.',
+      code: 'SERVICE_UNAVAILABLE'
+    });
+  }
 }
 
 /**

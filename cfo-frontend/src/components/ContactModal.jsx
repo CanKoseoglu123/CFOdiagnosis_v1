@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { X, Send, CheckCircle } from 'lucide-react';
 import { BRAND_COLORS } from './Logo';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
+import { API_URL } from '../lib/constants';
 
 const CATEGORIES = [
   { value: 'general', label: 'General Inquiry' },

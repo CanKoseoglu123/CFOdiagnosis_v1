@@ -22,7 +22,7 @@ import {
   Inbox
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cfodiagnosisv1-production.up.railway.app';
+import { API_URL } from '../../lib/constants';
 
 // Status badge component
 function StatusBadge({ status }) {
