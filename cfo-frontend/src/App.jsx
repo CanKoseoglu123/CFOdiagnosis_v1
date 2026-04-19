@@ -36,6 +36,8 @@ const PlatformPage = lazy(() => import('./pages/PlatformPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
 const RoadmapPage = lazy(() => import('./pages/RoadmapPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 // Loading fallback component
@@ -53,7 +55,7 @@ function PageLoader() {
           width: 40,
           height: 40,
           border: '3px solid #E2E8F0',
-          borderTopColor: '#1e3a5f',
+          borderTopColor: '#1a365d',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           margin: '0 auto 12px'
@@ -187,6 +189,9 @@ export default function App() {
           {/* Pricing page */}
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/signup" element={<Navigate to="/login?mode=signup" replace />} />
           {/* NAV-001: Catch-all 404 route */}
           <Route path="*" element={<NotFoundPage />} />
           </Routes>

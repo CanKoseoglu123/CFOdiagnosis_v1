@@ -36,3 +36,4 @@ tmpclaude-*-cwd
 cfo-frontend/tmpclaude-*-cwd
 .vercel
 .env*.local
+.gstack/
