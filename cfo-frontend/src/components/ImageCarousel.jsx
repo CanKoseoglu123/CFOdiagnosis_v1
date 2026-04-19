@@ -12,11 +12,31 @@ export default function ImageCarousel({
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const loadedCount = useRef(0);
+  const containerRef = useRef(null);
 
-  // Preload images to prevent flicker
+  // Observe visibility - only preload when near viewport
   useEffect(() => {
-    if (images.length === 0) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' } // Start loading 200px before visible
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Preload images only when near viewport
+  useEffect(() => {
+    if (!isVisible || images.length === 0) return;
 
     loadedCount.current = 0;
     setImagesLoaded(false);
@@ -37,7 +57,7 @@ export default function ImageCarousel({
       };
       img.src = src;
     });
-  }, [images]);
+  }, [images, isVisible]);
 
   // Auto-rotate (only when active)
   useEffect(() => {
@@ -56,6 +76,7 @@ export default function ImageCarousel({
 
   return (
     <div
+      ref={containerRef}
       className={`relative overflow-hidden ${className}`}
     >
       {images.map((src, index) => (

@@ -20,33 +20,33 @@ import ContactModal from '../components/ContactModal';
 // Image arrays for each step carousel
 const STEP_IMAGES = {
   step1: [
-    '/images/landing/step1/a.png',
-    '/images/landing/step1/b.png',
-    '/images/landing/step1/c.png',
+    '/images/landing/step1/a.webp',
+    '/images/landing/step1/b.webp',
+    '/images/landing/step1/c.webp',
   ],
   step2: [
-    '/images/landing/step2/a.png',
-    '/images/landing/step2/b.png',
-    '/images/landing/step2/c.png',
+    '/images/landing/step2/a.webp',
+    '/images/landing/step2/b.webp',
+    '/images/landing/step2/c.webp',
   ],
   step3: [
-    '/images/landing/step3/a.png',
-    '/images/landing/step3/b.png',
-    '/images/landing/step3/c.png',
-    '/images/landing/step3/d.png',
+    '/images/landing/step3/a.webp',
+    '/images/landing/step3/b.webp',
+    '/images/landing/step3/c.webp',
+    '/images/landing/step3/d.webp',
   ],
   step4: [
-    '/images/landing/step4/a.png',
-    '/images/landing/step4/b.png',
-    '/images/landing/step4/c.png',
-    '/images/landing/step4/f.png',
+    '/images/landing/step4/a.webp',
+    '/images/landing/step4/b.webp',
+    '/images/landing/step4/c.webp',
+    '/images/landing/step4/f.webp',
   ],
   step5: [
-    '/images/landing/step5/a.png',
-    '/images/landing/step5/b.png',
-    '/images/landing/step5/c.png',
-    '/images/landing/step5/d.png',
-    '/images/landing/step5/g.png',
+    '/images/landing/step5/a.webp',
+    '/images/landing/step5/b.webp',
+    '/images/landing/step5/c.webp',
+    '/images/landing/step5/d.webp',
+    '/images/landing/step5/g.webp',
   ],
 };
 
